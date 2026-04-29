@@ -10,7 +10,7 @@
 #include"OneFreqCSDetector.hpp"
 #include"LICSDetector2.hpp"
 
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 
 typedef std::map<TypeID, int> band_stat ;
 typedef std::map<SatID, std::map<TypeID, int>> sv_stat;

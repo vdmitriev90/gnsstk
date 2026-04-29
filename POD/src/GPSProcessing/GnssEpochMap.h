@@ -21,7 +21,7 @@ namespace pod
 
         gpstk::typeValueMap slnData;
 
-        std::ostream& GnssEpoch::dump(std::ostream& s, int precision = 4);
+        std::ostream& dump(std::ostream& s, int precision = 4);
   
     };
 

@@ -8,7 +8,7 @@ using namespace gpstk;
 
 namespace pod
 {
-	namespace fs = std::experimental::filesystem;
+	namespace fs = std::filesystem;
 
     std::map<SlnType, std::string> pod::slnType2Str;
     std::map<CarrierBand, std::string> pod::carrierBand2Str;

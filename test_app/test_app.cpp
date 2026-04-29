@@ -12,13 +12,11 @@
 using namespace std;
 using namespace gpstk;
 using namespace pod;
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 typedef unsigned char uchar;
 
 void testRtcm()
-{
-
-	
+{	
 	data_source_uptr ser(std::make_unique<SerialDataSource>("COM9",115200));
 	Rtcm3Decoder dec(std::move(ser));
 	dec.addMessage<Rtcm3_1008>();
@@ -31,7 +29,7 @@ void testRinNav(char* path)
 {
     Rinex3EphemerisStore nrin;
     cout<< nrin.loadFile(path) << endl;
-    auto &sid = SatID(1, SatID::SatelliteSystem::systemGPS);
+    const SatID sid = SatID(1, SatID::SatelliteSystem::systemGPS);
     CommonTime t0 = nrin.getInitialTime(sid);
     CommonTime te = nrin.getFinalTime(sid);
     nrin.SearchNear();

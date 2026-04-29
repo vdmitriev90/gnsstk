@@ -15,7 +15,7 @@ namespace pod
     {
         SatID::loadGloFcn(path2GlnNav);
 
-        namespace fs = std::experimental::filesystem;
+        namespace fs = std::filesystem;
         Rinex3ObsStream rin(path2obs);
         gnssRinex gRin;
 
