@@ -38,3 +38,20 @@ target_link_libraries(CommandOption_example_4 gnsstk)
 
 add_executable(CommandOption_example_5 CommandOption_example_5.cpp)
 target_link_libraries(CommandOption_example_5 gnsstk)
+
+# Group all example targets into "examples" folder in Solution Explorer
+set_target_properties(
+    time_example_1
+    Rinex3ObsStream_example_1
+    Rinex3ObsStream_example_2
+    PRSolution_example_1
+    RinexObsID_custom_example
+    Stats_example_1
+    NavFilter_example_1
+    CommandOption_example_1
+    CommandOption_example_2
+    CommandOption_example_3
+    CommandOption_example_4
+    CommandOption_example_5
+    PROPERTIES FOLDER "examples"
+)

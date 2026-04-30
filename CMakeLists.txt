@@ -14,6 +14,9 @@ set( GNSSTK_VERSION_MINOR "0" )
 set( GNSSTK_VERSION_PATCH "0" )
 set( GNSSTK_VERSION "${GNSSTK_VERSION_MAJOR}.${GNSSTK_VERSION_MINOR}.${GNSSTK_VERSION_PATCH}" )
 
+# Organize targets into folders in Solution Explorer
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
 # Test data file source directory
 set( GNSSTK_TEST_DATA_DIR ${PROJECT_SOURCE_DIR}/data )
 # Test output directory
@@ -179,6 +182,9 @@ elseif( WIN32 )
 else()
   add_library( gnsstk SHARED ${GNSSTK_SRC_FILES} ${GNSSTK_INC_FILES} )
 endif()
+
+# Mirror the source directory structure as filters in Visual Studio Solution Explorer
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${GNSSTK_SRC_FILES} ${GNSSTK_INC_FILES})
 
 # always generate the header because it's an include file whose
 # absence would break the build on non-windows.
