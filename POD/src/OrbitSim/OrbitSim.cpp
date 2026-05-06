@@ -49,7 +49,7 @@ namespace pod
         catch (...)
         {
             Exception e("Error in OrbitPropagator::integrateTo()");
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
         }
 
     }  // End of method 'OrbitSim::integrateTo()'
@@ -78,7 +78,7 @@ namespace pod
         catch (...)
         {
             Exception e("Unknown error in OrbitSim::integrateTo()");
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
         }
 
         return false;
@@ -232,7 +232,7 @@ namespace pod
         if (np<0)
         {
             Exception e("The size of the imput state is not valid");
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
         }
         curT = 0;
         curState.resize(state.size(), 0.0);

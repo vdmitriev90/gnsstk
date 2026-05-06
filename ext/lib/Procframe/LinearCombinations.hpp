@@ -47,7 +47,7 @@
 
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       /// @ingroup DataStructures 

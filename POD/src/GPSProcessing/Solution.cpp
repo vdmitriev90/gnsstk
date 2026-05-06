@@ -32,7 +32,7 @@ namespace pod
         {
             solver.process();
         }
-        catch (gpstk::Exception & e)
+        catch (gnsstk::Exception & e)
         {
 			std::cerr << "An exception has occured. Processing stopped." << std::endl;
 			std::cerr << e.getLocation() << std::endl;

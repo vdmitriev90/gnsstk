@@ -46,7 +46,7 @@
 
 #include "ProcessingClass.hpp"
 
-namespace gpstk
+namespace gnsstk
 {
 
       /// @ingroup DataStructures 
@@ -74,8 +74,7 @@ namespace gpstk
           *
           * @param gData     Data object holding the data.
           */
-      virtual SatTypePtrMap& Process(SatTypePtrMap& gData)
-         throw(ProcessingException);
+      virtual SatTypePtrMap& Process(SatTypePtrMap& gData);
 
 
          /** Returns a gnnsSatTypeValue object, adding the new data generated
@@ -84,7 +83,6 @@ namespace gpstk
           * @param gData    Data object holding the data.
           */
       virtual IRinex& Process(IRinex& gData)
-         throw(ProcessingException)
       { Process(gData.getBody()); return gData; };
 
          /// Returns a string identifying this object.
@@ -117,6 +115,6 @@ namespace gpstk
 
       //@}
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk
 
 #endif   // GPSTK_COMPUTECOMBINATION_HPP

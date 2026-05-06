@@ -8,7 +8,7 @@ namespace pod
 {
     const double AmbiguitiesEquations::sigma =  2e7;
 
-    std::map< gpstk::TypeID, gpstk::TypeID> AmbiguitiesEquations::typeMap;
+    std::map< gnsstk::TypeID, gnsstk::TypeID> AmbiguitiesEquations::typeMap;
 
     AmbiguitiesEquations::Initializer AmbiguitiesEquations::initializer;
 
@@ -27,7 +27,7 @@ namespace pod
         return ambSet;
     }
 
-    void AmbiguitiesEquations::Prepare(gpstk::IRinex & gData)
+    void AmbiguitiesEquations::Prepare(gnsstk::IRinex & gData)
     {
         svsInView = gData.getBody().getSatID();
         
@@ -44,7 +44,7 @@ namespace pod
         satSet = svsInView;
     }
 
-    void AmbiguitiesEquations::updatePhi(gpstk::Matrix<double>& Phi, int & index) const
+    void AmbiguitiesEquations::updatePhi(gnsstk::Matrix<double>& Phi, int & index) const
     {
         for (auto &it : csFlags)
         {
@@ -54,7 +54,7 @@ namespace pod
         }
     }
     
-    void AmbiguitiesEquations::updateQ(gpstk::Matrix<double>& Q, int & index) const
+    void AmbiguitiesEquations::updateQ(gnsstk::Matrix<double>& Q, int & index) const
     {
         for (auto &it : csFlags)
         {
@@ -64,7 +64,7 @@ namespace pod
         }
     }
     
-    void AmbiguitiesEquations::defStateAndCovariance(gpstk::Vector<double>& x, gpstk::Matrix<double>& P, int & index) const
+    void AmbiguitiesEquations::defStateAndCovariance(gnsstk::Vector<double>& x, gnsstk::Matrix<double>& P, int & index) const
     {
         for (auto &it : csFlags)
         {
@@ -74,7 +74,7 @@ namespace pod
         }
     }
 
-    void AmbiguitiesEquations::updateH(const gpstk::IRinex& gData, const gpstk::TypeIDSet& types, gpstk::Matrix<double>& H, int& col_0)
+    void AmbiguitiesEquations::updateH(const gnsstk::IRinex& gData, const gnsstk::TypeIDSet& types, gnsstk::Matrix<double>& H, int& col_0)
     {
         //total number of  ambiguities
         int numAmbs(csFlags.size());

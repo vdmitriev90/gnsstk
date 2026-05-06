@@ -8,7 +8,7 @@ using namespace gpstk;
 
 namespace pod
 {
-     std::ostream& GnssSolution:: printMsg(const gpstk::CommonTime& time, const char* msg)
+     std::ostream& GnssSolution:: printMsg(const gnsstk::CommonTime& time, const char* msg)
      {
         return(std::cout << "Epoch: " << CivilTime(time).asString() << " "<< msg << std::endl);
      }
@@ -20,7 +20,7 @@ namespace pod
 
     GnssSolution::~GnssSolution() {}
 
-	void GnssSolution::printSolution(const KalmanSolver& solver, const gpstk::CommonTime& time, GnssEpoch& gEpoch)
+	void GnssSolution::printSolution(const KalmanSolver& solver, const gnsstk::CommonTime& time, GnssEpoch& gEpoch)
 	{
 
 		for (auto && it : Equations->currentUnknowns())

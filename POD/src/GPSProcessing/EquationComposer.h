@@ -32,7 +32,7 @@ namespace pod
 		typedef std::map<FilterParameter, FilterData> FilterState;
 
         //to map opbservables TypeID to weight factor
-        static const std::map<gpstk::TypeID, double> weigthFactors;
+        static const std::map<gnsstk::TypeID, double> weigthFactors;
 
         EquationComposer() {};
 
@@ -42,37 +42,37 @@ namespace pod
         virtual ~EquationComposer() = default;
 
         //prepare equations according current data set 'gData'
-        virtual void Prepare(gpstk::IRinex& gData) ;
+        virtual void Prepare(gnsstk::IRinex& gData) ;
 
         // compose design matrix
-        virtual void updateH(gpstk::IRinex& gData, gpstk::Matrix<double>& H);
+        virtual void updateH(gnsstk::IRinex& gData, gnsstk::Matrix<double>& H);
         
         /// compose state transition matrix
-        virtual void updatePhi(gpstk::Matrix<double>& Phi) const;
+        virtual void updatePhi(gnsstk::Matrix<double>& Phi) const;
        
         // compose process noise matrix
-        virtual void updateQ(gpstk::Matrix<double>& Q) const;
+        virtual void updateQ(gnsstk::Matrix<double>& Q) const;
         
         // compose measurments errors matrix
-        virtual void updateW(const gpstk::IRinex& gData,  gpstk::Matrix<double>& R);
+        virtual void updateW(const gnsstk::IRinex& gData,  gnsstk::Matrix<double>& R);
 
         // compose vector of measurements (prefit residuals)
-        virtual void updateMeas(const gpstk::IRinex& gData, gpstk::Vector<double>& prefitResiduas);
+        virtual void updateMeas(const gnsstk::IRinex& gData, gnsstk::Vector<double>& prefitResiduas);
 
         // compose current state vector and covariance matrix
-        virtual void updateKfState(gpstk::Vector<double>& state, gpstk::Matrix<double>& cov) const;
+        virtual void updateKfState(gnsstk::Vector<double>& state, gnsstk::Matrix<double>& cov) const;
 
         // store current state vector and covariance matrix
-        virtual void storeKfState(const gpstk::Vector<double>& state, const gpstk::Matrix<double>& cov);
+        virtual void storeKfState(const gnsstk::Vector<double>& state, const gnsstk::Matrix<double>& cov);
        
         // compose current state vector and covariance matrix with default values
-        virtual void initKfState(gpstk::Vector<double>& state, gpstk::Matrix<double>& cov) const;
+        virtual void initKfState(gnsstk::Vector<double>& state, gnsstk::Matrix<double>& cov) const;
         
         // insert current residuals vector into GNSS data structure
-		virtual void saveResiduals(gpstk::IRinex& gData, const gpstk::Vector<double>& residuals) const;
+		virtual void saveResiduals(gnsstk::IRinex& gData, const gnsstk::Vector<double>& residuals) const;
 
-		// return postfit residuals as gpstk::satTypeValueMap structure
-		virtual std::vector<double> getResiduals(const gpstk::Vector<double>& residuals, const gpstk::TypeIDSet& types ) const;
+		// return postfit residuals as gnsstk::satTypeValueMap structure
+		virtual std::vector<double> getResiduals(const gnsstk::Vector<double>& residuals, const gnsstk::TypeIDSet& types ) const;
 		
 		virtual const FilterState & getState() const
 		{ return filterData; }
@@ -92,21 +92,21 @@ namespace pod
             return unknowns;
         }
 
-        virtual gpstk::TypeIDSet & measTypes()
+        virtual gnsstk::TypeIDSet & measTypes()
         {
             return measurmentsTypes;
         }
-        virtual const gpstk::TypeIDSet & measTypes() const
+        virtual const gnsstk::TypeIDSet & measTypes() const
         {
             return measurmentsTypes;
         }
 
-        virtual gpstk::TypeIDSet & residTypes()
+        virtual gnsstk::TypeIDSet & residTypes()
         {
             return residualsTypes;
         }
 
-        virtual const gpstk::TypeIDSet & residTypes() const
+        virtual const gnsstk::TypeIDSet & residTypes() const
         {
             return residualsTypes;
         }
@@ -146,8 +146,8 @@ namespace pod
             filterData.clear();
         }
         /// menage satellite-specific data 
-        virtual void keepOnlySv(const gpstk::SatIDSet& svs);
-        virtual void clearSvData(const gpstk::SatIDSet& svs);
+        virtual void keepOnlySv(const gnsstk::SatIDSet& svs);
+        virtual void clearSvData(const gnsstk::SatIDSet& svs);
         virtual void clearSvData() ;
 
 	protected:
@@ -167,10 +167,10 @@ namespace pod
         ParametersSet currAmb;
         
         /// type of measurements
-        gpstk::TypeIDSet measurmentsTypes;
+        gnsstk::TypeIDSet measurmentsTypes;
 
         /// type ID of postfit residuals
-        gpstk::TypeIDSet residualsTypes;
+        gnsstk::TypeIDSet residualsTypes;
         
         /// number of unknowns
         size_t numUnknowns;

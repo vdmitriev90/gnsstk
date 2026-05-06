@@ -47,7 +47,7 @@
 #include "RinexNavHeader.hpp"
 //#include "Logger.hpp"
 
-namespace gpstk
+namespace gnsstk
 {
 
    using namespace std;
@@ -67,7 +67,6 @@ namespace gpstk
 
    SatTypePtrMap& ComputeIonoModel::Process( const CommonTime& time,
                                                SatTypePtrMap& gData )
-      throw(ProcessingException)
    {
 
       try
@@ -83,8 +82,8 @@ namespace gpstk
          {
              int fcn = stv->first.getGloFcn();
 
-             double L1_FREQ = C_MPS / getWavelength(stv->first, 1, fcn);
-             double L2_FREQ = C_MPS / getWavelength(stv->first, 2, fcn);
+             double L1_FREQ = C_MPS / getWavelength(stv->first.system, 1, fcn);
+             double L2_FREQ = C_MPS / getWavelength(stv->first.system, 2, fcn);
              Position svPos(0.0, 0.0, 0.0, Position::Cartesian);
 
              // If elevation or azimuth is missing, then remove satellite
@@ -124,7 +123,7 @@ namespace gpstk
 
                      double tecval = val[0];
 
-                     pGridStore->iono_mapping_function(elevation, mapType);
+                     pGridStore->ionoMappingFunction(elevation, mapType);
                      ionL1 = pGridStore->getIonoL1(elevation, tecval, mapType);
                  }
                  catch (InvalidRequest& e)
@@ -205,7 +204,7 @@ namespace gpstk
           ProcessingException e(getClassName() + ":"
               + u.what());
 
-          GPSTK_THROW(e);
+          GNSSTK_THROW(e);
 
       }
 
@@ -260,13 +259,13 @@ namespace gpstk
          {
             nstrm.close();
 
-            GPSTK_RETHROW(e);
+            GNSSTK_RETHROW(e);
          }
       }
       else
       {
          Exception e("The input is not a rinex nav file:" + brdcFile);
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
       
 
@@ -283,4 +282,4 @@ namespace gpstk
        return (*this);
    }
 
-} // End of namespace gpstk
+} // End of namespace gnsstk

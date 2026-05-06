@@ -7,7 +7,7 @@
 #include<set>
 namespace pod
 {
-    typedef std::map<gpstk::SatID::SatelliteSystem, gpstk::SatIDSet> System2SatSetMap;
+    typedef std::map<gnsstk::SatID::SatelliteSystem, gnsstk::SatIDSet> System2SatSetMap;
 
 
     class FilterParameter
@@ -16,22 +16,22 @@ namespace pod
 
         static System2SatSetMap get_sv_by_ss(const std::set<FilterParameter>& parameters);
         
-        static gpstk::SatIDSet get_all_sv(const std::set<FilterParameter>& parameters);
+        static gnsstk::SatIDSet get_all_sv(const std::set<FilterParameter>& parameters);
 
-        static gpstk::SatSystSet get_all_ss(const std::set<FilterParameter>& parameters);
+        static gnsstk::SatSystSet get_all_ss(const std::set<FilterParameter>& parameters);
         
-        static gpstk::TypeIDSet get_all_types(const std::set<FilterParameter>& parameters);
+        static gnsstk::TypeIDSet get_all_types(const std::set<FilterParameter>& parameters);
 
         FilterParameter()
-            :type(gpstk::TypeID::Unknown), sv(gpstk::SatID::dummy)
+            :type(gnsstk::TypeID::Unknown), sv(gnsstk::SatID::dummy)
         { };
 
-        FilterParameter(const gpstk::TypeID &obsType, const gpstk::SatID &sat) 
+        FilterParameter(const gnsstk::TypeID &obsType, const gnsstk::SatID &sat) 
             :type(obsType), sv(sat)
         { };
 
-        FilterParameter(const gpstk::TypeID &obsType)
-            :type(obsType), sv(gpstk::SatID::dummy)
+        FilterParameter(const gnsstk::TypeID &obsType)
+            :type(obsType), sv(gnsstk::SatID::dummy)
         { };
 
         FilterParameter(const FilterParameter& parameter)
@@ -60,9 +60,9 @@ namespace pod
 
 		std::string toString() const;
 
-        gpstk::TypeID type;
+        gnsstk::TypeID type;
 
-        gpstk::SatID sv;
+        gnsstk::SatID sv;
 
     };
 

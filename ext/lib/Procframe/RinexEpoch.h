@@ -4,10 +4,10 @@
 #include"SatTypePtrMap.h"
 #include<memory>
 
-namespace gpstk
+namespace gnsstk
 {
 	class IRinex;
-	typedef SatID::SatelliteSystem GpstkSatSystem;
+	typedef SatelliteSystem GpstkSatSystem;
 	typedef std::unique_ptr<IRinex> irinex_uptr;
     class IRinex
     {
@@ -115,7 +115,7 @@ namespace gpstk
         RinexEpoch& keepOnlyTypeID(const TypeIDSet& typeSet);
 
 
-		RinexEpoch& removeSatID(int id, SatID::SatelliteSystem system);
+		RinexEpoch& removeSatID(int id,SatelliteSystem system);
 
 		RinexEpoch& removeSatID(const SatID & satSet);
 
@@ -123,7 +123,7 @@ namespace gpstk
 
 		//RinexEpoch& removeSatSyst(const SatSystSet& satSet);
 
-		//RinexEpoch& removeSatSyst(SatID::SatelliteSystem syst);
+		//RinexEpoch& removeSatSyst(SatelliteSystem syst);
 
     protected:
         SatTypePtrMap currData;

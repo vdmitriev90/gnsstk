@@ -8,14 +8,14 @@ namespace pod
 
 
     class SNRCatcher :
-        public gpstk::ProcessingClass
+        public gnsstk::ProcessingClass
     {
     public:
 
         SNRCatcher();
         //
-        SNRCatcher(const gpstk::TypeID & type,
-            const gpstk::TypeID& resType,
+        SNRCatcher(const gnsstk::TypeID & type,
+            const gnsstk::TypeID& resType,
             double maxgap, 
             double tresh,
             int maxCount);
@@ -28,12 +28,12 @@ namespace pod
         *
         * @param gData    Data object holding the data.
         */
-        virtual gpstk::IRinex& Process(gpstk::IRinex& gData)
-            throw(gpstk::ProcessingException);
+        virtual gnsstk::IRinex& Process(gnsstk::IRinex& gData)
+            throw(gnsstk::ProcessingException);
 
-        virtual  gpstk::SatTypePtrMap& Process(const gpstk::CommonTime& epoch,
-            gpstk::SatTypePtrMap& gData)
-            throw(gpstk::ProcessingException);
+        virtual  gnsstk::SatTypePtrMap& Process(const gnsstk::CommonTime& epoch,
+            gnsstk::SatTypePtrMap& gData)
+            throw(gnsstk::ProcessingException);
 
         /** Method that implements the LI cycle slip detection algorithm
         *
@@ -42,9 +42,9 @@ namespace pod
         * @param tvMap     Data structure of TypeID and values.
         * @param li        Current LI observation value.
         */
-        virtual double getDetection(const gpstk::CommonTime& epoch,
-            const gpstk::SatID& sat,
-            gpstk::typeValueMap& tvMap,
+        virtual double getDetection(const gnsstk::CommonTime& epoch,
+            const gnsstk::SatID& sat,
+            gnsstk::typeValueMap& tvMap,
             double snr);
 
         /// Returns a string identifying this object.
@@ -52,10 +52,10 @@ namespace pod
 
     private:
         /// Type of observable.
-        gpstk::TypeID obsType;
+        gnsstk::TypeID obsType;
 
         /// Types of result.
-        gpstk::TypeID resultType1;
+        gnsstk::TypeID resultType1;
         
         /// Maximum buffer size.
         int maxBufferSize;
@@ -77,11 +77,11 @@ namespace pod
             filterData()
             {};
 
-            std::deque<gpstk::CommonTime> epochs; ///< Epochs of previous SNR observables.
+            std::deque<gnsstk::CommonTime> epochs; ///< Epochs of previous SNR observables.
             std::deque<double> buffer;  ///< Values of previous SNR observables.
         };
         /// Map holding the information regarding every satellite
-        std::map<gpstk::SatID, filterData> data;
+        std::map<gnsstk::SatID, filterData> data;
 
     };
 }

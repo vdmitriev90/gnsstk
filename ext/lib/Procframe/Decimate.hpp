@@ -48,12 +48,12 @@
 
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       /// Thrown when some epoch data must be decimated
       /// @ingroup exceptiongroup
-    NEW_EXCEPTION_CLASS(DecimateEpoch, gpstk::Exception);
+    NEW_EXCEPTION_CLASS(DecimateEpoch, gnsstk::Exception);
 
 
       /// @ingroup DataStructures 
@@ -188,8 +188,7 @@ namespace gpstk
           * @param gData     Data object holding the data.
           */
       virtual SatTypePtrMap& Process( const CommonTime& time,
-                                        SatTypePtrMap& gData )
-         throw(DecimateEpoch);
+                                        SatTypePtrMap& gData );
 
 
 
@@ -199,7 +198,6 @@ namespace gpstk
           * @param gData    Data object holding the data.
           */
       virtual IRinex& Process(IRinex& gData)
-         throw(DecimateEpoch)
       { Process(gData.getHeader().epoch, gData.getBody()); return gData; };
 
       /** Returns a boolean value (instead of thrown an exception),
@@ -267,6 +265,6 @@ namespace gpstk
 
       //@}
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk
 
 #endif   // GPSTK_DECIMATE_HPP

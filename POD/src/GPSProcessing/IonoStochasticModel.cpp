@@ -4,7 +4,7 @@ using namespace gpstk;
 
 namespace pod
 {
-    void IonoStochasticModel::Prepare(const gpstk::SatID & sat, gpstk::IRinex & gData)
+    void IonoStochasticModel::Prepare(const gnsstk::SatID & sat, gnsstk::IRinex & gData)
     {
         RandomWalkModel::Prepare(sat, gData);
 

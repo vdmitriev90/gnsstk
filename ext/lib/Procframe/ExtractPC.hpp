@@ -47,7 +47,7 @@
 #include "GNSSconstants.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       /// @ingroup RinexObs 
@@ -78,7 +78,6 @@ namespace gpstk
 #pragma clang diagnostic ignored "-Woverloaded-virtual"
       virtual int getData( const Rinex3ObsData& rinexData,
                            const Rinex3ObsHeader& hdr )
-         throw(InvalidRequest)
       {
 
          return ExtractCombinationData::getData( rinexData,
@@ -104,7 +103,6 @@ namespace gpstk
 
          /// Compute the combination of observables.
       virtual double getCombination( double obs1, double obs2 )
-         throw(InvalidRequest)
       {
          return ( (GAMMA_GPS*obs1 - obs2)/(GAMMA_GPS - 1.0) );
       };
@@ -120,6 +118,6 @@ namespace gpstk
 
       //@}
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk
 
 #endif   // GPSTK_EXTRACTPC_HPP

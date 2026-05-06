@@ -52,7 +52,7 @@
 
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       /// @ingroup GPSsolutions 
@@ -126,8 +126,7 @@ namespace gpstk
 
          /// Explicit constructor, taking as input a Position object
          /// containing reference station coordinates.
-      IonexModel(const Position& RxCoordinates)
-         throw(Exception);
+      IonexModel(const Position& RxCoordinates);
 
 
          /** Explicit constructor, taking as input reference station
@@ -145,8 +144,7 @@ namespace gpstk
                   IonexStore& istore,
                   const TypeID& dObservable = TypeID::P1,
                   const bool& applyDCB = true,
-                  const std::string& ionoMap = "SLM" )
-         throw(Exception);
+                  const std::string& ionoMap = "SLM" );
 
 
          /** Returns a satTypeValueMap object, adding the new data generated
@@ -156,8 +154,7 @@ namespace gpstk
           * @param gData     Data object holding the data.
           */
       virtual SatTypePtrMap& Process( const CommonTime& time,
-                                        SatTypePtrMap& gData )
-         throw(Exception);
+                                        SatTypePtrMap& gData );
 
 
 
@@ -167,7 +164,6 @@ namespace gpstk
           * @param gData    Data object holding the data.
           */
       virtual IRinex& Process(IRinex& gData)
-         throw(Exception)
       { Process(gData.getHeader().epoch, gData.getBody()); return gData; };
 
 
@@ -219,13 +215,11 @@ namespace gpstk
           *  0 if OK
           *  -1 if problems arose
           */
-      virtual int setInitialRxPosition(const Position& RxCoordinates)
-         throw(GeometryException);
+      virtual int setInitialRxPosition(const Position& RxCoordinates);
 
 
          /// Method to set the initial (a priori) position of receiver.
-      virtual int setInitialRxPosition(void)
-         throw(GeometryException);
+      virtual int setInitialRxPosition(void);
 
 
          /// Method to get the default ionosphere mapping function type.
@@ -301,6 +295,6 @@ namespace gpstk
 
       //@}
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk
 
 #endif   // GPSTK_IONEXMODEL_HPP

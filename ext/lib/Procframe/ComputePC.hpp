@@ -46,7 +46,7 @@
 #include "ComputeCombination.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       /// @ingroup DataStructures 
@@ -108,7 +108,6 @@ namespace gpstk
           * @param gData     Data object holding the data.
           */
       virtual SatTypePtrMap& Process(SatTypePtrMap& gData)
-         throw(ProcessingException)
       { ComputeCombination::Process(gData); return gData; };
 
 
@@ -145,6 +144,6 @@ namespace gpstk
 
       //@}
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk
 
 #endif   // GPSTK_COMPUTEPC_HPP

@@ -20,10 +20,10 @@ namespace pod
              return  tropo->correction(rxPos, svPos, t);
          else
          {
-             auto e = gpstk::InvalidRequest();
+             auto e = gnsstk::InvalidRequest();
              e.addLocation(ExceptionLocation(__FILE__, __FUNCTION__, __LINE__));
              e.addText("Invalid height for tropospheric correction computation");
-             GPSTK_THROW(e)
+             GNSSTK_THROW(e)
          }
      }
 }

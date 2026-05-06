@@ -49,7 +49,7 @@
 #include "Triple.hpp"
 #include "ConfData.hpp"
 
-namespace gpstk
+namespace gnsstk
 {
 
    /** This class is designed to handle config data with great easy.
@@ -257,7 +257,7 @@ namespace gpstk
       ConfData< gnssConfData<HEADER_CLASS,BODY_CLASS> > config;
    };
       
-}   // End of namespace gpstk
+}   // End of namespace gnsstk
 
 
 #endif  //GPSTK_CONFDATASTRUCTURES_HPP

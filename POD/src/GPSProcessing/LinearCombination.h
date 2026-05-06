@@ -10,7 +10,7 @@ namespace pod
     class LinearCombination
     {
     public:
-        static double getIonoFreeWaveLength(const gpstk::SatID &sv, int band1, int band2);
+        static double getIonoFreeWaveLength(const gnsstk::SatID &sv, int band1, int band2);
 
         LinearCombination() {};
         virtual ~LinearCombination() {};

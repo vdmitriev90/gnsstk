@@ -3,10 +3,10 @@
 namespace pod
 {
 
-	void MatrixExtensions::removeColumns(gpstk::Matrix<double>& m, std::set<int> cols)
+	void MatrixExtensions::removeColumns(gnsstk::Matrix<double>& m, std::set<int> cols)
 	{
 		int newCols = m.cols() - cols.size();
-		gpstk::Matrix<double> m1(m.rows(), newCols, .0);
+		gnsstk::Matrix<double> m1(m.rows(), newCols, .0);
 		int k = 0;
 
 		for (size_t i = 0; i < m.cols(); i++)
@@ -21,10 +21,10 @@ namespace pod
 		m = m1;
 	}
 
-	void MatrixExtensions::removeRows(gpstk::Matrix<double>& m, std::set<int> rows)
+	void MatrixExtensions::removeRows(gnsstk::Matrix<double>& m, std::set<int> rows)
 	{
 		int newRows = m.rows() - rows.size();
-		gpstk::Matrix<double> m1(newRows, m.cols(), .0);
+		gnsstk::Matrix<double> m1(newRows, m.cols(), .0);
 		int k = 0;
 
 		for (size_t i = 0; i < m.rows(); i++)
@@ -39,10 +39,10 @@ namespace pod
 		m = m1;
 	}
 
-	void MatrixExtensions::removeElms(gpstk::Vector<double>& v, std::set<int> elms)
+	void MatrixExtensions::removeElms(gnsstk::Vector<double>& v, std::set<int> elms)
 	{
 		int newSize = v.size() - elms.size();
-		gpstk::Vector<double> v1(newSize, .0);
+		gnsstk::Vector<double> v1(newSize, .0);
 
 		int k = 0;
 		for (size_t i = 0; i < v.size(); i++)

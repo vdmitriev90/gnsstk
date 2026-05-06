@@ -43,7 +43,7 @@
 #include "SolverGeneral.hpp"
 #include "GeneralConstraint.hpp"
 
-namespace gpstk
+namespace gnsstk
 {
 
       // Index initially assigned to this class
@@ -86,7 +86,6 @@ namespace gpstk
        * @param gData     Data object holding the data.
        */
    IRinex& SolverGeneral::Process(IRinex& gData)
-      throw(ProcessingException)
    {
 
       try
@@ -112,7 +111,7 @@ namespace gpstk
                                 + StringUtils::asString( getIndex() ) + ":"
                                 + u.what() );
 
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
 
       }
 
@@ -126,7 +125,6 @@ namespace gpstk
        * @param gData    Data object holding the data.
        */
    gnssDataMap& SolverGeneral::Process( gnssDataMap& gdsMap )
-      throw(ProcessingException)
    {
 
       try
@@ -156,7 +154,7 @@ namespace gpstk
                                 + StringUtils::asString( getIndex() ) + ":"
                                 + u.what() );
 
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
 
       }
 
@@ -171,7 +169,6 @@ namespace gpstk
        * @param gData    Data object holding the data.
        */
    gnssDataMap& SolverGeneral::preCompute( gnssDataMap& gdsMap )
-      throw(ProcessingException)
    {
 
       try
@@ -316,7 +313,7 @@ namespace gpstk
                                 + StringUtils::asString( getIndex() ) + ":"
                                 + u.what() );
 
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
 
       }
 
@@ -343,7 +340,6 @@ namespace gpstk
    int SolverGeneral::Compute( const Vector<double>& prefitResiduals,
                                const Matrix<double>& designMatrix,
                                const Matrix<double>& weightMatrix )
-      throw(InvalidSolver)
    {
 
          // By default, results are invalid
@@ -352,7 +348,7 @@ namespace gpstk
       if (!(weightMatrix.isSquare()))
       {
          InvalidSolver e("Weight matrix is not square");
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
 
       int wRow = static_cast<int>(weightMatrix.rows());
@@ -361,7 +357,7 @@ namespace gpstk
       {
          InvalidSolver e("prefitResiduals size does not match dimension of \
 weightMatrix");
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
 
       int gRow = static_cast<int>(designMatrix.rows());
@@ -369,13 +365,13 @@ weightMatrix");
       {
          InvalidSolver e("prefitResiduals size does not match dimension \
 of designMatrix");
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
 
       if (!(phiMatrix.isSquare()))
       {
          InvalidSolver e("phiMatrix is not square");
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
 
          // Get the number of unknowns being processed
@@ -386,13 +382,13 @@ of designMatrix");
       {
          InvalidSolver e("Number of unknowns does not match dimension \
 of phiMatrix");
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
 
       if (!(qMatrix.isSquare()))
       {
          InvalidSolver e("qMatrix is not square");
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
 
       int qRow = static_cast<int>(qMatrix.rows());
@@ -400,7 +396,7 @@ of phiMatrix");
       {
          InvalidSolver e("Number of unknowns does not match dimension \
 of qMatrix");
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
 
          // After checking sizes, let's invert the matrix of weights in order
@@ -416,7 +412,7 @@ of qMatrix");
       {
          InvalidSolver e("Correct(): Unable to compute measurements noise \
 covariance matrix.");
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
 
 
@@ -433,7 +429,7 @@ covariance matrix.");
       }
       catch(InvalidSolver& e)
       {
-         GPSTK_RETHROW(e);
+         GNSSTK_RETHROW(e);
       }
 
          // Store the solution
@@ -459,7 +455,6 @@ covariance matrix.");
        * @param gData    Data object holding the data.
        */
    gnssDataMap& SolverGeneral::postCompute( gnssDataMap& gdsMap )
-      throw(ProcessingException)
    {
 
       try
@@ -569,7 +564,7 @@ covariance matrix.");
                                 + StringUtils::asString( getIndex() ) + ":"
                                 + u.what() );
 
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
 
       }
 
@@ -584,7 +579,6 @@ covariance matrix.");
        * @param variable    Variable object solution we are looking for.
        */
    double SolverGeneral::getSolution( const Variable& variable ) const
-      throw(InvalidRequest)
    {
 
          // Look the variable inside the state map
@@ -595,7 +589,7 @@ covariance matrix.");
       if( it == stateMap.end() )
       {
          InvalidRequest e("Variable not found in solution vector.");
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
 
          // Return value
@@ -613,7 +607,6 @@ covariance matrix.");
        * of this type, only the first one will be returned.
        */
    double SolverGeneral::getSolution( const TypeID& type ) const
-      throw(InvalidRequest)
    {
 
          // Declare an iterator for 'stateMap' and go to the first element
@@ -629,7 +622,7 @@ covariance matrix.");
          if( it == stateMap.end() )
          {
              InvalidRequest e("Type not found in solution vector.");
-             GPSTK_THROW(e);
+             GNSSTK_THROW(e);
          }
       }
 
@@ -650,7 +643,6 @@ covariance matrix.");
        */
    double SolverGeneral::getSolution( const TypeID& type,
                                       const SourceID& source ) const
-      throw(InvalidRequest)
    {
 
          // Declare an iterator for 'stateMap' and go to the first element
@@ -667,7 +659,7 @@ covariance matrix.");
          if( it == stateMap.end() )
          {
              InvalidRequest e("Type and source not found in solution vector.");
-             GPSTK_THROW(e);
+             GNSSTK_THROW(e);
          }
       }
 
@@ -688,7 +680,6 @@ covariance matrix.");
        */
    double SolverGeneral::getSolution( const TypeID& type,
                                       const SatID& sat ) const
-      throw(InvalidRequest)
    {
 
       // Declare an iterator for 'stateMap' and go to the first element
@@ -705,7 +696,7 @@ covariance matrix.");
          if( it == stateMap.end() )
          {
             InvalidRequest e("Type and source not found in solution vector.");
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
          }
       }
 
@@ -728,7 +719,6 @@ covariance matrix.");
    double SolverGeneral::getSolution( const TypeID& type,
                                       const SourceID& source,
                                       const SatID& sat ) const
-      throw(InvalidRequest)
    {
 
          // Declare an iterator for 'stateMap' and go to the first element
@@ -746,7 +736,7 @@ covariance matrix.");
          if( it == stateMap.end() )
          {
              InvalidRequest e("Type, source and SV not found in solution vector.");
-             GPSTK_THROW(e);
+             GNSSTK_THROW(e);
          }
       }
 
@@ -762,7 +752,6 @@ covariance matrix.");
        */
    double SolverGeneral::getCovariance( const Variable& var1, 
                                         const Variable& var2 ) const
-      throw(InvalidRequest)
    {
       std::map<Variable, VariableDataMap >::const_iterator it1 = covarianceMap.find(var1);
       if(it1!=covarianceMap.end())
@@ -785,7 +774,7 @@ covariance matrix.");
       
          // Once code go here, we failed to find the value, and throw exception.
       InvalidRequest e("Failed to get the covariance value.");
-      GPSTK_THROW(e);
+      GNSSTK_THROW(e);
 
       return 0.0;
    }
@@ -796,7 +785,6 @@ covariance matrix.");
        * @param variable    Variable object variance we are looking for.
        */
    double SolverGeneral::getVariance(const Variable& variable) const 
-      throw(InvalidRequest)
    {
 
          // Check if the provided Variable exists in the solution. If not,
@@ -804,7 +792,7 @@ covariance matrix.");
       if( stateMap.find( variable ) == stateMap.end() )
       {
          InvalidRequest e("Variable not found in covariance matrix.");
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
 
          // Return value
@@ -822,7 +810,6 @@ covariance matrix.");
        * of this type, only the first one will be returned.
        */
    double SolverGeneral::getVariance(const TypeID& type) const 
-      throw(InvalidRequest)
    {
 
          // Declare an iterator for 'covarianceMap' and go to the first element
@@ -839,7 +826,7 @@ covariance matrix.");
          if( it == covarianceMap.end() )
          {
              InvalidRequest e("Type not found in covariance matrix.");
-             GPSTK_THROW(e);
+             GNSSTK_THROW(e);
          }
       }
 
@@ -859,7 +846,6 @@ covariance matrix.");
        */
    double SolverGeneral::getVariance( const TypeID& type,
                                       const SourceID& source ) const 
-      throw(InvalidRequest)
    {
          // Declare an iterator for 'stateMap' and go to the first element
       VariableDataMap::const_iterator it = stateMap.begin();
@@ -874,7 +860,7 @@ covariance matrix.");
          if( it == stateMap.end() )
          {
             InvalidRequest e("Type and source not found in solution vector.");
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
          }
       }
 
@@ -895,7 +881,6 @@ covariance matrix.");
        */
    double SolverGeneral::getVariance( const TypeID& type,
                                       const SatID& sat ) const 
-      throw(InvalidRequest)
    {
       // Declare an iterator for 'stateMap' and go to the first element
       VariableDataMap::const_iterator it = stateMap.begin();
@@ -911,7 +896,7 @@ covariance matrix.");
          if( it == stateMap.end() )
          {
             InvalidRequest e("Type and source not found in solution vector.");
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
          }
       }
 
@@ -934,7 +919,6 @@ covariance matrix.");
    double SolverGeneral::getVariance( const TypeID& type,
                                       const SourceID& source,
                                       const SatID& sat ) const 
-      throw(InvalidRequest)
    {
          // Declare an iterator for 'stateMap' and go to the first element
       VariableDataMap::const_iterator it = stateMap.begin();
@@ -951,7 +935,7 @@ covariance matrix.");
          if( it == stateMap.end() )
          {
             InvalidRequest e("Type, source and SV not found in solution vector.");
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
          }
       }
 
@@ -968,7 +952,6 @@ covariance matrix.");
        */
    SolverGeneral& SolverGeneral::setSolution( const Variable& variable,
                                               const double& val )
-      throw(InvalidRequest)
    {
       VariableDataMap::iterator it = stateMap.find(variable);
       if(it!=stateMap.end())
@@ -978,7 +961,7 @@ covariance matrix.");
       else
       {
          InvalidRequest e("The variable not exist in the solver.");
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
 
       return (*this);
@@ -994,7 +977,6 @@ covariance matrix.");
    SolverGeneral& SolverGeneral::setCovariance( const Variable& var1, 
                                                 const Variable& var2,
                                                 const double& cov)
-      throw(InvalidRequest)
    {  
       std::map<Variable, VariableDataMap >::iterator it1 = covarianceMap.find(var1);
       if(it1!=covarianceMap.end())
@@ -1022,10 +1004,10 @@ covariance matrix.");
 
       // One code go here, we failed to find the value, and throw exception.
       InvalidRequest e("The input variables are not exist in the solver.");
-      GPSTK_THROW(e);
+      GNSSTK_THROW(e);
       
       return (*this);
    }
 
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk

@@ -44,7 +44,7 @@
 #include "ComputeTropModel.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
 
 
@@ -62,7 +62,6 @@ namespace gpstk
        */
    SatTypePtrMap& ComputeTropModel::Process( const CommonTime& time,
                                          SatTypePtrMap& gData )
-      throw(ProcessingException)
    {
 
       try
@@ -156,11 +155,11 @@ namespace gpstk
          ProcessingException e( getClassName() + ":"
                                 + u.what() );
 
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
 
       }
 
    } // End ComputeTropModel::Process()
 
 
-} // End of namespace gpstk
+} // End of namespace gnsstk

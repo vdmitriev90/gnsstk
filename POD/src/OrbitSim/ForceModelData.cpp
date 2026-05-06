@@ -26,8 +26,8 @@ namespace pod
         ifstream inpStream(path);
         if (!inpStream.is_open())
         {
-            gpstk::Exception e("failed to open gravity model file: " + path);
-            GPSTK_THROW(e);
+            gnsstk::Exception e("failed to open gravity model file: " + path);
+            GNSSTK_THROW(e);
         }
         double factor(0), refd(0.0), mu(0.0);
         int isNormalize(0);
@@ -47,11 +47,11 @@ namespace pod
 
         if (maxOrder < desiredOrder || maxDegree < desiredDegree)
         {
-            gpstk::Exception e("desired gravity field degree(order) is lover than maximum degree(order) avalable in " + path + " gravity model file.");
-            GPSTK_THROW(e);
+            gnsstk::Exception e("desired gravity field degree(order) is lover than maximum degree(order) avalable in " + path + " gravity model file.");
+            GNSSTK_THROW(e);
         }
 
-        gpstk::Matrix<double>  &CS = (isNormalize) ? normalizedCS : unnormalizedCS;
+        gnsstk::Matrix<double>  &CS = (isNormalize) ? normalizedCS : unnormalizedCS;
 
         CS.resize(desiredOrder + 1, desiredDegree + 1);
 
@@ -64,8 +64,8 @@ namespace pod
 
             if (n > desiredDegree && m > desiredOrder)
             {
-                gpstk:: Exception e("Unexpected gravity field degree(order) in: " + path);
-                GPSTK_THROW(e);
+                gnsstk:: Exception e("Unexpected gravity field degree(order) in: " + path);
+                GNSSTK_THROW(e);
             }
             //CS[n][m] = C[n][m], CS[m-1][n] = S[n][m].
             CS[n][m] = cnm;

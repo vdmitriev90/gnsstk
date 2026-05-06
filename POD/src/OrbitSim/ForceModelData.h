@@ -32,9 +32,9 @@ namespace pod
 		bool poleTide = false;
 
 		//for debug purposes only
-		gpstk:: Matrix<double> unnormalizedCS;
+		gnsstk:: Matrix<double> unnormalizedCS;
 
-        gpstk:: Matrix<double> normalizedCS;
+        gnsstk:: Matrix<double> normalizedCS;
 
 		bool isValid = true;
 

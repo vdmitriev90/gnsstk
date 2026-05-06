@@ -51,7 +51,7 @@
 #include "EquationSystem.hpp"
 #include "DataStructures.hpp"
 
-namespace gpstk
+namespace gnsstk
 {
 
 
@@ -436,6 +436,6 @@ namespace gpstk
 
    }  // GeneralEquations::getPPPEquations()
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk
 
 #endif   // GPSTK_GENERALEQUATIONS_HPP

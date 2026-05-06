@@ -44,7 +44,7 @@
 #include "MWCSDetector.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
 
 
@@ -218,4 +218,4 @@ namespace gpstk
    }  // End of method 'MWCSDetector::getDetection()'
 
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk

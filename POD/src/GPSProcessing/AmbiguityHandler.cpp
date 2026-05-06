@@ -7,18 +7,18 @@ namespace pod
 {
     AmbiguityHandler::AmbiguityHandler(
         const ParametersSet & ambiguites,
-        const gpstk::Vector<double> &state,
-        const  gpstk::Matrix<double> &cov,
+        const gnsstk::Vector<double> &state,
+        const  gnsstk::Matrix<double> &cov,
         int n_core)
         :pAmbs(&ambiguites), pSdFloatSolution(&state), pSdCov(&cov), coreNum(n_core),
-        pAR(std::make_unique<gpstk::ARMLambda>())
+        pAR(std::make_unique<gnsstk::ARMLambda>())
     {
         assert(coreNum + pAmbs->size() == pSdFloatSolution->size());
         assert(pSdCov->rows() == pSdCov->cols());
         assert(pSdFloatSolution->size() == pSdCov->rows());
     };
 
-    void  AmbiguityHandler::fixL1L2(gpstk::IRinex& gData)
+    void  AmbiguityHandler::fixL1L2(gnsstk::IRinex& gData)
     {
         //fill the vector of core parameters with float ambiguities
         Vector<double> coreParamsFloat(coreNum, .0);
@@ -145,9 +145,9 @@ namespace pod
 
     }
     void AmbiguityHandler::storeDDAmbiguities(
-        gpstk::IRinex & gData,
+        gnsstk::IRinex & gData,
         const Vector<double> &ddFixedAmb,
-        const gpstk::SatIDSet &refSVs) const
+        const gnsstk::SatIDSet &refSVs) const
     {
         int i(0);
         for (const auto & amb : *pAmbs)
@@ -162,9 +162,9 @@ namespace pod
             }
         }
     }
-    gpstk::Vector<double>  AmbiguityHandler::fixDDAmbSeparately(
-        const gpstk::Vector<double> & ddAmbFloat,
-        const gpstk::Matrix<double> & ddCov) const
+    gnsstk::Vector<double>  AmbiguityHandler::fixDDAmbSeparately(
+        const gnsstk::Vector<double> & ddAmbFloat,
+        const gnsstk::Matrix<double> & ddCov) const
     {
         Vector<double> ddAmbFixed(ddAmbFloat.size(), .0);
 

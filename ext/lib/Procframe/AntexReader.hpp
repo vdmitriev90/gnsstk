@@ -54,12 +54,12 @@
 #include "Antenna.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       /// Thrown when some problem appeared when reading Antex data
       /// @ingroup exceptiongroup
-   NEW_EXCEPTION_CLASS(InvalidAntex, gpstk::Exception);
+   NEW_EXCEPTION_CLASS(InvalidAntex, gnsstk::Exception);
 
 
       /// @ingroup formattedfile 
@@ -218,8 +218,7 @@ namespace gpstk
           * @warning The antenna returned will be the first one in the Antex
           * file that matches the condition.
           */
-      virtual Antenna getAntennaNoRadome(const std::string& model)
-         throw(ObjectNotFound);
+      virtual Antenna getAntennaNoRadome(const std::string& model);
 
 
          /** Method to get antenna data from a given IGS model.
@@ -236,8 +235,7 @@ namespace gpstk
           * @warning If IGS model doesn't include radome, method
           * 'getAntennaNoRadome()' will be automatically called.
           */
-      virtual Antenna getAntenna(const std::string& model)
-         throw(ObjectNotFound);
+      virtual Antenna getAntenna(const std::string& model);
 
 
          /** Method to get antenna data from a given IGS model and serial.
@@ -253,8 +251,7 @@ namespace gpstk
           * file that matches the conditions.
           */
       virtual Antenna getAntenna( const std::string& model,
-                                  const std::string& serial )
-         throw(ObjectNotFound);
+                                  const std::string& serial );
 
 
          /** Method to get antenna data from a given IGS model and serial, and
@@ -273,8 +270,7 @@ namespace gpstk
           */
       virtual Antenna getAntenna( const std::string& model,
                                   const std::string& serial,
-                                  const CommonTime& epoch )
-         throw(ObjectNotFound);
+                                  const CommonTime& epoch );
 
 
          /** Method to get antenna data from a given serial and a specific
@@ -291,8 +287,7 @@ namespace gpstk
           * file that matches the conditions.
           */
       virtual Antenna getAntenna( const std::string& serial,
-                                  const CommonTime& epoch )
-         throw(ObjectNotFound);
+                                  const CommonTime& epoch );
 
 
          /// Returns if this object is valid.
@@ -349,7 +344,7 @@ namespace gpstk
       double version;
 
          /// Satellite system
-      SatID::SatelliteSystem system;
+     SatelliteSystem system;
 
          /// PCV type
       pcvType type;
@@ -368,8 +363,7 @@ namespace gpstk
 
 
          /// Parse a single header line. Returns label.
-      std::string parseHeaderLine( const std::string& line )
-         throw(InvalidAntex);
+      std::string parseHeaderLine( const std::string& line );
 
 
          /// Fill most Antenna data
@@ -377,10 +371,7 @@ namespace gpstk
 
 
          /// Method to load Antex file header data.
-      virtual void loadHeader(void)
-         throw( InvalidAntex,
-                FFStreamError,
-                gpstk::StringUtils::StringException );
+      virtual void loadHeader(void);
 
 
    }; // End of class 'AntexReader'
@@ -400,6 +391,6 @@ namespace gpstk
 
       //@}
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk
 
 #endif  // GPSTK_ANTEXREADER_HPP

@@ -11,7 +11,7 @@
 namespace pod
 {
     class Solution 
-        : public gpstk::BasicFramework
+        : public gnsstk::BasicFramework
     {
        
     public:
@@ -38,10 +38,10 @@ namespace pod
         
         GnssDataStore_sptr data;
 
-        gpstk::CommandOptionWithArg confFile;
+        gnsstk::CommandOptionWithArg confFile;
 
         // Configuration file reader
-        gpstk::ConfDataReader confReader;
+        gnsstk::ConfDataReader confReader;
 
         CustomSolution solver;
 

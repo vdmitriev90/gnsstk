@@ -42,7 +42,7 @@
 
 #include "Antenna.hpp"
 
-namespace gpstk
+namespace gnsstk
 {
 
 
@@ -91,7 +91,6 @@ namespace gpstk
        * @param[in] dataType     Antenna data type to be fetched
        */
    std::string Antenna::getAntennaData( AntennaDataType dataType ) const
-      throw(InvalidRequest)
    {
 
          // Look for this frequency in the antenna data map
@@ -105,7 +104,7 @@ namespace gpstk
       else
       {
          InvalidRequest e("No data was found for provided data type.");
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
    }  // End of method 'Antenna::getAntennaData()'
 
@@ -119,7 +118,6 @@ namespace gpstk
        * @warning The phase center offset Triple is in UEN system.
        */
    Triple Antenna::getAntennaEccentricity( frequencyType freq ) const
-      throw(InvalidRequest)
    {
 
          // Look for this frequency in the antenna eccentricity map
@@ -135,7 +133,7 @@ namespace gpstk
       else
       {
          InvalidRequest e("No eccentricities were found for this frequency.");
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
 
    }  // End of method 'Antenna::getAntennaEccentricity()'
@@ -153,9 +151,7 @@ namespace gpstk
        *
        * @warning The phase center variation Triple is in UEN system.
        */
-   Triple Antenna::getAntennaPCVariation( frequencyType freq,
-                                          double elevation ) const
-      throw(InvalidRequest)
+   Triple Antenna::getAntennaPCVariation( frequencyType freq, double elevation ) const
    {
 
          // The angle should be measured respect to zenith
@@ -166,7 +162,7 @@ namespace gpstk
           ( angle > zen2 ) )
       {
          InvalidRequest e("Elevation is out of allowed range.");
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
 
          // Look for this frequency in noAziMap
@@ -187,7 +183,7 @@ namespace gpstk
       else
       {
          InvalidRequest e("No data was found for this frequency.");
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
 
    }  // End of method 'Antenna::getAntennaPCVariation()'
@@ -205,12 +201,8 @@ namespace gpstk
        *
        * @warning The phase center variation Triple is in UEN system.
        */
-   Triple Antenna::getAntennaPCVariation( frequencyType freq,
-                                          double elevation,
-                                          double azimuth ) const
-      throw(InvalidRequest)
+   Triple Antenna::getAntennaPCVariation( frequencyType freq, double elevation, double azimuth ) const
    {
-
          // The angle should be measured respect to zenith
       double angle( 90.0 - elevation );
 
@@ -219,7 +211,7 @@ namespace gpstk
           ( angle > zen2 ) )
       {
          //InvalidRequest e("Elevation is out of allowed range.");
-         //GPSTK_THROW(e);
+         //GNSSTK_THROW(e);
 		  return Triple();
       }
 
@@ -271,7 +263,7 @@ namespace gpstk
             else
             {
                InvalidRequest e("No data was found for this azimuth.");
-               GPSTK_THROW(e);
+               GNSSTK_THROW(e);
             }
          }
          else
@@ -299,7 +291,7 @@ namespace gpstk
             else
             {
                InvalidRequest e("Not enough data was found for this azimuth.");
-               GPSTK_THROW(e);
+               GNSSTK_THROW(e);
             }
          }
 
@@ -308,7 +300,7 @@ namespace gpstk
       {
 
          InvalidRequest e("No data was found for this frequency.");
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
 
       }  // End of 'if( it != pcMap.end() )...'
 
@@ -425,4 +417,4 @@ namespace gpstk
 
 
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk

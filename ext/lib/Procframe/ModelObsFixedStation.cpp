@@ -42,9 +42,10 @@
  */
 
 #include "ModelObsFixedStation.hpp"
+#include <GPSLNavEph.hpp>
 
 
-namespace gpstk
+namespace gnsstk
 {
 
 
@@ -74,7 +75,7 @@ namespace gpstk
                                                const double& cRx,
                                                Position::CoordinateSystem s,
                                                EllipsoidModel *ell,
-                                               ReferenceFrame frame )
+                                               const RefFrame& frame )
    {
 
       minElev = 10.0;
@@ -124,7 +125,7 @@ namespace gpstk
    ModelObsFixedStation::ModelObsFixedStation( const Position& RxCoordinates,
                                                IonoModelStore& dIonoModel,
                                                TropModel& dTropoModel,
-                                               XvtStore<SatID>& dEphemeris,
+                                               NavLibrary& dEphemeris,
                                                const TypeID& dObservable,
                                                bool usetgd )
    {
@@ -157,7 +158,7 @@ namespace gpstk
        */
    ModelObsFixedStation::ModelObsFixedStation( const Position& RxCoordinates,
                                                IonoModelStore& dIonoModel,
-                                               XvtStore<SatID>& dEphemeris,
+                                               NavLibrary& dEphemeris,
                                                const TypeID& dObservable,
                                                bool usetgd )
    {
@@ -190,7 +191,7 @@ namespace gpstk
        */
    ModelObsFixedStation::ModelObsFixedStation( const Position& RxCoordinates,
                                                TropModel& dTropoModel,
-                                               XvtStore<SatID>& dEphemeris,
+                                               NavLibrary& dEphemeris,
                                                const TypeID& dObservable,
                                                bool usetgd )
    {
@@ -221,7 +222,7 @@ namespace gpstk
        *
        */
    ModelObsFixedStation::ModelObsFixedStation( const Position& RxCoordinates,
-                                               XvtStore<SatID>& dEphemeris,
+                                               NavLibrary& dEphemeris,
                                                const TypeID& dObservable,
                                                bool usetgd )
    {
@@ -247,7 +248,6 @@ namespace gpstk
        */
    SatTypePtrMap& ModelObsFixedStation::Process( const CommonTime& time,
                                                    SatTypePtrMap& gData )
-      throw(ProcessingException)
    {
 
       try
@@ -437,7 +437,7 @@ namespace gpstk
          ProcessingException e( getClassName() + ":"
                                 + u.what() );
 
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
 
       }
 
@@ -455,12 +455,12 @@ namespace gpstk
                                                    const double& cRx,
                                                 Position::CoordinateSystem s,
                                                    EllipsoidModel *ell,
-                                                   ReferenceFrame frame )
+                                                   const RefFrame& frame )
    {
 
       try
       {
-         Position rxpos(aRx, bRx, cRx, s, ell, frame);
+         const Position rxpos(aRx, bRx, cRx, s, ell, frame);
          setInitialRxPosition(rxpos);
          return 0;
       }
@@ -564,28 +564,32 @@ namespace gpstk
 
 
       // Method to get TGD corrections.
-   double ModelObsFixedStation::getTGDCorrections( CommonTime Tr,
-                                                   const XvtStore<SatID>& Eph,
-                                                   SatID sat )
+   double ModelObsFixedStation::getTGDCorrections(const CommonTime& Tr, NavLibrary& ephem, const SatID& satId)
    {
+       try
+       {
+           const NavMessageID nav_id(satId, NavMessageType::Ephemeris);
 
-      try
-      {
-         const GPSEphemerisStore& bce =
-                                 dynamic_cast<const GPSEphemerisStore&>(Eph);
+           // Get the URA index for this satellite
+           NavDataPtr nav_data_ptr = nullptr;
 
-         //bce.findEphemeris(sat,Tr);
+           if (!ephem.find(nav_id, Tr, nav_data_ptr,SVHealth::Any, NavValidityType::Any,NavSearchOrder::User))
+               return 0.0;
 
-         //return ( bce.findEphemeris(sat,Tr).getTgd() * C_MPS );
-         return ( bce.findEphemeris(sat,Tr).Tgd * C_MPS );
-      }
-      catch(...)
-      {
-         return 0.0;
-      }
+           // fixme TODO: remove dynamic cast here
+           const GPSLNavEph* eph = dynamic_cast<GPSLNavEph*>(nav_data_ptr.get());
+           if (eph)
+               return eph->tgd * C_MPS;
+
+           return 0.0;
+       }
+       catch (...)
+       {
+           return 0.0;
+       }
 
    }  // End of method 'ModelObsFixedStation::getTGDCorrections()'
 
 
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk

@@ -46,12 +46,11 @@
 
 #include "WeightBase.hpp"
 #include "EngEphemeris.hpp"
-#include "SP3EphemerisStore.hpp"
-#include "GPSEphemerisStore.hpp"
+#include "NavLibrary.hpp"
 #include "ProcessingClass.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       /// @ingroup DataStructures 
@@ -102,37 +101,13 @@ namespace gpstk
    {
    public:
 
-
-         /// Default constructor
-      ComputeIURAWeights() : pBCEphemeris(NULL), pTabEphemeris(NULL)
-      { };
-
-
          /** Common constructor
           *
           * @param bcephem   GPSEphemerisStore object holding the ephemeris.
           */
-      ComputeIURAWeights(GPSEphemerisStore& bcephem)
-         : pBCEphemeris(&bcephem), pTabEphemeris(NULL)
+      ComputeIURAWeights(NavLibrary& navLib)
+         : navLib_(navLib)
       { };
-
-
-         /** Common constructor
-          *
-          * @param tabephem  SP3EphemerisStore object holding the
-          *                  ephemeris.
-          */
-      ComputeIURAWeights(SP3EphemerisStore& tabephem)
-         : pBCEphemeris(NULL), pTabEphemeris(&tabephem)
-      { };
-
-
-         /** Common constructor
-          *
-          * @param ephem  XvtStore<SatID> object holding the ephemeris.
-          */
-      ComputeIURAWeights(XvtStore<SatID>& ephem)
-      { setDefaultEphemeris(ephem); };
 
 
          /** Returns a satTypeValueMap object, adding the new data generated
@@ -141,8 +116,7 @@ namespace gpstk
           * @param gData     Data object holding the data.
           */
       virtual SatTypePtrMap& Process( const CommonTime& time,
-                                        SatTypePtrMap& gData )
-         throw(ProcessingException);
+                                        SatTypePtrMap& gData );
 
 
          /** Returns a gnnsRinex object, adding the new data generated
@@ -151,34 +125,7 @@ namespace gpstk
           * @param gData    Data object holding the data.
           */
       virtual IRinex& Process(IRinex& gData)
-         throw(ProcessingException)
       { Process(gData.getHeader().epoch, gData.getBody()); return gData; };
-
-
-         /** Method to set the default ephemeris to be used with GNSS
-          *  data structures.
-          *
-          * @param ephem     EphemerisStore object to be used
-          */
-      virtual ComputeIURAWeights& setDefaultEphemeris(XvtStore<SatID>& ephem);
-
-
-         /** Method to set the default ephemeris to be used with GNSS
-          *  data structures.
-          *
-          * @param ephem     GPSEphemerisStore object to be used
-          */
-      virtual ComputeIURAWeights& setDefaultEphemeris(GPSEphemerisStore& ephem)
-      { pBCEphemeris = &ephem; pTabEphemeris = NULL; return (*this); };
-
-
-         /** Method to set the default ephemeris to be used with GNSS
-          *  data structures.
-          *
-          * @param ephem     SP3EphemerisStore object to be used
-          */
-      virtual ComputeIURAWeights& setDefaultEphemeris(SP3EphemerisStore& ephem)
-      { pBCEphemeris = NULL; pTabEphemeris = &ephem; return (*this); };
 
 
          /// Returns a string identifying this object.
@@ -191,43 +138,13 @@ namespace gpstk
 
    protected:
 
-
          /// Pointer to default broadcast ephemeris to be used.
-      GPSEphemerisStore* pBCEphemeris;
-
-
-         /// Pointer to default precise ephemeris to be used.
-      SP3EphemerisStore* pTabEphemeris;
-
-
-         /** Method to really get the weight of a given satellite.
-          *
-          * @param sat           Satellite
-          * @param time          Epoch
-          * @param preciseEph    Precise ephemerisStore object to be used
-          */
-      virtual double getWeight( const SatID& sat,
-                                const CommonTime& time,
-                                const SP3EphemerisStore* preciseEph )
-         throw(InvalidWeights);
-
-
-         /** Method to really get the weight of a given satellite.
-          *
-          * @param sat       Satellite
-          * @param time      Epoch
-          * @param bcEph     Broadcast EphemerisStore object to be used
-          */
-      virtual double getWeight( const SatID& sat,
-                                const CommonTime& time,
-                                const GPSEphemerisStore* bcEph )
-         throw(InvalidWeights);
-
+      NavLibrary& navLib_;
 
    }; // End of class 'ComputeIURAWeights'
 
       //@}
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk
 
 #endif // GPSTK_COMPUTEIURAWEIGHTS_HPP

@@ -3,12 +3,12 @@
 #include"Vector.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
 	/// Thrown when attempting to access a value and the corresponding SatID
 	/// does not exist in the map.
 	/// @ingroup exceptiongroup
-	NEW_EXCEPTION_CLASS(SatIDNotFound, gpstk::Exception);
+	NEW_EXCEPTION_CLASS(SatIDNotFound, gnsstk::Exception);
 
 
 
@@ -41,7 +41,7 @@ namespace gpstk
 		/// @param p Satellite PRN number.
 		/// @param p System the satellite belongs to.
 		satValueMap extractSatID(const int& p,
-			const SatID::SatelliteSystem& s) const;
+			SatelliteSystem s) const;
 
 
 		/// Returns a satValueMap with only these satellites.
@@ -59,7 +59,7 @@ namespace gpstk
 		/// @param p Satellite PRN number.
 		/// @param p System the satellite belongs to.
 		satValueMap& keepOnlySatID(const int& p,
-			const SatID::SatelliteSystem& s);
+			SatelliteSystem s);
 
 
 		/// Modifies this object, keeping only these satellites.
@@ -85,15 +85,13 @@ namespace gpstk
 		 *
 		 * @param satellite     Satellite to be looked for.
 		 */
-		double getValue(const SatID& satellite) const
-			throw(SatIDNotFound);
+		double getValue(const SatID& satellite) const;
 
 
 		/// Returns a reference to the data value (double) with
 		/// corresponding SatID.
 		/// @param satellite Satellite to be looked for.
-		double& operator()(const SatID& satellite)
-			throw(SatIDNotFound);
+		double& operator()(const SatID& satellite);
 
 
 		/// Destructor.

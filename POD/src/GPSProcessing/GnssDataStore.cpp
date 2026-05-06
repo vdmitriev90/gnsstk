@@ -216,24 +216,24 @@ namespace pod
         auto type = (ComputeIonoModel::IonoModelType)confReader->getValueAsInt("CodeIonoCorrType");
         switch (type)
         {
-        case gpstk::ComputeIonoModel::Zero:
+        case gnsstk::ComputeIonoModel::Zero:
             ionoCorrector.setZeroModel();
             break;
-        case gpstk::ComputeIonoModel::Klobuchar:
+        case gnsstk::ComputeIonoModel::Klobuchar:
             if (!loadBceIonoModel())
-                GPSTK_THROW(InvalidRequest("Can't load iono model from Rinex GPS Navigation files."));
+                GNSSTK_THROW(InvalidRequest("Can't load iono model from Rinex GPS Navigation files."));
             break;
-        case gpstk::ComputeIonoModel::Ionex:
+        case gnsstk::ComputeIonoModel::Ionex:
             if (isIonexLoaded)
                 ionoCorrector.setIonosphereMap(ionexStore);
             else
-                GPSTK_THROW(InvalidRequest("Can't load Ionosphere map from Ionex files."));
+                GNSSTK_THROW(InvalidRequest("Can't load Ionosphere map from Ionex files."));
             break;
-        case gpstk::ComputeIonoModel::DualFreq:
+        case gnsstk::ComputeIonoModel::DualFreq:
             ionoCorrector.setDualFreqModel();
             break;
         default:
-            GPSTK_THROW(InvalidRequest("Unknown Ionospheric model type."));
+            GNSSTK_THROW(InvalidRequest("Unknown Ionospheric model type."));
         }
         return true;
     }
@@ -500,7 +500,7 @@ namespace pod
 		}
 	}
 
-	gpstk::Position GnssDataStore::getPosition(std::string siteId)
+	gnsstk::Position GnssDataStore::getPosition(std::string siteId)
 	{
 		Position pos;
 		int i = 0;

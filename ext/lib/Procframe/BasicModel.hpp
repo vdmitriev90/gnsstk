@@ -47,12 +47,10 @@
 
 #include "ProcessingClass.hpp"
 #include "EphemerisRange.hpp"
-#include "EngEphemeris.hpp"
-#include "XvtStore.hpp"
-#include "GPSEphemerisStore.hpp"
+#include "NavLibrary.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
       /// @ingroup GPSsolutions 
       //@{
@@ -113,46 +111,10 @@ namespace gpstk
    {
    public:
 
-         /// Default constructor. Observable C1 will be used for computations
-         /// and satellites with elevation less than 10 degrees will be
-         /// deleted.
-       BasicModel()
-           : minElev(10.0), pDefaultEphemeris(NULL),
-           defaultObservable(TypeID::C1), useTGD(false), addTGD(false),
-           useCdtDot(false),isFirstTime(false), currTime(CommonTime::END_OF_TIME),
-           prevTime(CommonTime::BEGINNING_OF_TIME), defInterval(30)
-      { setInitialRxPosition(); };
+         /// Default constructor deleted - NavLibrary reference is required
+      BasicModel() = delete;
 
 
-         /** Explicit constructor taking as input reference
-          *  station coordinates.
-          *
-          * Those coordinates may be Cartesian (X, Y, Z in meters) or Geodetic
-          * (Latitude, Longitude, Altitude), but defaults to Cartesian.
-          *
-          * Also, a pointer to GeoidModel may be specified, but default is
-          * NULL (in which case WGS84 values will be used).
-          *
-          * @param aRx   first coordinate [ X(m), or latitude (degrees N) ]
-          * @param bRx   second coordinate [ Y(m), or longitude (degrees E) ]
-          * @param cRx   third coordinate [ Z, height above ellipsoid or
-          *              radius, in meters ]
-          * @param s     coordinate system (default is Cartesian, may be set
-          *              to Geodetic).
-          * @param ell   pointer to EllipsoidModel.
-          * @param frame Reference frame associated with this position.
-          */
-      BasicModel( const double& aRx,
-                  const double& bRx,
-                  const double& cRx,
-                  Position::CoordinateSystem s = Position::Cartesian,
-                  EllipsoidModel *ell = NULL,
-                  ReferenceFrame frame = ReferenceFrame::Unknown );
-
-
-         /// Explicit constructor, taking as input a Position object
-         /// containing reference station coordinates.
-      BasicModel(const Position& RxCoordinates);
 
 
          /** Explicit constructor, taking as input reference station
@@ -160,18 +122,17 @@ namespace gpstk
           *  be computed or not.
           *
           * @param RxCoordinates Reference station coordinates.
-          * @param dEphemeris    EphemerisStore object to be used by default.
+          * @param navLib        NavLibrary object to be used.
           * @param dObservable   Observable type to be used by default.
           * @param applyTGD      Whether or not C1 observable will be
           *                      corrected from TGD effect.
-          *
+          * @param addTGD        Whether TGD value will be calculated and added to GDS.
           */
       BasicModel( const Position& RxCoordinates,
-                  XvtStore<SatID>& dEphemeris,
+                  NavLibrary& navLib,
                   const TypeID& dObservable = TypeID::C1,
                   const bool& applyTGD = false,
-                  const bool& addTGD = false
-          );
+                  const bool& addTGD = false );
 
 
          /** Returns a satTypeValueMap object, adding the new data generated
@@ -181,8 +142,7 @@ namespace gpstk
           * @param gData     Data object holding the data.
           */
       virtual SatTypePtrMap& Process( const CommonTime& time,
-                                        SatTypePtrMap& gData )
-         throw(ProcessingException);
+                                        SatTypePtrMap& gData );
 
 
 
@@ -192,7 +152,6 @@ namespace gpstk
           * @param gData    Data object holding the data.
           */
       virtual IRinex& Process(IRinex& gData)
-         throw(ProcessingException)
       { Process(gData.getHeader().epoch, gData.getBody()); return gData; };
 
 
@@ -234,19 +193,13 @@ namespace gpstk
           useCdtDot = use; return (*this);
       };
 
-         /// Method to get a pointer to the default XvtStore<SatID> to be used
-         /// with GNSS data structures.
-      virtual XvtStore<SatID>* getDefaultEphemeris() const
-      { return pDefaultEphemeris; };
+         /// Method to get a reference to the NavLibrary used for ephemeris data.
+      virtual NavLibrary& getNavLibrary()
+      { return navLibrary; };
 
-
-         /** Method to set the default XvtStore<SatID> to be used with GNSS
-          *  data structures.
-          *
-          * @param ephem     XvtStore<SatID> object to be used by default
-          */
-      virtual BasicModel& setDefaultEphemeris(XvtStore<SatID>& ephem)
-      { pDefaultEphemeris = &ephem; return (*this); };
+         /// Method to get a const reference to the NavLibrary used for ephemeris data.
+      virtual const NavLibrary& getNavLibrary() const
+      { return navLibrary; };
 
 
          /// Either estimated or "a priori" position of receiver
@@ -269,9 +222,8 @@ namespace gpstk
       double minElev;
 
 
-         /// Pointer to default XvtStore<SatID> object when working with GNSS
-         /// data structures.
-      XvtStore<SatID>* pDefaultEphemeris;
+         /// Reference to NavLibrary object for ephemeris data.
+      NavLibrary& navLibrary;
 
 
          /// Default observable to be used when fed with GNSS data structures.
@@ -303,10 +255,9 @@ namespace gpstk
       virtual int setInitialRxPosition( const double& aRx,
                                         const double& bRx,
                                         const double& cRx,
-                           Position::CoordinateSystem s = Position::Cartesian,
+                                        Position::CoordinateSystem s = Position::Cartesian,
                                         EllipsoidModel *ell = NULL,
-                           ReferenceFrame frame = ReferenceFrame::Unknown );
-
+                                        const RefFrame& frame = RefFrame());
 
          /// Method to set the initial (a priori) position of receiver.
       virtual int setInitialRxPosition(const Position& RxCoordinates);
@@ -317,16 +268,12 @@ namespace gpstk
 
 
          /// Method to get TGD corrections.
-      virtual double getTGDCorrections( CommonTime Tr,
-                                        const XvtStore<SatID>& Eph,
-                                        SatID sat )
-         throw();
-
+      virtual double getTGDCorrections(const CommonTime& Tr, const SatID& sat);
 
    }; // End of class 'BasicModel'
 
       //@}
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk
 
 #endif   // GPSTK_BASICMODEL_HPP

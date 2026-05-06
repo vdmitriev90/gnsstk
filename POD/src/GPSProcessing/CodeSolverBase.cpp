@@ -64,7 +64,7 @@ namespace pod
                     C1 = rod.getObs(it.first, ids.at(TypeID::C1),roh).data;
                     
                 }
-                catch (gpstk::Exception &e)
+                catch (gnsstk::Exception &e)
                 {
                     continue;
                 }
@@ -72,7 +72,7 @@ namespace pod
                 {
                     S1 = rod.getObs(it.first, ids.at(TypeID::S1), roh).data;
                 }
-                catch (gpstk::Exception &e)
+                catch (gnsstk::Exception &e)
                 {
 
                 }
@@ -85,7 +85,7 @@ namespace pod
                     {
                         P2 = rod.getObs(it.first, ids.at(TypeID::P2), roh).data;
                     }
-                    catch (gpstk::Exception &e)
+                    catch (gnsstk::Exception &e)
                     {
                         continue;
                     }
@@ -146,10 +146,10 @@ namespace pod
     }
 
     int CodeSolverBase::solveInter(
-        const gpstk::CommonTime &t,
-        const gpstk::IonoModelStore &iono,
+        const gnsstk::CommonTime &t,
+        const gnsstk::IonoModelStore &iono,
         CodeProcSvData & svsData,
-        gpstk::Matrix<double>& Cov        
+        gnsstk::Matrix<double>& Cov        
     )
     {
         this->iter = 0;
@@ -279,8 +279,8 @@ namespace pod
     }
 
     int CodeSolverBase::solve(
-        const gpstk::CommonTime &t,
-        const gpstk::IonoModelStore &iono,
+        const gnsstk::CommonTime &t,
+        const gnsstk::IonoModelStore &iono,
         CodeProcSvData & svsData
 
     )

@@ -14,15 +14,15 @@
 
 namespace pod
 {
-    typedef std::map<gpstk::TypeID, gpstk::RinexObsID> type2ID;
-    typedef std::map<gpstk::SatID::SatelliteSystem, type2ID> ObsTypes;
+    typedef std::map<gnsstk::TypeID, gnsstk::RinexObsID> type2ID;
+    typedef std::map<gnsstk::SatID::SatelliteSystem, type2ID> ObsTypes;
     struct CodeProcSvData
     {
         struct SvDataItem
         {
             bool use;
-			gpstk::Triple pos;
-			gpstk::Triple alph;
+			gnsstk::Triple pos;
+			gnsstk::Triple alph;
             double pr = 0, resid = 0, snr = 0, el = 0;
         };
       
@@ -44,11 +44,11 @@ namespace pod
 
         ///
         ///try add item to data 
-        bool tryAdd(const gpstk::SatID & id, const SvDataItem & item);
+        bool tryAdd(const gnsstk::SatID & id, const SvDataItem & item);
         
         //
-        //try remove item by gpstk::SatID 
-        bool tryRemove(const gpstk::SatID & id);
+        //try remove item by gnsstk::SatID 
+        bool tryRemove(const gnsstk::SatID & id);
         
         ///
         ///get number of satellies with 'use==true'
@@ -56,7 +56,7 @@ namespace pod
         
         ///
         ///get number of satellies with 'use==true' for given satellie system
-        size_t CodeProcSvData::getNumUsedSv(gpstk::SatID::SatelliteSystem sys) const;
+        size_t CodeProcSvData::getNumUsedSv(gnsstk::SatID::SatelliteSystem sys) const;
         
         ///
         ///get number of parameters for autonomous code position computation 
@@ -65,15 +65,15 @@ namespace pod
         ///
         /// update solution vector length, according to constellations,
         /// available for solution computation
-        void updateSolutionLength(gpstk::Vector<double> & sol) const;
+        void updateSolutionLength(gnsstk::Vector<double> & sol) const;
         
         ///
         ///add system clock corrections to PR residuals vector
-        double appendResid(gpstk::Vector<double> & sol, gpstk::SatID::SatelliteSystem sys) const;
+        double appendResid(gnsstk::Vector<double> & sol, gnsstk::SatID::SatelliteSystem sys) const;
         
         ///
         ///forming  a system of equations for autonomous code position computation 
-        int getEquations(gpstk::Matrix<double>& P, gpstk::Matrix<double>& W, gpstk::Vector<double>& resid);
+        int getEquations(gnsstk::Matrix<double>& P, gnsstk::Matrix<double>& W, gnsstk::Vector<double>& resid);
         
         ///
         /// set all 'use' memebers to true
@@ -86,9 +86,9 @@ namespace pod
         ///
         void clear();
 
-		std::set<gpstk::SatID::SatelliteSystem> satSyst;
+		std::set<gnsstk::SatID::SatelliteSystem> satSyst;
 
-		std::map<gpstk::SatID, SvDataItem> data;
+		std::map<gnsstk::SatID, SvDataItem> data;
 
         friend std::ostream& operator<<(std::ostream& os, const CodeProcSvData& svData);
     };

@@ -48,12 +48,12 @@
 #include "RinexEpoch.h"
 
 
-namespace gpstk
+namespace gnsstk
 {
 
 	/// Thrown when there is a problem processing GDS data.
 	/// @ingroup exceptiongroup
-	NEW_EXCEPTION_CLASS(ProcessingException, gpstk::Exception);
+	NEW_EXCEPTION_CLASS(ProcessingException, gnsstk::Exception);
 
 	/// @ingroup GPSsolutions 
 	//@{
@@ -145,6 +145,6 @@ namespace gpstk
 	//@}
 
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk
 
 #endif   // PROCESSINGCLASS_HPP

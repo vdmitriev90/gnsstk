@@ -50,7 +50,7 @@
 #include<memory>
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       /// @ingroup DataStructures
@@ -440,5 +440,5 @@ namespace gpstk
    typedef std::shared_ptr<IStochasticModel> StochasticModel_sptr;
       //@}
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk
 #endif // GPSTK_STOCHASTICMODEL_HPP

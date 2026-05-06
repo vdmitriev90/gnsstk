@@ -3,13 +3,13 @@
 #include<set>
 #include"TypeID.hpp"
 
-namespace gpstk
+namespace gnsstk
 {
 
 	/// Thrown when attempting to access a value and the corresponding TypeID
 	/// does not exist in the map.
 	/// @ingroup exceptiongroup
-	NEW_EXCEPTION_CLASS(TypeIDNotFound, gpstk::Exception);
+	NEW_EXCEPTION_CLASS(TypeIDNotFound, gnsstk::Exception);
 
 	typedef std::set<TypeID> TypeIDSet;
 
@@ -67,15 +67,13 @@ namespace gpstk
 		 *
 		 * @param type       Type of value to be looked for.
 		 */
-		double getValue(const TypeID& type) const
-			throw(TypeIDNotFound);
+		double getValue(const TypeID& type) const;
 
 
 		/// Returns a reference to the data value (double) with
 		/// corresponding type.
 		/// @param type Type of value to be looked for.
-		double& operator()(const TypeID& type)
-			throw(TypeIDNotFound);
+		double& operator()(const TypeID& type);
 
 
 		/// Destructor.

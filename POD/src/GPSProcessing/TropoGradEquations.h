@@ -10,13 +10,13 @@ namespace pod
     public:
 		TropoGradEquations()
 			:types(
-				{ FilterParameter(gpstk::TypeID::wetMap),
-				FilterParameter(gpstk::TypeID::wetMapNorth),
-				FilterParameter(gpstk::TypeID::wetMapEast)
+				{ FilterParameter(gnsstk::TypeID::wetMap),
+				FilterParameter(gnsstk::TypeID::wetMapNorth),
+				FilterParameter(gnsstk::TypeID::wetMapEast)
 				}),
-			pStochModelZ(std::make_unique<gpstk::RandomWalkModel>()),
-			pStochModelNorth(std::make_unique<gpstk::RandomWalkModel>()),
-			pStochModelEast(std::make_unique<gpstk::RandomWalkModel>())
+			pStochModelZ(std::make_unique<gnsstk::RandomWalkModel>()),
+			pStochModelNorth(std::make_unique<gnsstk::RandomWalkModel>()),
+			pStochModelEast(std::make_unique<gnsstk::RandomWalkModel>())
         {};
 
 		TropoGradEquations(double qPrimeZ, double qPrimeN, double qPrimeE);
@@ -25,34 +25,34 @@ namespace pod
 
 #pragma region Inherited via EquationBase
 
-        virtual void Prepare(gpstk::IRinex & gData) override;
+        virtual void Prepare(gnsstk::IRinex & gData) override;
 
-        virtual void updateH(const gpstk::IRinex& gData, const gpstk::TypeIDSet& types, gpstk::Matrix<double>& H, int& col_0) override;
+        virtual void updateH(const gnsstk::IRinex& gData, const gnsstk::TypeIDSet& types, gnsstk::Matrix<double>& H, int& col_0) override;
         
         virtual  ParametersSet getParameters() const override
         { return types; }
         
-        virtual void updatePhi(gpstk::Matrix<double>& Phi, int & index) const override;
+        virtual void updatePhi(gnsstk::Matrix<double>& Phi, int & index) const override;
 
-        virtual void updateQ(gpstk::Matrix<double>& Q, int & index) const override;
+        virtual void updateQ(gnsstk::Matrix<double>& Q, int & index) const override;
 
-        virtual void defStateAndCovariance(gpstk::Vector<double>& x, gpstk::Matrix<double>& P, int & index) const override;
+        virtual void defStateAndCovariance(gnsstk::Vector<double>& x, gnsstk::Matrix<double>& P, int & index) const override;
 
         virtual int getNumUnknowns() const override;
 
 #pragma endregion
 
-        TropoGradEquations& setModel( gpstk::StochasticModel_uptr model)
+        TropoGradEquations& setModel( gnsstk::StochasticModel_uptr model)
         { pStochModelZ = std::move(model); return *this; }
 
-        gpstk::IStochasticModel* getModel() const
+        gnsstk::IStochasticModel* getModel() const
         { return pStochModelZ.get(); }
 
 #pragma region Fields
 
-        gpstk::StochasticModel_uptr pStochModelZ;
-        gpstk::StochasticModel_uptr pStochModelNorth;
-        gpstk::StochasticModel_uptr pStochModelEast;
+        gnsstk::StochasticModel_uptr pStochModelZ;
+        gnsstk::StochasticModel_uptr pStochModelNorth;
+        gnsstk::StochasticModel_uptr pStochModelEast;
 
 		ParametersSet types;
 

@@ -11,7 +11,7 @@ namespace pod
          return CivilTime(t).printf(fmt);
      }
 	 
-	 bool StringUtils::tryParseTime(const std::string&  str, gpstk::CommonTime& time)
+	 bool StringUtils::tryParseTime(const std::string&  str, gnsstk::CommonTime& time)
 	 {
 		 time = CommonTime::BEGINNING_OF_TIME;
 		 const char* pattern = "([\\d]{4})-([\\d]{2})-([\\d]{2}) ([\\d]{2}):([\\d]{2}):([\\d.]{5,6})";

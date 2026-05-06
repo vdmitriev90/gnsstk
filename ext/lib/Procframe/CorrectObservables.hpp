@@ -46,7 +46,7 @@
 
 #include <string>
 #include "ProcessingClass.hpp"
-#include "XvtStore.hpp"
+#include "NavLibrary.hpp"
 #include "Triple.hpp"
 #include "Position.hpp"
 #include "Antenna.hpp"
@@ -54,7 +54,7 @@
 
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       /// @ingroup DataStructures 
@@ -122,23 +122,13 @@ namespace gpstk
    {
    public:
 
-         /// Default constructor
-      CorrectObservables()
-         : pEphemeris(NULL), nominalPos(0.0, 0.0, 0.0), usePCV(true), useAzimuth(false),
-           L1PhaseCenter(0.0, 0.0, 0.0), L2PhaseCenter(0.0, 0.0, 0.0),
-           L5PhaseCenter(0.0, 0.0, 0.0), L6PhaseCenter(0.0, 0.0, 0.0),
-           L7PhaseCenter(0.0, 0.0, 0.0), L8PhaseCenter(0.0, 0.0, 0.0),
-           monumentVector(0.0, 0.0, 0.0), extraBiases(0.0, 0.0, 0.0)
-      { };
-
-
          /** Common constructor
           *
           * @param ephem     Satellite ephemeris.
           *
           */
-      CorrectObservables(XvtStore<SatID>& ephem)
-         : pEphemeris(&ephem), nominalPos(0.0, 0.0, 0.0), usePCV(true), useAzimuth(false),
+      CorrectObservables(NavLibrary& ephem)
+         : pEphemeris(ephem), nominalPos(0.0, 0.0, 0.0), usePCV(true), useAzimuth(false),
            L1PhaseCenter(0.0, 0.0, 0.0), L2PhaseCenter(0.0, 0.0, 0.0),
            L5PhaseCenter(0.0, 0.0, 0.0), L6PhaseCenter(0.0, 0.0, 0.0),
            L7PhaseCenter(0.0, 0.0, 0.0), L8PhaseCenter(0.0, 0.0, 0.0),
@@ -152,9 +142,9 @@ namespace gpstk
           * @param stapos    Nominal position of receiver station.
           *
           */
-      CorrectObservables( XvtStore<SatID>& ephem,
+      CorrectObservables( NavLibrary& ephem,
                           const Position& stapos )
-         : pEphemeris(&ephem), nominalPos(stapos), usePCV(true), useAzimuth(false),
+         : pEphemeris(ephem), nominalPos(stapos), usePCV(true), useAzimuth(false),
            L1PhaseCenter(0.0, 0.0, 0.0), L2PhaseCenter(0.0, 0.0, 0.0),
            L5PhaseCenter(0.0, 0.0, 0.0), L6PhaseCenter(0.0, 0.0, 0.0),
            L7PhaseCenter(0.0, 0.0, 0.0), L8PhaseCenter(0.0, 0.0, 0.0),
@@ -170,10 +160,10 @@ namespace gpstk
           *                      Antex file.
           *
           */
-      CorrectObservables( XvtStore<SatID>& ephem,
+      CorrectObservables( NavLibrary& ephem,
                           const Position& stapos,
                           const Antenna& antennaObj )
-         : pEphemeris(&ephem), nominalPos(stapos), antenna(antennaObj),
+         : pEphemeris(ephem), nominalPos(stapos), antenna(antennaObj),
 		   usePCV(true), useAzimuth(true),
            L1PhaseCenter(0.0, 0.0, 0.0), L2PhaseCenter(0.0, 0.0, 0.0),
            L5PhaseCenter(0.0, 0.0, 0.0), L6PhaseCenter(0.0, 0.0, 0.0),
@@ -190,10 +180,10 @@ namespace gpstk
           *                  to ARP ([UEN]).
           *
           */
-      CorrectObservables( XvtStore<SatID>& ephem,
+      CorrectObservables( NavLibrary& ephem,
                           const Position& stapos,
                           const Triple& L1pc )
-         : pEphemeris(&ephem), nominalPos(stapos), usePCV(true), useAzimuth(false),
+         : pEphemeris(ephem), nominalPos(stapos), usePCV(true), useAzimuth(false),
            L1PhaseCenter(L1pc), L2PhaseCenter(0.0, 0.0, 0.0),
            L5PhaseCenter(0.0, 0.0, 0.0), L6PhaseCenter(0.0, 0.0, 0.0),
            L7PhaseCenter(0.0, 0.0, 0.0), L8PhaseCenter(0.0, 0.0, 0.0),
@@ -211,11 +201,11 @@ namespace gpstk
           *                  to ARP ([UEN]).
           *
           */
-      CorrectObservables( XvtStore<SatID>& ephem,
+      CorrectObservables( NavLibrary& ephem,
                           const Position& stapos,
                           const Triple& L1pc,
                           const Triple& L2pc )
-         : pEphemeris(&ephem), nominalPos(stapos), usePCV(true), useAzimuth(false),
+         : pEphemeris(ephem), nominalPos(stapos), usePCV(true), useAzimuth(false),
            L1PhaseCenter(L1pc), L2PhaseCenter(L2pc),
            L5PhaseCenter(0.0, 0.0, 0.0), L6PhaseCenter(0.0, 0.0, 0.0),
            L7PhaseCenter(0.0, 0.0, 0.0), L8PhaseCenter(0.0, 0.0, 0.0),
@@ -235,12 +225,12 @@ namespace gpstk
           *                  effects ([UEN]).
           *
           */
-      CorrectObservables( XvtStore<SatID>& ephem,
+      CorrectObservables( NavLibrary& ephem,
                           const Position& stapos,
                           const Triple& L1pc,
                           const Triple& L2pc,
                           const Triple& extra )
-         : pEphemeris(&ephem), nominalPos(stapos), usePCV(true), useAzimuth(false),
+         : pEphemeris(ephem), nominalPos(stapos), usePCV(true), useAzimuth(false),
            L1PhaseCenter(L1pc), L2PhaseCenter(L2pc),
            L5PhaseCenter(0.0, 0.0, 0.0), L6PhaseCenter(0.0, 0.0, 0.0),
            L7PhaseCenter(0.0, 0.0, 0.0), L8PhaseCenter(0.0, 0.0, 0.0),
@@ -261,13 +251,13 @@ namespace gpstk
           *                  effects ([UEN]).
           *
           */
-      CorrectObservables( XvtStore<SatID>& ephem,
+      CorrectObservables( NavLibrary& ephem,
                           const Position& stapos,
                           const Triple& L1pc,
                           const Triple& L2pc,
                           const Triple& monument,
                           const Triple& extra )
-         : pEphemeris(&ephem), nominalPos(stapos), usePCV(true), useAzimuth(false),
+         : pEphemeris(ephem), nominalPos(stapos), usePCV(true), useAzimuth(false),
            L1PhaseCenter(L1pc), L2PhaseCenter(L2pc),
            L5PhaseCenter(0.0, 0.0, 0.0), L6PhaseCenter(0.0, 0.0, 0.0),
            L7PhaseCenter(0.0, 0.0, 0.0), L8PhaseCenter(0.0, 0.0, 0.0),
@@ -296,7 +286,7 @@ namespace gpstk
           *                  effects ([UEN]).
           *
           */
-      CorrectObservables( XvtStore<SatID>& ephem,
+      CorrectObservables( NavLibrary& ephem,
                           const Position& stapos,
                           const Triple& L1pc,
                           const Triple& L2pc,
@@ -306,7 +296,7 @@ namespace gpstk
                           const Triple& L8pc,
                           const Triple& monument,
                           const Triple& extra )
-         : pEphemeris(&ephem), nominalPos(stapos), usePCV(true), useAzimuth(false),
+         : pEphemeris(ephem), nominalPos(stapos), usePCV(true), useAzimuth(false),
            L1PhaseCenter(L1pc), L2PhaseCenter(L2pc),
            L5PhaseCenter(L5pc), L6PhaseCenter(L6pc),
            L7PhaseCenter(L7pc), L8PhaseCenter(L8pc),
@@ -321,8 +311,7 @@ namespace gpstk
           * @param gData     Data object holding the data.
           */
       virtual SatTypePtrMap& Process( const CommonTime& time,
-                                        SatTypePtrMap& gData )
-         throw(ProcessingException);
+                                        SatTypePtrMap& gData );
 
 
          /** Returns a gnnsRinex object, adding the new data generated when
@@ -331,7 +320,6 @@ namespace gpstk
           * @param gData    Data object holding the data.
           */
       virtual IRinex& Process(IRinex& gData)
-         throw(ProcessingException)
       { Process(gData.getHeader().epoch, gData.getBody()); return gData; };
 
 
@@ -346,22 +334,6 @@ namespace gpstk
           */
       virtual CorrectObservables& setNominalPosition(const Position& stapos)
       { nominalPos = stapos; return (*this); };
-
-
-         /** Returns a pointer to the satellite ephemeris object
-          *  currently in use.
-          */
-      virtual XvtStore<SatID> *getEphemeris(void) const
-      { return pEphemeris; };
-
-
-         /** Sets satellite ephemeris object to be used.
-          *
-          * @param ephem     Satellite ephemeris object.
-          */
-      virtual CorrectObservables& setEphemeris(XvtStore<SatID>& ephem)
-      { pEphemeris = &ephem; return (*this); };
-
 
          /** Returns position of antenna L1 phase center with respect
           *  to ARP ([UEN]).
@@ -545,7 +517,7 @@ namespace gpstk
 
 
          /// Satellite ephemeris to be used.
-      XvtStore<SatID> *pEphemeris;
+      NavLibrary& pEphemeris;
 
 
          /// Receiver position.
@@ -598,6 +570,6 @@ namespace gpstk
 
       //@}
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk
 
 #endif  // GPSTK_CORRECTOBSERVABLES_HPP

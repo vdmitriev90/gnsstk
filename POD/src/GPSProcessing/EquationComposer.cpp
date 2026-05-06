@@ -4,7 +4,7 @@ using namespace gpstk;
 
 namespace pod
 {
-   const std::map<gpstk::TypeID, double> EquationComposer::weigthFactors{
+   const std::map<gnsstk::TypeID, double> EquationComposer::weigthFactors{
 
         //code pseudorange weight factor
         { TypeID::prefitC, 1.0  }      ,
@@ -34,7 +34,7 @@ namespace pod
         }
     }
 
-    void EquationComposer::updateH(gpstk::IRinex& gData, gpstk::Matrix<double>& H)
+    void EquationComposer::updateH(gnsstk::IRinex& gData, gnsstk::Matrix<double>& H)
     {
         int numSVs = gData.getBody().size();
         int numMeasTypes = measTypes().size();
@@ -97,7 +97,7 @@ namespace pod
             eq->updateQ(Q, i);
     }
 
-	void EquationComposer::updateW(const IRinex& gData, gpstk::Matrix<double>& weigthMatrix)
+	void EquationComposer::updateW(const IRinex& gData, gnsstk::Matrix<double>& weigthMatrix)
 	{
 		size_t  numsv = gData.getBody().size();
 		// Generate the appropriate weights matrix
@@ -132,7 +132,7 @@ namespace pod
 					+ TypeID::tStrings[observable.type];
 
 				InvalidRequest e(msg);
-				GPSTK_THROW(e)
+				GNSSTK_THROW(e)
 			}
 
 			for (size_t i = 0; i < numsv; i++)
@@ -141,7 +141,7 @@ namespace pod
 		}
 	}
 
-    void EquationComposer::updateMeas(const IRinex& gData, gpstk::Vector<double>& measVector)
+    void EquationComposer::updateMeas(const IRinex& gData, gnsstk::Vector<double>& measVector)
     {
         measVector.resize(numMeas, 0.0);
         int j = 0;
@@ -163,7 +163,7 @@ namespace pod
         return res;
     }
 
-    void EquationComposer::updateKfState(gpstk::Vector<double>& currState, gpstk::Matrix<double>& currErrorCov) const
+    void EquationComposer::updateKfState(gnsstk::Vector<double>& currState, gnsstk::Matrix<double>& currErrorCov) const
     {
         initKfState(currState, currErrorCov);
 
@@ -189,7 +189,7 @@ namespace pod
         }
     }
 
-    void EquationComposer::storeKfState(const gpstk::Vector<double>& currState, const gpstk::Matrix<double>& currErrorCov)
+    void EquationComposer::storeKfState(const gnsstk::Vector<double>& currState, const gnsstk::Matrix<double>& currErrorCov)
     {
         int row = 0;
         for (const auto& it_row : unknowns)
@@ -206,7 +206,7 @@ namespace pod
         }
     }
 
-    void EquationComposer::initKfState(gpstk::Vector<double>& state, gpstk::Matrix<double>& cov) const
+    void EquationComposer::initKfState(gnsstk::Vector<double>& state, gnsstk::Matrix<double>& cov) const
     {
         state.resize(numUnknowns, 0.0);
         cov.resize(numUnknowns, numUnknowns, 0.0);
@@ -216,7 +216,7 @@ namespace pod
             eq->defStateAndCovariance(state, cov, i);
     }
 
-	void EquationComposer::saveResiduals(gpstk::IRinex& gData, const gpstk::Vector<double>& residuals) const
+	void EquationComposer::saveResiduals(gnsstk::IRinex& gData, const gnsstk::Vector<double>& residuals) const
 	{
 		int resNum = residuals.size();
 		int satNum = gData.getBody().size();
@@ -231,7 +231,7 @@ namespace pod
 	}
 
 	std::vector<double> EquationComposer::
-		getResiduals(const gpstk::Vector<double>& residuals, const TypeIDSet& types) const
+		getResiduals(const gnsstk::Vector<double>& residuals, const TypeIDSet& types) const
 	{
 		int nsv = residuals.size() / residTypes().size();
 	

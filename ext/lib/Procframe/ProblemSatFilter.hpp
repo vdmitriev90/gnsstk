@@ -48,7 +48,7 @@
 #include "ProcessingClass.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       /// @ingroup GPSsolutions
@@ -97,8 +97,7 @@ namespace gpstk
           * @param gData     Data object holding the data.
           */
       virtual SatTypePtrMap& Process( const CommonTime& epoch,
-                                        SatTypePtrMap& gData )
-         throw(ProcessingException);
+                                        SatTypePtrMap& gData );
 
 
 
@@ -107,8 +106,7 @@ namespace gpstk
           *
           * @param gData    Data object holding the data.
           */
-      virtual IRinex& Process(IRinex& gData)
-         throw(ProcessingException);
+      virtual IRinex& Process(IRinex& gData);
 
 
          /// Returns a string identifying this object.

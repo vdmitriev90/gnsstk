@@ -5,7 +5,7 @@
 namespace pod
 {
     class NumSatFilter
-        :public gpstk::ProcessingClass
+        :public gnsstk::ProcessingClass
     {
     private:
         static std::map<SlnType, int> minSatbySsForSt;
@@ -14,7 +14,7 @@ namespace pod
         virtual ~NumSatFilter() {};
 
 
-        virtual gpstk::IRinex & Process(gpstk::IRinex & gData) override;
+        virtual gnsstk::IRinex & Process(gnsstk::IRinex & gData) override;
         
         virtual std::string getClassName(void) const override;
 

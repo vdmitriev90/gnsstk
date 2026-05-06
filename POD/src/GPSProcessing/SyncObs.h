@@ -5,20 +5,20 @@
 
 namespace pod
 {
-    class SyncObs : public gpstk::Synchronize
+    class SyncObs : public gnsstk::Synchronize
     {
     public:
         SyncObs(const std::list<std::string>& files,
-            gpstk::IRinex& roverData,
+            gnsstk::IRinex& roverData,
             const double tol = 1 );
 
         virtual ~SyncObs();
 
         //get the const reference to BASE receiver observation header data
-        virtual const  gpstk::Rinex3ObsHeader& getRefHeader() const
+        virtual const  gnsstk::Rinex3ObsHeader& getRefHeader() const
         { return header; }
 
-        virtual gpstk::IRinex& Process(gpstk::IRinex& gData);
+        virtual gnsstk::IRinex& Process(gnsstk::IRinex& gData);
 
     private:
 
@@ -26,7 +26,7 @@ namespace pod
         void toNextFile();
         
         // current reference station data stream
-        gpstk::Rinex3ObsStream rin;
+        gnsstk::Rinex3ObsStream rin;
         
         //reference station data files
         std::list<std::string> rinFiles;
@@ -35,7 +35,7 @@ namespace pod
         std::string curFile;
         
         // current reference station data header 
-        gpstk::Rinex3ObsHeader header;
+        gnsstk::Rinex3ObsHeader header;
     };
 }
 #endif // !POD_SYNC_OBS_H

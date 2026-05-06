@@ -127,7 +127,7 @@ namespace pod
         if ((E.rows() != 3) || (E.cols() != 3))
         {
             Exception e("Wrong input for computeVW");
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
         }
 
         Matrix<double> cs = gmData_.unnormalizedCS;
@@ -186,7 +186,7 @@ namespace pod
         if ((E.rows() != 3) || (E.cols() != 3))
         {
             Exception e("Wrong input for computeVW");
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
         }
 
         Matrix<double> cs = gmData_.unnormalizedCS;
@@ -249,7 +249,7 @@ namespace pod
         if ((E.rows() != 3) || (E.cols() != 3))
         {
             Exception e("Wrong input for gravityGradient");
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
         }
 
         Matrix<double> cs = gmData_.unnormalizedCS;

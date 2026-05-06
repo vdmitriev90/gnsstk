@@ -45,9 +45,9 @@
 
 
 using namespace std;
-using namespace gpstk::StringUtils;
+using namespace gnsstk::StringUtils;
 
-namespace gpstk
+namespace gnsstk
 {
 
 
@@ -78,7 +78,6 @@ namespace gpstk
 
       // Parse a single header line. Returns label.
    string AntexReader::parseHeaderLine( const std::string& line )
-      throw(InvalidAntex)
    {
 
          // Get label. Remove trailing and leading blanks
@@ -95,20 +94,20 @@ namespace gpstk
          {
             case ' ':
             case 'G':
-               system = SatID::systemGPS;
+               system = SatelliteSystem::GPS;
                break;
             case 'R':
-               system = SatID::systemGlonass;
+               system = SatelliteSystem::Glonass;
                break;
             case 'E':
-               system = SatID::systemGalileo;
+               system = SatelliteSystem::Galileo;
                break;
             case 'M':
-               system = SatID::systemMixed;
+               system = SatelliteSystem::Mixed;
                break;
             default:
                InvalidAntex e("Invalid GNSS system in Antex header.");
-               GPSTK_THROW(e);
+               GNSSTK_THROW(e);
          }
 
          return label;
@@ -137,7 +136,7 @@ namespace gpstk
                break;
             default:
                InvalidAntex e("Invalid PCV type in Antex header.");
-               GPSTK_THROW(e);
+               GNSSTK_THROW(e);
          }
 
          return label;
@@ -519,9 +518,6 @@ namespace gpstk
 
       // Method to load Antex file header data.
    void AntexReader::loadHeader(void)
-      throw( InvalidAntex,
-             FFStreamError,
-             gpstk::StringUtils::StringException )
    {
 
       try
@@ -545,7 +541,7 @@ namespace gpstk
       }  // End of try block
       catch (InvalidAntex& ia)
       {
-         GPSTK_RETHROW(ia);
+         GNSSTK_RETHROW(ia);
       }
       catch (EndOfFile& e)
       {
@@ -554,7 +550,7 @@ namespace gpstk
       catch (...)
       {
          InvalidAntex ia("Unknown error when reading Antex header.");
-         GPSTK_THROW(ia);
+         GNSSTK_THROW(ia);
       }
 
    } // End of method 'AntexReader::loadHeader()'
@@ -572,7 +568,6 @@ namespace gpstk
        * file that matches the condition.
        */
    Antenna AntexReader::getAntennaNoRadome(const string& model)
-      throw(ObjectNotFound)
    {
 
          // Flag that signals if we found the antenna
@@ -661,7 +656,7 @@ namespace gpstk
                // We need to close this data stream
             (*this).close();
 
-            GPSTK_RETHROW(ia);
+            GNSSTK_RETHROW(ia);
          }
          catch( EndOfFile& e )
          {
@@ -669,7 +664,7 @@ namespace gpstk
             (*this).close();
 
             ObjectNotFound notFound("Antenna not found in Antex file.");
-            GPSTK_THROW(notFound);
+            GNSSTK_THROW(notFound);
          }
          catch(...)
          {
@@ -677,7 +672,7 @@ namespace gpstk
             (*this).close();
 
             InvalidAntex ia("Unknown error when reading Antex header.");
-            GPSTK_THROW(ia);
+            GNSSTK_THROW(ia);
          }
 
       }  // End of 'if( !antennaFound )...'
@@ -708,7 +703,6 @@ namespace gpstk
        * 'getAntennaNoRadome()' will be automatically called.
        */
    Antenna AntexReader::getAntenna(const string& model)
-      throw(ObjectNotFound)
    {
 
          // Flag that signals if we found the antenna
@@ -821,7 +815,7 @@ namespace gpstk
                // We need to close this data stream
             (*this).close();
 
-            GPSTK_RETHROW(ia);
+            GNSSTK_RETHROW(ia);
          }
          catch( EndOfFile& e )
          {
@@ -829,7 +823,7 @@ namespace gpstk
             (*this).close();
 
             ObjectNotFound notFound("Antenna not found in Antex file.");
-            GPSTK_THROW(notFound);
+            GNSSTK_THROW(notFound);
          }
          catch(...)
          {
@@ -837,7 +831,7 @@ namespace gpstk
             (*this).close();
 
             InvalidAntex ia("Unknown error when reading Antex header.");
-            GPSTK_THROW(ia);
+            GNSSTK_THROW(ia);
          }
 
       }  // End of 'if( !antennaFound )...'
@@ -867,7 +861,6 @@ namespace gpstk
        */
    Antenna AntexReader::getAntenna( const string& model,
                                     const string& serial )
-      throw(ObjectNotFound)
    {
 
          // Flag that signals if we found the antenna
@@ -991,7 +984,7 @@ namespace gpstk
                // We need to close this data stream
             (*this).close();
 
-            GPSTK_RETHROW(ia);
+            GNSSTK_RETHROW(ia);
          }
          catch( EndOfFile& e )
          {
@@ -999,7 +992,7 @@ namespace gpstk
             (*this).close();
 
             ObjectNotFound notFound("Antenna not found in Antex file.");
-            GPSTK_THROW(notFound);
+            GNSSTK_THROW(notFound);
          }
          catch(...)
          {
@@ -1007,7 +1000,7 @@ namespace gpstk
             (*this).close();
 
             InvalidAntex ia("Unknown error when reading Antex header.");
-            GPSTK_THROW(ia);
+            GNSSTK_THROW(ia);
          }
 
       }  // End of 'if( !antennaFound )...'
@@ -1040,7 +1033,6 @@ namespace gpstk
    Antenna AntexReader::getAntenna( const string& model,
                                     const string& serial,
                                     const CommonTime& epoch )
-      throw(ObjectNotFound)
    {
 
          // Flag that signals if we found the antenna
@@ -1197,7 +1189,7 @@ namespace gpstk
                // We need to close this data stream
             (*this).close();
 
-            GPSTK_RETHROW(ia);
+            GNSSTK_RETHROW(ia);
          }
          catch( EndOfFile& e )
          {
@@ -1205,7 +1197,7 @@ namespace gpstk
             (*this).close();
 
             ObjectNotFound notFound("Antenna not found in Antex file.");
-            GPSTK_THROW(notFound);
+            GNSSTK_THROW(notFound);
          }
          catch(...)
          {
@@ -1213,7 +1205,7 @@ namespace gpstk
             (*this).close();
 
             InvalidAntex ia("Unknown error when reading Antex header.");
-            GPSTK_THROW(ia);
+            GNSSTK_THROW(ia);
          }
 
       }  // End of 'if( !antennaFound )...'
@@ -1244,7 +1236,6 @@ namespace gpstk
        */
    Antenna AntexReader::getAntenna( const string& serial,
                                     const CommonTime& epoch )
-      throw(ObjectNotFound)
    {
 
          // Flag that signals if we found the antenna
@@ -1385,7 +1376,7 @@ namespace gpstk
                // We need to close this data stream
             (*this).close();
 
-            GPSTK_RETHROW(ia);
+            GNSSTK_RETHROW(ia);
          }
          catch( EndOfFile& e )
          {
@@ -1393,7 +1384,7 @@ namespace gpstk
             (*this).close();
 
             ObjectNotFound notFound("Antenna not found in Antex file.");
-            GPSTK_THROW(notFound);
+            GNSSTK_THROW(notFound);
          }
          catch(...)
          {
@@ -1401,7 +1392,7 @@ namespace gpstk
             (*this).close();
 
             InvalidAntex ia("Unknown error when reading Antex header.");
-            GPSTK_THROW(ia);
+            GNSSTK_THROW(ia);
          }
 
       }  // End of 'if( !antennaFound )...'
@@ -1502,16 +1493,16 @@ namespace gpstk
       s << "Satellite system: ";
       switch (system)
       {
-         case SatID::systemGPS:
+         case SatelliteSystem::GPS:
             s << "GPS";
             break;
-         case SatID::systemGlonass:
+         case SatelliteSystem::Glonass:
             s << "GLONASS";
             break;
-         case SatID::systemGalileo:
+         case SatelliteSystem::Galileo:
             s << "Galileo";
             break;
-         case SatID::systemMixed:
+         case SatelliteSystem::Mixed:
             s << "Mixed";
             break;
 		 default: break; //NB Determine if additional enumeration values need to be handled
@@ -1561,4 +1552,4 @@ namespace gpstk
    }  // End of method 'AntexReader::dump()'
 
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk

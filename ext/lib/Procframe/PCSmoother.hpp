@@ -47,7 +47,7 @@
 #include "CodeSmoother.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       /// @ingroup DataStructures
@@ -140,8 +140,7 @@ namespace gpstk
           *
           * @param gData     Data object holding the data.
           */
-      virtual SatTypePtrMap& Process(SatTypePtrMap& gData)
-         throw(ProcessingException);
+      virtual SatTypePtrMap& Process(SatTypePtrMap& gData);
 
 
          /// Method to get the default return type being used.
@@ -284,6 +283,6 @@ namespace gpstk
 
       //@}
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk
 
 #endif   // GPSTK_PCSMOOTHER_HPP

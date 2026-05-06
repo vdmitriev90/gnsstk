@@ -43,7 +43,7 @@
 #include "Differentiator.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       // Returns a string identifying this object.
@@ -133,7 +133,6 @@ namespace gpstk
        */
    double Differentiator::getValue( const SourceID& source,
                                     const SatID& satellite ) const
-      throw( SourceIDNotFound, SatIDNotFound )
    {
 
          // Look for the SourceID
@@ -151,13 +150,13 @@ namespace gpstk
          }
          else
          {
-            GPSTK_THROW(SatIDNotFound("SatID not found in map"));
+            GNSSTK_THROW(SatIDNotFound("SatID not found in map"));
          }
 
       }
       else
       {
-         GPSTK_THROW(SourceIDNotFound("SourceID not found in map"));
+         GNSSTK_THROW(SourceIDNotFound("SourceID not found in map"));
       }
 
    }  // End of method 'Differentiator::getValue()'
@@ -174,7 +173,6 @@ namespace gpstk
    void Differentiator::Compute( const CommonTime& epoch,
                                  const SourceID& source,
                                  const SatTypePtrMap& gData )
-      throw(ProcessingException)
    {
 
          // Clear the std::map with the derivatives
@@ -330,7 +328,7 @@ namespace gpstk
          ProcessingException e( getClassName() + ":"
                                 + u.what() );
 
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
 
       }
 
@@ -345,7 +343,6 @@ namespace gpstk
        * @param gData    Data object holding the data.
        */
    IRinex& Differentiator::Process(IRinex& gData)
-      throw(ProcessingException)
    {
 
       try
@@ -362,7 +359,7 @@ namespace gpstk
          ProcessingException e( getClassName() + ":"
                                 + u.what() );
 
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
 
       }
 
@@ -449,11 +446,11 @@ namespace gpstk
    //      ProcessingException e( getClassName() + ":"
    //                             + u.what() );
 
-   //      GPSTK_THROW(e);
+   //      GNSSTK_THROW(e);
 
    //   }
 
    //}  // End of method 'Differentiator::Process()'
 
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk

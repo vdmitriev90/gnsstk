@@ -44,7 +44,7 @@
 #include "MatrixFunctors.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       // Returns a string identifying this object.
@@ -130,7 +130,6 @@ namespace gpstk
    int CodeKalmanSolver::Compute( const Vector<double>& prefitResiduals,
                                   const Matrix<double>& designMatrix,
                                   const Vector<double>& weightVector )
-      throw(InvalidSolver)
    {
 
          // By default, results are invalid
@@ -144,7 +143,7 @@ namespace gpstk
          InvalidSolver e("prefitResiduals size does not match dimension \
 of weightVector");
 
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
 
       Matrix<double> wMatrix(wSize,wSize,0.0);  // Declare a weight matrix
@@ -185,7 +184,6 @@ of weightVector");
    int CodeKalmanSolver::Compute( const Vector<double>& prefitResiduals,
                                   const Matrix<double>& designMatrix,
                                   const Matrix<double>& weightMatrix )
-      throw(InvalidSolver)
    {
 
          // By default, results are invalid
@@ -194,7 +192,7 @@ of weightVector");
       if (!(weightMatrix.isSquare()))
       {
          InvalidSolver e("Weight matrix is not square");
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
 
       int wRow = static_cast<int>(weightMatrix.rows());
@@ -204,7 +202,7 @@ of weightVector");
          InvalidSolver e("prefitResiduals size does not match dimension of \
 weightMatrix");
 
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
 
       int gRow = static_cast<int>(designMatrix.rows());
@@ -213,14 +211,14 @@ weightMatrix");
          InvalidSolver e("prefitResiduals size does not match dimension \
 of designMatrix");
 
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
 
       if (!(phiMatrix.isSquare()))
       {
          InvalidSolver e("phiMatrix is not square");
 
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
 
       int phiRow = static_cast<int>(phiMatrix.rows());
@@ -229,14 +227,14 @@ of designMatrix");
          InvalidSolver e("prefitResiduals size does not match dimension \
 of phiMatrix");
 
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
 
       if (!(qMatrix.isSquare()))
       {
          InvalidSolver e("qMatrix is not square");
 
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
 
       int qRow = static_cast<int>(qMatrix.rows());
@@ -245,7 +243,7 @@ of phiMatrix");
          InvalidSolver e("prefitResiduals size does not match dimension \
 of qMatrix");
 
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
 
          // After checking sizes, let's invert the matrix of weights in order
@@ -262,7 +260,7 @@ of qMatrix");
          InvalidSolver e("Correct(): Unable to compute measurements noise \
 covariance matrix.");
 
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
 
       try
@@ -276,7 +274,7 @@ covariance matrix.");
       }
       catch(InvalidSolver& e)
       {
-         GPSTK_RETHROW(e);
+         GNSSTK_RETHROW(e);
       }
 
          // Store the solution
@@ -304,7 +302,6 @@ covariance matrix.");
        * @param gData     Data object holding the data.
        */
    IRinex& CodeKalmanSolver::Process(IRinex& gData)
-       throw(ProcessingException)
    {
 
        try
@@ -459,7 +456,7 @@ covariance matrix.");
            ProcessingException e(getClassName() + ":"
                + u.what());
 
-           GPSTK_THROW(e);
+           GNSSTK_THROW(e);
 
        }
 
@@ -492,4 +489,4 @@ covariance matrix.");
    }  // End of method 'CodeKalmanSolver::setCoordinatesModel()'
 
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk

@@ -1,7 +1,7 @@
-# POD/CMakeLists.txt
+# pod/CMakeLists.txt
 
-file( GLOB_RECURSE MY_SOURCE_FILES "src/*.cpp" "src/*.c" )
-file( GLOB_RECURSE MY_INC_FILES "src/*.h" "src/*.hpp" )
+file( GLOB_RECURSE POD_SOURCE_FILES "src/*.cpp" "src/*.c" )
+file( GLOB_RECURSE POD_INC_FILES "src/*.h" "src/*.hpp" )
 
 set( POD_INC_DIRS "" )
 
@@ -11,11 +11,14 @@ foreach( _headerFile ${MY_INC_FILES} )
 endforeach()
 
 include_directories( ${POD_INC_DIRS} )
-#include_directories( ../SOFA)
-add_library(POD ${MY_SOURCE_FILES} ${MY_INC_FILES})
 
-target_compile_features(POD PUBLIC cxx_std_17)
+add_library(pod ${POD_SOURCE_FILES} ${POD_INC_FILES})
 
-target_link_libraries(POD  gpstk)
-target_link_libraries(POD  SOFA)
-target_link_libraries(POD sqlite)
+# Mirror the source directory structure as filters in Visual Studio Solution Explorer
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${POD_SOURCE_FILES} ${POD_INC_FILES})
+
+target_compile_features(pod PUBLIC cxx_std_23)
+
+target_link_libraries(pod  gpstk)
+target_link_libraries(pod  SOFA)
+target_link_libraries(pod sqlite)

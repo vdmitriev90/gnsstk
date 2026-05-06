@@ -43,7 +43,7 @@
 #include "Dumper.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       // Returns a string identifying this object.
@@ -57,7 +57,6 @@ namespace gpstk
        * @param gData     Data object holding the data.
        */
    SatTypePtrMap& Dumper::Process(SatTypePtrMap& gData )
-      throw(ProcessingException)
    {
 
       try
@@ -89,7 +88,7 @@ namespace gpstk
          ProcessingException e( getClassName() + ":"
                                 + u.what() );
 
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
 
       }
 
@@ -102,7 +101,6 @@ namespace gpstk
        * @param gData    Data object holding the data.
        */
    IRinex& Dumper::Process(IRinex& gData )
-      throw(ProcessingException)
    {
 
       try
@@ -151,7 +149,7 @@ namespace gpstk
          ProcessingException e( getClassName() + ":"
                                 + u.what() );
 
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
 
       }
 
@@ -226,4 +224,4 @@ namespace gpstk
    }  // End of method 'Dumper::printTypeID()'
 
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk

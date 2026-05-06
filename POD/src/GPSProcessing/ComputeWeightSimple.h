@@ -3,7 +3,7 @@
 namespace pod
 {
     class ComputeWeightSimple :
-        public gpstk::ProcessingClass
+        public gnsstk::ProcessingClass
     {
     public:
 
@@ -17,9 +17,9 @@ namespace pod
         virtual ~ComputeWeightSimple();
 
 
-        virtual gpstk::IRinex& Process(gpstk::IRinex& gData) override;
+        virtual gnsstk::IRinex& Process(gnsstk::IRinex& gData) override;
 
-        gpstk::SatTypePtrMap& Process(gpstk::SatTypePtrMap& gData);
+        gnsstk::SatTypePtrMap& Process(gnsstk::SatTypePtrMap& gData);
 
         virtual std::string getClassName(void) const override { return "ComputeWeightSimple"; }
 

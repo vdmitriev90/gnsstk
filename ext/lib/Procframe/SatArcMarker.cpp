@@ -43,7 +43,7 @@
 #include "SatArcMarker.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       // Returns a string identifying this object.
@@ -125,7 +125,6 @@ namespace gpstk
        */
    SatTypePtrMap& SatArcMarker::Process( const CommonTime& epoch,
                                            SatTypePtrMap& gData )
-      throw(ProcessingException)
    {
 
       try
@@ -228,7 +227,7 @@ namespace gpstk
          ProcessingException e( getClassName() + ":"
                                 + u.what() );
 
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
 
       }
 
@@ -243,7 +242,6 @@ namespace gpstk
        * @param gData    Data object holding the data.
        */
    IRinex& SatArcMarker::Process(IRinex& gData)
-      throw(ProcessingException)
    {
 
       try
@@ -259,11 +257,11 @@ namespace gpstk
             // Throw an exception if something unexpected happens
          ProcessingException e( getClassName() + ":" + u.what() );
 
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
 
       }
 
    }  // End of method 'SatArcMarker::Process()'
 
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk

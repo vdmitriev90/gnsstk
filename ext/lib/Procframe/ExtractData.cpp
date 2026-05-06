@@ -43,7 +43,7 @@
 #include "ExtractData.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
 
 
@@ -58,7 +58,6 @@ namespace gpstk
        *  Number of satellites with this kind of data available
        */
    int ExtractData::getData( const Rinex3ObsData& rinexData, int index )
-      throw(InvalidRequest)
    {
 
       try
@@ -105,7 +104,7 @@ namespace gpstk
       catch(...)
       {
          InvalidRequest e("Unable to get data from Rinex3ObsData object");
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
 
          // Let's record the number of SV with this type of data available
@@ -128,7 +127,6 @@ namespace gpstk
    int ExtractData::getData( const Rinex3ObsData& rinexData,
                              std::string type,
                              const Rinex3ObsHeader& hdr )
-      throw(InvalidRequest)
    {
          // Get the index corresponding to this observation type
       int index( hdr.getObsIndex(type) );
@@ -139,4 +137,4 @@ namespace gpstk
    }  // End of method 'ExtractData::getData()'
 
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk

@@ -47,7 +47,7 @@
 #include "DCBDataReader.hpp"
 #include <string>
 
-namespace gpstk
+namespace gnsstk
 {
 
       /// @ingroup DataStructures 
@@ -123,8 +123,7 @@ namespace gpstk
           * @param gData     Data object holding the data.
           */
       virtual SatTypePtrMap& Process( const CommonTime& time,
-                                        SatTypePtrMap& gData )
-         throw(ProcessingException);
+                                        SatTypePtrMap& gData );
 
 
          /** Returns a gnnsRinex object, adding the new data generated
@@ -133,7 +132,6 @@ namespace gpstk
           * @param gData    Data object holding the data.
           */
       virtual IRinex& Process(IRinex& gData)
-         throw(ProcessingException)
       { Process(gData.getHeader().epoch, gData.getBody()); return gData; };
 
    
@@ -175,6 +173,6 @@ namespace gpstk
 
       //@}
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk
 
 #endif   // GPSTK_CORRECT_CODE_BIASES_HPP

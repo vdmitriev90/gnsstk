@@ -1,6 +1,6 @@
 #include"typeValueMap.hpp"
 
-namespace gpstk
+namespace gnsstk
 {
 	
       ////// typeValueMap //////
@@ -119,7 +119,6 @@ namespace gpstk
        * @param type       Type of value to be looked for.
        */
    double typeValueMap::getValue(const TypeID& type) const
-      throw(TypeIDNotFound)
    {
 
       typeValueMap::const_iterator itObs( (*this).find(type) );
@@ -129,7 +128,7 @@ namespace gpstk
       }
       else
       {
-         GPSTK_THROW(TypeIDNotFound("TypeID not found in map"));
+         GNSSTK_THROW(TypeIDNotFound("TypeID not found in map"));
       }
 
    }  // End of method 'typeValueMap::getValue()'
@@ -140,7 +139,6 @@ namespace gpstk
       // corresponding type.
       // @param type Type of value to be looked for.
    double& typeValueMap::operator()(const TypeID& type)
-      throw(TypeIDNotFound)
    {
 
       typeValueMap::iterator itObs ( (*this).find(type) );
@@ -151,7 +149,7 @@ namespace gpstk
       }
       else
       {
-         GPSTK_THROW(TypeIDNotFound("TypeID not found in map"));
+         GNSSTK_THROW(TypeIDNotFound("TypeID not found in map"));
       }
 
    }  // End of method 'typeValueMap::operator()'

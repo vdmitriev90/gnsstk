@@ -43,7 +43,7 @@
 #include "ComputeLinear.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       // Returns a string identifying this object.
@@ -60,7 +60,6 @@ namespace gpstk
        */
     SatTypePtrMap& ComputeLinear::Process( const CommonTime& time,
                                             SatTypePtrMap& gData )
-      throw(ProcessingException)
    {
 
       try
@@ -113,11 +112,11 @@ namespace gpstk
          ProcessingException e( getClassName() + ":"
                                 + u.what() );
 
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
 
       }
 
    }  // End of method 'ComputeLinear::Process()'
 
 
-} // End of namespace gpstk
+} // End of namespace gnsstk

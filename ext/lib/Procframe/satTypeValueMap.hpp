@@ -4,20 +4,20 @@
 #include"SatValueMap.hpp"
 #include"Matrix.hpp"
 
-namespace gpstk
+namespace gnsstk
 {
 
 
 	/// Thrown when the number of data values and the number of
 	/// corresponding types does not match.
 	/// @ingroup exceptiongroup
-	NEW_EXCEPTION_CLASS(NumberOfTypesMismatch, gpstk::Exception);
+	NEW_EXCEPTION_CLASS(NumberOfTypesMismatch, gnsstk::Exception);
 
 
 	/// Thrown when the number of data values and the number of
 	/// corresponding satellites does not match.
 	/// @ingroup exceptiongroup
-	NEW_EXCEPTION_CLASS(NumberOfSatsMismatch, gpstk::Exception);
+	NEW_EXCEPTION_CLASS(NumberOfSatsMismatch, gnsstk::Exception);
 
 
 	/// Map holding SatID with corresponding typeValueMap.
@@ -62,7 +62,7 @@ namespace gpstk
 		/// @param p Satellite PRN number.
 		/// @param p System the satellite belongs to.
 		satTypeValueMap extractSatID(const int& p,
-			const SatID::SatelliteSystem& s) const;
+			 SatelliteSystem s) const;
 
 
 		/// Returns a satTypeValueMap with only these satellites.
@@ -83,8 +83,7 @@ namespace gpstk
 		/// Modifies this object, keeping only this satellite.
 		/// @param p Satellite PRN number.
 		/// @param p System the satellite belongs to.
-		satTypeValueMap& keepOnlySatID(const int& p,
-			const SatID::SatelliteSystem& s);
+		satTypeValueMap& keepOnlySatID(const int& p, SatelliteSystem s);
 
 
 		/// Modifies this object, keeping only these satellites.
@@ -129,7 +128,7 @@ namespace gpstk
 
 		satTypeValueMap& removeSatSyst(const SatSystSet& satSet);
 
-		satTypeValueMap& removeSatSyst(SatID::SatelliteSystem syst);
+		satTypeValueMap& removeSatSyst(SatelliteSystem syst);
 
 		/// Modifies this object, removing this type of data.
 		/// @param type Type of value to be removed.
@@ -142,14 +141,14 @@ namespace gpstk
 		satTypeValueMap& removeTypeID(const TypeIDSet& typeSet);
 
 
-		/// Returns a GPSTk::Vector containing the data values with this type.
+		/// Returns a gnsstk::Vector containing the data values with this type.
 		/// @param type Type of value to be returned.
 		/// This method returns zero if a given satellite does not have
 		/// this type.
 		Vector<double> getVectorOfTypeID(const TypeID& type) const;
 
 
-		/// Returns a GPSTk::Matrix containing the data values in this set.
+		/// Returns a gnsstk::Matrix containing the data values in this set.
 		/// @param typeSet  TypeIDSet of values to be returned.
 		Matrix<double> getMatrixOfTypes(const TypeIDSet& typeSet) const;
 
@@ -170,8 +169,7 @@ namespace gpstk
 		 * @param dataVector    GPSTk Vector containing the data to be added.
 		 */
 		satTypeValueMap& insertTypeIDVector(const TypeID& type,
-			const Vector<double> dataVector)
-			throw(NumberOfSatsMismatch);
+			const Vector<double> dataVector);
 
 
 		/** Modifies this object, adding a matrix of data, one vector
@@ -194,8 +192,7 @@ namespace gpstk
 		 * @param dataMatrix    GPSTk Matrix containing the data to be added.
 		 */
 		satTypeValueMap& insertMatrix(const TypeIDSet& typeSet,
-			const Matrix<double> dataMatrix)
-			throw(NumberOfSatsMismatch, NumberOfTypesMismatch);
+			const Matrix<double> dataMatrix);
 
 
 		/** Returns the data value (double) corresponding to provided SatID
@@ -205,14 +202,12 @@ namespace gpstk
 		 * @param type          Type to be looked for.
 		 */
 		double getValue(const SatID& satellite,
-			const TypeID& type) const
-			throw(SatIDNotFound, TypeIDNotFound);
+			const TypeID& type) const;
 
 
 		/// Returns a reference to the typeValueMap with corresponding SatID.
 		/// @param type Type of value to be look for.
-		typeValueMap& operator()(const SatID& satellite)
-			throw(SatIDNotFound);
+		typeValueMap& operator()(const SatID& satellite);
 
 
 		/// Convenience output method

@@ -2,7 +2,7 @@
 #include<algorithm>
 
 using namespace std;
-namespace gpstk
+namespace gnsstk
 {
     /* Returns the total number of data elements in the map.
     * This method DOES NOT suppose that all the satellites have
@@ -97,7 +97,7 @@ namespace gpstk
        // @param p Satellite PRN number.
        // @param p System the satellite belongs to.
     SatTypePtrMap SatTypePtrMap::extractSatID(const int& p,
-        const SatID::SatelliteSystem& s) const
+        SatelliteSystem s) const
     {
 
         SatID tempSatellite(p, s);  // We build a temporary SatID object
@@ -141,7 +141,7 @@ namespace gpstk
 
     }  // End of method 'SatTypePtrMap::extractSatID()'
 
-	SatTypePtrMap SatTypePtrMap::extractSatSyst(SatID::SatelliteSystem ss) const
+	SatTypePtrMap SatTypePtrMap::extractSatSyst(SatelliteSystem ss) const
 	{
 		SatSystSet sset{ ss };
 		return extractSatSyst(sset);
@@ -157,7 +157,7 @@ namespace gpstk
 
 	}
 
-	SatTypePtrMap& SatTypePtrMap::keepOnlySatSyst(SatID::SatelliteSystem ss) 
+	SatTypePtrMap& SatTypePtrMap::keepOnlySatSyst(SatelliteSystem ss) 
 	{
 		SatSystSet sset{ ss };
 		keepOnlySatSyst(sset);
@@ -182,7 +182,7 @@ namespace gpstk
        // @param p Satellite PRN number.
        // @param p System the satellite belongs to.
     SatTypePtrMap& SatTypePtrMap::keepOnlySatID(const int& p,
-        const SatID::SatelliteSystem& s)
+        SatelliteSystem s)
     {
 
         SatID tempSatellite(p, s);  // We build a temporary SatID object
@@ -288,7 +288,7 @@ namespace gpstk
 	}
 
 	SatTypePtrMap& SatTypePtrMap::
-		removeSatID(int id, SatID::SatelliteSystem system)
+		removeSatID(int id,SatelliteSystem system)
 	{
 		SatID sv(id, system);
 		return removeSatID(sv);
@@ -321,7 +321,7 @@ namespace gpstk
 
     }  // End of method 'SatTypePtrMap::removeSatSyst()'
 
-    SatTypePtrMap& SatTypePtrMap::removeSatSyst(SatID::SatelliteSystem syst)
+    SatTypePtrMap& SatTypePtrMap::removeSatSyst(SatelliteSystem syst)
     {
         SatSystSet ssset;
         ssset.insert(syst);
@@ -356,7 +356,7 @@ namespace gpstk
 
 
 
-       // Returns a GPSTk::Vector containing the data values with this type.
+       // Returns a gnsstk::Vector containing the data values with this type.
        // @param type Type of value to be returned.
        // This method returns zero if a given satellite does not have this type.
     Vector<double> SatTypePtrMap::getVectorOfTypeID(const TypeID& type) const
@@ -376,7 +376,7 @@ namespace gpstk
 
 
 
-       // Returns a GPSTk::Matrix containing the data values in this set.
+       // Returns a gnsstk::Matrix containing the data values in this set.
        // @param typeSet  TypeIDSet of values to be returned.
     Matrix<double> SatTypePtrMap::getMatrixOfTypes(const TypeIDSet& typeSet)
         const
@@ -425,7 +425,6 @@ namespace gpstk
         */
     SatTypePtrMap& SatTypePtrMap::insertTypeIDVector(const TypeID& type,
         const Vector<double> dataVector)
-        throw(NumberOfSatsMismatch)
     {
 
         if (dataVector.size() == (*this).numSats())
@@ -445,7 +444,7 @@ namespace gpstk
         }
         else
         {
-            GPSTK_THROW(NumberOfSatsMismatch(" Number of data values in vector \
+            GNSSTK_THROW(NumberOfSatsMismatch(" Number of data values in vector \
 and number of satellites do not match"));
         }
 
@@ -474,12 +473,11 @@ and number of satellites do not match"));
         */
     SatTypePtrMap& SatTypePtrMap::insertMatrix(const TypeIDSet& typeSet,
         const Matrix<double> dataMatrix)
-        throw(NumberOfSatsMismatch, NumberOfTypesMismatch)
     {
 
         if (dataMatrix.rows() != (*this).numSats())
         {
-            GPSTK_THROW(NumberOfSatsMismatch("Number of rows in matrix and \
+            GNSSTK_THROW(NumberOfSatsMismatch("Number of rows in matrix and \
 number of satellites do not match"));
         }
 
@@ -512,7 +510,7 @@ number of satellites do not match"));
         }
         else
         {
-            GPSTK_THROW(NumberOfTypesMismatch("Number of data values per row \
+            GNSSTK_THROW(NumberOfTypesMismatch("Number of data values per row \
 in matrix and number of types do not match"));
         }
 
@@ -528,7 +526,6 @@ in matrix and number of types do not match"));
         */
     double SatTypePtrMap::getValue(const SatID& satellite,
         const TypeID& type) const
-        throw(SatIDNotFound, TypeIDNotFound)
     {
 
         SatTypePtrMap::const_iterator itObs((*this).find(satellite));
@@ -538,7 +535,7 @@ in matrix and number of types do not match"));
         }
         else
         {
-            GPSTK_THROW(SatIDNotFound("SatID not found in map"));
+            GNSSTK_THROW(SatIDNotFound("SatID not found in map"));
         }
 
     }  // End of method 'SatTypePtrMap::getValue()'
@@ -548,7 +545,6 @@ in matrix and number of types do not match"));
        // Returns a reference to the typeValueMap with corresponding SatID.
        // @param type Type of value to be looked for.
     typeValueMap& SatTypePtrMap::operator()(const SatID& satellite)
-        throw(SatIDNotFound)
     {
 
         SatTypePtrMap::iterator itObs((*this).find(satellite));
@@ -558,7 +554,7 @@ in matrix and number of types do not match"));
         }
         else
         {
-            GPSTK_THROW(SatIDNotFound("SatID not found in map"));
+            GNSSTK_THROW(SatIDNotFound("SatID not found in map"));
         }
 
     }  // End of method 'SatTypePtrMap::operator()'

@@ -9,42 +9,42 @@ namespace pod
     {
     public:
         TropoEquations() 
-            :type(gpstk::TypeID::wetMap),
-            pStochasticModel(std::make_unique<gpstk::RandomWalkModel>())
+            :type(gnsstk::TypeID::wetMap),
+            pStochasticModel(std::make_unique<gnsstk::RandomWalkModel>())
         {};
 		TropoEquations(double qPrime);
 		virtual ~TropoEquations() {};
 
 #pragma region Inherited via EquationBase
 
-        virtual void Prepare(gpstk::IRinex & gData) override;
+        virtual void Prepare(gnsstk::IRinex & gData) override;
 
-        virtual void updateH(const gpstk::IRinex& gData, const gpstk::TypeIDSet& types, gpstk::Matrix<double>& H, int& col_0) override;
+        virtual void updateH(const gnsstk::IRinex& gData, const gnsstk::TypeIDSet& types, gnsstk::Matrix<double>& H, int& col_0) override;
         
         virtual  ParametersSet getParameters() const override
         {
 			return ParametersSet{ type };
         }
         
-        virtual void updatePhi(gpstk::Matrix<double>& Phi, int & index) const override;
+        virtual void updatePhi(gnsstk::Matrix<double>& Phi, int & index) const override;
 
-        virtual void updateQ(gpstk::Matrix<double>& Q, int & index) const override;
+        virtual void updateQ(gnsstk::Matrix<double>& Q, int & index) const override;
 
-        virtual void defStateAndCovariance(gpstk::Vector<double>& x, gpstk::Matrix<double>& P, int & index) const override;
+        virtual void defStateAndCovariance(gnsstk::Vector<double>& x, gnsstk::Matrix<double>& P, int & index) const override;
 
         virtual int getNumUnknowns() const override;
 
 #pragma endregion
 
-        TropoEquations& setModel( gpstk::StochasticModel_uptr model)
+        TropoEquations& setModel( gnsstk::StochasticModel_uptr model)
         { pStochasticModel = std::move(model); return *this; }
 
-        gpstk::IStochasticModel* getModel() const
+        gnsstk::IStochasticModel* getModel() const
         { return pStochasticModel.get(); }
 
 #pragma region Fields
 
-        gpstk::StochasticModel_uptr pStochasticModel;
+        gnsstk::StochasticModel_uptr pStochasticModel;
 
         FilterParameter type;
 

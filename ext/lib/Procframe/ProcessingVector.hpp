@@ -47,7 +47,7 @@
 #include "ProcessingClass.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       /// @ingroup GPSsolutions 
@@ -167,6 +167,6 @@ namespace gpstk
 
       //@}
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk
 
 #endif   // GPSTK_PROCESSINGVECTOR_HPP

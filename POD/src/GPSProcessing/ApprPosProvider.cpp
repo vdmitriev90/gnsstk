@@ -19,9 +19,9 @@ namespace pod
 		{LoadFromFile,          "*.pos file"              },
 	};
 
-	int IApprPosProvider::ComputeApprSol(const gpstk::IRinex & gRin, 
-		const gpstk::XvtStore<gpstk::SatID>& eph,
-		gpstk::Vector<double> & solution)
+	int IApprPosProvider::ComputeApprSol(const gnsstk::IRinex & gRin, 
+		const gnsstk::XvtStore<gnsstk::SatID>& eph,
+		gnsstk::Vector<double> & solution)
 	{
 		auto svs = gRin.getBody().getVectorOfSatID().toStdVector();
 		auto meas = gRin.getBody().getVectorOfTypeID(TypeID::C1).toStdVector();
@@ -38,7 +38,7 @@ namespace pod
 		return 0;
 	}
 
-	int ComputeApprPos::getPosition(const gpstk::IRinex & gRin, gpstk::Position& pos)
+	int ComputeApprPos::getPosition(const gnsstk::IRinex & gRin, gnsstk::Position& pos)
 	{
 		auto t = gRin.getHeader().epoch;
 		auto it = pvtStore.find(t);
@@ -64,7 +64,7 @@ namespace pod
 		return 0;
 	}
 
-	int ComputeOnePos::getPosition(const gpstk::IRinex & gRin, gpstk::Position & pos)
+	int ComputeOnePos::getPosition(const gnsstk::IRinex & gRin, gnsstk::Position & pos)
 	{
 		if (isFirstTime)
 		{
@@ -123,7 +123,7 @@ namespace pod
 		return true;
 	}
 
-	int PositionFromFile::getPosition(const gpstk::IRinex & gRin, gpstk::Position & pos)
+	int PositionFromFile::getPosition(const gnsstk::IRinex & gRin, gnsstk::Position & pos)
 	{
 		auto it = pvtStore.find(gRin.getHeader().epoch);
 		if (it == pvtStore.end())

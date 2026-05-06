@@ -47,13 +47,12 @@
 #include "ProcessingClass.hpp"
 #include "EphemerisRange.hpp"
 #include "EngEphemeris.hpp"
-#include "XvtStore.hpp"
-#include "GPSEphemerisStore.hpp"
+#include "NavLibrary.hpp"
 #include "TropModel.hpp"
 #include "IonoModelStore.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       /// @ingroup GPSsolutions 
@@ -139,7 +138,7 @@ namespace gpstk
                             const double& cRx,
                             Position::CoordinateSystem s = Position::Cartesian,
                             EllipsoidModel *ell = NULL,
-                            ReferenceFrame frame = ReferenceFrame::Unknown );
+                            const RefFrame& frame = RefFrame());
 
 
          /// Explicit constructor, taking as input a Position object
@@ -163,7 +162,7 @@ namespace gpstk
       ModelObsFixedStation( const Position& RxCoordinates,
                             IonoModelStore& dIonoModel,
                             TropModel& dTropoModel,
-                            XvtStore<SatID>& dEphemeris,
+                            NavLibrary& dEphemeris,
                             const TypeID& dObservable,
                             bool usetgd = true );
 
@@ -183,7 +182,7 @@ namespace gpstk
           */
       ModelObsFixedStation( const Position& RxCoordinates,
                             IonoModelStore& dIonoModel,
-                            XvtStore<SatID>& dEphemeris,
+                            NavLibrary& dEphemeris,
                             const TypeID& dObservable,
                             bool usetgd = true );
 
@@ -203,7 +202,7 @@ namespace gpstk
           */
       ModelObsFixedStation( const Position& RxCoordinates,
                             TropModel& dTropoModel,
-                            XvtStore<SatID>& dEphemeris,
+                            NavLibrary& dEphemeris,
                             const TypeID& dObservable,
                             bool usetgd = true );
 
@@ -221,7 +220,7 @@ namespace gpstk
           *
           */
       ModelObsFixedStation( const Position& RxCoordinates,
-                            XvtStore<SatID>& dEphemeris,
+                            NavLibrary& dEphemeris,
                             const TypeID& dObservable,
                             bool usetgd = true);
 
@@ -233,8 +232,7 @@ namespace gpstk
           * @param gData     Data object holding the data.
           */
       virtual SatTypePtrMap& Process( const CommonTime& time,
-                                        SatTypePtrMap& gData )
-         throw(ProcessingException);
+                                        SatTypePtrMap& gData );
 
 
 
@@ -244,7 +242,6 @@ namespace gpstk
           * @param gData    Data object holding the data.
           */
       virtual IRinex& Process(IRinex& gData)
-         throw(ProcessingException)
       { Process(gData.getHeader().epoch, gData.getBody()); return gData; };
 
 
@@ -318,16 +315,16 @@ namespace gpstk
 
          /// Method to get a pointer to the default XvtStore<SatID> to be used
          /// with GNSS data structures.
-      virtual XvtStore<SatID>* getDefaultEphemeris() const
+      virtual NavLibrary* getDefaultEphemeris() const
       { return pDefaultEphemeris; };
 
 
          /** Method to set the default XvtStore<SatID> to be used with GNSS
           *  data structures.
           *
-          * @param ephem     XvtStore<SatID> object to be used by default
+          * @param ephem     NavLibrary object to be used by default
           */
-      virtual ModelObsFixedStation& setDefaultEphemeris(XvtStore<SatID>& ephem)
+      virtual ModelObsFixedStation& setDefaultEphemeris(NavLibrary& ephem)
       { pDefaultEphemeris = &ephem; return (*this); };
 
 
@@ -367,10 +364,9 @@ namespace gpstk
       int Compute( const CommonTime& Tr,
                    Vector<SatID>& Satellite,
                    Vector<double>& Pseudorange,
-                   const XvtStore<SatID>& Eph,
+                   const NavLibrary& Eph,
                    TropModel *pTropModel = NULL,
-                   IonoModelStore *pIonoModel = NULL )
-         throw(Exception);
+                   IonoModelStore *pIonoModel = NULL );
 
 
          /// The elevation cut-off angle for accepted satellites.
@@ -392,7 +388,7 @@ namespace gpstk
 
          /// Pointer to default XvtStore<SatID> object when working with GNSS
          /// data structures.
-      XvtStore<SatID>* pDefaultEphemeris;
+      NavLibrary* pDefaultEphemeris;
 
          /// Initialization method
       virtual void InitializeValues()
@@ -407,9 +403,9 @@ namespace gpstk
       virtual int setInitialRxPosition( const double& aRx,
                                         const double& bRx,
                                         const double& cRx,
-                           Position::CoordinateSystem s = Position::Cartesian,
+                                        Position::CoordinateSystem s = Position::Cartesian,
                                         EllipsoidModel *ell = NULL,
-                              ReferenceFrame frame = ReferenceFrame::Unknown );
+                                        const RefFrame& frame = RefFrame() );
 
 
          /// Method to set the initial (a priori) position of receiver.
@@ -434,15 +430,13 @@ namespace gpstk
 
 
          /// Method to get TGD corrections.
-      virtual double getTGDCorrections( CommonTime Tr,
-                                        const XvtStore<SatID>& Eph,
-                                        SatID sat );
+      virtual double getTGDCorrections(const CommonTime& Tr, NavLibrary& ephem, const SatID& satId);
 
 
    }; // End of class 'ModelObsFixedStation'
 
       //@}
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk
 
 #endif   // GPSTK_MODELOBSFIXEDSTATION_HPP

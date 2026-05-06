@@ -43,7 +43,7 @@
 #include "ComputeLC.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
 
    std::string ComputeLC::getClassName() const
@@ -60,4 +60,4 @@ namespace gpstk
    }
 
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk

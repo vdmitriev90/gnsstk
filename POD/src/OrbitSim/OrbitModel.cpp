@@ -33,7 +33,7 @@ namespace pod
         if (!fmc.gData.isValid)
         {
             InvalidParameter e("Invalid Gravity Model");
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
         }
 
         // GeoEarth

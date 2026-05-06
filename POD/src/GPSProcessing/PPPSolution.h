@@ -18,10 +18,10 @@ namespace pod
 
     protected:
         virtual bool processCore() override;
-        gpstk::NeillTropModel tropModel;
+        gnsstk::NeillTropModel tropModel;
         virtual void updateRequaredObs() override;
 
-    protected:  void printSolution(std::ofstream& of, const gpstk::SolverLMS& solver, const gpstk::CommonTime& time, GnssEpoch& gEpoch) ;
+    protected:  void printSolution(std::ofstream& of, const gnsstk::SolverLMS& solver, const gnsstk::CommonTime& time, GnssEpoch& gEpoch) ;
 
     };
 }

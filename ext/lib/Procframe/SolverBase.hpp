@@ -48,13 +48,13 @@
 #include "Vector.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
 
     /// Thrown when some problem appeared when solving a given
     /// equation set
     /// @ingroup exceptiongroup
-    NEW_EXCEPTION_CLASS(InvalidSolver, gpstk::Exception);
+    NEW_EXCEPTION_CLASS(InvalidSolver, gnsstk::Exception);
 
 
     /// @ingroup GPSsolutions 
@@ -132,5 +132,5 @@ namespace gpstk
 
        //@}
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk
 #endif   // SOLVERBASE_HPP

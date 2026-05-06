@@ -45,7 +45,7 @@
 #include "GNSSconstants.hpp"          // C_MPS
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       // Returns a string identifying this object.
@@ -57,7 +57,6 @@ namespace gpstk
       // Explicit constructor, taking as input a Position object
       // containing reference station coordinates.
    IonexModel::IonexModel(const Position& RxCoordinates)
-      throw(Exception)
    {
 
       pDefaultMaps = NULL;
@@ -86,7 +85,6 @@ namespace gpstk
                            const TypeID& dObservable,
                            const bool& applyDCB,
                            const std::string& ionoMap)
-         throw(Exception)
       {
 
          setInitialRxPosition(RxCoordinates);
@@ -107,7 +105,6 @@ namespace gpstk
        */
    SatTypePtrMap& IonexModel::Process( const CommonTime& time,
                                          SatTypePtrMap& gData )
-      throw(Exception)
    {
 
       SatIDSet satRejectedSet;
@@ -173,8 +170,7 @@ namespace gpstk
                try
                {
 
-                  ionoMap = pDefaultMaps->iono_mapping_function( elevation,
-                                                                 ionoMapType);
+                  ionoMap = pDefaultMaps->ionoMappingFunction( elevation, ionoMapType);
 
                      // Compute ionospheric slant correction
                   ionexL1 = pDefaultMaps->getIonoL1( elevation,
@@ -245,7 +241,7 @@ namespace gpstk
                if(useDCB)
                {
 
-                     // the second LC factor (see gpstk::LinearCombinations.cpp)
+                     // the second LC factor (see gnsstk::LinearCombinations.cpp)
                      // see pg.14, Ionex manual
                   double kappa2(-1.0/0.646944444);
                   double dcb(tempDCB * C_MPS * 1e-9);  // meters
@@ -275,7 +271,7 @@ namespace gpstk
       catch(Exception& e)
       {
 
-         GPSTK_RETHROW(e);
+         GNSSTK_RETHROW(e);
 
       }
 
@@ -289,7 +285,6 @@ namespace gpstk
        *  -1 if problems arose
        */
    int IonexModel::setInitialRxPosition(const Position& RxCoordinates)
-      throw(GeometryException)
    {
 
       try
@@ -311,7 +306,6 @@ namespace gpstk
 
       // Method to set the initial (a priori) position of receiver.
    int IonexModel::setInitialRxPosition(void)
-      throw(GeometryException)
    {
 
       try
@@ -390,4 +384,4 @@ namespace gpstk
    }  // End of method 'IonexModel::getDCBCorrections()'
 
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk

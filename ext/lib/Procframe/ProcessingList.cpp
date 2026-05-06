@@ -43,7 +43,7 @@
 #include "ProcessingList.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       // Returns a string identifying this object.
@@ -81,4 +81,4 @@ namespace gpstk
    }  // End of method 'ProcessingList::Process()'
 
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk

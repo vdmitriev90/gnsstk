@@ -18,7 +18,7 @@ using namespace gpstk;
 namespace pod
 {
 	//set of all possible TypeID for code pseudorange postfit residuals 
-	const std::set<gpstk::TypeID> KalmanSolver::codeResTypes
+	const std::set<gnsstk::TypeID> KalmanSolver::codeResTypes
 	{
 		TypeID::postfitC,
 		TypeID::postfitP1,
@@ -27,7 +27,7 @@ namespace pod
 	};
 
 	//set of all possible TypeID for  carrier phase postfit residuals
-	const std::set<gpstk::TypeID> KalmanSolver::phaseResTypes
+	const std::set<gnsstk::TypeID> KalmanSolver::phaseResTypes
 	{
 		TypeID::postfitL,
 		TypeID::postfitL1,
@@ -137,7 +137,7 @@ namespace pod
 				covMatrix = inverseChol(hTrTimesW*hMatrix + invPminus);
 				solution = covMatrix * (hTrTimesW*measVector + invPminus * xminus);
 			}
-			catch (const gpstk::MatrixException &e)
+			catch (const gnsstk::MatrixException &e)
 			{
 				std::cerr << e << endl;
 
@@ -343,7 +343,7 @@ namespace pod
 		if (it == equations->currentUnknowns().end())
 		{
 			InvalidRequest e("Type: '" + parameter.toString() + "' not found in  current set of unknowns.");
-			GPSTK_THROW(e);
+			GNSSTK_THROW(e);
 		}
 		return std::distance(equations->currentUnknowns().begin(), it);
 	}
@@ -362,7 +362,7 @@ namespace pod
 
 	}  // End of method 'SolverLMS::getVariance()'
 
-	bool KalmanSolver::ResetIfRequared(const gpstk::CommonTime& t, const KalmanSolver::filterHistory& data)
+	bool KalmanSolver::ResetIfRequared(const gnsstk::CommonTime& t, const KalmanSolver::filterHistory& data)
 	{
 		double dt = t - t_pre;
 

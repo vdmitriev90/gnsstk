@@ -47,7 +47,7 @@
 #include "StochasticModel.hpp"
 #include "SimpleKalmanFilter.hpp"
 
-namespace gpstk
+namespace gnsstk
 {
 
       /// @ingroup GPSsolutions 
@@ -214,8 +214,7 @@ namespace gpstk
 #pragma clang diagnostic ignored "-Woverloaded-virtual"
       virtual int Compute( const Vector<double>& prefitResiduals,
                            const Matrix<double>& designMatrix,
-                           const Matrix<double>& weightMatrix )
-         throw(InvalidSolver);
+                           const Matrix<double>& weightMatrix );
 
 
          /** Compute the code-based Kalman solution of the given equations set.
@@ -238,8 +237,7 @@ namespace gpstk
           */
       virtual int Compute( const Vector<double>& prefitResiduals,
                            const Matrix<double>& designMatrix,
-                           const Vector<double>& weightVector )
-         throw(InvalidSolver);
+                           const Vector<double>& weightVector );
 #pragma clang diagnostic pop
 
 
@@ -248,8 +246,7 @@ namespace gpstk
           *
           * @param gData    Data object holding the data.
           */
-      virtual IRinex& Process(IRinex& gData)
-         throw(ProcessingException);
+      virtual IRinex& Process(IRinex& gData);
 
 
          /// Get stochastic model pointer for dx (or dLat) coordinate
@@ -450,6 +447,6 @@ namespace gpstk
 
       //@}
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk
 
 #endif   // GPSTK_CODEKALMANSOLVER_HPP

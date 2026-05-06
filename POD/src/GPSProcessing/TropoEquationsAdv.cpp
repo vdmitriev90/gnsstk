@@ -6,7 +6,7 @@ using namespace gpstk;
 namespace pod
 {
 
-	void TropoEquationsAdv::updateH(const gpstk::IRinex& gData, const gpstk::TypeIDSet& obsTypes, gpstk::Matrix<double>& H, int& col_0)
+	void TropoEquationsAdv::updateH(const gnsstk::IRinex& gData, const gnsstk::TypeIDSet& obsTypes, gnsstk::Matrix<double>& H, int& col_0)
 	{
 
 		int row(0);
@@ -22,7 +22,7 @@ namespace pod
 		col_0 += 2;
 	}
 
-	void TropoEquationsAdv::updatePhi(gpstk::Matrix<double>& Phi, int & index) const
+	void TropoEquationsAdv::updatePhi(gnsstk::Matrix<double>& Phi, int & index) const
 	{
 		Phi(index, index) = 1.0;
 		Phi(index, index + 1) = dt;
@@ -31,7 +31,7 @@ namespace pod
 		index += 2;
 	}
 
-	void TropoEquationsAdv::updateQ(gpstk::Matrix<double>& Q, int & index) const
+	void TropoEquationsAdv::updateQ(gnsstk::Matrix<double>& Q, int & index) const
 	{
 
 		double dt2 = dt * dt;
@@ -44,7 +44,7 @@ namespace pod
 
 	}
 
-	void TropoEquationsAdv::defStateAndCovariance(gpstk::Vector<double>& x, gpstk::Matrix<double>& P, int & index) const
+	void TropoEquationsAdv::defStateAndCovariance(gnsstk::Vector<double>& x, gnsstk::Matrix<double>& P, int & index) const
 	{
 		x(index) = 5.000e-02;
 		P(index, index) = 5e-5;

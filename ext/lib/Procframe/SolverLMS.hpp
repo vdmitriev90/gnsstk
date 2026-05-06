@@ -48,7 +48,7 @@
 #include "ProcessingClass.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       /// @ingroup GPSsolutions 
@@ -156,8 +156,7 @@ namespace gpstk
           *  -1 if problems arose
           */
       virtual int Compute( const Vector<double>& prefitResiduals,
-                           const Matrix<double>& designMatrix )
-         throw(InvalidSolver);
+                           const Matrix<double>& designMatrix );
 
 
          /** Returns a reference to a satTypeValueMap object after
@@ -165,8 +164,7 @@ namespace gpstk
           *
           * @param gData     Data object holding the data.
           */
-      virtual SatTypePtrMap& Process(SatTypePtrMap& gData)
-         throw(ProcessingException);
+      virtual SatTypePtrMap& Process(SatTypePtrMap& gData);
 
 
          /** Returns a reference to a gnnsRinex object after solving
@@ -175,7 +173,6 @@ namespace gpstk
           * @param gData    Data object holding the data.
           */
       virtual IRinex& Process(IRinex& gData)
-         throw(ProcessingException)
       { Process(gData.getBody()); return gData; };
 
 
@@ -183,16 +180,14 @@ namespace gpstk
           *
           * @param type    TypeID of the solution we are looking for.
           */
-      virtual double getSolution(const TypeID& type) const
-         throw(InvalidRequest);
+      virtual double getSolution(const TypeID& type) const;
 
 
          /** Returns the variance associated to a given TypeID.
           *
           * @param type    TypeID of the variance we are looking for.
           */
-      virtual double getVariance(const TypeID& type) const
-         throw(InvalidRequest);
+      virtual double getVariance(const TypeID& type) const;
 
 
          /** Method to set the default equation definition to be used
@@ -234,6 +229,6 @@ namespace gpstk
 
       //@}
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk
 
 #endif   // GPSTK_SOLVERLMS_HPP

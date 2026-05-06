@@ -45,10 +45,10 @@
 #define GNSSTK_VECTOR_BASE_HPP
 
 #include <valarray>
-#include "Exception.hpp"
 
-#include "MathBase.hpp"
 #include "gnsstk_export.h"
+#include "Exception.hpp"
+#include "MathBase.hpp"
 
 namespace gnsstk
 {

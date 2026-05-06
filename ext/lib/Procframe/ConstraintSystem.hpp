@@ -48,7 +48,7 @@
 #include "Matrix.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
       /// Constraint header declaration
    struct constraintHeader
@@ -85,7 +85,7 @@ namespace gpstk
 
       /// Thrown when attempting to use an invalid ConstraintSystem
       /// @ingroup exceptiongroup
-   NEW_EXCEPTION_CLASS(InvalidConstraintSystem, gpstk::Exception);
+   NEW_EXCEPTION_CLASS(InvalidConstraintSystem, gnsstk::Exception);
 
    class ConstraintSystem
    {
@@ -125,8 +125,7 @@ namespace gpstk
       virtual ConstraintSystem& constraintMatrix(const VariableSet& allVar,
                                                  Vector<double>& prefit,
                                                  Matrix<double>& design,
-                                                 Matrix<double>& covariance)
-         throw(InvalidConstraintSystem);
+                                                 Matrix<double>& covariance);
 
    
          /// Return current constraints
@@ -165,6 +164,6 @@ namespace gpstk
    }; // End of class 'ConstraintSystem'
 
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk
 
 #endif   // GPSTK_CONSTRAINTSYSTEM_HPP

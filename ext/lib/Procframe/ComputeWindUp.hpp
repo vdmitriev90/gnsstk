@@ -48,13 +48,13 @@
 #include "Triple.hpp"
 #include "Position.hpp"
 #include "SunPosition.hpp"
-#include "XvtStore.hpp"
+#include "NavLibrary.hpp"
 #include "SatDataReader.hpp"
 #include "GNSSconstants.hpp"
 
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       /// @ingroup DataStructures 
@@ -112,15 +112,9 @@ namespace gpstk
    {
    public:
 
-         /// Default constructor
-      ComputeWindUp()
-         : pEphemeris(NULL), nominalPos(0.0, 0.0, 0.0),
-           satData("PRN_GPS"), fileData("PRN_GPS")
-      { };
-
-      ComputeWindUp(XvtStore<SatID>& ephem,
+      ComputeWindUp(NavLibrary& ephem,
           std::string filename = "PRN_GPS")
-          : pEphemeris(&ephem), nominalPos(0.0, 0.0, 0.0), satData(filename),
+          : pEphemeris(ephem), nominalPos(0.0, 0.0, 0.0), satData(filename),
           fileData(filename)
       { };
 
@@ -134,10 +128,10 @@ namespace gpstk
           * @warning If filename is not given, this class will look for a
           * file named "PRN_GPS" in the current directory.
           */
-      ComputeWindUp( XvtStore<SatID>& ephem,
+      ComputeWindUp(NavLibrary& ephem,
                      const Position& stapos,
                      std::string filename="PRN_GPS" )
-         : pEphemeris(&ephem), nominalPos(stapos), satData(filename),
+         : pEphemeris(ephem), nominalPos(stapos), satData(filename),
            fileData(filename)
       { };
 
@@ -149,8 +143,7 @@ namespace gpstk
           * @param gData     Data object holding the data.
           */
       virtual SatTypePtrMap& Process( const CommonTime& time,
-                                        SatTypePtrMap& gData )
-         throw(ProcessingException);
+                                        SatTypePtrMap& gData );
 
 
 
@@ -160,7 +153,6 @@ namespace gpstk
           * @param gData    Data object holding the data.
           */
       virtual IRinex& Process(IRinex& gData)
-         throw(ProcessingException)
       { Process(gData.getHeader().epoch, gData.getBody()); return gData; };
 
 
@@ -187,19 +179,6 @@ namespace gpstk
         { nominalPos = stapos; return (*this); };
 
 
-         /// Returns a pointer to the satellite ephemeris object
-         /// currently in use.
-      virtual XvtStore<SatID> *getEphemeris(void) const
-      { return pEphemeris; };
-
-
-         /** Sets satellite ephemeris object to be used.
-          * @param ephem     Satellite ephemeris object.
-          */
-      virtual ComputeWindUp& setEphemeris(XvtStore<SatID>& ephem)
-      { pEphemeris = &ephem; return (*this); };
-
-
          /// Returns a string identifying this object.
       virtual std::string getClassName(void) const;
 
@@ -212,7 +191,7 @@ namespace gpstk
 
 
          /// Satellite ephemeris to be used
-      XvtStore<SatID> *pEphemeris;
+       NavLibrary& pEphemeris;
 
 
          /// Receiver position
@@ -267,6 +246,6 @@ namespace gpstk
 
       //@}
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk
 
 #endif // GPSTK_COMPUTEWINDUP_HPP

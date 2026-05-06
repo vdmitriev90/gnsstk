@@ -12,7 +12,7 @@ namespace pod
             lc->setUseC1(useC1);
     }
 
-    gpstk::SatTypePtrMap& ProcessLinear::Process(gpstk::SatTypePtrMap& gData)
+    gnsstk::SatTypePtrMap& ProcessLinear::Process(gnsstk::SatTypePtrMap& gData)
     {
         for (auto& sv : gData)
         {
@@ -26,7 +26,7 @@ namespace pod
         return gData;
     }
 
-    gpstk::IRinex& ProcessLinear::Process(gpstk::IRinex& gData)
+    gnsstk::IRinex& ProcessLinear::Process(gnsstk::IRinex& gData)
     {
         Process(gData.getBody());
         return gData;

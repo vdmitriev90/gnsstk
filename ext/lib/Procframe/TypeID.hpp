@@ -37,7 +37,7 @@
 
 /**
  * @file TypeID.hpp
- * gpstk::TypeID - This class was written taking as inspiration ObsID. The
+ * gnsstk::TypeID - This class was written taking as inspiration ObsID. The
  * objective of this class is to create an index able to represent any type
  * of observation, correction, model parameter or other data value of interest
  * for GNSS data processing. This class is extensible in run-time, so the
@@ -56,7 +56,7 @@
 #include "Rinex3ObsHeader.hpp"
 #include "RinexObsID.hpp"
 
-namespace gpstk
+namespace gnsstk
 {
 
       /** This class creates an index able to represent any type of observation,
@@ -549,8 +549,7 @@ namespace gpstk
           * @param name      Identifying string for the new TypeID
           * @return          The desired TypeID
           */
-      static TypeID byName(std::string name)
-         throw(InvalidRequest);
+      static TypeID byName(std::string name);
 
          /** Static method to add new TypeID's by name string
           * @param name      Identifying string for the new TypeID
@@ -600,6 +599,6 @@ namespace gpstk
    TypeID::ValueType ConvertToTypeID(const RinexObsID& roi,
                                      const RinexSatID& sat);
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk
 
 #endif   // GPSTK_TYPEID_HPP

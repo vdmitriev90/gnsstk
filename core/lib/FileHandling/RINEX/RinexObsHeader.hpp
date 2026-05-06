@@ -50,13 +50,11 @@
 #include <iostream>
 #include <iomanip>
 
-#include "gnsstk_export.h"
 #include "CommonTime.hpp"
 #include "FFStream.hpp"
 #include "RinexObsBase.hpp"
 #include "Triple.hpp"
 #include "RinexSatID.hpp"
-#include "gnsstk_export.h"
 
 namespace gnsstk
 {

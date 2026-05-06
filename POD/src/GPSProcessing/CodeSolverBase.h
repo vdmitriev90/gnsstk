@@ -21,8 +21,8 @@ namespace pod
     protected:
 
         static  double eps;
-        static  gpstk::GPSEllipsoid ellGPS;
-        static void refreshSolution(gpstk::Vector<double> &Sol, gpstk::Vector<double> &dSol);
+        static  gnsstk::GPSEllipsoid ellGPS;
+        static void refreshSolution(gnsstk::Vector<double> &Sol, gnsstk::Vector<double> &dSol);
 
     public:
 
@@ -35,60 +35,60 @@ namespace pod
             return "PRSolverBase";
         };
         void  selectObservables(
-            const gpstk::Rinex3ObsData &rod,
-            const gpstk::Rinex3ObsHeader& roh,
-            const std::set<gpstk::SatID::SatelliteSystem> &systems,
+            const gnsstk::Rinex3ObsData &rod,
+            const gnsstk::Rinex3ObsHeader& roh,
+            const std::set<gnsstk::SatID::SatelliteSystem> &systems,
             const ObsTypes & typeMap,
             CodeProcSvData & svData,
             bool isApplyRCO = false
         );
 
         void prepare(
-            const gpstk::CommonTime &t,
-            const gpstk::XvtStore<gpstk::SatID>& Eph,
+            const gnsstk::CommonTime &t,
+            const gnsstk::XvtStore<gnsstk::SatID>& Eph,
             CodeProcSvData & svData
         );
 
         int solve(
-            const gpstk::CommonTime &t,
-            const gpstk::IonoModelStore &iono,
+            const gnsstk::CommonTime &t,
+            const gnsstk::IonoModelStore &iono,
             CodeProcSvData & svData
         );
 
        // string printSolution(const CodeProcSvData &useSat);
 
 
-        virtual gpstk::NeillTropModel initTropoModel(const gpstk::Position &nominalPos, int DoY) = 0;
+        virtual gnsstk::NeillTropModel initTropoModel(const gnsstk::Position &nominalPos, int DoY) = 0;
 
         virtual double getTropoCorrection(
-            const gpstk::Position &rxPos,
-            const gpstk::Position &svPos,
-            const gpstk::CommonTime &t) const = 0;
+            const gnsstk::Position &rxPos,
+            const gnsstk::Position &svPos,
+            const gnsstk::CommonTime &t) const = 0;
 
     protected:
          int solveInter(
-            const gpstk::CommonTime &t,
-             const gpstk::IonoModelStore &iono,
+            const gnsstk::CommonTime &t,
+             const gnsstk::IonoModelStore &iono,
             CodeProcSvData & svData,
-			 gpstk::Matrix<double>& Cov
+			 gnsstk::Matrix<double>& Cov
 
         );
          void CodeSolverBase::calcSigma(
-             const gpstk::Position& rxPos,
-             const gpstk::Matrix<double> & W,
-             const gpstk::Vector<double> & b,
+             const gnsstk::Position& rxPos,
+             const gnsstk::Matrix<double> & W,
+             const gnsstk::Vector<double> & b,
              const CodeProcSvData &svsData);
 
-        void calcStat(const gpstk::Matrix<double>& Cov);
+        void calcStat(const gnsstk::Matrix<double>& Cov);
 
         int CodeSolverBase::catchSatByResid(
-            const gpstk::CommonTime & t,
-            const gpstk::IonoModelStore & iono,
+            const gnsstk::CommonTime & t,
+            const gnsstk::IonoModelStore & iono,
             CodeProcSvData & svsData
         );
 
     public:
-		gpstk::ComputeIonoModel::IonoModelType ionoType;
+		gnsstk::ComputeIonoModel::IonoModelType ionoType;
 
         double maskSNR;
         double maskEl;
@@ -96,7 +96,7 @@ namespace pod
         int maxIter;
         int iter;
 
-		gpstk::Vector< double> Sol;
+		gnsstk::Vector< double> Sol;
 
         double sigma;
         double RMS3D;

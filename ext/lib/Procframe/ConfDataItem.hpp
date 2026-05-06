@@ -51,7 +51,7 @@
 #include "Vector.hpp"
 #include "CommonTime.hpp"
 
-namespace gpstk
+namespace gnsstk
 {
 
       /** This class ...
@@ -225,7 +225,7 @@ namespace gpstk
          {
             Exception e("Trying to parsing int from a non-digital string '"
                          + in + "'." );
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
          }
 
          out = StringUtils::asInt(in);
@@ -246,7 +246,7 @@ namespace gpstk
          }
          else  // it's neither TRUE or FALSE
          {
-            GPSTK_THROW(
+            GNSSTK_THROW(
                Exception("Failed to parse a boolean value from "+in
                          +", and it should be 'TRUE' or 'FALSE'.") );
 
@@ -322,7 +322,7 @@ namespace gpstk
       DataType  data0;
    };
 
-}   // End of namespace gpstk
+}   // End of namespace gnsstk
 
 /*
 bool operator==(const ConfDataItemAbstract& right) const

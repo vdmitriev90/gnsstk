@@ -37,6 +37,8 @@
 //
 //==============================================================================
 #include "SatID.hpp"
+#include"Rinex3NavStream.hpp"
+#include"Rinex3NavData.hpp"
 
 namespace gnsstk
 {
@@ -153,5 +155,34 @@ namespace gnsstk
    void SatID :: setNorad(unsigned long n)
    {
       norad = n;
+   }
+
+   std::map<SatID, int> SatID::glonassFcn;
+
+   SatID SatID::dummy;
+
+   int SatID::getGloFcn() const
+   {
+       if (system != SatelliteSystem::Glonass)
+           return 0;
+       auto it = glonassFcn.find(*this);
+       if (it == glonassFcn.end())
+       {
+           InvalidRequest ip("Unknown FCN for Glonass satellite: " + this->id);
+           GNSSTK_THROW(ip);
+       }
+
+       return it->second;
+   }
+   void SatID::loadGloFcn(const char* path)
+   {
+       Rinex3NavStream rNavFile;
+       Rinex3NavHeader rNavHeader;
+
+       rNavFile.open(path, std::ios::in);
+       rNavFile >> rNavHeader;
+       Rinex3NavData nm;
+       while (rNavFile >> nm)
+           SatID::glonassFcn[SatID(nm.sat)] = nm.freqNum;
    }
 }

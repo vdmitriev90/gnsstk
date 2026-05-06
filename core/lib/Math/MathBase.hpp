@@ -42,15 +42,11 @@
 #ifndef GNSSTK_MATH_BASE_HPP
 #define GNSSTK_MATH_BASE_HPP
 
-//@fix MSVC doesnt like std::sqrt or std::abs, and disabling
-//extensions allows abs(double) to be used instead of fabs()
-#ifdef _MSC_VER
-#undef _MSC_EXTENSIONS
-#endif
 #include <cmath>
-#ifdef _MSC_VER
-#define _MSC_EXTENSIONS
-#endif
+
+using std::abs;
+using std::sqrt;
+
 
 #ifdef ABS
 #undef ABS

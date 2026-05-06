@@ -11,7 +11,7 @@
 #include"SQLiteAdapter.h"
 
 #define CATCH_TIME(t,Y,m,d,hh,mm,ss, flag)\
-    static auto desiredTime = (gpstk::CommonTime)gpstk::CivilTime(Y, m, d, hh, mm, ss, gpstk::TimeSystem::Any);\
+    static auto desiredTime = (gnsstk::CommonTime)gnsstk::CivilTime(Y, m, d, hh, mm, ss, gnsstk::TimeSystem::Any);\
     flag = t == desiredTime;
 
 namespace pod
@@ -19,7 +19,7 @@ namespace pod
 	//base class for all GNSS post processing  classes
 	class GnssSolution
 	{
-	public: static  std::ostream& printMsg(const gpstk::CommonTime& time, const char* msg);
+	public: static  std::ostream& printMsg(const gnsstk::CommonTime& time, const char* msg);
 
 
 #pragma region Constructors
@@ -58,7 +58,7 @@ namespace pod
 		data = dataStore; return (*this);
 	};
 
-	protected: virtual  gpstk::ConfDataReader& confReader()
+	protected: virtual  gnsstk::ConfDataReader& confReader()
 	{
 		return *(data->confReader);
 	}
@@ -81,7 +81,7 @@ namespace pod
 	protected: virtual void updateRequaredObs() = 0;
 
 	protected:
-		virtual void printSolution(const KalmanSolver& slr, const gpstk::CommonTime& t, GnssEpoch& ep);
+		virtual void printSolution(const KalmanSolver& slr, const gnsstk::CommonTime& t, GnssEpoch& ep);
 
 #pragma endregion
 
@@ -92,16 +92,16 @@ namespace pod
 	protected:GnssDataStore_sptr data;
 
 			  // Nominal position
-	protected:gpstk::Position nominalPos;
+	protected:gnsstk::Position nominalPos;
 
 			  // Processing result
 	protected:GnssEpochMap gMap;
 
 			  // This object will filter out satellites, which doesn't meet  predefined required observables set 
-	protected:gpstk::RequireObservables requireObs;
+	protected:gnsstk::RequireObservables requireObs;
 
 			  // L1 code measurements used for position computation (typical C1 and P1)
-	protected:gpstk::TypeID codeL1;
+	protected:gnsstk::TypeID codeL1;
 
 			  //number of decimal places for output
 	protected: int outputPrec = 3;

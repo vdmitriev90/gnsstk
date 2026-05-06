@@ -10,8 +10,8 @@ namespace pod
     class StringUtils
     {
     public:
-		static std::string formatTime(const gpstk::CommonTime &t);
-		static bool tryParseTime(const std::string&  str, gpstk::CommonTime& time);
+		static std::string formatTime(const gnsstk::CommonTime &t);
+		static bool tryParseTime(const std::string&  str, gnsstk::CommonTime& time);
 		static std::vector<std::string> split(const std::string&  str, const std::string& delim);
 
     };

@@ -13,7 +13,7 @@ namespace pod
     public: static void   testSQLite(const char *f1, const char *f2);
     public: static const unsigned  SCHEMA_VERSION;
     public: static const std::string createSchemaCommand;
-    public: static const gpstk::TypeIDSet requaredTypes;
+    public: static const gnsstk::TypeIDSet requaredTypes;
 
 #pragma endregion
 
@@ -43,11 +43,11 @@ namespace pod
 #pragma region Insert methods
 
     public:  void addNewFile(const pod::GnssEpochMap & eMap);
-    private: void addObsData(const std::pair<gpstk::TypeID, double> & typeValuePair);
-    private: void addSlnData(const gpstk::typeValueMap& slnData);
-    private: void addSvData(const gpstk::satTypeValueMap& svData);
-    private: void addNewEpoch(const std::pair<gpstk::CommonTime, pod::GnssEpoch>& epoch);
-    private: int  addSV(const gpstk::SatID& sv);
+    private: void addObsData(const std::pair<gnsstk::TypeID, double> & typeValuePair);
+    private: void addSlnData(const gnsstk::typeValueMap& slnData);
+    private: void addSvData(const gnsstk::satTypeValueMap& svData);
+    private: void addNewEpoch(const std::pair<gnsstk::CommonTime, pod::GnssEpoch>& epoch);
+    private: int  addSV(const gnsstk::SatID& sv);
 
 #pragma endregion
 

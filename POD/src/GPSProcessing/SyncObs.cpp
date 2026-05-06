@@ -5,11 +5,11 @@ using namespace gpstk;
 namespace pod
 {
     SyncObs::SyncObs(const std::list<std::string>& files,
-        gpstk::IRinex& roverData,
+        gnsstk::IRinex& roverData,
         const double tol)
         :Synchronize(roverData,tol), rinFiles(files)
     {
-        //initialize  gpstk::Synchronize object
+        //initialize  gnsstk::Synchronize object
         Synchronize::setReferenceSource(rin);
         
         //prepare ref. station data stream
@@ -26,7 +26,7 @@ namespace pod
         {
             // If rinFiles is empty now, we issue an exception
             SynchronizeException e("RINEX file list is empty now. ");
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
         }
 
         //extract firts filename from list
@@ -59,7 +59,7 @@ namespace pod
             {
                 Synchronize::Process(gData);
             }
-            catch (gpstk::SynchronizeException &e)
+            catch (gnsstk::SynchronizeException &e)
             {
                 toNextFile();
                 continue;

@@ -44,7 +44,7 @@ namespace pod
                     if(!b)
                         satRejectedSet.insert(it.first);
                 }
-                catch (gpstk::Exception &e)
+                catch (gnsstk::Exception &e)
                 {
                     DBOUT_LINE(e)
                     satRejectedSet.insert(it.first);
@@ -73,7 +73,7 @@ namespace pod
             ProcessingException e(getClassName() + ":"
                 + u.what());
 
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
 
         }
 
@@ -81,7 +81,7 @@ namespace pod
 
 
        ///
-    bool IonoEstimator::feed(const gpstk::SatID & sv, IRinex &gRin)
+    bool IonoEstimator::feed(const gnsstk::SatID & sv, IRinex &gRin)
     {
         double ionoCode(.0);
         if (!lcIonoCode.getCombination(sv, gRin.getBody()[sv]->get_value(), ionoCode)) return false;

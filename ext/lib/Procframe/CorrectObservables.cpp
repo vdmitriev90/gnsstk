@@ -44,7 +44,7 @@
 #include "CorrectObservables.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       // Returns a string identifying this object.
@@ -61,7 +61,6 @@ namespace gpstk
        */
    SatTypePtrMap& CorrectObservables::Process( const CommonTime& time,
                                                  SatTypePtrMap& gData )
-      throw(ProcessingException)
    {
 
       try
@@ -107,57 +106,42 @@ namespace gpstk
          {
 
                // Use ephemeris if satellite position is not already computed
-            if( ( (*it).second->get_value().find(TypeID::satX) == (*it).second->get_value().end() ) ||
-                ( (*it).second->get_value().find(TypeID::satY) == (*it).second->get_value().end() ) ||
-                ( (*it).second->get_value().find(TypeID::satZ) == (*it).second->get_value().end() ) )
-            {
+             if (((*it).second->get_value().find(TypeID::satX) == (*it).second->get_value().end()) ||
+                 ((*it).second->get_value().find(TypeID::satY) == (*it).second->get_value().end()) ||
+                 ((*it).second->get_value().find(TypeID::satZ) == (*it).second->get_value().end()))
+             {
+                 // For our purposes, position at receive time
+                 // is fine enough
+                 Xvt svPosVel;
+                 if (pEphemeris.getXvt((*it).first, time, svPosVel))
+                 {
 
-               if(pEphemeris==NULL)
-               {
-
-                  // If ephemeris is missing, then remove all satellites
-                  satRejectedSet.insert( (*it).first );
-
-                  continue;
-               }
-               else
-               {
-                     // Try to get satellite position
-                     // if it is not already computed
-                  try
-                  {
-                        // For our purposes, position at receive time
-                        // is fine enough
-                     Xvt svPosVel(pEphemeris->getXvt( (*it).first, time ));
-
-                        // If everything is OK, then continue processing.
+                     // If everything is OK, then continue processing.
                      svPos[0] = svPosVel.x.theArray[0];
                      svPos[1] = svPosVel.x.theArray[1];
                      svPos[2] = svPosVel.x.theArray[2];
 
-                  }
-                  catch(...)
-                  {
+                 }
+                 else
+                 {
 
-                        // If satellite is missing, then schedule it
-                        // for removal
-                     satRejectedSet.insert( (*it).first );
+                     // If satellite is missing, then schedule it
+                     // for removal
+                     satRejectedSet.insert((*it).first);
 
                      continue;
+                 }
 
-                  }
-               }
+             }  // End of 'if( ( (*it).second->get_value().find(TypeID::satX) == ...'
+             else
+             {
 
-            }  // End of 'if( ( (*it).second->get_value().find(TypeID::satX) == ...'
-            else
-            {
+                 // Get satellite position out of GDS
+                 svPos[0] = (*it).second->get_value()[TypeID::satX];
+                 svPos[1] = (*it).second->get_value()[TypeID::satY];
+                 svPos[2] = (*it).second->get_value()[TypeID::satZ];
 
-                  // Get satellite position out of GDS
-               svPos[0] = (*it).second->get_value()[TypeID::satX];
-               svPos[1] = (*it).second->get_value()[TypeID::satY];
-               svPos[2] = (*it).second->get_value()[TypeID::satZ];
-
-            }
+             }
 
 
                // Declare the variables where antenna PC variations
@@ -165,130 +149,130 @@ namespace gpstk
                // computed, in UEN system
             Triple L1Var( 0.0, 0.0, 0.0 );
             Triple L2Var( 0.0, 0.0, 0.0 );
-			if (usePCV)
-			{
-				// Check if we have a valid Antenna object
-				if (antenna.isValid())
-				{
+            if (usePCV)
+            {
+                // Check if we have a valid Antenna object
+                if (antenna.isValid())
+                {
 
-					// Check if we have elevation information
-					if ((*it).second->get_value().find(TypeID::elevation) != (*it).second->get_value().end())
-					{
+                    // Check if we have elevation information
+                    if ((*it).second->get_value().find(TypeID::elevation) != (*it).second->get_value().end())
+                    {
 
-						// Get elevation value
-						double elev((*it).second->get_value()[TypeID::elevation]);
+                        // Get elevation value
+                        double elev((*it).second->get_value()[TypeID::elevation]);
 
-						// Check if azimuth is also required
-						if (!useAzimuth)
-						{
+                        // Check if azimuth is also required
+                        if (!useAzimuth)
+                        {
 
-							// In this case, use methods that only need elevation
-							try
-							{
+                            // In this case, use methods that only need elevation
+                            try
+                            {
 
-								// Compute phase center variation values
-								L1Var = antenna.getAntennaPCVariation(Antenna::G01,
-									elev);
-								L2Var = antenna.getAntennaPCVariation(Antenna::G02,
-									elev);
+                                // Compute phase center variation values
+                                L1Var = antenna.getAntennaPCVariation(Antenna::G01,
+                                    elev);
+                                L2Var = antenna.getAntennaPCVariation(Antenna::G02,
+                                    elev);
 
-							}
-							catch (InvalidRequest& ir)
-							{
-								// Throw an exception if something unexpected
-								// happens
-								ProcessingException e(getClassName() + ":"
-									+ "Unexpected problem found when trying to "
-									+ "compute antenna offsets");
+                            }
+                            catch (InvalidRequest& ir)
+                            {
+                                // Throw an exception if something unexpected
+                                // happens
+                                ProcessingException e(getClassName() + ":"
+                                    + "Unexpected problem found when trying to "
+                                    + "compute antenna offsets");
 
-								GPSTK_THROW(e);
-							}  // End fo 'try'
+                                GNSSTK_THROW(e);
+                            }  // End fo 'try'
 
-						}
-						else
-						{
+                        }
+                        else
+                        {
 
-							// Check if we have azimuth information
-							if ((*it).second->get_value().find(TypeID::azimuth) !=
-								(*it).second->get_value().end())
-							{
+                            // Check if we have azimuth information
+                            if ((*it).second->get_value().find(TypeID::azimuth) !=
+                                (*it).second->get_value().end())
+                            {
 
-								// Get azimuth value
-								double azim((*it).second->get_value()[TypeID::azimuth]);
+                                // Get azimuth value
+                                double azim((*it).second->get_value()[TypeID::azimuth]);
 
-								// Use a gentle fallback mechanism to get antenna
-								// phase center variations
-								try
-								{
-									// Compute phase center variation values
-									L1Var = antenna.getAntennaPCVariation(Antenna::G01,
-										elev,
-										azim);
+                                // Use a gentle fallback mechanism to get antenna
+                                // phase center variations
+                                try
+                                {
+                                    // Compute phase center variation values
+                                    L1Var = antenna.getAntennaPCVariation(Antenna::G01,
+                                        elev,
+                                        azim);
 
-									L2Var = antenna.getAntennaPCVariation(Antenna::G02,
-										elev,
-										azim);
+                                    L2Var = antenna.getAntennaPCVariation(Antenna::G02,
+                                        elev,
+                                        azim);
 
-								}
-								catch (InvalidRequest& ir)
-								{
-									// We  "graceful degrade" to a simpler mechanism
-									try
-									{
+                                }
+                                catch (InvalidRequest& ir)
+                                {
+                                    // We  "graceful degrade" to a simpler mechanism
+                                    try
+                                    {
 
-										// Compute phase center variation values
-										L1Var =
-											antenna.getAntennaPCVariation(Antenna::G01,
-												elev);
+                                        // Compute phase center variation values
+                                        L1Var =
+                                            antenna.getAntennaPCVariation(Antenna::G01,
+                                                elev);
 
-										L2Var =
-											antenna.getAntennaPCVariation(Antenna::G02,
-												elev);
+                                        L2Var =
+                                            antenna.getAntennaPCVariation(Antenna::G02,
+                                                elev);
 
-									}
-									catch (InvalidRequest& ir)
-									{
-										// Throw an exception if something unexpected
-										// happens
-										ProcessingException e(getClassName() + ":"
-											+ "Unexpected problem found when trying to "
-											+ "compute antenna offsets");
+                                    }
+                                    catch (InvalidRequest& ir)
+                                    {
+                                        // Throw an exception if something unexpected
+                                        // happens
+                                        ProcessingException e(getClassName() + ":"
+                                            + "Unexpected problem found when trying to "
+                                            + "compute antenna offsets");
 
-										GPSTK_THROW(e);
-									}  // End fo 'try'
+                                        GNSSTK_THROW(e);
+                                    }  // End fo 'try'
 
-								}  // End fo 'try'
+                                }  // End fo 'try'
 
-							}
-							else
-							{
+                            }
+                            else
+                            {
 
-								// Throw an exception if something unexpected happens
-								ProcessingException e(getClassName() + ":"
-									+ "Azimuth information could not be found, "
-									+ "so antenna PC offsets can not be computed");
+                                // Throw an exception if something unexpected happens
+                                ProcessingException e(getClassName() + ":"
+                                    + "Azimuth information could not be found, "
+                                    + "so antenna PC offsets can not be computed");
 
-								GPSTK_THROW(e);
+                                GNSSTK_THROW(e);
 
-							}  // End of 'if( (*it).second->get_value().find(TypeID::azimuth) !=...'
+                            }  // End of 'if( (*it).second->get_value().find(TypeID::azimuth) !=...'
 
-						}  // End of 'if( !useAzimuth )'
+                        }  // End of 'if( !useAzimuth )'
 
-					}
-					else
-					{
+                    }
+                    else
+                    {
 
-						// Throw an exception if there is no elevation data
-						ProcessingException e(getClassName() + ":"
-							+ "Elevation information could not be found, "
-							+ "so antenna PC offsets can not be computed");
+                        // Throw an exception if there is no elevation data
+                        ProcessingException e(getClassName() + ":"
+                            + "Elevation information could not be found, "
+                            + "so antenna PC offsets can not be computed");
 
-						GPSTK_THROW(e);
+                        GNSSTK_THROW(e);
 
-					}  // End of 'if( (*it).second->get_value().find(TypeID::elevation) != ...'
+                    }  // End of 'if( (*it).second->get_value().find(TypeID::elevation) != ...'
 
-				}  // End of 'if( antenna.isValid() )...'
-			}
+                }  // End of 'if( antenna.isValid() )...'
+            }
 
                // Update displacement vectors with current phase centers
             Triple dL1( dispL1 + L1PhaseCenter - L1Var );
@@ -418,11 +402,11 @@ namespace gpstk
          ProcessingException e( getClassName() + ":"
                                 + u.what() );
 
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
 
       }
 
    }  // End of method 'CorrectObservables::Process()'
 
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk

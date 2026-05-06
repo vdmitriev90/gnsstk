@@ -42,7 +42,7 @@
 
 #include "ComputeDOP.hpp"
 
-namespace gpstk
+namespace gnsstk
 {
 
       // Returns a string identifying this object.
@@ -59,7 +59,6 @@ namespace gpstk
        */
    SatTypePtrMap& ComputeDOP::Process( const CommonTime& time,
                                          SatTypePtrMap& gData)
-      throw(ProcessingException)
    {
 
       try
@@ -152,11 +151,11 @@ namespace gpstk
          ProcessingException e( getClassName() + ":"
                                 + u.what() );
 
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
 
       }
 
    }  // End of method 'ComputeDOP::Process()'
 
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk

@@ -47,7 +47,7 @@
 
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       /// @ingroup GPSsolutions 
@@ -241,8 +241,7 @@ namespace gpstk
           * @param gData     Data object holding the data.
           */
       virtual SatTypePtrMap& Process( const CommonTime& epoch,
-                                        SatTypePtrMap& gData )
-         throw(ProcessingException);
+                                        SatTypePtrMap& gData );
 
 
          /** Returns a gnnsRinex object, adding the new data generated when
@@ -250,8 +249,7 @@ namespace gpstk
           *
           * @param gData    Data object holding the data.
           */
-      virtual IRinex& Process(IRinex& gData)
-         throw(ProcessingException);
+      virtual IRinex& Process(IRinex& gData);
 
 
          /// Returns a string identifying this object.
@@ -306,6 +304,6 @@ namespace gpstk
 
       //@}
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk
 
 #endif   // GPSTK_PHASECODEALIGNMENT_HPP

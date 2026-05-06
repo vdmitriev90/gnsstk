@@ -140,7 +140,7 @@ namespace pod
          ProcessingException e( getClassName() + ":"
                                 + u.what() );
 
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
 
       }
 
@@ -207,7 +207,7 @@ namespace pod
             // Throw an exception if something unexpected happens
          ProcessingException e( getClassName() + ":" + u.what() );
 
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
 
       }
 
@@ -284,7 +284,7 @@ namespace pod
                if ((*pos)->getBody().size() == 0)
                {
                    Exception e("Rejected all satellites at reprocessing part, check phase and code limits");
-                   GPSTK_THROW(e);
+                   GNSSTK_THROW(e);
                }
                    
                   // Process data
@@ -311,7 +311,7 @@ namespace pod
             // Throw an exception if something unexpected happens
          ProcessingException e( getClassName() + ":" + u.what() );
 
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
 
       }
 
@@ -375,7 +375,7 @@ namespace pod
             // Throw an exception if something unexpected happens
          ProcessingException e( getClassName() + ":" + u.what() );
 
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
 
       }
 

@@ -49,13 +49,13 @@
 
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       /// Thrown when synchronization was not possible at a given epoch
       /// @ingroup exceptiongroup
-   NEW_EXCEPTION_CLASS(SynchronizeException, gpstk::Exception);
-   NEW_EXCEPTION_CLASS(SyncNextRoverEpoch, gpstk::Exception);
+   NEW_EXCEPTION_CLASS(SynchronizeException, gnsstk::Exception);
+   NEW_EXCEPTION_CLASS(SyncNextRoverEpoch, gnsstk::Exception);
 
       /// @ingroup DataStructures 
       //@{
@@ -197,8 +197,7 @@ namespace gpstk
           *
           * @param gData    Data object holding the data.
           */
-      virtual IRinex& Process(IRinex& gData)
-         throw(SynchronizeException);
+      virtual IRinex& Process(IRinex& gData);
 
 
          /// Returns tolerance, in seconds.
@@ -242,8 +241,7 @@ namespace gpstk
 
    protected:
 
-      virtual IRinex& Process(CommonTime time, IRinex& gData)
-         throw(SynchronizeException);
+      virtual IRinex& Process(CommonTime time, IRinex& gData);
 
          /// gnssRinex data buffer
       std::list<irinex_uptr> gnssRinexBuffer;
@@ -269,6 +267,6 @@ namespace gpstk
 
       //@}
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk
 
 #endif   // GPSTK_SYNCHRONIZE_HPP

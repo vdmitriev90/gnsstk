@@ -5,7 +5,7 @@ using namespace gpstk;
 
 namespace pod
 {
-    SatIDSet RefSatHandler::getRefSats(gpstk::IRinex & gData)
+    SatIDSet RefSatHandler::getRefSats(gnsstk::IRinex & gData)
     {
         SatIDSet results;
         SatSystSet satSystems;
@@ -36,10 +36,10 @@ namespace pod
 
     //
     Matrix<double> RefSatHandler::getSD2DDMatrix(
-        gpstk::IRinex & gData, 
+        gnsstk::IRinex & gData, 
         const SatIDSet& svs,
         const SatSystSet& ss,
-        gpstk::SatIDSet &refSvSet)
+        gnsstk::SatIDSet &refSvSet)
     {
         //get reference satellites for each satellite systems
         refSvSet = getRefSats(gData);

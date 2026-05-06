@@ -44,7 +44,7 @@
 
 #include "BasicModel.hpp"
 
-namespace gpstk
+namespace gnsstk
 {
 
 
@@ -53,81 +53,29 @@ namespace gpstk
    { return "BasicModel"; }
 
 
-
-      /* Explicit constructor taking as input reference
-       * station coordinates.
-       *
-       * Those coordinates may be Cartesian (X, Y, Z in meters) or Geodetic
-       * (Latitude, Longitude, Altitude), but defaults to Cartesian.
-       *
-       * Also, a pointer to GeoidModel may be specified, but default is
-       * NULL (in which case WGS84 values will be used).
-       *
-       * @param aRx   first coordinate [ X(m), or latitude (degrees N) ]
-       * @param bRx   second coordinate [ Y(m), or longitude (degrees E) ]
-       * @param cRx   third coordinate [ Z, height above ellipsoid or
-       *              radius, in meters ]
-       * @param s     coordinate system (default is Cartesian, may be set
-       *              to Geodetic).
-       * @param ell   pointer to EllipsoidModel
-       * @param frame Reference frame associated with this position
-       */
-   BasicModel::BasicModel( const double& aRx,
-                           const double& bRx,
-                           const double& cRx,
-                           Position::CoordinateSystem s,
-                           EllipsoidModel *ell,
-                           ReferenceFrame frame )
-       : minElev(10.0), defaultObservable(TypeID::C1), useTGD(false), addTGD(false),
-       useCdtDot(false), isFirstTime(false), currTime(CommonTime::END_OF_TIME),
-       prevTime(CommonTime::BEGINNING_OF_TIME), defInterval(30)
-   {
-
-      pDefaultEphemeris = NULL;
-      setInitialRxPosition( aRx, bRx, cRx, s, ell, frame );
-
-   }  // End of 'BasicModel::BasicModel()'
-
-
-      // Explicit constructor, taking as input a Position object
-      // containing reference station coordinates.
-   BasicModel::BasicModel(const Position& RxCoordinates)
-       : minElev(10.0), defaultObservable(TypeID::C1), useTGD(false), addTGD(false),
-       useCdtDot(false), isFirstTime(false), currTime(CommonTime::END_OF_TIME),
-       prevTime(CommonTime::BEGINNING_OF_TIME), defInterval(30)
-   {
-
-      pDefaultEphemeris = NULL;
-          
-      setInitialRxPosition(RxCoordinates);
-
-   }  // End of 'BasicModel::BasicModel()'
-
-
-
       /* Explicit constructor, taking as input reference station
        * coordinates, ephemeris to be used, default observable
        * and whether TGD will be computed or not.
        *
        * @param RxCoordinates Reference station coordinates.
-       * @param dEphemeris    EphemerisStore object to be used by default.
+       * @param navLib        NavLibrary object to be used.
        * @param dObservable   Observable type to be used by default.
        * @param applyTGD      Whether or not C1 observable will be
        *                      corrected from TGD effect or not.
-       *
+       * @param isaddTGD      Whether TGD value will be calculated and added to GDS.
        */
    BasicModel::BasicModel( const Position& RxCoordinates,
-                           XvtStore<SatID>& dEphemeris,
+                           NavLibrary& navLib,
                            const TypeID& dObservable,
                            const bool& applyTGD,
                            const bool& isaddTGD)
-       : minElev(10.0), defaultObservable(dObservable), useTGD(applyTGD), addTGD(isaddTGD),
-       useCdtDot(false), isFirstTime(false), currTime(CommonTime::END_OF_TIME),
-       prevTime(CommonTime::BEGINNING_OF_TIME), defInterval(30)
+       : minElev(10.0), navLibrary(navLib), defaultObservable(dObservable), 
+         useTGD(applyTGD), addTGD(isaddTGD),
+         useCdtDot(false), isFirstTime(false), currTime(CommonTime::END_OF_TIME),
+         prevTime(CommonTime::BEGINNING_OF_TIME), defInterval(30)
    {
 
       setInitialRxPosition(RxCoordinates);
-      setDefaultEphemeris(dEphemeris);
     
    }  // End of 'BasicModel::BasicModel()'
 
@@ -141,7 +89,6 @@ namespace gpstk
        */
    SatTypePtrMap& BasicModel::Process( const CommonTime& time,
                                          SatTypePtrMap& gData )
-      throw(ProcessingException)
    {
        
       
@@ -170,7 +117,7 @@ namespace gpstk
                                               observable,
                                               rxPos,
                                               (*stv).first,
-                                              *(getDefaultEphemeris()) );
+                                              navLibrary );
             }
             catch(InvalidRequest& e)
             {
@@ -217,7 +164,7 @@ namespace gpstk
             //Glonass-spacific bias(ISB)
             double cdtGLO (0.0);
 
-            if (stv->first.system == SatID::SatelliteSystem::systemGlonass)
+            if (stv->first.system ==SatelliteSystem::Glonass )
             {
                 cdtGLO = 1;
                 numGLN++;
@@ -255,7 +202,7 @@ namespace gpstk
             if (addTGD)
             {
                 // Computing Total Group Delay (TGD - meters), if possible
-                double tempTGD = getTGDCorrections(time, (*pDefaultEphemeris), (*stv).first);
+                double tempTGD = getTGDCorrections(time, (*stv).first);
 
                 // Apply correction to C1 observable, if appropriate
                 if (useTGD)
@@ -277,7 +224,7 @@ namespace gpstk
        
          if (numGLN < 2)
          {
-             gData.removeSatSyst(SatID::SatelliteSystem::systemGlonass);
+             gData.removeSatSyst(SatelliteSystem::Glonass);
              gData.removeTypeID(TypeID::recISB_GLN);
          }
 
@@ -291,7 +238,7 @@ namespace gpstk
             // Throw an exception if something unexpected happens
          ProcessingException e( getClassName() + ":" + u.what() );
 
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
 
       }
 
@@ -309,7 +256,7 @@ namespace gpstk
                                          const double& cRx,
                                          Position::CoordinateSystem s,
                                          EllipsoidModel *ell,
-                                         ReferenceFrame frame )
+                                         const RefFrame& frame )
    {
 
       try
@@ -364,28 +311,13 @@ namespace gpstk
 
 
       // Method to get TGD corrections.
-   double BasicModel::getTGDCorrections( CommonTime Tr,
-                                         const XvtStore<SatID>& Eph,
-                                         SatID sat )
-      throw()
+   double BasicModel::getTGDCorrections(const CommonTime& Tr, const SatID& sat)
    {
-
-      try
-      {
-         const GPSEphemerisStore& bce =
-                                 dynamic_cast<const GPSEphemerisStore&>(Eph);
-
-         bce.findEphemeris(sat,Tr);
-
-         //return ( bce.findEphemeris(sat,Tr).getTgd() * C_MPS );
-         return ( bce.findEphemeris(sat,Tr).Tgd * C_MPS );
-      }
-      catch(...)
-      {
-         return 0.0;
-      }
-
+       // TODO: Implement TGD correction retrieval from NavLibrary
+       // This requires accessing GPS-specific data from NavLibrary
+       // For now, returning 0.0 as a placeholder
+       return 0.0;
    }  // End of method 'BasicModel::getTGDCorrections()'
 
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk

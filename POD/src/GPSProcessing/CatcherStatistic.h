@@ -13,20 +13,20 @@ namespace pod
 
         ~CatcherStatistic() {};
 
-        void logStatistic(const std::list<gpstk::ProcessingClass*> &) const;
+        void logStatistic(const std::list<gnsstk::ProcessingClass*> &) const;
         
         struct dataRecord
         {
-            dataRecord(std::string cname, std::set<gpstk::SatID> svSet) :
+            dataRecord(std::string cname, std::set<gnsstk::SatID> svSet) :
                 className(cname), satRejected(svSet) 
             {};
 
             std::string className;
-            std::set<gpstk::SatID> satRejected;
+            std::set<gnsstk::SatID> satRejected;
         };
 
         typedef std::list< dataRecord> dataTableItem;
-        typedef std::map<gpstk::CommonTime, dataTableItem> dataTable;
+        typedef std::map<gnsstk::CommonTime, dataTableItem> dataTable;
 
     private:
         std::string file;

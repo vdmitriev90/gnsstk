@@ -45,7 +45,7 @@
 
 using namespace std;
 
-namespace gpstk
+namespace gnsstk
 {
 
       /* Get a combination of observations from a Rinex3ObsData object
@@ -64,7 +64,6 @@ namespace gpstk
    int ExtractCombinationData::getData( const Rinex3ObsData& rinexData,
                                         int indexObs1,
                                         int indexObs2 )
-      throw(InvalidRequest)
    {
 
       try
@@ -114,7 +113,7 @@ namespace gpstk
       catch(...)
       {
          InvalidRequest e("Unable to compute combination from Rinex3ObsData object");
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
 
          // Let's record the number of SV with this type of data available
@@ -142,7 +141,6 @@ namespace gpstk
                                         std::string type1,
                                         std::string type2,
                                         const Rinex3ObsHeader& hdr )
-   throw(InvalidRequest)
    {
          // Get the indexes corresponding to these observation types
       int index1( hdr.getObsIndex(type1) );
@@ -154,4 +152,4 @@ namespace gpstk
    }  // End of method 'ExtractData::getData()'
 
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk

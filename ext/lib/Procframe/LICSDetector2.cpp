@@ -44,7 +44,7 @@
 #include "LICSDetector2.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       // Returns a string identifying this object.
@@ -363,4 +363,4 @@ namespace gpstk
    }  // End of method 'LICSDetector2::getDetection()'
 
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk

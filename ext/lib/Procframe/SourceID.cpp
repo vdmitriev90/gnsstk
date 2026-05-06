@@ -37,13 +37,13 @@
 
 /**
  * @file SourceID.cpp
- * gpstk::SourceID - Simple index to represent the source of data.
+ * gnsstk::SourceID - Simple index to represent the source of data.
  */
 
 #include "SourceID.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
 
    std::map< SourceID::SourceType, std::string > SourceID::stStrings;
@@ -188,4 +188,4 @@ namespace gpstk
    }  // End of 'operator<<'
 
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk

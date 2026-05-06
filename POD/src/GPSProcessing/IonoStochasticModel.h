@@ -3,14 +3,14 @@
 namespace pod
 {
     class IonoStochasticModel :
-        public gpstk::RandomWalkModel
+        public gnsstk::RandomWalkModel
     {
     public:
         IonoStochasticModel() {};
         
         IonoStochasticModel(double qp,
-            const gpstk::CommonTime& prevTime = gpstk::CommonTime::BEGINNING_OF_TIME,
-            const gpstk::CommonTime& currentTime = gpstk::CommonTime::BEGINNING_OF_TIME)
+            const gnsstk::CommonTime& prevTime = gnsstk::CommonTime::BEGINNING_OF_TIME,
+            const gnsstk::CommonTime& currentTime = gnsstk::CommonTime::BEGINNING_OF_TIME)
             : RandomWalkModel(qp, prevTime, prevTime) {};
 
         virtual ~IonoStochasticModel() {};
@@ -22,7 +22,7 @@ namespace pod
         * @param gData      Data object holding the data.
         *
         */
-        virtual void Prepare(const  gpstk::SatID& sat, gpstk::IRinex& gData) override;
+        virtual void Prepare(const  gnsstk::SatID& sat, gnsstk::IRinex& gData) override;
 
         virtual double getQ() const override;
         virtual double getPhi() const override;

@@ -54,7 +54,7 @@
 
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       /// @ingroup DataStructures 
@@ -214,8 +214,7 @@ namespace gpstk
           *
           * @warning The phase center offset Triple is in UEN system.
           */
-      Triple getAntennaEccentricity( frequencyType freq ) const
-         throw(InvalidRequest);
+      Triple getAntennaEccentricity( frequencyType freq ) const;
 
 
          /** Get antenna phase center variation. Use this method when you
@@ -229,9 +228,8 @@ namespace gpstk
           *
           * @warning The phase center variation Triple is in UEN system.
           */
-      Triple getAntennaPCVariation( frequencyType freq,
-                                    double elevation ) const
-         throw(InvalidRequest);
+      Triple getAntennaPCVariation( frequencyType freq, double elevation ) const;
+
 
 
          /** Get antenna phase center variation.
@@ -245,18 +243,14 @@ namespace gpstk
           *
           * @warning The phase center variation Triple is in UEN system.
           */
-      Triple getAntennaPCVariation( frequencyType freq,
-                                    double elevation,
-                                    double azimuth ) const
-         throw(InvalidRequest);
+      Triple getAntennaPCVariation( frequencyType freq, double elevation, double azimuth ) const;
 
 
          /** Get antenna data.
           *
           * @param[in] dataType     Antenna data type to be fetched
           */
-      std::string getAntennaData( AntennaDataType dataType ) const
-         throw(InvalidRequest);
+      std::string getAntennaData(AntennaDataType dataType) const;
 
 
          /** Set antenna data.
@@ -271,7 +265,6 @@ namespace gpstk
 
          /// Get antenna type.
       std::string getAntennaType() const
-         throw(InvalidRequest)
       { return getAntennaData( antennaType ); };
 
 
@@ -285,7 +278,6 @@ namespace gpstk
 
          /// Get antenna radome.
       std::string getAntennaRadome() const
-         throw(InvalidRequest)
       { return getAntennaData( antennaRadome ); };
 
 
@@ -299,7 +291,6 @@ namespace gpstk
 
          /// Get antenna serial number or satellite code "CNN".
       std::string getAntennaSerial() const
-         throw(InvalidRequest)
       { return getAntennaData(serial); };
 
 
@@ -313,7 +304,6 @@ namespace gpstk
 
          /// Get antenna calibration method.
       std::string getAntennaCalMethod() const
-         throw(InvalidRequest)
       { return getAntennaData(calMethod); };
 
 
@@ -700,6 +690,6 @@ namespace gpstk
 
       //@}
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk
 
 #endif   // GPSTK_ANTENNA_HPP

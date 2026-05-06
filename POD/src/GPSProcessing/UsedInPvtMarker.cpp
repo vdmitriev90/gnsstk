@@ -4,16 +4,16 @@ using namespace gpstk;
 namespace pod
 {
 	
-	gpstk::IRinex& UsedInPvtMarker::
-		Process(gpstk::IRinex& gRin)
+	gnsstk::IRinex& UsedInPvtMarker::
+		Process(gnsstk::IRinex& gRin)
 	{
 		markAsUsed(gRin.getBody());
 		return gRin;
 	}
 
 	// mark all SV in SatTypePtrMap as useable in PVT  
-	gpstk::SatTypePtrMap& UsedInPvtMarker::
-		markAsUsed(gpstk::SatTypePtrMap& satData) const
+	gnsstk::SatTypePtrMap& UsedInPvtMarker::
+		markAsUsed(gnsstk::SatTypePtrMap& satData) const
 	{
 		for (auto &&it : satData)
 			it.second->get_value()[type] = SatUsedStatus::UsedInPVT;
@@ -22,8 +22,8 @@ namespace pod
 	}
 
 
-	gpstk::SatTypePtrMap& UsedInPvtMarker::
-		keepOnlyUsed(gpstk::SatTypePtrMap& satData) const
+	gnsstk::SatTypePtrMap& UsedInPvtMarker::
+		keepOnlyUsed(gnsstk::SatTypePtrMap& satData) const
 	{
 		SatIDSet rejectedSats;
 		for (auto &&it : satData)
@@ -38,8 +38,8 @@ namespace pod
 		return satData;
 	}
 
-	gpstk::SatTypePtrMap& UsedInPvtMarker::
-		CleanScFlags(gpstk::SatTypePtrMap& satData) const
+	gnsstk::SatTypePtrMap& UsedInPvtMarker::
+		CleanScFlags(gnsstk::SatTypePtrMap& satData) const
 	{
 		for (auto it = satData.begin(); it != satData.end(); ++it)
 		{
@@ -58,8 +58,8 @@ namespace pod
 		return satData;
 	}
 
-	gpstk::SatTypePtrMap& UsedInPvtMarker::
-		CleanSatArcFlags(gpstk::SatTypePtrMap& satData) const
+	gnsstk::SatTypePtrMap& UsedInPvtMarker::
+		CleanSatArcFlags(gnsstk::SatTypePtrMap& satData) const
 	{
 		for (auto&& it : satData)
 			it.second->get_value()[TypeID::satArc] = 0;
@@ -68,7 +68,7 @@ namespace pod
 	}
 
 	UsedInPvtMarker& UsedInPvtMarker::
-		updateLastEpoch(const gpstk::IRinex& gRin)
+		updateLastEpoch(const gnsstk::IRinex& gRin)
 	{
 		preEpoch = gRin.getHeader().epoch;
 		preEpochSats = gRin.getBody().getSatID();

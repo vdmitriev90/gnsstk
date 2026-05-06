@@ -37,7 +37,7 @@
 
 /**
  * @file SourceID.hpp
- * gpstk::SourceID - Simple index to represent the source of data.
+ * gnsstk::SourceID - Simple index to represent the source of data.
  */
 
 #ifndef GPSTK_SOURCEID_HPP
@@ -51,7 +51,7 @@
 
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       /// @ingroup DataStructures 
@@ -199,5 +199,5 @@ namespace gpstk
 
 
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk
 #endif   // GPSTK_SOURCEID_HPP

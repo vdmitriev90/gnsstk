@@ -43,7 +43,7 @@
 #ifndef GPSTK_CHECKPRDATA_HPP
 #define GPSTK_CHECKPRDATA_HPP
 
-namespace gpstk
+namespace gnsstk
 {
 
       /// @ingroup RinexObs 
@@ -117,6 +117,6 @@ namespace gpstk
 
       //@}
    
-}  // End of namespace gpstk
+}  // End of namespace gnsstk
 
 #endif   // GPSTK_CHECKPRDATA_HPP

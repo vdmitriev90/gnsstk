@@ -43,7 +43,7 @@
 #include "Equation.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
 
 
@@ -184,4 +184,4 @@ namespace gpstk
 
 
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk

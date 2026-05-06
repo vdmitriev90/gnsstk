@@ -46,7 +46,7 @@
 using namespace std;
 
 
-namespace gpstk
+namespace gnsstk
 {
 
 
@@ -383,4 +383,4 @@ namespace gpstk
    }  // End of 'operator<<' for sourceEpochTypeHeader
 
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk

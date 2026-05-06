@@ -49,14 +49,13 @@
 #include "DataStructures.hpp"
 #include "WeightBase.hpp"
 #include "EngEphemeris.hpp"
-#include "SP3EphemerisStore.hpp"
-#include "GPSEphemerisStore.hpp"
+#include "NavLibrary.hpp"
 #include "ComputeIURAWeights.hpp"
 #include "MOPSTropModel.hpp"
 #include "GNSSconstants.hpp"             // DEG_TO_RAD
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       /// @ingroup DataStructures 
@@ -134,36 +133,21 @@ namespace gpstk
    {
    public:
 
-         /// Default constructor. Generates an invalid object.
-      ComputeMOPSWeights() : receiverClass(2), defaultIono(TypeID::ionoL1)
-      { pBCEphemeris = NULL; pTabEphemeris = NULL; }
-
-
          /** Common constructor
           *
           * @param pos       Reference position.
           * @param bcephem   GPSEphemerisStore object holding the ephemeris.
           * @param rxClass   Receiver class. By default, it is 2.
           */
-      ComputeMOPSWeights( const Position& pos,
-                          GPSEphemerisStore& bcephem,
-                          int rxClass = 2 )
-         : receiverClass(rxClass), nominalPos(pos), defaultIono(TypeID::ionoL1)
-      { setDefaultEphemeris(bcephem); };
+       ComputeMOPSWeights(const Position& pos, NavLibrary& navLib, int rxClass = 2)
+           : ComputeIURAWeights(navLib)
+           , receiverClass(rxClass)
+           , nominalPos(pos)
+           , defaultIono(TypeID::ionoL1)
+       {
+       };
 
 
-         /** Common constructor
-          *
-          * @param pos       Reference position.
-          * @param tabephem  SP3EphemerisStore object holding the
-          *                  ephemeris.
-          * @param rxClass   Receiver class. By default, it is 2.
-          */
-      ComputeMOPSWeights( const Position& pos,
-                          SP3EphemerisStore& tabephem,
-                          int rxClass = 2 )
-         : receiverClass(rxClass), nominalPos(pos), defaultIono(TypeID::ionoL1)
-      { setDefaultEphemeris(tabephem); };
 
 
          /** Returns a satTypeValueMap object, adding the new data
@@ -173,8 +157,7 @@ namespace gpstk
           * @param gData     Data object holding the data.
           */
       virtual SatTypePtrMap& Process( const CommonTime& time,
-                                        SatTypePtrMap& gData )
-         throw(ProcessingException);
+                                        SatTypePtrMap& gData );
 
 
          /** Returns a gnnsRinex object, adding the new data generated
@@ -182,8 +165,7 @@ namespace gpstk
           *
           * @param gData    Data object holding the data.
           */
-      virtual IRinex& Process(IRinex& gData)
-         throw(ProcessingException);
+      virtual IRinex& Process(IRinex& gData);
 
 
          /** Method to set the default ephemeris to be used with
@@ -193,33 +175,6 @@ namespace gpstk
           */
       virtual ComputeMOPSWeights& setPosition(const Position& pos)
       { nominalPos = pos; return (*this); };
-
-
-         /** Method to set the default ephemeris to be used with GNSS
-          *  data structures.
-          *
-          * @param ephem     EphemerisStore object to be used
-          */
-      virtual ComputeMOPSWeights& setDefaultEphemeris(XvtStore<SatID>& ephem);
-
-
-         /** Method to set the default ephemeris to be used with GNSS
-          *  data structures.
-          *
-          * @param ephem     GPSEphemerisStore object to be used
-          */
-      virtual ComputeMOPSWeights& setDefaultEphemeris(GPSEphemerisStore& ephem)
-      { pBCEphemeris = &ephem; pTabEphemeris = NULL; return (*this); };
-
-
-         /** Method to set the default ephemeris to be used with GNSS
-          *  data structures.
-          *
-          * @param ephem     SP3EphemerisStore object to be used
-          */
-      virtual ComputeMOPSWeights& setDefaultEphemeris(SP3EphemerisStore& ephem)
-      { pBCEphemeris = NULL; pTabEphemeris = &ephem; return (*this); };
-
 
          /// Method to get the default ionospheric TypeID value to be used.
       virtual TypeID getDefaultIono() const
@@ -265,8 +220,7 @@ namespace gpstk
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Woverloaded-virtual"
       virtual double getWeight( const SatID& sat,
-                                typeValueMap& tvMap )
-         throw(InvalidWeights);
+                                typeValueMap& tvMap );
 #pragma clang diagnostic pop
 
          // Compute ionospheric sigma^2 according to Appendix J.2.3
@@ -274,14 +228,13 @@ namespace gpstk
       double sigma2iono( const double& ionoCorrection,
                          const double& elevation,
                          const double& azimuth,
-                         const Position& rxPosition )
-         throw(InvalidWeights);
+                         const Position& rxPosition );
 
 
    }; // End of class 'ComputeMOPSWeights'
 
       //@}
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk
 
 #endif   // GPSTK_COMPUTEMOPSWEIGHTS_HPP

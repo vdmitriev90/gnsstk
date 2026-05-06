@@ -43,7 +43,7 @@
 #include "Variable.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
 
 
@@ -59,12 +59,12 @@ namespace gpstk
 
       // SatID object representing no satellites:
       // system(systemUnknown), id(-1).
-   SatID Variable::noSats( -1, SatID::systemUnknown );
+   SatID Variable::noSats( -1, SatelliteSystem::Unknown );
 
 
       // SatID object representing all satellites:
       // system(systemMixed), id(-1).
-   SatID Variable::allSats( -1, SatID::systemMixed );
+   SatID Variable::allSats( -1, SatelliteSystem::Mixed );
 
 
       // SatID object representing all satellites of GPS System:
@@ -74,12 +74,12 @@ namespace gpstk
 
       // SatID object representing all satellites of Galileo System:
       // system(systemGalileo), id(-1).
-   SatID Variable::allGalileoSats( -1, SatID::systemGalileo );
+   SatID Variable::allGalileoSats( -1, SatelliteSystem::Galileo );
 
 
       // SatID object representing all satellites of Glonass System:
       // system(systemGlonass), id(-1).
-   SatID Variable::allGlonassSats( -1, SatID::systemGlonass );
+   SatID Variable::allGlonassSats( -1, SatelliteSystem::Glonass );
 
 
       // Default stochastic model to be assigned to variables.
@@ -337,4 +337,4 @@ namespace gpstk
 
 
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk

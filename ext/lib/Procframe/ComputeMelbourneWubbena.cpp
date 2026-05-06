@@ -44,7 +44,7 @@
 #include "ComputeMelbourneWubbena.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       // Returns a string identifying this object.
@@ -69,7 +69,6 @@ namespace gpstk
        * @param gData     Data object holding the data.
        */
    SatTypePtrMap& ComputeMelbourneWubbena::Process(SatTypePtrMap& gData)
-      throw(ProcessingException)
    {
 
       try
@@ -121,7 +120,7 @@ namespace gpstk
          ProcessingException e( getClassName() + ":"
                                 + u.what() );
 
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
 
       }
 
@@ -142,4 +141,4 @@ namespace gpstk
    }  // End of method 'ComputeMelbourneWubbena::getCombination()'
 
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk

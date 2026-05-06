@@ -47,7 +47,7 @@
 #include "ComputeCombination.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       /// @ingroup DataStructures 
@@ -105,8 +105,7 @@ namespace gpstk
           *
           * @param gData     Data object holding the data.
           */
-      virtual SatTypePtrMap& Process(SatTypePtrMap& gData)
-         throw(ProcessingException);
+      virtual SatTypePtrMap& Process(SatTypePtrMap& gData);
 
 
          /// Some Rinex data files provide C1 instead of P1. Use this method
@@ -158,6 +157,6 @@ namespace gpstk
 
       //@}
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk
 
 #endif   // GPSTK_COMPUTEMELBOURNEWUBBENA_HPP

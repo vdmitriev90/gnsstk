@@ -1,6 +1,6 @@
 #include"satValueMap.hpp"
 
-namespace gpstk
+namespace gnsstk
 {
 
 	////// satValueMap //////
@@ -65,7 +65,7 @@ namespace gpstk
 	   // @param p Satellite PRN number.
 	   // @param p System the satellite belongs to.
 	satValueMap satValueMap::extractSatID(const int& p,
-		const SatID::SatelliteSystem& s) const
+		SatelliteSystem s) const
 	{
 
 		SatID tempSatellite(p, s);  // We build a temporary SatID object
@@ -120,7 +120,7 @@ namespace gpstk
 	   // @param p Satellite PRN number.
 	   // @param p System the satellite belongs to.
 	satValueMap& satValueMap::keepOnlySatID(const int& p,
-		const SatID::SatelliteSystem& s)
+		SatelliteSystem s)
 	{
 
 		SatID tempSatellite(p, s);  // We build a temporary SatID object
@@ -169,7 +169,6 @@ namespace gpstk
 		* @param satellite     Satellite to be looked for.
 		*/
 	double satValueMap::getValue(const SatID& satellite) const
-		throw(SatIDNotFound)
 	{
 
 		satValueMap::const_iterator itObs((*this).find(satellite));
@@ -179,7 +178,7 @@ namespace gpstk
 		}
 		else
 		{
-			GPSTK_THROW(SatIDNotFound("SatID not found in map"));
+			GNSSTK_THROW(SatIDNotFound("SatID not found in map"));
 		}
 
 	}  // End of method 'satValueMap::getValue()'
@@ -190,7 +189,6 @@ namespace gpstk
 	   // corresponding SatID.
 	   // @param satellite Satellite to be looked for.
 	double& satValueMap::operator()(const SatID& satellite)
-		throw(SatIDNotFound)
 	{
 
 		satValueMap::iterator itObs((*this).find(satellite));
@@ -201,7 +199,7 @@ namespace gpstk
 		}
 		else
 		{
-			GPSTK_THROW(SatIDNotFound("SatID not found in map"));
+			GNSSTK_THROW(SatIDNotFound("SatID not found in map"));
 		}
 
 	}  // End of method 'satValueMap::operator()'

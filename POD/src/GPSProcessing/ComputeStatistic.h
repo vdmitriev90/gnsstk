@@ -11,9 +11,9 @@ namespace pod
     public:
 
         //method to compute correlation matrix from variance-covariance one
-        static  gpstk::Matrix<double> corrMatrix(const gpstk::Matrix<double>& covar);
+        static  gnsstk::Matrix<double> corrMatrix(const gnsstk::Matrix<double>& covar);
 
-        ComputeStatistic(SlnType st, gpstk::TypeIDSet tIDs)
+        ComputeStatistic(SlnType st, gnsstk::TypeIDSet tIDs)
             :slnType(st), types(tIDs), goodEpochs(0)
         {};
         ~ComputeStatistic() {};
@@ -23,12 +23,12 @@ namespace pod
             return slnType;
         }
 
-        gpstk::TypeIDSet getTypeIDSet()
+        gnsstk::TypeIDSet getTypeIDSet()
         {
             return types;
         }
 
-        void compute(const GnssEpochMap& data, gpstk::Vector<double>& sln, gpstk::Matrix<double>& cov);
+        void compute(const GnssEpochMap& data, gnsstk::Vector<double>& sln, gnsstk::Matrix<double>& cov);
 
 		int goodEpochs;
 		int totalEpochs;
@@ -36,7 +36,7 @@ namespace pod
     private:
 
         SlnType slnType;
-        gpstk::TypeIDSet types;
+        gnsstk::TypeIDSet types;
 
     };
 }

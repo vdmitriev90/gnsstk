@@ -300,7 +300,7 @@ namespace gnsstk
           * The \a system field is initialized in the above
           * constructor from the SatID system, which is why we're
           * initializing it to "Unknown" (to make \a system a
-          * wildcard).  But setting the SatID::system to Unknown
+          * wildcard).  But setting the SatelliteSystem:: to Unknown
           * doesn't make SatID a wildcard, that requires the
           * SatID::makeWild() method calls.
           *
@@ -314,7 +314,7 @@ namespace gnsstk
           * @note This method has a bit of overhead, though no more
           *   than find().
           * @note Only NavSignalID::system is checked, if you need to
-          *   explicitly check NavSatelliteID::SatID::system, use the
+          *   explicitly check NavSatelliteID::SatelliteSystem::, use the
           *   count(constNavMessageID&). */
       virtual size_t count(SatelliteSystem sys,
                            NavMessageType nmt = NavMessageType::Unknown)

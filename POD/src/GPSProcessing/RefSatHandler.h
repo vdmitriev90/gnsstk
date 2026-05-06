@@ -12,14 +12,14 @@ namespace pod
         ~RefSatHandler() {};
         
         // return satellites set, contains satellites with maximum elevation for each satellite system
-        gpstk::SatIDSet  getRefSats(gpstk::IRinex & gRin);
+        gnsstk::SatIDSet  getRefSats(gnsstk::IRinex & gRin);
         
         //return DD to SD transition matrix
-        gpstk::Matrix<double> getSD2DDMatrix(
-            gpstk::IRinex & gData,
-            const  gpstk::SatIDSet& svs,
-            const  gpstk::SatSystSet& ss,
-            gpstk::SatIDSet &refSvSet);
+        gnsstk::Matrix<double> getSD2DDMatrix(
+            gnsstk::IRinex & gData,
+            const  gnsstk::SatIDSet& svs,
+            const  gnsstk::SatSystSet& ss,
+            gnsstk::SatIDSet &refSvSet);
     };
 }
 

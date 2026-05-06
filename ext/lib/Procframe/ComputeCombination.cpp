@@ -44,7 +44,7 @@
 #include "ComputeCombination.hpp"
 #include "SatTypePtrMap.h"
 
-namespace gpstk
+namespace gnsstk
 {
 
       // Returns a string identifying this object.
@@ -59,7 +59,6 @@ namespace gpstk
        * @param gData     Data object holding the data.
        */
    SatTypePtrMap& ComputeCombination::Process(SatTypePtrMap& gData)
-      throw(ProcessingException)
    {
 
       try
@@ -107,11 +106,11 @@ namespace gpstk
          ProcessingException e( getClassName() + ":"
                                 + u.what() );
 
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
 
       }
 
    }  // End of method 'ComputeCombination::Process()'
 
 
-} // End of namespace gpstk
+} // End of namespace gnsstk

@@ -43,7 +43,7 @@
 #include "Synchronize.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       // Returns a string identifying this object.
@@ -76,7 +76,6 @@ namespace gpstk
        * @param gData    Data object holding the data.
        */
    IRinex& Synchronize::Process(IRinex& gData)
-      throw(SynchronizeException)
    {
       CommonTime time = (pgRov1)->getHeader().epoch;
 	  Process(time, gData);
@@ -90,7 +89,6 @@ namespace gpstk
 
 
    IRinex& Synchronize::Process(CommonTime time, IRinex& gData)
-      throw(SynchronizeException)
    {
       
       if (firstTime)
@@ -111,7 +109,7 @@ namespace gpstk
          // If synchronization is not possible, we issue an exception
           SyncNextRoverEpoch e( "Unable to synchronize data at epoch "
             + time.asString() );
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
 
       // Check that the reference data time stamp is not less than gData's,
@@ -126,7 +124,7 @@ namespace gpstk
          if (pRinexRef->eof())
          {
              SynchronizeException e("End of file has been reached." + time.asString());
-             GPSTK_THROW(e);
+             GNSSTK_THROW(e);
          }
       }
 
@@ -138,11 +136,11 @@ namespace gpstk
          // If synchronization is not possible, we issue an exception
          SynchronizeException e( "Unable to synchronize data at epoch "
             + time.asString() );
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
 
 
       return gData;
    }  // End of method 'Synchronize::Process(CommonTime time, gnssRinex& gData)'
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk

@@ -10,11 +10,11 @@ namespace pod
 	class MatrixExtensions
 	{
 	public:
-		static void removeColumns(gpstk::Matrix<double>& m, std::set<int> cols);
+		static void removeColumns(gnsstk::Matrix<double>& m, std::set<int> cols);
 
-		static void removeRows(gpstk::Matrix<double>& m, std::set<int> rows);
+		static void removeRows(gnsstk::Matrix<double>& m, std::set<int> rows);
 
-		static void removeElms(gpstk::Vector<double>& v, std::set<int> elms);
+		static void removeElms(gnsstk::Vector<double>& v, std::set<int> elms);
 
 	};
 }

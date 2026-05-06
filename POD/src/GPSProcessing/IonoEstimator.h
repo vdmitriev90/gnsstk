@@ -6,7 +6,7 @@
 namespace pod
 {
     class IonoEstimator :
-        public gpstk::ProcessingClass
+        public gnsstk::ProcessingClass
     {
     public:
         
@@ -15,20 +15,20 @@ namespace pod
         virtual ~IonoEstimator() {};
 
 
-        virtual gpstk::IRinex& Process(gpstk::IRinex& gData)
-            throw(gpstk::ProcessingException);
+        virtual gnsstk::IRinex& Process(gnsstk::IRinex& gData)
+            throw(gnsstk::ProcessingException);
 
         /// Returns a string identifying this object.
         virtual std::string getClassName(void) const override;
 
         IonoEstimator& clear();
 
-        IonoEstimator& reset(const gpstk::SatID& sv);
+        IonoEstimator& reset(const gnsstk::SatID& sv);
 
 
     private:
         
-        bool feed(const gpstk::SatID & sv, gpstk::IRinex& gData);
+        bool feed(const gnsstk::SatID & sv, gnsstk::IRinex& gData);
         struct KalmanData
         {
             KalmanData()
@@ -61,7 +61,7 @@ namespace pod
 
         PhaseIonoDelayL1 lcIonoPhase;
 
-        gpstk::PhaseAmbiguityModel biasStochModel;
+        gnsstk::PhaseAmbiguityModel biasStochModel;
 
         class Initializer
         {

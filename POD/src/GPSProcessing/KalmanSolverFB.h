@@ -30,36 +30,36 @@ namespace pod
 		}
 
         // Solution
-        virtual const  gpstk::Vector<double>& Solution() const
+        virtual const  gnsstk::Vector<double>& Solution() const
         {
             return solver.Solution();
         }
 
-        virtual  gpstk::Vector<double>& Solution()
+        virtual  gnsstk::Vector<double>& Solution()
         {
             return solver.Solution();
         }
 
         // Postfit-residuals.
-        virtual const gpstk::Vector<double>& PostfitResiduals() const override
+        virtual const gnsstk::Vector<double>& PostfitResiduals() const override
         {
             return solver.PostfitResiduals();
         }
 
         //return postfit residuals vector
-        virtual gpstk::Vector<double>& PostfitResiduals() override
+        virtual gnsstk::Vector<double>& PostfitResiduals() override
         {
             return solver.PostfitResiduals();
         }
 
         //return current varince - covarince matrix
-        virtual const gpstk::Matrix<double>& CovMatrix() const
+        virtual const gnsstk::Matrix<double>& CovMatrix() const
         {
             return solver.CovMatrix();
         }
 
         //return current varince - covarince matrix
-        virtual gpstk::Matrix<double>& CovMatrix()
+        virtual gnsstk::Matrix<double>& CovMatrix()
         {
             return solver.CovMatrix();
         }
@@ -96,12 +96,12 @@ namespace pod
             return solver.getValid();
         }
 
-		virtual gpstk::ProcessingList& ReProcList()
+		virtual gnsstk::ProcessingList& ReProcList()
 		{
 			return reProcList;
 		}
 
-		virtual const gpstk::ProcessingList& ReProcList() const
+		virtual const gnsstk::ProcessingList& ReProcList() const
 		{
 			return reProcList;
 		}
@@ -143,15 +143,15 @@ namespace pod
             return *this;
         }
 
-        gpstk::IRinex & Process(gpstk::IRinex & gRin);
+        gnsstk::IRinex & Process(gnsstk::IRinex & gRin);
 
         //last forward process cycle
-        bool lastProcess(gpstk::IRinex & gRin);
+        bool lastProcess(gnsstk::IRinex & gRin);
 
         //Reprocess the data stored during a previous 'Process()' call.
         void reProcess(void);
 
-		void setCSDetRef(gpstk::LICSDetector2& li, gpstk::MWCSDetector&  mw )
+		void setCSDetRef(gnsstk::LICSDetector2& li, gnsstk::MWCSDetector&  mw )
 		{
 			LIDet = &li;
 			MWDet = &mw;
@@ -159,12 +159,12 @@ namespace pod
         
     private:
 		
-		gpstk::IRinex & ReProcessOneEpoch(gpstk::IRinex & gRin);
+		gnsstk::IRinex & ReProcessOneEpoch(gnsstk::IRinex & gRin);
 
         //This method checks the residuals and modifies 'gData' accordingly.
-        void checkLimits(gpstk::IRinex& gData, size_t cycleNumber);
+        void checkLimits(gnsstk::IRinex& gData, size_t cycleNumber);
 
-        double getLimit(const gpstk::TypeID& type, size_t cycleNumber);
+        double getLimit(const gnsstk::TypeID& type, size_t cycleNumber);
 
 #pragma region Fields
 
@@ -185,10 +185,10 @@ namespace pod
     private:
 
         //observations data to be reprocessed
-        std::list<gpstk::irinex_uptr> ObsData;
+        std::list<gnsstk::irinex_uptr> ObsData;
 
-		std::map<gpstk::CommonTime, gpstk::LICSDetector2> LIDetMap;
-		std::map<gpstk::CommonTime, gpstk::MWCSDetector>  MWDetMap;
+		std::map<gnsstk::CommonTime, gnsstk::LICSDetector2> LIDetMap;
+		std::map<gnsstk::CommonTime, gnsstk::MWCSDetector>  MWDetMap;
 
         //internal kalman solver object, which do main part of real work
         KalmanSolver solver;
@@ -200,13 +200,13 @@ namespace pod
         size_t currCycle;
 
 		//
-		gpstk::ProcessingList reProcList;
+		gnsstk::ProcessingList reProcList;
 
 		//
 		UsedInPvtMarker usedSvMarker;
 
-		gpstk::LICSDetector2* LIDet;
-		gpstk::MWCSDetector*  MWDet;
+		gnsstk::LICSDetector2* LIDet;
+		gnsstk::MWCSDetector*  MWDet;
 
 #pragma endregion
 

@@ -48,7 +48,7 @@
 
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       /// @ingroup DataStructures
@@ -397,5 +397,5 @@ namespace gpstk
    }
       //@}
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk
 #endif   // GPSTK_VARIABLE_HPP

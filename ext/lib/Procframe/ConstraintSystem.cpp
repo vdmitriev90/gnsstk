@@ -43,7 +43,7 @@
 #include "ConstraintSystem.hpp"
 #include <vector>
 
-namespace gpstk
+namespace gnsstk
 {
       // Remove a single constraint
    ConstraintSystem& ConstraintSystem::removeConstraint(
@@ -88,7 +88,7 @@ namespace gpstk
       if( prefit.size()!=size )
       {
          Exception e("The input size doesn't match.");
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
 
       clearConstraint();
@@ -124,7 +124,7 @@ namespace gpstk
       if( (prefit.size()!=size) || design.rows()!=size || design.cols()!=size)
       {
          Exception e("The input size doesn't match.");
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
       
       clearConstraint();
@@ -164,7 +164,6 @@ namespace gpstk
                                                     Vector<double>& prefit,
                                                     Matrix<double>& design,
                                                     Matrix<double>& covariance )
-      throw(InvalidConstraintSystem)
    {
       const int rowSize = constraintList.size();
       const int colSize = allVar.size();
@@ -194,7 +193,7 @@ namespace gpstk
             if(itt==allVar.end())
             {
                InvalidConstraintSystem e("The variable not exist in the input");
-               GPSTK_THROW(e);
+               GNSSTK_THROW(e);
             }
 
             int icol(0);
@@ -232,4 +231,4 @@ namespace gpstk
       return (*this);
    }
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk

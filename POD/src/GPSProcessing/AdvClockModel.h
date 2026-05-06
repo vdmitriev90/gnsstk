@@ -12,24 +12,24 @@ namespace pod
     public:
         AdvClockModel() :
 			q1(1e-29), q2(1e-30),
-			previousTime(gpstk::CommonTime::BEGINNING_OF_TIME),
-            currentTime(gpstk::CommonTime::END_OF_TIME),
-			types(ParametersSet{FilterParameter(gpstk::TypeID::recCdt),FilterParameter(gpstk::TypeID::recCdtdot) }),
+			previousTime(gnsstk::CommonTime::BEGINNING_OF_TIME),
+            currentTime(gnsstk::CommonTime::END_OF_TIME),
+			types(ParametersSet{FilterParameter(gnsstk::TypeID::recCdt),FilterParameter(gnsstk::TypeID::recCdtdot) }),
 			isFirstTime(true), dt(DBL_MAX)
 		{};
 
         AdvClockModel(double q1_, double q2_) :
             q1(q1_), q2(q2_),
-			previousTime(gpstk::CommonTime::BEGINNING_OF_TIME), 
-			currentTime(gpstk::CommonTime::END_OF_TIME),
-			types(ParametersSet{ FilterParameter(gpstk::TypeID::recCdt),FilterParameter(gpstk::TypeID::recCdtdot) }),
+			previousTime(gnsstk::CommonTime::BEGINNING_OF_TIME), 
+			currentTime(gnsstk::CommonTime::END_OF_TIME),
+			types(ParametersSet{ FilterParameter(gnsstk::TypeID::recCdt),FilterParameter(gnsstk::TypeID::recCdtdot) }),
 			isFirstTime(true), dt(DBL_MAX)
 		{};
        
-        AdvClockModel(double q1_, double q2_, const gpstk::CommonTime & t1, const gpstk::CommonTime & t2) :
+        AdvClockModel(double q1_, double q2_, const gnsstk::CommonTime & t1, const gnsstk::CommonTime & t2) :
             q1(q1_), q2(q2_),
 			previousTime(t1), currentTime(t2),
-			types(ParametersSet{ FilterParameter(gpstk::TypeID::recCdt),FilterParameter(gpstk::TypeID::recCdtdot) }),
+			types(ParametersSet{ FilterParameter(gnsstk::TypeID::recCdt),FilterParameter(gnsstk::TypeID::recCdtdot) }),
 			isFirstTime(true), dt(DBL_MAX)
 		{};
 
@@ -40,7 +40,7 @@ namespace pod
        * @param prevTime   Value of previous epoch
        *
        */
-       virtual AdvClockModel& setPreviousTime(const gpstk::CommonTime& prevTime)
+       virtual AdvClockModel& setPreviousTime(const gnsstk::CommonTime& prevTime)
        {
            previousTime = prevTime; return (*this);
        }
@@ -50,7 +50,7 @@ namespace pod
        * @param currTime   Value of current epoch
        *
        */
-       virtual AdvClockModel& setCurrentTime(const gpstk::CommonTime& currTime)
+       virtual AdvClockModel& setCurrentTime(const gnsstk::CommonTime& currTime)
        {
            currentTime = currTime; return (*this);
        }
@@ -66,17 +66,17 @@ namespace pod
        }
 
 	   // Inherited via EquationBase
-	   virtual void Prepare(gpstk::IRinex & gData) override;
+	   virtual void Prepare(gnsstk::IRinex & gData) override;
 
 	   virtual ParametersSet getParameters() const override;
 
-	   virtual void updatePhi(gpstk::Matrix<double>& Phi, int & index) const override;
+	   virtual void updatePhi(gnsstk::Matrix<double>& Phi, int & index) const override;
 
-	   virtual void updateQ(gpstk::Matrix<double>& Q, int & index) const override;
+	   virtual void updateQ(gnsstk::Matrix<double>& Q, int & index) const override;
 
-	   virtual void defStateAndCovariance(gpstk::Vector<double>& x, gpstk::Matrix<double>& P, int & index) const override;
+	   virtual void defStateAndCovariance(gnsstk::Vector<double>& x, gnsstk::Matrix<double>& P, int & index) const override;
 
-	   virtual void updateH(const gpstk::IRinex & gData, const gpstk::TypeIDSet & types, gpstk::Matrix<double>& H, int & col_0) override;
+	   virtual void updateH(const gnsstk::IRinex & gData, const gnsstk::TypeIDSet & types, gnsstk::Matrix<double>& H, int & col_0) override;
 
 	   virtual int getNumUnknowns() const override;
 
@@ -96,10 +96,10 @@ namespace pod
         double q2;
 
         /// Epoch of previous measurement
-        gpstk::CommonTime previousTime;
+        gnsstk::CommonTime previousTime;
 
         /// Epoch of current measurement
-        gpstk::CommonTime currentTime;
+        gnsstk::CommonTime currentTime;
 
         mutable bool isFirstTime;
 

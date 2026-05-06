@@ -47,7 +47,7 @@
 
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       /// @ingroup GPSsolutions 
@@ -145,8 +145,7 @@ namespace gpstk
           */
       virtual SatTypePtrMap& Process( const CommonTime& epoch,
                                         SatTypePtrMap& gData,
-                                        const short& epochflag = 0 )
-         throw(ProcessingException);
+                                        const short& epochflag = 0 );
 
 
 
@@ -214,8 +213,7 @@ namespace gpstk
           *
           * @param gData    Data object holding the data.
           */
-      virtual IRinex& Process(IRinex& gData)
-         throw(ProcessingException);
+      virtual IRinex& Process(IRinex& gData);
 
 
          /// Returns a string identifying this object.
@@ -311,6 +309,6 @@ namespace gpstk
 
       //@}
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk
 
 #endif   // GPSTK_LICSDETECTOR_HPP

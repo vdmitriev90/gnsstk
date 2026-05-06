@@ -48,11 +48,11 @@
 #include "Vector.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
     /// Thrown when some problem appeared when assigning weights to satellites
     /// @ingroup exceptiongroup
-    NEW_EXCEPTION_CLASS(InvalidWeights, gpstk::Exception);
+    NEW_EXCEPTION_CLASS(InvalidWeights, gnsstk::Exception);
 
 
     /// @ingroup GPSsolutions 

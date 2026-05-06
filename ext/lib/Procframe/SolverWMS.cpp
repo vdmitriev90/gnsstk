@@ -45,7 +45,7 @@
 #include "MatrixFunctors.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       // Returns a string identifying this object.
@@ -105,7 +105,6 @@ namespace gpstk
    int SolverWMS::Compute( const Vector<double>& prefitResiduals,
                            const Matrix<double>& designMatrix,
                            const Vector<double>& weightVector )
-      throw(InvalidSolver)
    {
 
          // By default, results are invalid
@@ -118,7 +117,7 @@ namespace gpstk
       {
          InvalidSolver e("prefitResiduals size does not match dimension \
 of weightVector");
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
 
       Matrix<double> wMatrix(wSize,wSize,0.0);  // Declare a weight matrix
@@ -151,7 +150,6 @@ of weightVector");
    int SolverWMS::Compute( const Vector<double>& prefitResiduals,
                            const Matrix<double>& designMatrix,
                            const Matrix<double>& weightMatrix )
-      throw(InvalidSolver)
    {
 
          // By default, results are invalid
@@ -160,7 +158,7 @@ of weightVector");
       if (!(weightMatrix.isSquare()))
       {
          InvalidSolver e("Weight matrix is not square");
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
 
       int wRow = static_cast<int>(weightMatrix.rows());
@@ -169,7 +167,7 @@ of weightVector");
       {
          InvalidSolver e("prefitResiduals size does not match dimension of \
 weightMatrix");
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
 
       int gCol = static_cast<int>(designMatrix.cols());
@@ -179,7 +177,7 @@ weightMatrix");
       {
          InvalidSolver e("prefitResiduals size does not match dimension \
 of designMatrix");
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
 
       Matrix<double> AT = transpose(designMatrix);
@@ -197,7 +195,7 @@ of designMatrix");
       catch(...)
       {
          InvalidSolver e("Unable to invert matrix covMatrix");
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
 
          // Temporary storage for covMatrixNoWeight. It will be inverted later
@@ -210,7 +208,7 @@ of designMatrix");
       catch(...)
       {
          InvalidSolver e("Unable to invert matrix covMatrixNoWeight");
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
 
          // Now, compute the Vector holding the solution...
@@ -234,7 +232,6 @@ of designMatrix");
        * @param gData     Data object holding the data.
        */
    SatTypePtrMap& SolverWMS::Process(SatTypePtrMap& gData)
-      throw(ProcessingException)
    {
 
       try
@@ -274,11 +271,11 @@ of designMatrix");
          ProcessingException e( getClassName() + ":"
                                 + u.what() );
 
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
 
       }
 
    }   // End of method 'SolverWLMS::Process()'
 
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk

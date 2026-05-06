@@ -43,7 +43,7 @@
 #include "CorrectCodeBiases.hpp"
 #include "GNSSconstants.hpp"
 
-namespace gpstk
+namespace gnsstk
 {
       
    const double CorrectCodeBiases::factoP1P2[6] = {
@@ -113,7 +113,6 @@ namespace gpstk
        */
    SatTypePtrMap& CorrectCodeBiases::Process( const CommonTime& time,
                                                 SatTypePtrMap& gData )
-      throw(ProcessingException)
    {
       try
       {
@@ -157,7 +156,7 @@ namespace gpstk
          ProcessingException e( getClassName() + ":"
                                 + u.what() );
 
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
 
       }
 
@@ -186,7 +185,7 @@ namespace gpstk
       }
       try 
       {
-          receiverP1P2 = dcbP1P2.getDCB(receiver, SatID::systemGPS);
+          receiverP1P2 = dcbP1P2.getDCB(receiver, SatelliteSystem::GPS);
       }
       catch (...)
       {
@@ -250,4 +249,4 @@ namespace gpstk
    }  // End of method 'CorrectCodeBiases::getDCBCorrection()'
 
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk

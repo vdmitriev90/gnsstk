@@ -16,7 +16,7 @@ namespace pod
         return corr;
     }
 
-    void ComputeStatistic::compute(const GnssEpochMap & data, gpstk::Vector<double>& sln, gpstk::Matrix<double>& covar)
+    void ComputeStatistic::compute(const GnssEpochMap & data, gnsstk::Vector<double>& sln, gnsstk::Matrix<double>& covar)
     {
         int s = types.size();
         std::list<Vector<double>> res;

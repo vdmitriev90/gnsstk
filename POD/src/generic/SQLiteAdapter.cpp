@@ -148,7 +148,7 @@ namespace pod
         ++obsItemCounter;
     }
 
-    void SQLiteAdapter::addSlnData(const gpstk::typeValueMap&  slnData)
+    void SQLiteAdapter::addSlnData(const gnsstk::typeValueMap&  slnData)
     {
         for(auto& it : slnData)
         {
@@ -163,7 +163,7 @@ namespace pod
         }
     }
 
-    void SQLiteAdapter::addSvData(const gpstk::satTypeValueMap& svData)
+    void SQLiteAdapter::addSvData(const gnsstk::satTypeValueMap& svData)
     {
         for (auto& svIt : svData)
         {
@@ -206,7 +206,7 @@ namespace pod
        addSvData(epoch.second.satData.extractTypeID(requaredTypes));
     }
 
-    int SQLiteAdapter::addSV(const gpstk::SatID & sv)
+    int SQLiteAdapter::addSV(const gnsstk::SatID & sv)
     {
         char* sql = "INSERT OR IGNORE INTO `SVS`(`SVID`,`SSID`) VALUES (@SVID, @SSID);";
         sqlite3_stmt *comm;
@@ -318,7 +318,7 @@ namespace pod
     
 
 #pragma endregion
-    const  gpstk::TypeIDSet SQLiteAdapter::requaredTypes{
+    const  gnsstk::TypeIDSet SQLiteAdapter::requaredTypes{
          TypeID::C1 ,
          TypeID::P1 ,
          TypeID::P2 ,

@@ -26,7 +26,7 @@ namespace pod
     {
     }
 
-    CodeSmoother2& CodeSmoother2::addScMarker( gpstk::ProcessingClass& scMarker)
+    CodeSmoother2& CodeSmoother2::addScMarker( gnsstk::ProcessingClass& scMarker)
     {
         process_uptr u(&scMarker);
         scMarkers.push_back(std::move(u));
@@ -39,13 +39,13 @@ namespace pod
         return *this;
     }
 
-    CodeSmoother2& CodeSmoother2::addSmoother(gpstk::CodeSmoother& smoother)
+    CodeSmoother2& CodeSmoother2::addSmoother(gnsstk::CodeSmoother& smoother)
     {
         smoothers.push_back(smoother);
         return *this;
     }
 
-    gpstk::IRinex& CodeSmoother2::Process(gpstk::IRinex& gData)
+    gnsstk::IRinex& CodeSmoother2::Process(gnsstk::IRinex& gData)
     {
          //first, mark cycle slips
         for (auto& it : this->scMarkers)

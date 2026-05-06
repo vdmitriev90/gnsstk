@@ -44,7 +44,7 @@
 #include "Decimate.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
 
     // Returns a string identifying this object.
@@ -101,7 +101,6 @@ namespace gpstk
         */
     SatTypePtrMap& Decimate::Process(const CommonTime& time,
 		SatTypePtrMap& gData)
-        throw(DecimateEpoch)
     {
 
         // Set a threshold
@@ -115,7 +114,7 @@ namespace gpstk
             // If epoch must be decimated, we issue an Exception
             DecimateEpoch e("This epoch must be decimated.");
 
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
 
         }
 
@@ -141,4 +140,4 @@ namespace gpstk
     }
 
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk

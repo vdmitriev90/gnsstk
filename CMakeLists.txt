@@ -52,6 +52,7 @@ option( PIP_WHEEL_SWITCH "HELP: PIP_WHEEL_SWITCH: SWITCH, Default= OFF, Build a 
 option( BUILD_FOR_PACKAGE_SWITCH "HELP: BUILD_FOR_PACKAGE_SWITCH: SWITCH, Default= OFF, Modify python install paths assuming creation of deb/rpm." OFF )
 option( PYTHON_USER_INSTALL "HELP: PYTHON_USER_INSTALL: SWITCH, Default= OFF, Install python in user mode." OFF )
 option( VERSIONED_HEADER_INSTALL "HELP: VERSIONED_HEADER_INSTALL: SWITCH, Default= OFF, Install header files into maj/min versioned directory." OFF )
+option( BUILD_POD "HELP: BUILD_POD: SWITCH, Default = ON, Build the pod and app_runner project, in addition to the core library." OFF )
 
 set(PYTHON_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}" CACHE PATH "Directory to install SWIG files for Python")
 
@@ -159,7 +160,18 @@ if( BUILD_EXT )
   endforeach()
 
   list( REMOVE_DUPLICATES EXT_INC_DIRS )
-
+  
+  # Exclude some files from the build
+  list( FILTER EXT_SRC_FILES EXCLUDE REGEX ".*SolverGeneral\\.cpp$" )
+  list( FILTER EXT_INC_FILES EXCLUDE REGEX ".*SolverGeneral\\.hpp$" )
+  list( FILTER EXT_SRC_FILES EXCLUDE REGEX ".*SolverGeneral\\.cpp$" )
+  list( FILTER EXT_INC_FILES EXCLUDE REGEX ".*SolverGeneral\\.hpp$" )
+  list( FILTER EXT_SRC_FILES EXCLUDE REGEX ".*GeneralConstraint\\.cpp$" )
+  list( FILTER EXT_INC_FILES EXCLUDE REGEX ".*GeneralConstraint\\.hpp$" )
+  list( FILTER EXT_SRC_FILES EXCLUDE REGEX ".*EquationSystem\\.cpp$" )
+  list( FILTER EXT_INC_FILES EXCLUDE REGEX ".*EquationSystem\\.hpp$" )
+  list( FILTER EXT_SRC_FILES EXCLUDE REGEX ".*NetworkObsStreams\\.cpp$" )
+  list( FILTER EXT_INC_FILES EXCLUDE REGEX ".*NetworkObsStreams\\.hpp$" )
   # Add every directory containing a header file
   # to the project(gnsstk) include_directories
   include_directories( ${EXT_INC_DIRS} )
@@ -167,7 +179,34 @@ if( BUILD_EXT )
   # append ext include files needed to build library target
   list( APPEND GNSSTK_SRC_FILES ${EXT_SRC_FILES} )
   list( APPEND GNSSTK_INC_FILES ${EXT_INC_FILES} )
+    
 
+
+endif()
+
+if( BUILD_POD )
+  include_directories(third_party/SOFA)
+  add_subdirectory(third_party/SOFA )
+  
+  include_directories(third_party/sqlite)
+  add_subdirectory(third_party/sqlite)
+
+
+  file( GLOB_RECURSE POD_INC_FILES "pod/src/*.h" "pod/src/*.hpp" )
+  # initialize list of include directories
+  set( POD_INC_DIRS "" )
+  #
+  # include pod directories
+  foreach( _headerFile ${POD_INC_FILES} )
+    get_filename_component( _dir ${_headerFile} PATH )
+    list( APPEND POD_INC_DIRS ${_dir} )
+  endforeach()
+  list( REMOVE_DUPLICATES POD_INC_DIRS )
+  include_directories(${POD_INC_DIRS})
+  
+  add_subdirectory( pod )
+  #add_subdirectory( swig_wrapper )
+  add_subdirectory( app_runner )
 endif()
 
 #============================================================

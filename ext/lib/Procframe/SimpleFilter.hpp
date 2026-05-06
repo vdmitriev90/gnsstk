@@ -46,7 +46,7 @@
 #include "ProcessingClass.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       /// @ingroup DataStructures 
@@ -156,8 +156,7 @@ namespace gpstk
           *
           * @param gData     Data object holding the data.
           */
-      virtual SatTypePtrMap& Process(SatTypePtrMap& gData)
-         throw(ProcessingException);
+      virtual SatTypePtrMap& Process(SatTypePtrMap& gData);
 
 
          /** Method to set the minimum limit.
@@ -220,7 +219,6 @@ namespace gpstk
           * @param gData    Data object holding the data.
           */
       virtual IRinex& Process(IRinex& gData)
-         throw(ProcessingException)
       { 
           t = gData.getHeader().epoch;
           Process(gData.getBody());
@@ -264,6 +262,6 @@ namespace gpstk
 
       //@}
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk
 
 #endif   // GPSTK_SIMPLEFILTER_HPP

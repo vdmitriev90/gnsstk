@@ -42,192 +42,87 @@
  */
 
 #include "ComputeIURAWeights.hpp"
+#include "GPSLNavEph.hpp"
+#include "OrbitDataSP3.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
+    namespace
+    {
+        std::optional<double> getURAWeight(const SatID& satId, const CommonTime& time, NavLibrary& navLib)
+        {
+            const NavMessageID nav_id(satId, NavMessageType::Ephemeris);
 
-      // Returns a string identifying this object.
-   std::string ComputeIURAWeights::getClassName() const
-   { return "ComputeIURAWeights"; }
+            // Get the URA index for this satellite
+            NavDataPtr nav_data_ptr = nullptr;
 
-
-
-      /* Returns a satTypeValueMap object, adding the new data generated
-       * when calling this object.
-       *
-       * @param gData     Data object holding the data.
-       */
-   SatTypePtrMap& ComputeIURAWeights::Process( const CommonTime& time,
-                                                 SatTypePtrMap& gData )
-      throw(ProcessingException)
-   {
-
-      try
-      {
-
-            // By default set the wight as a very small value
-         double weight(0.000001);
-
-         SatIDSet satRejectedSet;
-
-               // Loop through all the satellites
-         for(auto it = gData.begin(); it != gData.end(); ++it )
-         {
-
-            try
+            if (navLib.find(nav_id, time, nav_data_ptr, SVHealth::Any, NavValidityType::Any, NavSearchOrder::Nearest))
             {
+                // fixme TODO: remove dynamic cast here
+                const GPSLNavEph* eph = dynamic_cast<GPSLNavEph*>(nav_data_ptr.get());
 
-                  // Try to extract the weight value
-               if( pBCEphemeris != NULL )
-               {
-                  weight = getWeight( ((*it).first), time, pBCEphemeris );
-               }
-               else
-               {
-
-                  if( pTabEphemeris != NULL )
-                  {
-                     weight = getWeight( ((*it).first), time, pTabEphemeris );
-                  }
-               }
-            }
-            catch(...)
-            {
-
-                  // If some value is missing, then schedule this
-                  // satellite for removal
-               satRejectedSet.insert( (*it).first );
-
-               continue;
-
+                if (eph != nullptr)
+                {
+                    const double sigma = gnsstk::ura2nominalAccuracy(eph->uraIndex);
+                    return 1.0 / (sigma * sigma);
+                }
+                const OrbitDataSP3* sp3_eph = dynamic_cast<OrbitDataSP3*>(nav_data_ptr.get());
+                if (sp3_eph != nullptr)
+                {
+                    // An URA of 0.1 m is assumed for all satellites, 
+                    // so sigma = 0.1*0.1 = 0.01 m^2
+                    return 100.0;
+                }
             }
 
-               // If everything is OK, then get the new value inside
-               // the GDS structure
-            (*it).second->get_value()[TypeID::weight] = weight;
+            return std::optional<double>();
+        }
+    }
+    // Returns a string identifying this object.
+    std::string ComputeIURAWeights::getClassName() const
+    {
+        return "ComputeIURAWeights";
+    }
 
-         }  // End of 'for( it = gData.begin(); it != gData.end(); ++it )'
+    /* Returns a satTypeValueMap object, adding the new data generated
+     * when calling this object.
+     *
+     * @param gData     Data object holding the data.
+     */
+    SatTypePtrMap& ComputeIURAWeights::Process(const CommonTime& time,
+        SatTypePtrMap& gData)
+    {
+        try
+        {
+            SatIDSet satRejectedSet;
 
-
+            // Loop through all the satellites
+            for (auto it = gData.begin(); it != gData.end(); ++it)
+            {
+                const SatID& sat_id = (*it).first;
+                std::optional<double> weight = getURAWeight(sat_id, time, navLib_);
+                if (weight.has_value())
+                    (*it).second->get_value()[TypeID::weight] = weight.value();
+                else
+                    satRejectedSet.insert((*it).first);
+            }
             // Remove satellites with missing data
-         gData.removeSatID(satRejectedSet);
+            gData.removeSatID(satRejectedSet);
 
-         return gData;
+            return gData;
 
-      }
-      catch(Exception& u)
-      {
+        }
+        catch (Exception& u)
+        {
             // Throw an exception if something unexpected happens
-         ProcessingException e( getClassName() + ":"
-                                + u.what() );
+            ProcessingException e(getClassName() + ":"
+                + u.what());
 
-         GPSTK_THROW(e);
+            GNSSTK_THROW(e);
 
-      }
+        }
 
-   }  // End of method 'ComputeIURAWeights::Process()'
+    }  // End of method 'ComputeIURAWeights::Process()'
 
-
-
-      /* Method to set the default ephemeris to be used with GNSS
-       * data structures.
-       *
-       * @param ephem     EphemerisStore object to be used
-       */
-   ComputeIURAWeights& ComputeIURAWeights::setDefaultEphemeris(
-                                                   XvtStore<SatID>& ephem )
-   {
-
-         // Let's check what type ephem belongs to
-      if( dynamic_cast<GPSEphemerisStore*>(&ephem) )
-      {
-         pBCEphemeris = dynamic_cast<GPSEphemerisStore*>(&ephem);
-         pTabEphemeris = NULL;
-      }
-      else
-      {
-         pBCEphemeris = NULL;
-         pTabEphemeris = dynamic_cast<SP3EphemerisStore*>(&ephem);
-      }
-
-      return (*this);
-
-   }  // End of method 'ComputeIURAWeights::setDefaultEphemeris()'
-
-
-
-      /* Method to really get the weight of a given satellite.
-       *
-       * @param sat           Satellite
-       * @param time          Epoch
-       * @param preciseEph    Precise ephemerisStore object to be used
-       */
-   double ComputeIURAWeights::getWeight( const SatID& sat,
-                                         const CommonTime& time,
-                                         const SP3EphemerisStore* preciseEph )
-      throw(InvalidWeights)
-   {
-
-      try
-      {
-            // Look if this satellite is present in ephemeris
-         preciseEph->getXvt(sat, time);
-      }
-      catch(...)
-      {
-         InvalidWeights eWeight("Satellite not found.");
-         GPSTK_THROW(eWeight);
-      }
-
-         // An URA of 0.1 m is assumed for all satellites, 
-         // so sigma = 0.1*0.1 = 0.01 m^2
-      return 100.0;
-
-   }  // End of method 'ComputeIURAWeights::getWeight()'
-
-
-
-      /* Method to really get the weight of a given satellite.
-       *
-       * @param sat       Satellite
-       * @param time      Epoch
-       * @param bcEph     Broadcast EphemerisStore object to be used
-       */
-   double ComputeIURAWeights::getWeight( const SatID& sat,
-                                         const CommonTime& time,
-                                         const GPSEphemerisStore* bcEph )
-      throw(InvalidWeights)
-   {
-
-         // Set by default a very big value
-      int iura(1000000);
-
-      double sigma(1000000.0);
-
-      try
-      {
-            // Look if this satellite is present in ephemeris
-         const GPSEphemeris& engEph = bcEph->findEphemeris(sat, time);
-
-            // If so, get the IURA
-         //iura = engEph.getAccFlag();
-         iura = engEph.accuracyFlag;
-
-      }
-      catch(...)
-      {
-         InvalidWeights eWeight("Satellite not found.");
-         GPSTK_THROW(eWeight);
-      }
-
-         // Compute and return the weight
-      sigma = gpstk::ura2nominalAccuracy(iura);
-
-      return ( 1.0 / (sigma*sigma) );
-
-   }  // End of method 'ComputeIURAWeights::getWeight()'
-
-
-
-}  // End of namespace gpstk
+}  // End of namespace gnsstk

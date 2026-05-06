@@ -1,5 +1,5 @@
 #include "ITypeValueMap.h"
-namespace gpstk
+namespace gnsstk
 {
 
 	typeValueMap& TypeValueMapPtr::get_value() 

@@ -1,6 +1,6 @@
 #include "CycleSlipDetector.hpp"
 
-namespace gpstk
+namespace gnsstk
 {
 	CycleSlipDetector::CycleSlipDetector(TypeID ot1, double dtMax, bool useLli):
 		obsType(ot1), lliType1(TypeID::LLI1),
@@ -165,7 +165,7 @@ namespace gpstk
 			ProcessingException e(getClassName() + ":"
 				+ u.what());
 
-			GPSTK_THROW(e);
+			GNSSTK_THROW(e);
 
 		}
 
@@ -193,7 +193,7 @@ namespace gpstk
 			ProcessingException e(getClassName() + ":"
 				+ u.what());
 
-			GPSTK_THROW(e);
+			GNSSTK_THROW(e);
 
 		}
 

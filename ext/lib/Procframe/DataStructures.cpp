@@ -42,11 +42,11 @@
 
 #include "DataStructures.hpp"
 
-using namespace gpstk::StringUtils;
+using namespace gnsstk::StringUtils;
 using namespace std;
 
 
-namespace gpstk
+namespace gnsstk
 {
       ////// gnssSatValue //////
 
@@ -70,8 +70,7 @@ namespace gpstk
       // the given parameters.
       // @param p Satellite PRN number.
       // @param p System the satellite belongs to.
-   gnssSatValue gnssSatValue::extractSatID( const int& p,
-                                       const SatID::SatelliteSystem& s ) const
+   gnssSatValue gnssSatValue::extractSatID( const int& p, SatelliteSystem s ) const
    {
 
       SatID tempSatellite(p, s);  // We build a temporary SatID object
@@ -116,7 +115,7 @@ namespace gpstk
       // @param p Satellite PRN number.
       // @param p System the satellite belongs to.
    gnssSatValue& gnssSatValue::keepOnlySatID( const int& p,
-                                              const SatID::SatelliteSystem& s )
+                                              SatelliteSystem s )
    {
 
       SatID tempSatellite(p, s);  // We build a temporary SatID object
@@ -275,7 +274,7 @@ namespace gpstk
       // @param p Satellite PRN number.
       // @param p System the satellite belongs to.
    gnssSatTypeValue gnssSatTypeValue::extractSatID( const int& p,
-                                       const SatID::SatelliteSystem& s ) const
+                                       SatelliteSystem s ) const
    {
 
       SatID tempSatellite(p, s);  // We build a temporary SatID object
@@ -320,7 +319,7 @@ namespace gpstk
       // @param p Satellite PRN number.
       // @param p System the satellite belongs to.
    gnssSatTypeValue& gnssSatTypeValue::keepOnlySatID( const int& p,
-                                             const SatID::SatelliteSystem& s )
+                                             SatelliteSystem s )
    {
 
       SatID tempSatellite(p, s);  // We build a temporary SatID object
@@ -468,7 +467,7 @@ namespace gpstk
       // @param p Satellite PRN number.
       // @param p System the satellite belongs to.
    gnssRinex gnssRinex::extractSatID( const int& p,
-                                      const SatID::SatelliteSystem& s ) const
+                                      SatelliteSystem s ) const
    {
 
       SatID tempSatellite(p, s);  // We build a temporary SatID object
@@ -524,7 +523,7 @@ namespace gpstk
       // @param p Satellite PRN number.
       // @param p System the satellite belongs to.
    gnssRinex& gnssRinex::keepOnlySatID( const int& p,
-                                        const SatID::SatelliteSystem& s )
+                                        SatelliteSystem s )
    {
 
       SatID tempSatellite(p, s);  // We build a temporary SatID object
@@ -547,7 +546,7 @@ namespace gpstk
 
    }  // End of method 'gnssRinex::keepOnlySatID()'
 
-   gnssRinex& gnssRinex::keepOnlySatSystems(SatID::SatelliteSystem satSyst)
+   gnssRinex& gnssRinex::keepOnlySatSystems(SatelliteSystem satSyst)
    {
        SatSystSet satSet;
        satSet.insert(satSyst);
@@ -638,7 +637,6 @@ namespace gpstk
    double sourcePtrDataMap::getValue(const SourceID& source,
 	   const SatID& satellite,
 	   const TypeID& type) const
-	   throw(SourceIDNotFound, SatIDNotFound, TypeIDNotFound)
    {
 
 	   // Look for the SourceID
@@ -650,7 +648,7 @@ namespace gpstk
 	   }
 	   else
 	   {
-		   GPSTK_THROW(SourceIDNotFound("SourceID not found in map"));
+		   GNSSTK_THROW(SourceIDNotFound("SourceID not found in map"));
 	   }
 
    }  // End of method 'sourceDataMap::getValue()'
@@ -709,7 +707,6 @@ namespace gpstk
    double sourceDataMap::getValue( const SourceID& source,
                                    const SatID& satellite,
                                    const TypeID& type ) const
-      throw( SourceIDNotFound, SatIDNotFound, TypeIDNotFound )
    {
 
          // Look for the SourceID
@@ -720,7 +717,7 @@ namespace gpstk
       }
       else
       {
-         GPSTK_THROW(SourceIDNotFound("SourceID not found in map"));
+         GNSSTK_THROW(SourceIDNotFound("SourceID not found in map"));
       }
 
    }  // End of method 'sourceDataMap::getValue()'
@@ -1160,7 +1157,6 @@ namespace gpstk
        * @param epoch         Epoch to be looked for.
        */
    gnssDataMap gnssDataMap::getDataFromEpoch( const CommonTime& epoch ) const
-      throw( CommonTimeNotFound )
    {
 
          // Declare structure to be returned
@@ -1191,13 +1187,13 @@ namespace gpstk
       }
       else
       {
-         GPSTK_THROW(CommonTimeNotFound("Data map is empty"));
+         GNSSTK_THROW(CommonTimeNotFound("Data map is empty"));
       }
 
          // Check if 'toReturn' is empty
       if( toReturn.empty() )
       {
-         GPSTK_THROW(CommonTimeNotFound("Epoch not found"));
+         GNSSTK_THROW(CommonTimeNotFound("Epoch not found"));
       }
 
       return toReturn;
@@ -1221,7 +1217,6 @@ namespace gpstk
                                  const SourceID& source,
                                  const SatID& satellite,
                                  const TypeID& type ) const
-      throw( CommonTimeNotFound, ValueNotFound )
    {
 
          // Look for the epoch (CommonTime) data
@@ -1254,7 +1249,7 @@ namespace gpstk
          // Check if value was found
       if( !found )
       {
-         GPSTK_THROW(ValueNotFound("Value not found"));
+         GNSSTK_THROW(ValueNotFound("Value not found"));
       }
 
       return toReturn;
@@ -1276,7 +1271,6 @@ namespace gpstk
    double gnssDataMap::getValue( const SourceID& source,
                                  const SatID& satellite,
                                  const TypeID& type ) const
-      throw( ValueNotFound )
    {
 
          // Look for the epoch (CommonTime) data
@@ -1309,7 +1303,7 @@ namespace gpstk
          // Check if value was found
       if( !found )
       {
-         GPSTK_THROW(ValueNotFound("Value not found"));
+         GNSSTK_THROW(ValueNotFound("Value not found"));
       }
 
       return toReturn;
@@ -1332,7 +1326,6 @@ namespace gpstk
                                           const SatID& satellite,
                                           const TypeID& type,
                                           double value )
-      throw( CommonTimeNotFound, ValueNotFound )
    {
 
          // First check that structure isn't empty
@@ -1387,20 +1380,20 @@ namespace gpstk
                // Check if we found a proper place to insert value
             if( !found )
             {
-               GPSTK_THROW( ValueNotFound("No proper place to insert value"));
+               GNSSTK_THROW( ValueNotFound("No proper place to insert value"));
             }
 
          }
          else
          {
                // No match found for CommonTime with current tolerance
-            GPSTK_THROW(CommonTimeNotFound("Epoch not found within tolerance"));
+            GNSSTK_THROW(CommonTimeNotFound("Epoch not found within tolerance"));
          }
 
       }
       else
       {
-         GPSTK_THROW(CommonTimeNotFound("Data map is empty"));
+         GNSSTK_THROW(CommonTimeNotFound("Data map is empty"));
       }
 
       return (*this);
@@ -1421,7 +1414,6 @@ namespace gpstk
                                           const SatID& satellite,
                                           const TypeID& type,
                                           double value )
-      throw( ValueNotFound )
    {
 
          // We'll need a flag
@@ -1460,7 +1452,7 @@ namespace gpstk
          // Check if we found a proper place to insert value
       if( !found )
       {
-         GPSTK_THROW( ValueNotFound("No proper place to insert value"));
+         GNSSTK_THROW( ValueNotFound("No proper place to insert value"));
       }
 
       return (*this);
@@ -2015,7 +2007,7 @@ namespace gpstk
       catch(...)
       {
          Exception e("Failed to load obs file '"+obsFile+"'.");
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
 
    }  // End of method 'gnssDataMap::loadObsFile()'
@@ -2156,7 +2148,6 @@ namespace gpstk
    // Stream output for gnssRinex
    std::ostream& operator<<( std::ostream& s,
                              gnssRinex& f )
-      throw(FFStreamError, gpstk::StringUtils::StringException)
    {
       FFStream* ffs = dynamic_cast<FFStream*>(&s);
       if(ffs)
@@ -2305,7 +2296,7 @@ namespace gpstk
       else
       {
          FFStreamError e("operator<< stream argument must be an FFStream");
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
 
    }   // End of stream input for gnssRinex
@@ -2319,25 +2310,25 @@ namespace gpstk
          // Select the right system the data came from
       switch(sid.system)
       {
-         case SatID::systemGPS:
+         case SatelliteSystem::GPS:
             return SourceID::GPS;
             break;
-         case SatID::systemGalileo:
+         case SatelliteSystem::Galileo:
             return SourceID::Galileo;
             break;
-         case SatID::systemGlonass:
+         case SatelliteSystem::Glonass  :
             return SourceID::Glonass;
             break;
-         case SatID::systemGeosync:
+         case SatelliteSystem::Geosync:
             return SourceID::Geosync;
             break;
-         case SatID::systemLEO:
+         case SatelliteSystem::LEO:
             return SourceID::LEO;
             break;
-         case SatID::systemTransit:
+         case SatelliteSystem::Transit:
             return SourceID::Transit;
             break;
-         case SatID::systemMixed:
+         case SatelliteSystem::Mixed:
             return SourceID::Mixed;
             break;
          default:
@@ -2391,7 +2382,7 @@ namespace gpstk
             if(isPhase)
             {
                // TODO:: handle glonass data later(yanweigps)
-               tvMap[ type ] = (*itObs).second.data*getWavelength(rsat,n);
+               tvMap[ type ] = (*itObs).second.data*getWavelength(rsat.system,n);
 
                // n=1 2 5 6 7 8
                if(n==1)
@@ -2469,12 +2460,12 @@ namespace gpstk
                    const int n = GetCarrierBand(types[i]);
 				   double value = it->second[i].data;
 				   if (value == 0) continue;
-                   if (types[i].type == ObsID::otPhase)   // Phase
+                   if (types[i].type == ObservationType::Phase)   // Phase
                    {
                        // TODO:: handle glonass data later(yanweigps)
 
                        int fcn = static_cast<SatID>(sat).getGloFcn();
-                       tvMap[type] = value *getWavelength(sat, n, fcn);
+                       tvMap[type] = value *getWavelength(sat.system, n, fcn);
 
                        // n=1 2 5 6 7 8
                        if (n == 1)
@@ -2514,7 +2505,7 @@ namespace gpstk
                    }
                }
            }
-           catch (gpstk::InvalidRequest &e)
+           catch (gnsstk::InvalidRequest &e)
            {
                continue;
            }
@@ -2524,4 +2515,4 @@ namespace gpstk
        return theMap;
    }
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk

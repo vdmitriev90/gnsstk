@@ -48,7 +48,7 @@
 
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       /// @ingroup GPSsolutions 
@@ -217,8 +217,7 @@ namespace gpstk
           * @param satellite     Satellite to be looked for.
           */
       double getValue( const SourceID& source,
-                       const SatID& satellite ) const
-         throw( SourceIDNotFound, SatIDNotFound );
+                       const SatID& satellite ) const;
 
 
          /** Returns a gnnsSatTypeValue object, adding the new data generated
@@ -235,8 +234,7 @@ namespace gpstk
           *
           * @param gData    Data object holding the data.
           */
-      virtual IRinex& Process(IRinex& gData)
-         throw(ProcessingException);
+      virtual IRinex& Process(IRinex& gData);
 
 
          /** Returns a gnssDataMap object, adding the new data generated when
@@ -325,8 +323,7 @@ namespace gpstk
           */
       void Compute( const CommonTime& epoch,
                     const SourceID& source,
-                    const SatTypePtrMap& gData )
-         throw(ProcessingException);
+                    const SatTypePtrMap& gData );
 
 
    }; // End of class 'Differentiator'
@@ -334,6 +331,6 @@ namespace gpstk
 
    //@}
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk
 
 #endif   // GPSTK_DIFFERENTIATOR_HPP

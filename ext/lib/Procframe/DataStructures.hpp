@@ -67,7 +67,7 @@
 
 #include"SatTypePtrMap.h"
 
-namespace gpstk
+namespace gnsstk
 {
 
       /** @defgroup DataStructures GPSTk data structures 
@@ -138,19 +138,19 @@ namespace gpstk
       /// Thrown when attempting to access a value and the corresponding
       /// source (SourceID) does not exist in the map.
       /// @ingroup exceptiongroup
-   NEW_EXCEPTION_CLASS(SourceIDNotFound, gpstk::Exception);
+   NEW_EXCEPTION_CLASS(SourceIDNotFound, gnsstk::Exception);
 
 
       /// Thrown when attempting to access a value and the corresponding
       /// epoch (CommonTime) does not exist in the map.
       /// @ingroup exceptiongroup
-   NEW_EXCEPTION_CLASS(CommonTimeNotFound, gpstk::Exception);
+   NEW_EXCEPTION_CLASS(CommonTimeNotFound, gnsstk::Exception);
 
 
       /// Thrown when attempting to access a value and any of the corresponding
       /// indexes (SourceID, SatID or TypeID) does not exist in the map.
       /// @ingroup exceptiongroup
-   NEW_EXCEPTION_CLASS(ValueNotFound, gpstk::Exception);
+   NEW_EXCEPTION_CLASS(ValueNotFound, gnsstk::Exception);
 
 
 
@@ -266,7 +266,7 @@ namespace gpstk
          /// @param p Satellite PRN number.
          /// @param p System the satellite belongs to.
       gnssSatValue extractSatID( const int& p,
-                                 const SatID::SatelliteSystem& s ) const;
+                                 SatelliteSystem s ) const;
 
 
          /// Returns a gnssSatValue with only these satellites.
@@ -284,7 +284,7 @@ namespace gpstk
          /// @param p Satellite PRN number.
          /// @param p System the satellite belongs to.
       gnssSatValue& keepOnlySatID( const int& p,
-                                   const SatID::SatelliteSystem& s );
+                                   SatelliteSystem s );
 
 
          /// Modifies this object, keeping only these satellites.
@@ -309,7 +309,6 @@ namespace gpstk
           * @param satellite     Satellite to be looked for.
           */
       double getValue(const SatID& satellite) const
-         throw(SatIDNotFound)
       { return (*this).body.getValue(satellite); }
 
 
@@ -317,7 +316,6 @@ namespace gpstk
          /// satellite.
          /// @param satellite Satellite to be looked for.
       double& operator()(const SatID& satellite)
-         throw(SatIDNotFound)
       { return (*this).body(satellite); }
 
 
@@ -385,14 +383,12 @@ namespace gpstk
           * @param type    Type to be looked for.
           */
       double getValue(const TypeID& type) const
-         throw(TypeIDNotFound)
       { return (*this).body.getValue(type); }
 
 
          /// Returns a reference to the value (double) with corresponding type.
          /// @param type TypeID to be looked for.
       double& operator()(const TypeID& type)
-         throw(TypeIDNotFound)
       { return (*this).body(type); }
 
 
@@ -451,7 +447,7 @@ namespace gpstk
          /// @param p Satellite PRN number.
          /// @param p System the satellite belongs to.
       gnssSatTypeValue extractSatID( const int& p,
-                                     const SatID::SatelliteSystem& s ) const;
+                                     SatelliteSystem s ) const;
 
 
          /// Returns a gnssSatTypeValue with only these satellites.
@@ -469,7 +465,7 @@ namespace gpstk
          /// @param p Satellite PRN number.
          /// @param p System the satellite belongs to.
       gnssSatTypeValue& keepOnlySatID( const int& p,
-                                       const SatID::SatelliteSystem& s );
+                                       SatelliteSystem s );
 
 
          /// Modifies this object, keeping only these satellites.
@@ -523,7 +519,7 @@ namespace gpstk
       gnssSatTypeValue& removeTypeID(const TypeIDSet& typeSet);
 
 
-         /// Returns a GPSTk::Vector containing the data values with this type.
+         /// Returns a gnsstk::Vector containing the data values with this type.
          /// @param type Type of value to be returned.
       Vector<double> getVectorOfTypeID(const TypeID& type) const
       { return ( (*this).body.getVectorOfTypeID(type) ); }
@@ -546,7 +542,6 @@ namespace gpstk
           */
       gnssSatTypeValue& insertTypeIDVector( const TypeID& type,
                                             const Vector<double> dataVector )
-         throw(NumberOfSatsMismatch)
       { (*this).body.insertTypeIDVector(type, dataVector); return (*this); }
 
 
@@ -571,7 +566,6 @@ namespace gpstk
           */
       gnssSatTypeValue& insertMatrix( const TypeIDSet& typeSet,
                                       const Matrix<double> dataMatrix )
-         throw(NumberOfSatsMismatch, NumberOfTypesMismatch)
       { (*this).body.insertMatrix(typeSet, dataMatrix); return (*this); }
 
 
@@ -583,7 +577,6 @@ namespace gpstk
           */
       double getValue( const SatID& satellite,
                        const TypeID& type ) const
-         throw( SatIDNotFound, TypeIDNotFound )
       { return (*this).body.getValue( satellite, type ); }
 
 
@@ -605,7 +598,7 @@ namespace gpstk
           *   gnssRinex gRin;
           *
           *   // Create a satellite object
-          *   SatID sat21(21,SatID::systemGPS);
+          *   SatID sat21(21,SatelliteSystem::GPS);
           *
           *   // Feed the gRin data structure
           *   while(rin >> gRin)
@@ -635,7 +628,6 @@ namespace gpstk
           * 'getValue()' instead.
           */
       typeValueMap& operator()(const SatID& satellite)
-         throw(SatIDNotFound)
       { return (*this).body(satellite); }
 
 
@@ -679,7 +671,7 @@ namespace gpstk
          /// @param p Satellite PRN number.
          /// @param p System the satellite belongs to.
       gnssRinex extractSatID( const int& p,
-                              const SatID::SatelliteSystem& s ) const;
+                              SatelliteSystem s ) const;
 
 
          /// Returns a gnssRinex with only these satellites.
@@ -701,7 +693,7 @@ namespace gpstk
          /// @param p Satellite PRN number.
          /// @param p System the satellite belongs to.
       gnssRinex& keepOnlySatID( const int& p,
-                                const SatID::SatelliteSystem& s );
+                                SatelliteSystem s );
 
 
          /// Modifies this object, keeping only these satellites.
@@ -710,7 +702,7 @@ namespace gpstk
 
       /// Returns a gnssRinex with only these types of data.
       /// @param satSys Satellite System value to be kept. 
-      gnssRinex& keepOnlySatSystems(SatID::SatelliteSystem satSyst);
+      gnssRinex& keepOnlySatSystems(SatelliteSystem satSyst);
 
       /// Modifies this object, keeping only these satellites.
       /// @param satSet Set (SatIDSet) containing the satellites to be kept.
@@ -764,8 +756,7 @@ namespace gpstk
 		*/
 	   double getValue(const SourceID& source,
 		   const SatID& satellite,
-		   const TypeID& type) const
-		   throw(SourceIDNotFound, SatIDNotFound, TypeIDNotFound);
+		   const TypeID& type) const;
 
 
 	   /** Get a set with all the SourceID's in this data structure.
@@ -807,8 +798,7 @@ namespace gpstk
           */
       double getValue( const SourceID& source,
                        const SatID& satellite,
-                       const TypeID& type ) const
-         throw( SourceIDNotFound, SatIDNotFound, TypeIDNotFound );
+                       const TypeID& type ) const;
 
 
          /** Get a set with all the SourceID's in this data structure.
@@ -927,8 +917,7 @@ namespace gpstk
           *
           * @param epoch         Epoch to be looked for.
           */
-      gnssDataMap getDataFromEpoch( const CommonTime& epoch ) const
-         throw( CommonTimeNotFound );
+      gnssDataMap getDataFromEpoch( const CommonTime& epoch ) const;
 
 
          /** Returns the data value (double) corresponding to provided CommonTime,
@@ -945,8 +934,7 @@ namespace gpstk
       double getValue( const CommonTime& epoch,
                        const SourceID& source,
                        const SatID& satellite,
-                       const TypeID& type ) const
-         throw( CommonTimeNotFound, ValueNotFound );
+                       const TypeID& type ) const;
 
 
          /** Returns the data value (double) corresponding to the first epoch
@@ -961,8 +949,7 @@ namespace gpstk
           */
       double getValue( const SourceID& source,
                        const SatID& satellite,
-                       const TypeID& type ) const
-         throw( ValueNotFound );
+                       const TypeID& type ) const;
 
 
          /** Inserts a data value (double) at the provided CommonTime, SourceID,
@@ -978,8 +965,7 @@ namespace gpstk
                                 const SourceID& source,
                                 const SatID& satellite,
                                 const TypeID& type,
-                                double value )
-         throw( CommonTimeNotFound, ValueNotFound );
+                                double value );
 
 
          /** Inserts a data value (double) in the first epoch of the data
@@ -993,8 +979,7 @@ namespace gpstk
       gnssDataMap& insertValue( const SourceID& source,
                                 const SatID& satellite,
                                 const TypeID& type,
-                                double value )
-         throw( ValueNotFound );
+                                double value );
 
 
          /** Get a set with all the SourceID's in this data structure.
@@ -1318,13 +1303,10 @@ namespace gpstk
        *   }
        * @endcode
        */
-   std::ostream& operator<<( std::ostream& s,
-                             gnssRinex& f )
-      throw(FFStreamError, gpstk::StringUtils::StringException);
-
+   std::ostream& operator<<( std::ostream& s, gnssRinex& f );
 
       //@}
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk
 
 #endif // GPSTK_DATASTRUCTURES_HPP

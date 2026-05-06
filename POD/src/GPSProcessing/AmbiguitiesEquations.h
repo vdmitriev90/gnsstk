@@ -12,12 +12,12 @@ namespace pod
         static const double sigma;
 
         AmbiguitiesEquations()
-            :type(gpstk::TypeID::BL1), obsType(typeMap[gpstk::TypeID::BL1])
+            :type(gnsstk::TypeID::BL1), obsType(typeMap[gnsstk::TypeID::BL1])
         {
             stochModel.setSigma(sigma);
         };
 
-        AmbiguitiesEquations(const gpstk::TypeID& obsType)
+        AmbiguitiesEquations(const gnsstk::TypeID& obsType)
             :type(obsType), obsType(typeMap[obsType])
         {
             stochModel.setSigma(sigma);
@@ -26,19 +26,19 @@ namespace pod
         virtual ~AmbiguitiesEquations() {};
 
         // Inherited via EquationBase
-        virtual void Prepare(gpstk::IRinex & gData) override;
+        virtual void Prepare(gnsstk::IRinex & gData) override;
 
-        virtual void updatePhi(gpstk::Matrix<double>& Phi, int & index) const override;
+        virtual void updatePhi(gnsstk::Matrix<double>& Phi, int & index) const override;
 
-        virtual void updateQ(gpstk::Matrix<double>& Q, int & index) const override;
+        virtual void updateQ(gnsstk::Matrix<double>& Q, int & index) const override;
 
-        virtual void defStateAndCovariance(gpstk::Vector<double>& x, gpstk::Matrix<double>& P, int & index) const override;
+        virtual void defStateAndCovariance(gnsstk::Vector<double>& x, gnsstk::Matrix<double>& P, int & index) const override;
 
         virtual int getNumUnknowns() const override;
 
         virtual  ParametersSet getParameters() const override;
 
-        virtual void updateH(const gpstk::IRinex& gData, const gpstk::TypeIDSet& types, gpstk::Matrix<double>& H, int& col_0) override;
+        virtual void updateH(const gnsstk::IRinex& gData, const gnsstk::TypeIDSet& types, gnsstk::Matrix<double>& H, int& col_0) override;
 
         virtual ParametersSet getAmbSet() const override
         {
@@ -48,24 +48,24 @@ namespace pod
     private:
 
         /// type ID of unknown values 
-        gpstk::TypeID type;
+        gnsstk::TypeID type;
 
         /// type ID of carrier phase measurements (or combination of measurements) 
-        gpstk::TypeID obsType;
+        gnsstk::TypeID obsType;
         
         ///salellites set to be preocessed
-        gpstk::SatIDSet satSet;
+        gnsstk::SatIDSet satSet;
 
         ///current satellites set (subset of 'satSet')
-        gpstk::SatIDSet svsInView;
+        gnsstk::SatIDSet svsInView;
 
         ///cycle slip flags for satellites in 'satSet' 
-        std::map<gpstk::SatID, bool> csFlags;
+        std::map<gnsstk::SatID, bool> csFlags;
 
         /// phase ambiguity stochasic model
-        mutable gpstk::PhaseAmbiguityModel stochModel;
+        mutable gnsstk::PhaseAmbiguityModel stochModel;
 
-        static std::map< gpstk::TypeID, gpstk::TypeID> typeMap;
+        static std::map< gnsstk::TypeID, gnsstk::TypeID> typeMap;
 
         class Initializer
         {

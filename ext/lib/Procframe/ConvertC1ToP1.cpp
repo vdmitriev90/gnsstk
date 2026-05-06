@@ -44,7 +44,7 @@
 
 using namespace std;
 
-namespace gpstk
+namespace gnsstk
 {
 
       // Returns a string identifying this object.
@@ -69,7 +69,6 @@ namespace gpstk
        */
    SatTypePtrMap& ConvertC1ToP1::Process( const CommonTime& time,
                                                 SatTypePtrMap& gData )
-      throw(ProcessingException)
    {
       
       try
@@ -138,11 +137,11 @@ namespace gpstk
          ProcessingException e( getClassName() + ":"
             + u.what() );
 
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
 
       }
 
    }  // End of method 'ConvertC1ToP1::Process()'
 
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk

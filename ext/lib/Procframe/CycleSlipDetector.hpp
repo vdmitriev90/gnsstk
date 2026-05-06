@@ -45,7 +45,7 @@
 
 #include "ProcessingClass.hpp"
 
-namespace gpstk
+namespace gnsstk
 {
 
 	class CycleSlipDetector :public ProcessingClass
@@ -196,6 +196,6 @@ namespace gpstk
 
 	};
 
-} // End of namespace gpstk
+} // End of namespace gnsstk
 
 #endif   // CYCLE_SLIP_DETECTOR_HPP

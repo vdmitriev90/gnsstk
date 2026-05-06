@@ -5,7 +5,7 @@ using namespace gpstk;
 namespace pod
 {
 
-	void AdvClockModel::Prepare(gpstk::IRinex & gData)
+	void AdvClockModel::Prepare(gnsstk::IRinex & gData)
 	{
 		// Update previous epoch
 		setPreviousTime(currentTime);
@@ -21,7 +21,7 @@ namespace pod
 		return types;
 	}
 
-	void AdvClockModel::updatePhi(gpstk::Matrix<double>& Phi, int & index) const
+	void AdvClockModel::updatePhi(gnsstk::Matrix<double>& Phi, int & index) const
 	{
 		Phi(index, index) = 1.0;
 		Phi(index, index + 1) = dt;
@@ -30,7 +30,7 @@ namespace pod
 		index += 2;
 	}
 
-	void AdvClockModel::updateQ(gpstk::Matrix<double>& Q, int & index) const
+	void AdvClockModel::updateQ(gnsstk::Matrix<double>& Q, int & index) const
 	{
 		double dt2 = dt * dt;
 		double dt3 = dt2 * dt;
@@ -41,7 +41,7 @@ namespace pod
 		index += 2;
 	}
 	
-	void AdvClockModel::defStateAndCovariance(gpstk::Vector<double>& x, gpstk::Matrix<double>& P, int & index) const
+	void AdvClockModel::defStateAndCovariance(gnsstk::Vector<double>& x, gnsstk::Matrix<double>& P, int & index) const
 	{
 		x(index) = 0;
 		P(index, index) = 1e9;
@@ -51,7 +51,7 @@ namespace pod
 		++index;
 	}
 
-	void AdvClockModel::updateH(const gpstk::IRinex & gData, const gpstk::TypeIDSet & types, gpstk::Matrix<double>& H, int & col_0)
+	void AdvClockModel::updateH(const gnsstk::IRinex & gData, const gnsstk::TypeIDSet & types, gnsstk::Matrix<double>& H, int & col_0)
 	{
 		for (size_t i = 0; i < H.rows(); i++)
 		{

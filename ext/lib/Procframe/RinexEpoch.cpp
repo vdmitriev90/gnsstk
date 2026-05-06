@@ -1,6 +1,6 @@
 #include "RinexEpoch.h"
 using namespace std;
-namespace gpstk
+namespace gnsstk
 {
 
     RinexEpoch::
@@ -15,7 +15,7 @@ namespace gpstk
 	}
 	
     RinexEpoch::
-        RinexEpoch(const gpstk::gnssRinex & gRin)
+        RinexEpoch(const gnsstk::gnssRinex & gRin)
         :rinex(gRin)
     {
 		resetCurrData();
@@ -67,7 +67,7 @@ namespace gpstk
 	}
 
     RinexEpoch RinexEpoch::
-        extractSatID(const gpstk::SatID& satellite) const
+        extractSatID(const gnsstk::SatID& satellite) const
     {
         return RinexEpoch(rinex.extractSatID(satellite));
     }
@@ -79,19 +79,19 @@ namespace gpstk
     }
 
     RinexEpoch RinexEpoch::
-        extractSatID(const gpstk::SatIDSet& satSet) const
+        extractSatID(const gnsstk::SatIDSet& satSet) const
     {
         return RinexEpoch(rinex.extractSatID(satSet));
     }
 
     RinexEpoch RinexEpoch::
-        extractSatSyst(const gpstk::SatSystSet& satSet) const
+        extractSatSyst(const gnsstk::SatSystSet& satSet) const
     {
         return RinexEpoch(rinex.extractSatSyst(satSet));
     }
 
     RinexEpoch& RinexEpoch::
-        keepOnlySatID(const gpstk::SatID& sv)
+        keepOnlySatID(const gnsstk::SatID& sv)
     {
 		return keepOnlySatID(SatIDSet{ sv });
     }
@@ -103,7 +103,7 @@ namespace gpstk
 	}
 
     RinexEpoch& RinexEpoch::
-        keepOnlySatID(const gpstk::SatIDSet& satSet)
+        keepOnlySatID(const gnsstk::SatIDSet& satSet)
     {
         rinex.keepOnlySatID(satSet);
 		resetCurrData();
@@ -118,7 +118,7 @@ namespace gpstk
     }
 
     RinexEpoch& RinexEpoch::
-        keepOnlySatSystems(const gpstk::SatSystSet& satSet)
+        keepOnlySatSystems(const gnsstk::SatSystSet& satSet)
     {
         rinex.keepOnlySatSystems(satSet);
 		resetCurrData();
@@ -126,25 +126,25 @@ namespace gpstk
     }
 
     RinexEpoch RinexEpoch::
-        extractTypeID(const gpstk::TypeID& type) const
+        extractTypeID(const gnsstk::TypeID& type) const
     {
         return RinexEpoch(rinex.extractTypeID(type));
     }
 
     RinexEpoch RinexEpoch::
-        extractTypeID(const gpstk::TypeIDSet& typeSet) const
+        extractTypeID(const gnsstk::TypeIDSet& typeSet) const
     {
         return RinexEpoch(rinex.extractTypeID(typeSet));
     }
 
     RinexEpoch& RinexEpoch::
-        keepOnlyTypeID(const gpstk::TypeID& type)
+        keepOnlyTypeID(const gnsstk::TypeID& type)
     {
 		return keepOnlyTypeID(TypeIDSet{ type });
     }
 
     RinexEpoch& RinexEpoch::
-        keepOnlyTypeID(const gpstk::TypeIDSet& typeSet)
+        keepOnlyTypeID(const gnsstk::TypeIDSet& typeSet)
     {
         rinex.keepOnlyTypeID(typeSet);
 		resetCurrData();
@@ -152,7 +152,7 @@ namespace gpstk
     }
 
 	RinexEpoch& RinexEpoch::
-		removeSatID(int id, SatID::SatelliteSystem system)
+		removeSatID(int id,SatelliteSystem system)
 	{
 		SatID sv(id, system);
 		(*this).rinex.removeSatID(sv);

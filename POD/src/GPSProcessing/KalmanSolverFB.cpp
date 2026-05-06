@@ -21,7 +21,7 @@ namespace pod
     KalmanSolverFB::~KalmanSolverFB()
     {}
 
-    gpstk::IRinex & KalmanSolverFB::Process(gpstk::IRinex & gRin)
+    gnsstk::IRinex & KalmanSolverFB::Process(gnsstk::IRinex & gRin)
     {
         solver.Process(gRin);
 		if (solver.getResetState())
@@ -44,7 +44,7 @@ namespace pod
         return gRin;
     }
 
-    bool KalmanSolverFB::lastProcess(gpstk::IRinex & gRin)
+    bool KalmanSolverFB::lastProcess(gnsstk::IRinex & gRin)
     {
 
         // Keep processing while 'ObsData' is not empty
@@ -84,7 +84,7 @@ namespace pod
 		}
 	}
 
-	gpstk::IRinex & KalmanSolverFB::ReProcessOneEpoch(gpstk::IRinex & gRin)
+	gnsstk::IRinex & KalmanSolverFB::ReProcessOneEpoch(gnsstk::IRinex & gRin)
 	{
 
 		if (solver.ResetIfRequared(gRin.getHeader().epoch, solver.FilterData))
@@ -133,7 +133,7 @@ namespace pod
         return *this;
     }
 
-    double KalmanSolverFB::getLimit(const gpstk::TypeID& type, size_t cycleNumber)
+    double KalmanSolverFB::getLimit(const gnsstk::TypeID& type, size_t cycleNumber)
     {
         if (codeResTypes.find(type) != codeResTypes.end())
             if (cycleNumber < tresholds.codeLimits.size())
@@ -145,10 +145,10 @@ namespace pod
 		std::string msg = "Can't get observables treshold for type: '"
             + TypeID::tStrings[type.type] +
             "' with reprocess cycle number: '"
-            + gpstk::StringUtils::asString(cycleNumber) + "'.";
+            + gnsstk::StringUtils::asString(cycleNumber) + "'.";
 
         InvalidRequest e(msg);
-        GPSTK_THROW(e);
+        GNSSTK_THROW(e);
 
     }
 

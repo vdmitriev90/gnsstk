@@ -100,7 +100,7 @@ namespace pod
 	  virtual ~Force();
 
          /// this is the real one to do computation
-	  virtual void doCompute(gpstk:: Epoch t, Spacecraft& sc);
+	  virtual void doCompute(gnsstk:: Epoch t, Spacecraft& sc);
   
          
          /// return the force model name

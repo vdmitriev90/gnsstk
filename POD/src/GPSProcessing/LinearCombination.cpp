@@ -7,7 +7,7 @@ namespace pod
        "Peter J.G. Teunissen, Oliver Montenbruck (Eds.) 
        Springer Handbook of Global Navigation Satellite Systems"
      */
-    double LinearCombination::getIonoFreeWaveLength(const gpstk::SatID &sv, int band1, int band2)
+    double LinearCombination::getIonoFreeWaveLength(const gnsstk::SatID &sv, int band1, int band2)
     {
         int fcn = sv.getGloFcn();
         double wlL1 = getWavelength(sv, 1, fcn);

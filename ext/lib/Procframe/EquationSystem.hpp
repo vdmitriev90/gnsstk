@@ -51,12 +51,12 @@
 #include "ConstraintSystem.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       /// Thrown when attempting to use an invalid EquationSystem
       /// @ingroup exceptiongroup
-   NEW_EXCEPTION_CLASS(InvalidEquationSystem, gpstk::Exception);
+   NEW_EXCEPTION_CLASS(InvalidEquationSystem, gnsstk::Exception);
 
 
       /// @ingroup DataStructures 
@@ -233,8 +233,7 @@ namespace gpstk
           * \warning You must call method Prepare() first, otherwise this
           * method will throw an InvalidEquationSystem exception.
           */
-      virtual int getTotalNumVariables() const
-         throw(InvalidEquationSystem);
+      virtual int getTotalNumVariables() const;
 
 
          /** Return the set containing all variables being processed.
@@ -242,8 +241,7 @@ namespace gpstk
           * \warning You must call method Prepare() first, otherwise this
           * method will throw an InvalidEquationSystem exception.
           */
-      virtual VariableSet getVarUnknowns() const
-         throw(InvalidEquationSystem);
+      virtual VariableSet getVarUnknowns() const;
 
 
          /** Return the CURRENT number of variables, given the current equation
@@ -252,8 +250,7 @@ namespace gpstk
           * \warning You must call method Prepare() first, otherwise this
           * method will throw an InvalidEquationSystem exception.
           */
-      virtual int getCurrentNumVariables() const
-         throw(InvalidEquationSystem);
+      virtual int getCurrentNumVariables() const;
 
 
          /** Return the set containing variables being currently processed.
@@ -261,8 +258,7 @@ namespace gpstk
           * \warning You must call method Prepare() first, otherwise this
           * method will throw an InvalidEquationSystem exception.
           */
-      virtual VariableSet getCurrentUnknowns() const
-         throw(InvalidEquationSystem);
+      virtual VariableSet getCurrentUnknowns() const;
 
 
          /** Return the CURRENT number of sources, given the current equation
@@ -271,8 +267,7 @@ namespace gpstk
           * \warning You must call method Prepare() first, otherwise this
           * method will throw an InvalidEquationSystem exception.
           */
-      virtual int getCurrentNumSources() const
-         throw(InvalidEquationSystem);
+      virtual int getCurrentNumSources() const;
 
 
          /** Return the set containing sources being currently processed.
@@ -280,8 +275,7 @@ namespace gpstk
           * \warning You must call method Prepare() first, otherwise this
           * method will throw an InvalidEquationSystem exception.
           */
-      virtual SourceIDSet getCurrentSources() const
-         throw(InvalidEquationSystem);
+      virtual SourceIDSet getCurrentSources() const;
 
 
          /** Return the CURRENT number of satellites, given the current equation
@@ -290,8 +284,7 @@ namespace gpstk
           * \warning You must call method Prepare() first, otherwise this
           * method will throw an InvalidEquationSystem exception.
           */
-      virtual int getCurrentNumSats() const
-         throw(InvalidEquationSystem);
+      virtual int getCurrentNumSats() const;
 
 
          /** Return the set containing satellites being currently processed.
@@ -299,8 +292,7 @@ namespace gpstk
           * \warning You must call method Prepare() first, otherwise this
           * method will throw an InvalidEquationSystem exception.
           */
-      virtual SatIDSet getCurrentSats() const
-         throw(InvalidEquationSystem);
+      virtual SatIDSet getCurrentSats() const;
 
 
          /** Get prefit residuals GPSTk Vector, given the current equation
@@ -309,8 +301,7 @@ namespace gpstk
           * \warning You must call method Prepare() first, otherwise this
           * method will throw an InvalidEquationSystem exception.
           */
-      virtual Vector<double> getPrefitsVector() const
-         throw(InvalidEquationSystem);
+      virtual Vector<double> getPrefitsVector() const;
 
 
          /** Get geometry matrix, given the current equation system definition
@@ -319,8 +310,7 @@ namespace gpstk
           * \warning You must call method Prepare() first, otherwise this
           * method will throw an InvalidEquationSystem exception.
           */
-      virtual Matrix<double> getGeometryMatrix() const
-         throw(InvalidEquationSystem);
+      virtual Matrix<double> getGeometryMatrix() const;
 
 
          /** Get weights matrix, given the current equation system definition
@@ -329,8 +319,7 @@ namespace gpstk
           * \warning You must call method Prepare() first, otherwise this
           * method will throw an InvalidEquationSystem exception.
           */
-      virtual Matrix<double> getWeightsMatrix() const
-         throw(InvalidEquationSystem);
+      virtual Matrix<double> getWeightsMatrix() const;
 
 
          /** Get the State Transition Matrix (PhiMatrix), given the current
@@ -339,8 +328,7 @@ namespace gpstk
           * \warning You must call method Prepare() first, otherwise this
           * method will throw an InvalidEquationSystem exception.
           */
-      virtual Matrix<double> getPhiMatrix() const
-         throw(InvalidEquationSystem);
+      virtual Matrix<double> getPhiMatrix() const;
 
 
          /** Get the Process Noise Covariance Matrix (QMatrix), given the
@@ -349,8 +337,7 @@ namespace gpstk
           * \warning You must call method Prepare() first, otherwise this
           * method will throw an InvalidEquationSystem exception.
           */
-      virtual Matrix<double> getQMatrix() const
-         throw(InvalidEquationSystem);
+      virtual Matrix<double> getQMatrix() const;
 
 
          /// Get the number of equation descriptions being currently processed.
@@ -463,6 +450,6 @@ namespace gpstk
 
       //@}
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk
 
 #endif   // GPSTK_EQUATIONSYSTEM_HPP

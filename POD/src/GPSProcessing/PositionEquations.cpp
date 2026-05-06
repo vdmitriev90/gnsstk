@@ -35,14 +35,14 @@ namespace pod
     }
 
     void PositionEquations::
-        Prepare(gpstk::IRinex& gData)
+        Prepare(gnsstk::IRinex& gData)
     {
         for (const auto& it : stochasticModels)
             it.second->Prepare(SatID::dummy, gData);
     }
 
     void PositionEquations::
-        updateH(const gpstk::IRinex & gData, const gpstk::TypeIDSet & obsTypes, gpstk::Matrix<double>& H, int & col_0)
+        updateH(const gnsstk::IRinex & gData, const gnsstk::TypeIDSet & obsTypes, gnsstk::Matrix<double>& H, int & col_0)
     {
         int row(0);
 
@@ -58,7 +58,7 @@ namespace pod
     }
 
     void PositionEquations::
-        updatePhi(gpstk::Matrix<double>& Phi, int& index) const
+        updatePhi(gnsstk::Matrix<double>& Phi, int& index) const
     {
 
         for (const auto &it : types)
@@ -69,7 +69,7 @@ namespace pod
     }
 
     void PositionEquations::
-        updateQ(gpstk::Matrix<double>& Q, int& index) const
+        updateQ(gnsstk::Matrix<double>& Q, int& index) const
     {
 
         for (const auto &it : types)
@@ -80,7 +80,7 @@ namespace pod
     }
 
     void PositionEquations::
-        defStateAndCovariance(gpstk::Vector<double>& x, gpstk::Matrix<double>& P, int& index) const
+        defStateAndCovariance(gnsstk::Vector<double>& x, gnsstk::Matrix<double>& P, int& index) const
     {
         for (const auto &it : types)
         {

@@ -46,13 +46,12 @@
 #include <string>
 #include <algorithm>
 
-namespace gpstk
+namespace gnsstk
 {
    using namespace std;
 
       // Feed the  constraint equations to the solver
    void GeneralConstraint::constraint( gnssDataMap& gdsMap )
-      throw(InvalidConstraint)
    {
       try
       {
@@ -61,7 +60,7 @@ namespace gpstk
       catch (...)
       {
       	InvalidConstraint e("Invalid constraint.");
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
   
    }  // End of method 'GeneralConstraint::constraint'
@@ -69,7 +68,6 @@ namespace gpstk
 
       // Feed the  constraint equations to the solver
    void GeneralConstraint::constraint( gnssRinex& gRin )
-      throw(InvalidConstraint)
    {
       gnssDataMap gdsMap;
       SourceID source( gRin.header.source );
@@ -195,7 +193,7 @@ namespace gpstk
       if( n<1 || oi>=n || ni>=n )
       {
          Exception e("Invalid input, and check it.");
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
 
       if(oi==ni) return ident<double>(n);
@@ -239,7 +237,7 @@ namespace gpstk
       if(validInput==false)
       {
          Exception e("Invalid input, and check it.");
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
 
       if(oi==ni) return ident<double>(n);
@@ -287,7 +285,7 @@ namespace gpstk
       }
 
       Exception e("The desirable variable not exist int the solver.");
-      GPSTK_THROW(e);
+      GNSSTK_THROW(e);
 
       return Variable();
 
@@ -445,17 +443,17 @@ namespace gpstk
          }
          else if(sat==Variable::allGPSSats)
          {
-            if(itv->getSatellite().system==SatID::systemGPS) 
+            if(itv->getSatellite().system==SatelliteSystem::GPS) 
                vset.insert(*itv);
          }
          else if(sat==Variable::allGlonassSats)
          {  
-            if(itv->getSatellite().system==SatID::systemGlonass) 
+            if(itv->getSatellite().system==SatelliteSystem::Glonass) 
                vset.insert(*itv);
          }
          else if(sat==Variable::allGalileoSats)
          {
-            if(itv->getSatellite().system==SatID::systemGalileo) 
+            if(itv->getSatellite().system==SatelliteSystem::Galileo) 
                vset.insert(*itv);
          }
          else
@@ -607,7 +605,7 @@ namespace gpstk
          if(allVariable.find(*it)==allVariable.end())
          {
             Exception e("The variable doesn't exist in the solver.");
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
          }
 
          varNum++;
@@ -616,7 +614,7 @@ namespace gpstk
       if(varNum != (int)convertMat.rows() || varNum != (int)convertMat.cols())
       {
          Exception e("The size of input doesn't match.");
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
 
       const int numOfVar(varNum);

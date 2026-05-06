@@ -44,7 +44,7 @@
 #include "RinexObsHeader.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
       // Add a rinex obs file to the network
       // @obsFile Rinex observation file name
@@ -108,7 +108,6 @@ namespace gpstk
       // @gdsMap  Object hold epoch observation data of the network
       // @return  Is there more epoch data for the network 
    bool NetworkObsStreams::readEpochData(gnssDataMap& gdsMap)
-      throw(SynchronizeException)
    {
       // First, We clear the data map
       gdsMap.clear();
@@ -149,7 +148,7 @@ namespace gpstk
 
                   SynchronizeException e(ss.str());
 
-                  GPSTK_THROW(e);
+                  GNSSTK_THROW(e);
                }
             }
 
@@ -217,9 +216,9 @@ namespace gpstk
             + obsFile 
             + "Maybe it doesn't exist or you don't have proper read permissions");
 
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
 
    }  // End of method 'NetworkObsStreams::sourceIDOfRinexObsFile'
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk

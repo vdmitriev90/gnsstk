@@ -3,7 +3,7 @@
 #include"Matrix.hpp"
 #include"satTypeValueMap.hpp"
 
-namespace gpstk
+namespace gnsstk
 {   
 
 
@@ -51,7 +51,7 @@ namespace gpstk
         /// @param p Satellite PRN number.
         /// @param p System the satellite belongs to.
         SatTypePtrMap extractSatID(const int& p,
-            const SatID::SatelliteSystem& s) const;
+            SatelliteSystem s) const;
 
 
         /// Returns a SatTypePtrMap with only these satellites.
@@ -63,10 +63,10 @@ namespace gpstk
         /// @param satSet Set (SatSystSet) containing the Satellite system to
         ///               be extracted.
         SatTypePtrMap extractSatSyst(const SatSystSet& sustSet) const;
-        SatTypePtrMap extractSatSyst(SatID::SatelliteSystem s) const;
+        SatTypePtrMap extractSatSyst(SatelliteSystem s) const;
 
 		SatTypePtrMap& keepOnlySatSyst(const SatSystSet& satSystSet);
-		SatTypePtrMap& keepOnlySatSyst(SatID::SatelliteSystem s);
+		SatTypePtrMap& keepOnlySatSyst(SatelliteSystem s);
 
         /// Modifies this object, keeping only this satellite.
         /// @param satellite Satellite to be kept.
@@ -77,7 +77,7 @@ namespace gpstk
         /// @param p Satellite PRN number.
         /// @param p System the satellite belongs to.
         SatTypePtrMap& keepOnlySatID(const int& p,
-            const SatID::SatelliteSystem& s);
+            SatelliteSystem s);
 
 
         /// Modifies this object, keeping only these satellites.
@@ -109,7 +109,7 @@ namespace gpstk
         /// Modifies this object, removing this satellite.
         /// @param satellite Satellite to be removed.
 
-		SatTypePtrMap& removeSatID(int id, SatID::SatelliteSystem system);
+		SatTypePtrMap& removeSatID(int id,SatelliteSystem system);
 
 		SatTypePtrMap& removeSatID(const SatID& satellite);
 
@@ -121,7 +121,7 @@ namespace gpstk
 
         SatTypePtrMap& removeSatSyst(const SatSystSet& satSet);
 
-        SatTypePtrMap& removeSatSyst(SatID::SatelliteSystem syst);
+        SatTypePtrMap& removeSatSyst(SatelliteSystem syst);
 
         /// Modifies this object, removing this type of data.
         /// @param type Type of value to be removed.
@@ -162,8 +162,7 @@ namespace gpstk
          * @param dataVector    GPSTk Vector containing the data to be added.
          */
         SatTypePtrMap& insertTypeIDVector(const TypeID& type,
-            const Vector<double> dataVector)
-            throw(NumberOfSatsMismatch);
+            const Vector<double> dataVector);
 
 
         /** Modifies this object, adding a matrix of data, one vector
@@ -186,8 +185,7 @@ namespace gpstk
          * @param dataMatrix    GPSTk Matrix containing the data to be added.
          */
         SatTypePtrMap& insertMatrix(const TypeIDSet& typeSet,
-            const Matrix<double> dataMatrix)
-            throw(NumberOfSatsMismatch, NumberOfTypesMismatch);
+            const Matrix<double> dataMatrix);
 
 
         /** Returns the data value (double) corresponding to provided SatID
@@ -197,14 +195,12 @@ namespace gpstk
          * @param type          Type to be looked for.
          */
         double getValue(const SatID& satellite,
-            const TypeID& type) const
-            throw(SatIDNotFound, TypeIDNotFound);
+            const TypeID& type) const;
 
 
         /// Returns a reference to the typeValueMap with corresponding SatID.
         /// @param type Type of value to be look for.
-        typeValueMap& operator()(const SatID& satellite)
-            throw(SatIDNotFound);
+        typeValueMap& operator()(const SatID& satellite);
 
 
         /// Convenience output method
@@ -216,7 +212,7 @@ namespace gpstk
         virtual ~SatTypePtrMap() {};
         
     };
-	std::ostream& operator<<(std::ostream& s, const gpstk::SatTypePtrMap& obj);
+	std::ostream& operator<<(std::ostream& s, const gnsstk::SatTypePtrMap& obj);
 
 
 }

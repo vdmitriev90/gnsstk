@@ -39,7 +39,7 @@ namespace pod
 
     protected: virtual bool processCore() = 0;
 
-    protected: virtual void mapSNR(gpstk::IRinex& value);
+    protected: virtual void mapSNR(gnsstk::IRinex& value);
 
     protected: virtual double mapSNR(double value) { return value; };
 

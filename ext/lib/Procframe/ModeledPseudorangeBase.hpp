@@ -51,7 +51,7 @@
 #include <vector>
 
 
-namespace gpstk
+namespace gnsstk
 {
       /// @ingroup GPSsolutions 
       //@{
@@ -148,6 +148,6 @@ namespace gpstk
 
       //@}
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk
 
 #endif   // GPSTK_MODELEDPSEUDORANGEBASE_HPP

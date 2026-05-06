@@ -6,17 +6,17 @@
 namespace pod
 {
 	class KalmanSolver :
-		public gpstk::SolverBase, public gpstk::ProcessingClass
+		public gnsstk::SolverBase, public gnsstk::ProcessingClass
 	{
 	public:
-		typedef std::map<gpstk::CommonTime, EquationComposer::FilterState> filterHistory;
+		typedef std::map<gnsstk::CommonTime, EquationComposer::FilterState> filterHistory;
 
 	protected:
 		//set of all possible TypeID for code pseudorange postfit residuals 
-		static const std::set<gpstk::TypeID> codeResTypes;
+		static const std::set<gnsstk::TypeID> codeResTypes;
 
 		//set of all possible TypeID for  carrier phase postfit residuals 
-		static const std::set<gpstk::TypeID> phaseResTypes;
+		static const std::set<gnsstk::TypeID> phaseResTypes;
 
 	public:
 		//maximum time interval without data
@@ -29,8 +29,8 @@ namespace pod
 		virtual ~KalmanSolver();
 
 
-		virtual gpstk::IRinex& Process(gpstk::IRinex& gData)
-			throw(gpstk::ProcessingException);
+		virtual gnsstk::IRinex& Process(gnsstk::IRinex& gData)
+			throw(gnsstk::ProcessingException);
 
 		// Returns a string identifying this object.
 		virtual std::string getClassName(void) const
@@ -99,32 +99,32 @@ namespace pod
 			return isReset;
 		}
 
-		bool ResetIfRequared(const gpstk::CommonTime& t, const filterHistory& data);
+		bool ResetIfRequared(const gnsstk::CommonTime& t, const filterHistory& data);
 
 		//filter states, processed so far will be used in case of filer reset
-		std::map<gpstk::CommonTime, EquationComposer::FilterState> FilterData;
+		std::map<gnsstk::CommonTime, EquationComposer::FilterState> FilterData;
 
 	protected:
 
-		double getSigma(const gpstk::TypeIDSet& types) const;
+		double getSigma(const gnsstk::TypeIDSet& types) const;
 
 		int getUnknownIndex(const FilterParameter& parameter) const;
 
 		//resolve carrier  phase ambiguities ot integer values
-		virtual void fixAmbiguities(gpstk::IRinex& gData);
+		virtual void fixAmbiguities(gnsstk::IRinex& gData);
 
 		//check phase data integrity 
-		int checkPhase(gpstk::IRinex& gData);
+		int checkPhase(gnsstk::IRinex& gData);
 
 		//reject bad observation using residuals value
-		virtual gpstk::IRinex& reject(gpstk::IRinex& gData, const gpstk::TypeIDSet& typeOfResid);
+		virtual gnsstk::IRinex& reject(gnsstk::IRinex& gData, const gnsstk::TypeIDSet& typeOfResid);
 
 		virtual void reset()
 		{
 			equations->clearData();
 		}
 
-		gpstk::CommonTime t_pre = gpstk::CommonTime::BEGINNING_OF_TIME;
+		gnsstk::CommonTime t_pre = gnsstk::CommonTime::BEGINNING_OF_TIME;
 
 		bool firstTime;
 
@@ -132,19 +132,19 @@ namespace pod
 		size_t minSatNumber;
 
 		// State transition matrix
-		gpstk::Matrix<double> phiMatrix;
+		gnsstk::Matrix<double> phiMatrix;
 
 		// Process noise matrix
-		gpstk::Matrix<double> qMatrix;
+		gnsstk::Matrix<double> qMatrix;
 
 		// Geometry matrix (derivative of observations wrt state)
-		gpstk::Matrix<double> hMatrix;
+		gnsstk::Matrix<double> hMatrix;
 
 		// weights matrix
-		gpstk::Matrix<double> weigthMatrix;
+		gnsstk::Matrix<double> weigthMatrix;
 
 		// Measurements vector (prefit-residuals)
-		gpstk::Vector<double> measVector;
+		gnsstk::Vector<double> measVector;
 
 		//Weight unit error (sqrt(vpv/(n-p)))
 		double sigma;

@@ -51,7 +51,7 @@
 #include "DataStructures.hpp"
 #include "Synchronize.hpp"
 
-namespace gpstk
+namespace gnsstk
 {
 
       /// @ingroup DataStructures
@@ -125,8 +125,7 @@ namespace gpstk
          /// Get epoch data of the network
          /// @gdsMap  Object hold epoch observation data of the network
          /// @return  Is there more epoch data for the network 
-      bool readEpochData(gnssDataMap& gdsMap)
-         throw(SynchronizeException);
+      bool readEpochData(gnssDataMap& gdsMap);
          
          /// Get the SourceID of the rinex observation file
       SourceID sourceIDOfRinexObsFile(std::string obsFile);
@@ -171,6 +170,6 @@ namespace gpstk
       //@}
 
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk
 
 #endif   // NetworkObsStreams

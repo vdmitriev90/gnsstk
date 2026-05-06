@@ -47,7 +47,7 @@
 
 #include "DataStructures.hpp"
 
-namespace gpstk
+namespace gnsstk
 {
    /**
     * Methods to exchange data between gnssDataMap and binary file 
@@ -171,13 +171,13 @@ namespace gpstk
       void write(std::ostream& s)
       {  
          DataBin<int> idBin(data.id,s);
-         DataBin<SatID::SatelliteSystem> sysBin(data.system,s);
+         DataBin<SatelliteSystem> sysBin(data.system,s);
       }
 
       void read(std::istream& s)
       { 
          DataBin<int> idBin(s);
-         DataBin<SatID::SatelliteSystem> sysBin(s);
+         DataBin<SatelliteSystem> sysBin(s);
          
          data.id = idBin.get();
          data.system = sysBin.get();
@@ -816,11 +816,11 @@ namespace gpstk
 
          gRin.header.epoch = time0 + i*30.0;
          
-         gRin.body[SatID(1,SatID::systemGPS)][TypeID::P1] = 100.0;
-         gRin.body[SatID(2,SatID::systemGPS)][TypeID::P1] = 200.0;
+         gRin.body[SatID(1,SatelliteSystem::GPS)][TypeID::P1] = 100.0;
+         gRin.body[SatID(2,SatelliteSystem::GPS)][TypeID::P1] = 200.0;
 
-         gRin.body[SatID(1,SatID::systemGPS)][TypeID::P2] = 200.0;
-         gRin.body[SatID(2,SatID::systemGPS)][TypeID::P2] = 400.0;
+         gRin.body[SatID(1,SatelliteSystem::GPS)][TypeID::P2] = 200.0;
+         gRin.body[SatID(2,SatelliteSystem::GPS)][TypeID::P2] = 400.0;
 
          gRin.header.source = SourceID(SourceID::GPS,"test1");
          gdsMap.addGnssRinex(gRin);
@@ -844,7 +844,7 @@ namespace gpstk
       sourceSet.insert(SourceID(SourceID::GPS,"test1"));
 
       SatIDSet satSet;
-      satSet.insert(SatID(1,SatID::systemGPS));
+      satSet.insert(SatID(1,SatelliteSystem::GPS));
 
       TypeIDSet typeSet;
       typeSet.insert(TypeID::P1);
@@ -858,7 +858,7 @@ namespace gpstk
       int a = 0;
    }
 
-}   // End of namespace gpstk
+}   // End of namespace gnsstk
 
 
 #endif  //GPSTK_GDSUTILS_HPP

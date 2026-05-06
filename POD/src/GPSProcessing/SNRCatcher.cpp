@@ -8,7 +8,7 @@ namespace pod
     const int SNRCatcher::minBufferSize = 5;
 
     SNRCatcher::SNRCatcher() : obsType(TypeID::S1),
-        resultType1(gpstk::TypeID::CSL1), deltaTMax(901.0),
+        resultType1(gnsstk::TypeID::CSL1), deltaTMax(901.0),
         satThreshold(10), maxBufferSize(30)
     {};
 
@@ -35,7 +35,7 @@ namespace pod
             ProcessingException e(getClassName() + ":"
                 + u.what());
 
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
         }
 
     }  // End of method 'SNRCatcher::Process()'
@@ -103,15 +103,15 @@ namespace pod
             ProcessingException e(getClassName() + ":"
                 + u.what());
 
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
 
         }
 
     }  // End of method 'SNRCatcher::Process()'
 
-   double SNRCatcher::getDetection(const gpstk::CommonTime& epoch,
-       const gpstk::SatID& sat,
-       gpstk::typeValueMap& tvMap,
+   double SNRCatcher::getDetection(const gnsstk::CommonTime& epoch,
+       const gnsstk::SatID& sat,
+       gnsstk::typeValueMap& tvMap,
        double snr)
    {
        bool reportCS(false);

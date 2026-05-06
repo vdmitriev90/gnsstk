@@ -5,7 +5,7 @@ using namespace gpstk;
 
 namespace pod
 {
-    void CatcherStatistic::logStatistic(const std::list<gpstk::ProcessingClass*> & pList) const
+    void CatcherStatistic::logStatistic(const std::list<gnsstk::ProcessingClass*> & pList) const
     {
         dataTable table;
 

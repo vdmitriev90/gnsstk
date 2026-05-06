@@ -25,7 +25,7 @@ namespace pod
         stochModel->Prepare(SatID::dummy, gData);
     }
 
-    void ClockBiasEquations::updateH(const gpstk::IRinex& svs, const gpstk::TypeIDSet& types, gpstk::Matrix<double>& H, int& col_0)
+    void ClockBiasEquations::updateH(const gnsstk::IRinex& svs, const gnsstk::TypeIDSet& types, gnsstk::Matrix<double>& H, int& col_0)
     {
         for (size_t i = 0; i < H.rows(); i++)
             H(i, col_0) = 1.0;

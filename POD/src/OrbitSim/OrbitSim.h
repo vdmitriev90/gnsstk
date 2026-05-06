@@ -8,7 +8,7 @@
 #include"OrbitModel.h"
 
 
-typedef std::unique_ptr<gpstk::Integrator> IntegratorUniquePtr;
+typedef std::unique_ptr<gnsstk::Integrator> IntegratorUniquePtr;
 typedef std::unique_ptr<pod::OrbitModel> OrbitModelUniquePtr;
 namespace pod
 {
@@ -25,7 +25,7 @@ namespace pod
 
 
         /// set integrator, default is Rungge-Kutta 78
-        OrbitSim& setIntegrator(gpstk::Integrator* pIntg)
+        OrbitSim& setIntegrator(gnsstk::Integrator* pIntg)
         {
             pIntegrator.reset(pIntg);
             return (*this);
@@ -66,7 +66,7 @@ namespace pod
         * @param rv0    init state
         * @return
         */
-        OrbitSim& setInitState(gpstk::CommonTime utc0, gpstk::Vector<double> rv0);
+        OrbitSim& setInitState(gnsstk::CommonTime utc0, gnsstk::Vector<double> rv0);
 
 
         /** Take a single integration step.
@@ -77,7 +77,7 @@ namespace pod
 
 
         /// return the position and velocity , the dimension is 6
-        gpstk::Vector<double> rvState(bool bJ2k = true);
+        gnsstk::Vector<double> rvState(bool bJ2k = true);
 
         /// return the rv state transition matrix 6*6
         Matrix<double> transitionMatrix()
@@ -92,15 +92,15 @@ namespace pod
         }
 
         /// return the current epoch
-        gpstk::CommonTime getCurTime()
+        gnsstk::CommonTime getCurTime()
         {
-            gpstk::CommonTime utc = pOrbit->getRefEpoch();
+            gnsstk::CommonTime utc = pOrbit->getRefEpoch();
             utc += curT; 
             return utc;
         }
 
         /// return the current state
-        gpstk::Vector<double> getCurState()
+        gnsstk::Vector<double> getCurState()
         {
             return curState;
         }
@@ -135,7 +135,7 @@ namespace pod
         * @param tf    next time
         * @return      containing the new state
         */
-        virtual gpstk::Vector<double> integrateTo(double t, gpstk::Vector<double> y, double tf);
+        virtual gnsstk::Vector<double> integrateTo(double t, gnsstk::Vector<double> y, double tf);
 
         /* set initial state of the the integrator
         *
@@ -147,10 +147,10 @@ namespace pod
         * dv_dv0   3*3
         * dv_dp0   3*np
         */
-        void setState(gpstk::Vector<double> state);
+        void setState(gnsstk::Vector<double> state);
 
         /// set reference epoch
-        void setRefEpoch(gpstk::CommonTime utc)
+        void setRefEpoch(gnsstk::CommonTime utc)
         {
             pOrbit->setRefEpoch(utc);
         }
@@ -188,10 +188,10 @@ namespace pod
         // dv_dr0   3*3
         // dv_dv0   3*3
         // dv_dp0   3*np
-        gpstk::Vector<double> curState;         // 42+6*np
+        gnsstk::Vector<double> curState;         // 42+6*np
 
         /// the position and velocity
-        gpstk::Vector<double>   rvVector;      // 6
+        gnsstk::Vector<double>   rvVector;      // 6
 
         /// state transition matrix
         Matrix<double> phiMatrix;      // 6*6

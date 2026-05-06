@@ -52,7 +52,7 @@
 #include "ConfDataWriter.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
    template <class HEADER_CLASS, class BODY_CLASS>
    struct gnssConfData;
@@ -300,27 +300,27 @@ namespace gpstk
       {
          Exception E("Error loading the file '"
             + fileName + "', " + string(e.what())); 
-         GPSTK_THROW(E);
+         GNSSTK_THROW(E);
       }
       catch(exception& e)
       {
          Exception E("Error loading the file '"
             + fileName + "', " + string(e.what())); 
-         GPSTK_THROW(E);
+         GNSSTK_THROW(E);
       }
       catch(...)
       {
          Exception E("Error loading the file '"
             + fileName + "', " + string("Unknown error.")); 
 
-         GPSTK_THROW(E);
+         GNSSTK_THROW(E);
       }
 
       return (*this);
 
    }  // End of method 'ConfData<C>& ConfData<C>::load()'
 
-}   // End of namespace gpstk
+}   // End of namespace gnsstk
 
 
 #endif  //GPSTK_CONFDATA_HPP

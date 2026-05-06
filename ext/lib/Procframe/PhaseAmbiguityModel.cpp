@@ -1,6 +1,6 @@
 #include"PhaseAmbiguityModel.hpp"
 
-namespace gpstk
+namespace gnsstk
 {
 
 

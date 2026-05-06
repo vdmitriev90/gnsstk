@@ -12,7 +12,7 @@ namespace pod
         Action(std::string pathToConfig):path(pathToConfig) {}
         pod::GnssEpochMap process();
 
-        //std::vector<gpstk::gnssRinex> getData();
+        //std::vector<gnsstk::gnssRinex> getData();
     protected:
         std::string path;
 

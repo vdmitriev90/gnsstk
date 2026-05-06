@@ -49,7 +49,7 @@ namespace pod
 
          const int np = da_dp.cols();
 
-         gpstk::Matrix<double> A(6+np,6+np,0.0);
+         gnsstk::Matrix<double> A(6+np,6+np,0.0);
 
          A(0,3) = 1.0;
          A(1,4) = 1.0;

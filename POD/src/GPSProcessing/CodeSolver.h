@@ -12,23 +12,23 @@ namespace pod
     {
     public:
 
-        CodeSolver(gpstk::TropModel &tropo, GnssDataStore_sptr data) :CodeSolverBase(data), tropo(&tropo)
+        CodeSolver(gnsstk::TropModel &tropo, GnssDataStore_sptr data) :CodeSolverBase(data), tropo(&tropo)
         {};
         virtual ~CodeSolver()
         {
         };
-        gpstk::TropModel *tropo;
+        gnsstk::TropModel *tropo;
 
         std::string virtual getName() override
         {
             return "CodeSolver";
         };
         virtual double getTropoCorrection(
-            const gpstk::Position &rxPos,
-            const gpstk::Position &svPos,
-            const gpstk::CommonTime &t) const override;
+            const gnsstk::Position &rxPos,
+            const gnsstk::Position &svPos,
+            const gnsstk::CommonTime &t) const override;
 
-        virtual gpstk::NeillTropModel initTropoModel(const gpstk::Position &nominalPos, int DoY) override;
+        virtual gnsstk::NeillTropModel initTropoModel(const gnsstk::Position &nominalPos, int DoY) override;
     protected:
 
 

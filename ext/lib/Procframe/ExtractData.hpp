@@ -51,7 +51,7 @@
 #include "Vector.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       /// @ingroup RinexObs 
@@ -97,8 +97,7 @@ namespace gpstk
           * @return
           *  Number of satellites with this kind of data available
           */
-      virtual int getData( const Rinex3ObsData& rinexData, int index )
-         throw(InvalidRequest);
+      virtual int getData( const Rinex3ObsData& rinexData, int index );
 
 
          /** Pull out the selected observation type from a Rinex3ObsData object
@@ -109,8 +108,7 @@ namespace gpstk
           */
       virtual int getData( const Rinex3ObsData& rinexData,
                            std::string type,
-                           const Rinex3ObsHeader& hdr )
-         throw(InvalidRequest);
+                           const Rinex3ObsHeader& hdr );
 
 
          /// Set this to true if you want to enable data checking within given
@@ -162,6 +160,6 @@ namespace gpstk
 
       //@}
    
-}  // End of namespace gpstk
+}  // End of namespace gnsstk
 
 #endif   // GPSTK_EXTRACTDATA_HPP

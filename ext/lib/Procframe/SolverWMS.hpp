@@ -46,7 +46,7 @@
 #include "SolverLMS.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       /// @ingroup GPSsolutions
@@ -159,8 +159,7 @@ namespace gpstk
           */
       virtual int Compute( const Vector<double>& prefitResiduals,
                            const Matrix<double>& designMatrix,
-                           const Matrix<double>& weightMatrix )
-         throw(InvalidSolver);
+                           const Matrix<double>& weightMatrix );
 
 
          /** Compute the Weighted Least Mean Squares Solution of the given
@@ -177,8 +176,7 @@ namespace gpstk
           */
       virtual int Compute( const Vector<double>& prefitResiduals,
                            const Matrix<double>& designMatrix,
-                           const Vector<double>& weightVector )
-         throw(InvalidSolver);
+                           const Vector<double>& weightVector );
 
 
          /** Compute the Weighted Least Mean Squares Solution of the given
@@ -189,7 +187,6 @@ namespace gpstk
           */
       virtual int Compute( const Vector<double>& prefitResiduals,
                            const Matrix<double>& designMatrix )
-         throw(InvalidSolver)
       { return SolverLMS::Compute(prefitResiduals, designMatrix); };
 
 
@@ -198,8 +195,7 @@ namespace gpstk
           *
           * @param gData     Data object holding the data.
           */
-      virtual SatTypePtrMap& Process(SatTypePtrMap& gData)
-         throw(ProcessingException);
+      virtual SatTypePtrMap& Process(SatTypePtrMap& gData);
 
 
          /// Covariance matrix without weights. This must be used to
@@ -219,6 +215,6 @@ namespace gpstk
 
       //@}
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk
 
 #endif   // GPSTK_SOLVERWMS_HPP

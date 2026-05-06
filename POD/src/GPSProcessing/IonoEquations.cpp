@@ -5,7 +5,7 @@ namespace pod
 {
     const double IonoEquations::SQR_L1_WL_GPS = L1_WAVELENGTH_GPS*L1_WAVELENGTH_GPS;
 
-     std::map<gpstk::TypeID, int> IonoEquations::obsType2Band
+     std::map<gnsstk::TypeID, int> IonoEquations::obsType2Band
      {
          { TypeID::prefitL1,1 },
          { TypeID::prefitL2,2 },
@@ -14,7 +14,7 @@ namespace pod
          { TypeID::prefitP2,2 }
      };
 
-     std::map<gpstk::TypeID, int> IonoEquations::obsType2Sign
+     std::map<gnsstk::TypeID, int> IonoEquations::obsType2Sign
      {
          { TypeID::prefitL1,-1 },
          { TypeID::prefitL2,-1 },
@@ -24,22 +24,22 @@ namespace pod
      };
     #pragma region Stochasic model initializers
    
-    gpstk::StochasticModel_uptr  IonoEquations::constantModel(double sigma)
+    gnsstk::StochasticModel_uptr  IonoEquations::constantModel(double sigma)
     {
         return std::make_unique<ConstantModel>();
     }
 
-    gpstk::StochasticModel_uptr  IonoEquations::rWalkModel(double qPrime)
+    gnsstk::StochasticModel_uptr  IonoEquations::rWalkModel(double qPrime)
     {
         return std::make_unique<RandomWalkModel>(qPrime);
     }
 
-    gpstk::StochasticModel_uptr  IonoEquations::whiteNoiseModel(double sigma)
+    gnsstk::StochasticModel_uptr  IonoEquations::whiteNoiseModel(double sigma)
     {
         return std::make_unique<WhiteNoiseModel>(sigma);
     }
 
-    gpstk::StochasticModel_uptr  IonoEquations::ionoModel(double sigma)
+    gnsstk::StochasticModel_uptr  IonoEquations::ionoModel(double sigma)
     {
         return std::make_unique<IonoStochasticModel>(sigma);
     }
@@ -58,7 +58,7 @@ namespace pod
         stModelInitializer(&IonoEquations::constantModel)
     {};
 
-    void IonoEquations::Prepare(gpstk::IRinex & gData)
+    void IonoEquations::Prepare(gnsstk::IRinex & gData)
     {
         currParameters.clear();
         auto&& currentSatSet = gData.getBody().getSatID();
@@ -77,7 +77,7 @@ namespace pod
         }
     }
 
-    void IonoEquations::updateH(const gpstk::IRinex& gData, const gpstk::TypeIDSet& types, gpstk::Matrix<double>& H, int& col_0)
+    void IonoEquations::updateH(const gnsstk::IRinex& gData, const gnsstk::TypeIDSet& types, gnsstk::Matrix<double>& H, int& col_0)
     {
         int nSv = currParameters.size();
         Matrix<double>mI = ident<double>(nSv);
@@ -102,7 +102,7 @@ namespace pod
 
     }
     
-    void IonoEquations::updatePhi(gpstk::Matrix<double>& Phi, int & index) const
+    void IonoEquations::updatePhi(gnsstk::Matrix<double>& Phi, int & index) const
     {
         for (const auto & it : currParameters)
         {
@@ -111,7 +111,7 @@ namespace pod
         }
     }
 
-    void IonoEquations::updateQ(gpstk::Matrix<double>& Q, int & index) const
+    void IonoEquations::updateQ(gnsstk::Matrix<double>& Q, int & index) const
     {
         for (const auto & it : currParameters)
         {
@@ -120,7 +120,7 @@ namespace pod
         }
     }
 
-    void IonoEquations::defStateAndCovariance(gpstk::Vector<double>& x, gpstk::Matrix<double>& P, int & index) const
+    void IonoEquations::defStateAndCovariance(gnsstk::Vector<double>& x, gnsstk::Matrix<double>& P, int & index) const
     {
         for (const auto & it : currParameters)
         {

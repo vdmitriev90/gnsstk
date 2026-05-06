@@ -45,7 +45,7 @@
 
 using namespace std;
 
-namespace gpstk
+namespace gnsstk
 {
 
 
@@ -126,7 +126,7 @@ namespace gpstk
          if(index <0)
          {
             Exception e("The satellite not exist in the input GDS");
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
          }
 
          bool refCS = dataMap[source].csflag[index];
@@ -155,7 +155,7 @@ namespace gpstk
          if(index <0)
          {
             Exception e("The satellite not exist in the input GDS");
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
          }
 
          bool refCS = dataMap[source].csflag[index];
@@ -296,7 +296,7 @@ namespace gpstk
                    (itt2==stvmIter->second.end())   )
                {
                   Exception e("Elevation was not found.");
-                  GPSTK_THROW(e);
+                  GNSSTK_THROW(e);
                }
                
                data.addData(sat, itt1->second,
@@ -393,7 +393,7 @@ namespace gpstk
          // If code come here, that meant we failed to pick up any satellite 
          // as reference, and we throw an exception
       Exception e("Failed to pick up any satellite as reference.");
-      GPSTK_THROW(e);
+      GNSSTK_THROW(e);
 
       return 0;
 
@@ -454,4 +454,4 @@ namespace gpstk
    }  // End of method 'GeneralEquations::dumpSourceSatData()'
 
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk

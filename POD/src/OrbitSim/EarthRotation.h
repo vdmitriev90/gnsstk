@@ -5,8 +5,7 @@
 #include"Matrix.hpp"
 #include"CivilTime.hpp"
 
-using namespace gpstk;
-using namespace std;
+using namespace gnsstk;
 
 namespace pod
 {
@@ -17,8 +16,7 @@ namespace pod
 
         EarthRotation();
         EarthRotation(const EOPDataStore & eop);
-        bool loadEOP(const string &  file, EOPDataStore::EOPSource source= EOPDataStore::EOPSource::IERS)
-            throw(InvalidRequest,FileMissingException);
+        bool loadEOP(const string& file, EOPDataStore::EOPSource source = EOPDataStore::EOPSource::IERS);
         /// get Inertial to terestriel matrix by IAU 2000A, CIO based, using classical angles
         Matrix<double> getJ2k2Ecef00(const CommonTime & t);
         Matrix<double> getEcef2J2k00(const CommonTime & t);
@@ -35,7 +33,7 @@ namespace pod
         EOPDataStore eopData;
 		
     private:
-		static CivilTime toTAI(const CommonTime & t) throw(InvalidParameter);
+		static CivilTime toTAI(const CommonTime & t);
     };
 }
 #endif // !POD_EARTH_ROTATION_H

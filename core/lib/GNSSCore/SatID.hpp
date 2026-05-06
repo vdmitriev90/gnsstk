@@ -39,6 +39,8 @@
 #ifndef GNSSTK_SATID_HPP
 #define GNSSTK_SATID_HPP
 
+#include <set>
+#include <map>
 #include <iostream>
 #include <iomanip>
 #include <sstream>
@@ -161,6 +163,12 @@ namespace gnsstk
       bool wildId;              ///< If true, any satellite matches.
       SatelliteSystem system;   ///< System for this satellite
       bool wildSys;             ///< If true, any system matches.
+      
+      int getGloFcn() const;
+      static void loadGloFcn(const char* path);
+
+      static std::map<SatID, int> glonassFcn;
+      static SatID dummy;
 
          /** NORAD assigned identifier for this satellite.
           * @note This value is only used as additional metadata.  It
@@ -195,6 +203,11 @@ namespace gnsstk
       }
    }
 
+   /// Set containing SatID objects.
+   typedef std::set<SatID> SatIDSet;
+
+   /// Set containing SatSyst objects.
+   typedef std::set<SatelliteSystem> SatSystSet;
 } // namespace gnsstk
 
 #endif

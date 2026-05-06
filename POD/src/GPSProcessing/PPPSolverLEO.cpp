@@ -107,9 +107,9 @@ namespace pod
        *  0 if OK
        *  -1 if problems arose
        */
-    int PPPSolverLEO::Compute(const gpstk::Vector<double>& prefitResiduals,
-                              const gpstk::Matrix<double>& designMatrix,
-                              const gpstk::Vector<double>& weightVector)
+    int PPPSolverLEO::Compute(const gnsstk::Vector<double>& prefitResiduals,
+                              const gnsstk::Matrix<double>& designMatrix,
+                              const gnsstk::Vector<double>& weightVector)
         throw(InvalidSolver)
     {
 
@@ -123,10 +123,10 @@ namespace pod
         {
             InvalidSolver e("prefitResiduals size does not match dimension \
 of weightVector");
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
         }
 
-       gpstk:: Matrix<double> wMatrix(wSize, wSize, 0.0);  // Declare a weight matrix
+       gnsstk:: Matrix<double> wMatrix(wSize, wSize, 0.0);  // Declare a weight matrix
 
                                                     // Fill the weight matrix diagonal with the content of
                                                     // the weights vector
@@ -158,9 +158,9 @@ of weightVector");
        //  0 if OK
        //  -1 if problems arose
        //
-    int PPPSolverLEO::Compute(const gpstk:: Vector<double>& prefitResiduals,
-                              const gpstk:: Matrix<double>& designMatrix,
-                              const gpstk:: Matrix<double>& weightMatrix)
+    int PPPSolverLEO::Compute(const gnsstk:: Vector<double>& prefitResiduals,
+                              const gnsstk:: Matrix<double>& designMatrix,
+                              const gnsstk:: Matrix<double>& weightMatrix)
         throw(InvalidSolver)
     {
 
@@ -170,7 +170,7 @@ of weightVector");
         if (!(weightMatrix.isSquare()))
         {
             InvalidSolver e("Weight matrix is not square");
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
         }
 
         int wRow = static_cast<int>(weightMatrix.rows());
@@ -179,7 +179,7 @@ of weightVector");
         {
             InvalidSolver e("prefitResiduals size does not match dimension of \
 weightMatrix");
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
         }
 
         int gRow = static_cast<int>(designMatrix.rows());
@@ -187,13 +187,13 @@ weightMatrix");
         {
             InvalidSolver e("prefitResiduals size does not match dimension \
 of designMatrix");
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
         }
 
         if (!(phiMatrix.isSquare()))
         {
             InvalidSolver e("phiMatrix is not square");
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
         }
 
         int phiRow = static_cast<int>(phiMatrix.rows());
@@ -201,13 +201,13 @@ of designMatrix");
         {
             InvalidSolver e("Number of unknowns does not match dimension \
 of phiMatrix");
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
         }
 
         if (!(qMatrix.isSquare()))
         {
             InvalidSolver e("qMatrix is not square");
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
         }
 
         int qRow = static_cast<int>(qMatrix.rows());
@@ -215,13 +215,13 @@ of phiMatrix");
         {
             InvalidSolver e("Number of unknowns does not match dimension \
 of qMatrix");
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
         }
 
         // After checking sizes, let's invert the matrix of weights in order
         // to get the measurements noise covariance matrix, which is what we
         // use in the "SimpleKalmanFilter" class
-       gpstk:: Matrix<double> measNoiseMatrix;
+       gnsstk:: Matrix<double> measNoiseMatrix;
 
         try
         {
@@ -231,7 +231,7 @@ of qMatrix");
         {
             InvalidSolver e("Correct(): Unable to compute measurements noise \
 covariance matrix.");
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
         }
 
 
@@ -320,8 +320,8 @@ covariance matrix.");
             // Build the vector of measurements (Prefit-residuals): Code + phase
             measVector.resize(numMeas, 0.0);
 
-           gpstk:: Vector<double> prefitC(gData.getBody().getVectorOfTypeID(defaultEqDef.header));
-           gpstk:: Vector<double> prefitL(gData.getBody().getVectorOfTypeID(TypeID::prefitL));
+           gnsstk:: Vector<double> prefitC(gData.getBody().getVectorOfTypeID(defaultEqDef.header));
+           gnsstk:: Vector<double> prefitL(gData.getBody().getVectorOfTypeID(TypeID::prefitL));
             for (size_t i = 0; i < numCurrentSV; i++)
             {
                 measVector(i) = prefitC(i);
@@ -341,7 +341,7 @@ covariance matrix.");
             {
 
                 // If we have weights information, let's load it
-               gpstk:: Vector<double>
+               gnsstk:: Vector<double>
                     weightsVector(gData.getBody().getVectorOfTypeID(TypeID::weight));
 
                 for (size_t i = 0; i < numCurrentSV; i++)
@@ -376,7 +376,7 @@ covariance matrix.");
             hMatrix.resize(numMeas, numUnknowns, 0.0);
 
             // Get the values corresponding to 'core' variables
-           gpstk:: Matrix<double> dMatrix(gData.getBody().getMatrixOfTypes(defaultEqDef.body));
+           gnsstk:: Matrix<double> dMatrix(gData.getBody().getMatrixOfTypes(defaultEqDef.body));
 
             // Let's fill 'hMatrix'
             for (size_t i = 0; i < numCurrentSV; i++)
@@ -471,8 +471,8 @@ covariance matrix.");
             if (firstTime)
             {
 
-               gpstk:: Vector<double> initialState(numUnknowns, 0.0);
-               gpstk:: Matrix<double> initialErrorCovariance(numUnknowns,
+               gnsstk:: Vector<double> initialState(numUnknowns, 0.0);
+               gnsstk:: Matrix<double> initialErrorCovariance(numUnknowns,
                                                       numUnknowns,
                                                       0.0);
 
@@ -509,8 +509,8 @@ covariance matrix.");
             {
 
                 // Adapt the size to the current number of unknowns
-               gpstk:: Vector<double> currentState(numUnknowns, 0.0);
-               gpstk:: Matrix<double> currentErrorCov(numUnknowns, numUnknowns, 0.0);
+               gnsstk:: Vector<double> currentState(numUnknowns, 0.0);
+               gnsstk:: Matrix<double> currentErrorCov(numUnknowns, numUnknowns, 0.0);
 
 
                 // Set first part of current state vector and covariance matrix
@@ -628,8 +628,8 @@ covariance matrix.");
 
 
                // Now we have to add the new values to the data structure
-           gpstk:: Vector<double> postfitCode(numCurrentSV, 0.0);
-           gpstk:: Vector<double> postfitPhase(numCurrentSV, 0.0);
+           gnsstk:: Vector<double> postfitCode(numCurrentSV, 0.0);
+           gnsstk:: Vector<double> postfitPhase(numCurrentSV, 0.0);
             for (size_t i = 0; i < numCurrentSV; i++)
             {
                 postfitCode(i) = postfitResiduals(i);
@@ -651,7 +651,7 @@ covariance matrix.");
             ProcessingException e(getClassName() + ":"
                                   + u.what());
 
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
 
         }
 

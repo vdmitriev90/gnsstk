@@ -44,7 +44,7 @@
 
 using namespace std;
 
-namespace gpstk
+namespace gnsstk
 {
 
       // Returns a string identifying this object.
@@ -61,7 +61,6 @@ namespace gpstk
        */
    SatTypePtrMap& ComputeWindUp::Process( const CommonTime& time,
                                             SatTypePtrMap& gData )
-      throw(ProcessingException)
    {
 
       try
@@ -106,50 +105,32 @@ namespace gpstk
 
 
                // Use ephemeris if satellite position is not already computed
-            if( ( (*it).second->get_value().find(TypeID::satX) == (*it).second->get_value().end() ) ||
-                ( (*it).second->get_value().find(TypeID::satY) == (*it).second->get_value().end() ) ||
-                ( (*it).second->get_value().find(TypeID::satZ) == (*it).second->get_value().end() ) )
+            if (((*it).second->get_value().find(TypeID::satX) == (*it).second->get_value().end()) ||
+                ((*it).second->get_value().find(TypeID::satY) == (*it).second->get_value().end()) ||
+                ((*it).second->get_value().find(TypeID::satZ) == (*it).second->get_value().end()))
             {
 
-               if(pEphemeris==NULL)
-               {
+                // Try to get satellite position
+                // if it is not already computed
 
-                     // If ephemeris is missing, then remove all satellites
-                  satRejectedSet.insert( (*it).first );
+                // For our purposes, position at receive time
+                // is fine enough
+                Xvt svPosVel;
+                if (pEphemeris.getXvt((*it).first, time, svPosVel))
+                {
+                    // If everything is OK, then continue processing.
+                    svPos[0] = svPosVel.x.theArray[0];
+                    svPos[1] = svPosVel.x.theArray[1];
+                    svPos[2] = svPosVel.x.theArray[2];
+                }
+                else
+                {
+                    // If satellite is missing, then schedule it
+                    // for removal
+                    satRejectedSet.insert((*it).first);
 
-                  continue;
-
-               }
-               else
-               {
-
-                     // Try to get satellite position
-                     // if it is not already computed
-                  try
-                  {
-                        // For our purposes, position at receive time
-                        // is fine enough
-                     Xvt svPosVel(pEphemeris->getXvt( (*it).first, time ));
-
-                        // If everything is OK, then continue processing.
-                     svPos[0] = svPosVel.x.theArray[0];
-                     svPos[1] = svPosVel.x.theArray[1];
-                     svPos[2] = svPosVel.x.theArray[2];
-
-                  }
-                  catch(...)
-                  {
-
-                        // If satellite is missing, then schedule it
-                        // for removal
-                     satRejectedSet.insert( (*it).first );
-
-                     continue;
-
-                  }
-
-               }
-
+                    continue;
+                }
             }
             else
             {
@@ -183,7 +164,7 @@ namespace gpstk
          ProcessingException e( getClassName() + ":"
                                 + u.what() );
 
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
 
       }
 
@@ -328,4 +309,4 @@ namespace gpstk
 
 
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk

@@ -47,7 +47,7 @@
 #include <algorithm>
 #include <cassert>
 
-namespace gpstk
+namespace gnsstk
 {
 
       //
@@ -335,7 +335,7 @@ namespace gpstk
    private:
       C* deref() const
       {
-         if (!_ptr) GPSTK_THROW(NullPointerException("Try access a pointer.")); 
+         if (!_ptr) GNSSTK_THROW(NullPointerException("Try access a pointer.")); 
 
          return _ptr;
       }
@@ -396,7 +396,7 @@ namespace gpstk
          if(index<0 || index>=_size)
          {
              Exception e("The input index is out of range.");
-             GPSTK_THROW(e);
+             GNSSTK_THROW(e);
          }
          
          return _ptr[index];
@@ -407,7 +407,7 @@ namespace gpstk
          if(index<0 || index>=_size)
          {
             Exception e("The input index is out of range.")
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
          }
 
          return _ptr[index];
@@ -423,7 +423,7 @@ namespace gpstk
    }; // End of class 'Buffer'
 
 
-}   // End of namespace gpstk
+}   // End of namespace gnsstk
 
 
 #endif  //GPSTK_MEMORYUTILS_HPP

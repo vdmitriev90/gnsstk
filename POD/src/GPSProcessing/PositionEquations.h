@@ -12,30 +12,30 @@ namespace pod
         PositionEquations(double posSigma = 100.0);
         virtual ~PositionEquations() {};
 
-        virtual PositionEquations& setStochasicModel(gpstk::StochasticModel_sptr newModel);
+        virtual PositionEquations& setStochasicModel(gnsstk::StochasticModel_sptr newModel);
 
-        virtual PositionEquations& setStochasicModel(FilterParameter, gpstk::StochasticModel_sptr newModel);
+        virtual PositionEquations& setStochasicModel(FilterParameter, gnsstk::StochasticModel_sptr newModel);
        
         virtual ParametersSet getParameters() const override
         {
             return types;
         }
 
-        virtual void Prepare(gpstk::IRinex& gData);
+        virtual void Prepare(gnsstk::IRinex& gData);
 
-        virtual void updateH(const gpstk::IRinex& gData, const gpstk::TypeIDSet& types, gpstk::Matrix<double>& H, int& col_0) override;
+        virtual void updateH(const gnsstk::IRinex& gData, const gnsstk::TypeIDSet& types, gnsstk::Matrix<double>& H, int& col_0) override;
 
-        virtual void updatePhi(gpstk::Matrix<double>& Phi, int& index) const override;
+        virtual void updatePhi(gnsstk::Matrix<double>& Phi, int& index) const override;
 
-        virtual void updateQ(gpstk::Matrix<double>& Q, int& index) const override;
+        virtual void updateQ(gnsstk::Matrix<double>& Q, int& index) const override;
 
-        virtual void defStateAndCovariance(gpstk::Vector<double>& x, gpstk::Matrix<double>& P, int& index) const override;
+        virtual void defStateAndCovariance(gnsstk::Vector<double>& x, gnsstk::Matrix<double>& P, int& index) const override;
 
         virtual int getNumUnknowns() const override;
 
     protected:
 
-        std::map<FilterParameter, gpstk::StochasticModel_sptr> stochasticModels;
+        std::map<FilterParameter, gnsstk::StochasticModel_sptr> stochasticModels;
 
         ParametersSet types;
 

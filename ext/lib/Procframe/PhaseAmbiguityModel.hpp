@@ -48,7 +48,7 @@
 
 #include "StochasticModel.hpp"
 
-namespace gpstk
+namespace gnsstk
 {
 
 	/** This class compute the elements of Phi and Q matrices corresponding
@@ -194,6 +194,6 @@ namespace gpstk
 
 
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk
 #endif // GPSTK_PHASEAMBIGUITYMODEL_HPP
 

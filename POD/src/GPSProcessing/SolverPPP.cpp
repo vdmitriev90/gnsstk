@@ -172,7 +172,7 @@ namespace pod
         if (!(wSize == pSize))
         {
             InvalidSolver e("prefitResiduals size does not match dimension of weightVector");
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
         }
 
         Matrix<double> wMatrix(wSize, wSize, 0.0);  // Declare a weight matrix
@@ -219,7 +219,7 @@ namespace pod
         if (!(weightMatrix.isSquare()))
         {
             InvalidSolver e("Weight matrix is not square");
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
         }
 
         int wRow = static_cast<int>(weightMatrix.rows());
@@ -227,40 +227,40 @@ namespace pod
         if (!(wRow == pRow))
         {
             InvalidSolver e("prefitResiduals size does not match dimension of weightMatrix");
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
         }
 
         int gRow = static_cast<int>(designMatrix.rows());
         if (!(gRow == pRow))
         {
             InvalidSolver e("prefitResiduals size does not match dimension of designMatrix");
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
         }
 
         if (!(phiMatrix.isSquare()))
         {
             InvalidSolver e("phiMatrix is not square");
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
         }
 
         int phiRow = static_cast<int>(phiMatrix.rows());
         if (!(phiRow == numUnknowns))
         {
             InvalidSolver e("Number of unknowns does not match dimension of phiMatrix");
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
         }
 
         if (!(qMatrix.isSquare()))
         {
             InvalidSolver e("qMatrix is not square");
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
         }
 
         int qRow = static_cast<int>(qMatrix.rows());
         if (!(qRow == numUnknowns))
         {
             InvalidSolver e("Number of unknowns does not match dimension of qMatrix");
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
         }
 
         // After checking sizes, let's invert the matrix of weights in order
@@ -275,7 +275,7 @@ namespace pod
         catch (...)
         {
             InvalidSolver e("Correct(): Unable to compute measurements noise covariance matrix.");
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
         }
 
         try
@@ -677,7 +677,7 @@ namespace pod
         catch (Exception& u)
         {
             ProcessingException e(getClassName() + ":" + u.what());
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
         }
 
     } // End of method 'SolverPPP::Process()'

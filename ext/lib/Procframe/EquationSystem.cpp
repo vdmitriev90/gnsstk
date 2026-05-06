@@ -43,7 +43,7 @@
 #include "EquationSystem.hpp"
 #include <iterator>
 
-namespace gpstk
+namespace gnsstk
 {
 
 
@@ -615,7 +615,7 @@ namespace gpstk
 
       }  // End of 'for( std::list<Equation>::const_iterator itEq = ...'
 
-         // Then, finally get prefit residuals into appropriate gpstk::Vector
+         // Then, finally get prefit residuals into appropriate gnsstk::Vector
       measVector = tempPrefit;
 
       return;
@@ -725,7 +725,7 @@ namespace gpstk
                      hMatrix(row,col) = (*itCol).getDefaultCoefficient();
                   }
 
-               }  // End of 'if( (*itCol).isDefaultForced() ) ...'
+               }  // End of 'if( (*itCol).isDefaultgnsstk::d() ) ...'
 
             }  // End of 'if( (*itRow).body.find( (*itCol) ) != ...'
 
@@ -763,7 +763,7 @@ namespace gpstk
             }
 
             
-            // Check if '(*itCol)' unknown variable enforces a specific
+            // Check if '(*itCol)' unknown variable engnsstk::s a specific
             // coefficient
             if( (*itCol).isDefaultForced() )
             {
@@ -932,13 +932,12 @@ namespace gpstk
        * method will throw an InvalidEquationSystem exception.
        */
    int EquationSystem::getTotalNumVariables() const
-      throw(InvalidEquationSystem)
    {
 
          // If the object as not ready, throw an exception
       if (!isPrepared)
       {
-         GPSTK_THROW(InvalidEquationSystem("EquationSystem is not prepared"));
+         GNSSTK_THROW(InvalidEquationSystem("EquationSystem is not prepared"));
       }
 
       return varUnknowns.size();
@@ -953,13 +952,12 @@ namespace gpstk
        * method will throw an InvalidEquationSystem exception.
        */
    VariableSet EquationSystem::getVarUnknowns() const
-      throw(InvalidEquationSystem)
    {
 
          // If the object as not ready, throw an exception
       if (!isPrepared)
       {
-         GPSTK_THROW(InvalidEquationSystem("EquationSystem is not prepared"));
+         GNSSTK_THROW(InvalidEquationSystem("EquationSystem is not prepared"));
       }
 
       return varUnknowns;
@@ -975,13 +973,12 @@ namespace gpstk
        * method will throw an InvalidEquationSystem exception.
        */
    int EquationSystem::getCurrentNumVariables() const
-      throw(InvalidEquationSystem)
    {
 
          // If the object as not ready, throw an exception
       if (!isPrepared)
       {
-         GPSTK_THROW(InvalidEquationSystem("EquationSystem is not prepared"));
+         GNSSTK_THROW(InvalidEquationSystem("EquationSystem is not prepared"));
       }
 
       return currentUnknowns.size();
@@ -996,13 +993,12 @@ namespace gpstk
        * method will throw an InvalidEquationSystem exception.
        */
    VariableSet EquationSystem::getCurrentUnknowns() const
-      throw(InvalidEquationSystem)
    {
 
          // If the object as not ready, throw an exception
       if (!isPrepared)
       {
-         GPSTK_THROW(InvalidEquationSystem("EquationSystem is not prepared"));
+         GNSSTK_THROW(InvalidEquationSystem("EquationSystem is not prepared"));
       }
 
       return currentUnknowns;
@@ -1018,13 +1014,12 @@ namespace gpstk
        * method will throw an InvalidEquationSystem exception.
        */
    int EquationSystem::getCurrentNumSources() const
-      throw(InvalidEquationSystem)
    {
 
          // If the object as not ready, throw an exception
       if (!isPrepared)
       {
-         GPSTK_THROW(InvalidEquationSystem("EquationSystem is not prepared"));
+         GNSSTK_THROW(InvalidEquationSystem("EquationSystem is not prepared"));
       }
 
       return currentSourceSet.size();
@@ -1039,13 +1034,12 @@ namespace gpstk
        * method will throw an InvalidEquationSystem exception.
        */
    SourceIDSet EquationSystem::getCurrentSources() const
-      throw(InvalidEquationSystem)
    {
 
          // If the object as not ready, throw an exception
       if (!isPrepared)
       {
-         GPSTK_THROW(InvalidEquationSystem("EquationSystem is not prepared"));
+         GNSSTK_THROW(InvalidEquationSystem("EquationSystem is not prepared"));
       }
 
       return currentSourceSet;
@@ -1061,13 +1055,12 @@ namespace gpstk
        * method will throw an InvalidEquationSystem exception.
        */
    int EquationSystem::getCurrentNumSats() const
-      throw(InvalidEquationSystem)
    {
 
          // If the object as not ready, throw an exception
       if (!isPrepared)
       {
-         GPSTK_THROW(InvalidEquationSystem("EquationSystem is not prepared"));
+         GNSSTK_THROW(InvalidEquationSystem("EquationSystem is not prepared"));
       }
 
       return currentSatSet.size();
@@ -1082,13 +1075,12 @@ namespace gpstk
        * method will throw an InvalidEquationSystem exception.
        */
    SatIDSet EquationSystem::getCurrentSats() const
-      throw(InvalidEquationSystem)
    {
 
          // If the object as not ready, throw an exception
       if (!isPrepared)
       {
-         GPSTK_THROW(InvalidEquationSystem("EquationSystem is not prepared"));
+         GNSSTK_THROW(InvalidEquationSystem("EquationSystem is not prepared"));
       }
 
       return currentSatSet;
@@ -1104,13 +1096,12 @@ namespace gpstk
        * method will throw an InvalidEquationSystem exception.
        */
    Vector<double> EquationSystem::getPrefitsVector() const
-      throw(InvalidEquationSystem)
    {
 
          // If the object as not ready, throw an exception
       if (!isPrepared)
       {
-         GPSTK_THROW(InvalidEquationSystem("EquationSystem is not prepared"));
+         GNSSTK_THROW(InvalidEquationSystem("EquationSystem is not prepared"));
       }
 
       return measVector;
@@ -1126,13 +1117,12 @@ namespace gpstk
        * method will throw an InvalidEquationSystem exception.
        */
    Matrix<double> EquationSystem::getGeometryMatrix() const
-      throw(InvalidEquationSystem)
    {
 
          // If the object as not ready, throw an exception
       if (!isPrepared)
       {
-         GPSTK_THROW(InvalidEquationSystem("EquationSystem is not prepared"));
+         GNSSTK_THROW(InvalidEquationSystem("EquationSystem is not prepared"));
       }
 
       return hMatrix;
@@ -1148,13 +1138,12 @@ namespace gpstk
        * method will throw an InvalidEquationSystem exception.
        */
    Matrix<double> EquationSystem::getWeightsMatrix() const
-      throw(InvalidEquationSystem)
    {
 
          // If the object as not ready, throw an exception
       if (!isPrepared)
       {
-         GPSTK_THROW(InvalidEquationSystem("EquationSystem is not prepared"));
+         GNSSTK_THROW(InvalidEquationSystem("EquationSystem is not prepared"));
       }
 
       return rMatrix;
@@ -1169,13 +1158,12 @@ namespace gpstk
        * method will throw an InvalidEquationSystem exception.
        */
    Matrix<double> EquationSystem::getPhiMatrix() const
-      throw(InvalidEquationSystem)
    {
 
          // If the object as not ready, throw an exception
       if (!isPrepared)
       {
-         GPSTK_THROW(InvalidEquationSystem("EquationSystem is not prepared"));
+         GNSSTK_THROW(InvalidEquationSystem("EquationSystem is not prepared"));
       }
 
       return phiMatrix;
@@ -1191,13 +1179,12 @@ namespace gpstk
        * method will throw an InvalidEquationSystem exception.
        */
    Matrix<double> EquationSystem::getQMatrix() const
-      throw(InvalidEquationSystem)
    {
 
          // If the object as not ready, throw an exception
       if (!isPrepared)
       {
-         GPSTK_THROW(InvalidEquationSystem("EquationSystem is not prepared"));
+         GNSSTK_THROW(InvalidEquationSystem("EquationSystem is not prepared"));
       }
 
       return qMatrix;
@@ -1206,4 +1193,4 @@ namespace gpstk
 
 
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk

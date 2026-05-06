@@ -45,7 +45,7 @@
 #include "StringUtils.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
 
    using namespace std;
@@ -63,7 +63,6 @@ namespace gpstk
        */
    SatTypePtrMap& ProblemSatFilter::Process( const CommonTime& epoch,
                                                 SatTypePtrMap& gData )
-      throw(ProcessingException)
    {
 
       try
@@ -89,7 +88,7 @@ namespace gpstk
          ProcessingException e( getClassName() + ":"
                                 + u.what() );
 
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
 
       }
 
@@ -102,7 +101,6 @@ namespace gpstk
        * @param gData    Data object holding the data.
        */
    IRinex& ProblemSatFilter::Process(IRinex& gData)
-      throw(ProcessingException)
    {
 
       try
@@ -119,7 +117,7 @@ namespace gpstk
          ProcessingException e( getClassName() + ":"
                                 + u.what() );
 
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
 
       }
 
@@ -175,7 +173,7 @@ namespace gpstk
          // We only handle GPS satellites
          if( std::abs(satellite) <= 32 )
          {
-            SatID sat(std::abs(satellite),SatID::systemGPS);
+            SatID sat(std::abs(satellite), SatelliteSystem::GPS);
             
             SatDataMap::iterator it = satDataMap.find(sat);
             if(it==satDataMap.end())
@@ -231,4 +229,4 @@ namespace gpstk
    }  // End of method 'ProblemSatFilter::isBadSat()'
 
 
-} // End of namespace gpstk
+} // End of namespace gnsstk

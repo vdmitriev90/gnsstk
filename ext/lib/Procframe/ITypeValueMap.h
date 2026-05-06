@@ -1,7 +1,7 @@
 #pragma once
 #include"typeValueMap.hpp"
 #include<memory>
-namespace gpstk
+namespace gnsstk
 {
 	class ITypeValueMap
 	{

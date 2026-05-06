@@ -37,7 +37,7 @@ namespace pod
         }
         std::string sExc = "Processing for Solution type " + slnType2Str[dataStore->opts.slnType]+" is not supported.";
 
-        GPSTK_THROW(InvalidRequest(sExc))
+        GNSSTK_THROW(InvalidRequest(sExc))
 
     }
     

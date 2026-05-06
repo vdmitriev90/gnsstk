@@ -45,7 +45,7 @@
 #include "MatrixFunctors.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
 
 
@@ -89,7 +89,6 @@ namespace gpstk
       //
    int SolverLMS::Compute(const Vector<double>& prefitResiduals,
                           const Matrix<double>& designMatrix)
-      throw(InvalidSolver)
    {
 
          // By default, results are invalid
@@ -103,7 +102,7 @@ namespace gpstk
       {
          InvalidSolver e("prefitResiduals size does not match dimension \
 of designMatrix");
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
 
       Matrix<double> AT = transpose(designMatrix);
@@ -121,7 +120,7 @@ of designMatrix");
       catch(...)
       {
          InvalidSolver e("Unable to invert matrix covMatrix");
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
 
          // Now, compute the Vector holding the solution...
@@ -145,7 +144,6 @@ of designMatrix");
        * @param gData     Data object holding the data.
        */
    SatTypePtrMap& SolverLMS::Process(SatTypePtrMap& gData)
-      throw(ProcessingException)
    {
 
       try
@@ -183,7 +181,7 @@ of designMatrix");
          ProcessingException e( getClassName() + ":"
                                 + u.what() );
 
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
 
       }
 
@@ -196,7 +194,6 @@ of designMatrix");
        * @param type    TypeID of the solution we are looking for.
        */
    double SolverLMS::getSolution(const TypeID& type) const
-      throw(InvalidRequest)
    {
 
          // Define iterator
@@ -208,7 +205,7 @@ of designMatrix");
       if( it == defaultEqDef.body.end() )
       {
          InvalidRequest e("Type not found in solution vector.");
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
 
 
@@ -233,7 +230,6 @@ of designMatrix");
        * @param type    TypeID of the variance we are looking for.
        */
    double SolverLMS::getVariance(const TypeID& type) const
-      throw(InvalidRequest)
    {
 
          // Define iterator
@@ -245,7 +241,7 @@ of designMatrix");
       if( it == defaultEqDef.body.end() )
       {
          InvalidRequest e("Type not found in covariance matrix.");
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
 
 
@@ -272,14 +268,14 @@ of designMatrix");
    {
        int numGLN = 0;
        for (const auto &it : gRin.getBody())
-           if (it.first.system == SatID::SatelliteSystem::systemGlonass)
+           if (it.first.system ==SatelliteSystem::Glonass)
                numGLN++;
 
        if (numGLN < 2)
-		   gRin.getBody().keepOnlySatSyst(SatID::SatelliteSystem::systemGPS);
+		   gRin.getBody().keepOnlySatSyst(SatelliteSystem::GPS);
        else
            defaultEqDef.body.insert(TypeID::recISB_GLN);
    }
 
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk

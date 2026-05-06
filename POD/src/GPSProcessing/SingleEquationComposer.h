@@ -15,7 +15,7 @@ namespace pod
         virtual ~SingleEquationComposer() {};
 
 
-        //virtual  void Prepare(gpstk::gnssRinex& gData) override;
+        //virtual  void Prepare(gnsstk::gnssRinex& gData) override;
 
         /** This method will be called in "Process" method of "solvers" objects.
         *  It returns equations, corresponds  solver type and the  observations set, 

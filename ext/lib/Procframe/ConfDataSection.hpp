@@ -47,7 +47,7 @@
 #include <vector>
 #include "ConfDataItem.hpp"
 
-namespace gpstk
+namespace gnsstk
 {
       /** This class ...
        *
@@ -140,7 +140,7 @@ namespace gpstk
    
    typedef ConfDataSection ConfDataItemSet;
 
-}   // End of namespace gpstk
+}   // End of namespace gnsstk
 
 
 #endif  //GPSTK_CONFDATAITEMSET_HPP

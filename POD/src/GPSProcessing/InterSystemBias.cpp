@@ -41,7 +41,7 @@ namespace pod
             stochasticModels[ss]->Prepare(SatID::dummy, gData);
     }
     
-    void InterSystemBias::updateH(const gpstk::IRinex& gData, const gpstk::TypeIDSet& obsTypes, gpstk::Matrix<double>& H, int& col_0)
+    void InterSystemBias::updateH(const gnsstk::IRinex& gData, const gnsstk::TypeIDSet& obsTypes, gnsstk::Matrix<double>& H, int& col_0)
     {
         auto currentSatSet = gData.getBody().getSatID();
         int row(0);
@@ -75,7 +75,7 @@ namespace pod
         return *this;
     }
 
-    void InterSystemBias::updatePhi(gpstk::Matrix<double>& Phi, int& index) const
+    void InterSystemBias::updatePhi(gnsstk::Matrix<double>& Phi, int& index) const
     {
         for (const auto &ss: types)
         {
@@ -84,7 +84,7 @@ namespace pod
         }
     }
 
-    void InterSystemBias::updateQ(gpstk::Matrix<double>& Q, int& index) const
+    void InterSystemBias::updateQ(gnsstk::Matrix<double>& Q, int& index) const
     {
         for (const auto &ss : types)
         {
@@ -98,7 +98,7 @@ namespace pod
        return types.size();
     }
 
-    void InterSystemBias:: defStateAndCovariance(gpstk::Vector<double>& x, gpstk::Matrix<double>& P, int& index) const
+    void InterSystemBias:: defStateAndCovariance(gnsstk::Vector<double>& x, gnsstk::Matrix<double>& P, int& index) const
     {
         for (const auto &ss : types)
         {

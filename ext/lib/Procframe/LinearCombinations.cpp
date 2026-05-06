@@ -43,7 +43,7 @@
 #include "LinearCombinations.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
 
    LinearCombinations::LinearCombinations()
@@ -343,4 +343,4 @@ namespace gpstk
    }
 
 
-} // End of namespace gpstk
+} // End of namespace gnsstk

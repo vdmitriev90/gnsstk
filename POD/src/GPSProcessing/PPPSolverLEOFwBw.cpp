@@ -93,7 +93,7 @@ namespace pod
             ProcessingException e(getClassName() + ":"
                                   + u.what());
 
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
 
         }
 
@@ -159,7 +159,7 @@ namespace pod
             ProcessingException e(getClassName() + ":"
                                   + u.what());
 
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
 
         }
 
@@ -266,7 +266,7 @@ namespace pod
             ProcessingException e(getClassName() + ":"
                                   + u.what());
 
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
 
         }
 
@@ -326,7 +326,7 @@ namespace pod
             ProcessingException e(getClassName() + ":"
                                   + u.what());
 
-            GPSTK_THROW(e);
+            GNSSTK_THROW(e);
 
         }
 

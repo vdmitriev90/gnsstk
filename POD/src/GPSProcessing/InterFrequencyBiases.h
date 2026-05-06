@@ -8,37 +8,37 @@ namespace pod
         public EquationBase
     {
     private:
-        static std::map< gpstk::SatID::SatelliteSystem, FilterParameter> ss2ifb;
-        static std::map<FilterParameter, gpstk::SatID::SatelliteSystem> ifb2ss;
-        static const  gpstk::TypeIDSet l2Types;
+        static std::map< gnsstk::SatID::SatelliteSystem, FilterParameter> ss2ifb;
+        static std::map<FilterParameter, gnsstk::SatID::SatelliteSystem> ifb2ss;
+        static const  gnsstk::TypeIDSet l2Types;
 
     public:
         InterFrequencyBiases();
         virtual ~InterFrequencyBiases() {};
 
-        virtual  void Prepare(gpstk::IRinex& gData);
+        virtual  void Prepare(gnsstk::IRinex& gData);
 
-        void updateH(const gpstk::IRinex& gData, const gpstk::TypeIDSet& types, gpstk::Matrix<double>& H, int& col_0);
+        void updateH(const gnsstk::IRinex& gData, const gnsstk::TypeIDSet& types, gnsstk::Matrix<double>& H, int& col_0);
 
         virtual ParametersSet getParameters() const override
         {
             return types;
         }
 
-        virtual void updatePhi(gpstk::Matrix<double>& Phi, int& index) const override;
+        virtual void updatePhi(gnsstk::Matrix<double>& Phi, int& index) const override;
 
-        virtual void updateQ(gpstk::Matrix<double>& Q, int& index) const override;
+        virtual void updateQ(gnsstk::Matrix<double>& Q, int& index) const override;
 
-        virtual void defStateAndCovariance(gpstk::Vector<double>& x, gpstk::Matrix<double>& P, int& index) const override;
+        virtual void defStateAndCovariance(gnsstk::Vector<double>& x, gnsstk::Matrix<double>& P, int& index) const override;
 
         virtual int getNumUnknowns() const override;
 
-        virtual InterFrequencyBiases& setStochasicModel(const gpstk::SatID::SatelliteSystem& system, gpstk::StochasticModel_uptr newModel);
+        virtual InterFrequencyBiases& setStochasicModel(const gnsstk::SatID::SatelliteSystem& system, gnsstk::StochasticModel_uptr newModel);
 
     
     private:
 
-        std::map< FilterParameter, gpstk::StochasticModel_uptr> stochasticModels;
+        std::map< FilterParameter, gnsstk::StochasticModel_uptr> stochasticModels;
 
         //current set of satellite systems
         ParametersSet types;

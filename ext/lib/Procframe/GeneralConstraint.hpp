@@ -50,11 +50,11 @@
 #include "SolverGeneral.hpp"
 #include "GeneralEquations.hpp"
 
-namespace gpstk
+namespace gnsstk
 {
       /// Thrown when attempting to use an invalid Constraint
       /// @ingroup exceptiongroup
-   NEW_EXCEPTION_CLASS(InvalidConstraint, gpstk::Exception);
+   NEW_EXCEPTION_CLASS(InvalidConstraint, gnsstk::Exception);
 
 
       /** This class working with 'SolverGeneral'.
@@ -85,13 +85,11 @@ namespace gpstk
    protected:
 
          /// Feed the  constraint equations to the solver
-      virtual void constraint( gnssRinex& gRin )
-         throw(InvalidConstraint);
+      virtual void constraint( gnssRinex& gRin );
 
 
          /// Feed the  constraint equations to the solver
-      virtual void constraint( gnssDataMap& gdsMap )
-         throw(InvalidConstraint);
+      virtual void constraint( gnssDataMap& gdsMap );
       
 
          /// Override this method to design your own constraint equations
@@ -246,6 +244,6 @@ namespace gpstk
 
    }; // End of class 'GeneralConstraint'
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk
 
 #endif   // GPSTK_GENERALCONSTRAINT_HPP

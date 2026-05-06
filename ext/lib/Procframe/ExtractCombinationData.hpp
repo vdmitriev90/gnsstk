@@ -48,7 +48,7 @@
 #include "ExtractData.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       /// @ingroup RinexObs 
@@ -83,8 +83,7 @@ namespace gpstk
 #pragma clang diagnostic ignored "-Woverloaded-virtual"
        virtual int getData( const Rinex3ObsData& rinexData,
                            int indexObs1,
-                           int indexObs2 )
-         throw(InvalidRequest);
+                           int indexObs2 );
 
          /** Get a combination of observations from a Rinex3ObsData object
           *
@@ -99,8 +98,7 @@ namespace gpstk
       virtual int getData( const Rinex3ObsData& rinexData,
                            std::string type1,
                            std::string type2,
-                           const Rinex3ObsHeader& hdr )
-         throw(InvalidRequest);
+                           const Rinex3ObsHeader& hdr );
 #pragma clang diagnostic pop
 
 
@@ -113,8 +111,7 @@ namespace gpstk
 
          /// Compute the combination of observables. You must define this
          /// method according to your specific combination.
-      virtual double getCombination( double obs1, double obs2 )
-         throw(InvalidRequest) = 0;
+      virtual double getCombination( double obs1, double obs2 ) = 0;
 
 
    }; // End of class 'ExtractCombinationData'
@@ -122,6 +119,6 @@ namespace gpstk
 
       //@}
    
-}  // End of namespace gpstk
+}  // End of namespace gnsstk
 
 #endif   // GPSTK_EXTRACTCOMBINATIONDATA_HPP

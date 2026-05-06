@@ -44,7 +44,7 @@
 
 using namespace std;
 
-namespace gpstk
+namespace gnsstk
 {
 
       // Returns a string identifying this object.
@@ -60,7 +60,6 @@ namespace gpstk
        */
    SatTypePtrMap& ComputeSatPCenter::Process(const CommonTime& time,
                                            SatTypePtrMap& gData)
-      throw(ProcessingException)
    {
 
       try
@@ -80,56 +79,37 @@ namespace gpstk
          {
 
                // Use ephemeris if satellite position is not already computed
-            if( ( (*it).second->get_value().find(TypeID::satX) == (*it).second->get_value().end() ) ||
-                ( (*it).second->get_value().find(TypeID::satY) == (*it).second->get_value().end() ) ||
-                ( (*it).second->get_value().find(TypeID::satZ) == (*it).second->get_value().end() ) )
-            {
+             if (((*it).second->get_value().find(TypeID::satX) == (*it).second->get_value().end()) ||
+                 ((*it).second->get_value().find(TypeID::satY) == (*it).second->get_value().end()) ||
+                 ((*it).second->get_value().find(TypeID::satZ) == (*it).second->get_value().end()))
+             {
 
-               if(pEphemeris==NULL)
-               {
-
-                     // If ephemeris is missing, then remove all satellites
-                  satRejectedSet.insert( (*it).first );
-
-                  continue;
-               }
-               else
-               {
-
-                     // Try to get satellite position
-                     // if it is not already computed
-                  try
-                  {
-                        // For our purposes, position at receive time
-                        // is fine enough
-                     Xvt svPosVel(pEphemeris->getXvt( (*it).first, time ));
-
-                        // If everything is OK, then continue processing.
-                     svPos[0] = svPosVel.x.theArray[0];
-                     svPos[1] = svPosVel.x.theArray[1];
-                     svPos[2] = svPosVel.x.theArray[2];
-
-                  }
-                  catch(...)
-                  {
-
-                        // If satellite is missing, then schedule it
-                        // for removal
-                     satRejectedSet.insert( (*it).first );
-
+                 // For our purposes, position at receive time
+                 // is fine enough
+                 const NavSatelliteID nav_id((*it).first);
+                 Xvt sv_pos_vel;
+                 if (ephemeris_.getXvt(nav_id, time, sv_pos_vel))
+                 {
+                     // If everything is OK, then continue processing.
+                     svPos = sv_pos_vel.x;
+                 }
+                 else
+                 {
+                     // If satellite is missing, then schedule it
+                     // for removal
+                     satRejectedSet.insert((*it).first);
                      continue;
-                  }
+                 }
 
-               }
 
-            }
+             }
             else
             {
 
-                  // Get satellite position out of GDS
-               svPos[0] = (*it).second->get_value()[TypeID::satX];
-               svPos[1] = (*it).second->get_value()[TypeID::satY];
-               svPos[2] = (*it).second->get_value()[TypeID::satZ];
+                // Get satellite position out of GDS
+                svPos[0] = (*it).second->get_value()[TypeID::satX];
+                svPos[1] = (*it).second->get_value()[TypeID::satY];
+                svPos[2] = (*it).second->get_value()[TypeID::satZ];
 
             }  // End of 'if( ( (*it).second->get_value().find(TypeID::satX) == ...'
 
@@ -156,7 +136,7 @@ namespace gpstk
          ProcessingException e( getClassName() + ":"
                                 + u.what() );
 
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
 
       }
 
@@ -239,7 +219,7 @@ namespace gpstk
 
             // The nadir angle should always smaller than 14.0 deg, 
             // but some times it's a bit bigger than 14.0 deg, we 
-            // force it to 14.0 deg to stop throwing an exception.
+            // gnsstk:: it to 14.0 deg to stop throwing an exception.
             // The Reference is available at:
             // http://igscb.jpl.nasa.gov/igscb/resource/pubs/02_ott/session_8.pdf
          nadir = (nadir>14) ? 14.0 : nadir;
@@ -248,7 +228,7 @@ namespace gpstk
 
             // Get satellite information in Antex format. Currently this
             // only works for GPS and Glonass.
-         if( satid.system == SatID::systemGPS )
+         if( satid.system == SatelliteSystem::GPS )
          {
             std::stringstream sat;
             sat << "G";
@@ -282,7 +262,7 @@ namespace gpstk
          else
          {
                // Check if this satellite belongs to Glonass system
-            if( satid.system == SatID::systemGlonass )
+            if( satid.system == SatelliteSystem::Glonass )
             {
                std::stringstream sat;
                sat << "R";
@@ -319,7 +299,7 @@ namespace gpstk
                svPCcorr = 0.0;
             }
 
-         }  // End of 'if( satid.system == SatID::systemGPS )...'
+         }  // End of 'if( satid.system == SatelliteSystem::GPS )...'
 
       }
       else
@@ -370,4 +350,4 @@ namespace gpstk
 
 
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk

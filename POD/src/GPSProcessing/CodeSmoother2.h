@@ -5,26 +5,26 @@
 
 namespace pod
 {
-    typedef std::unique_ptr<gpstk::ProcessingClass> process_uptr;
+    typedef std::unique_ptr<gnsstk::ProcessingClass> process_uptr;
    
 	//aggregator for 'scMarker' and 'CodeSmoother' objects
-    class CodeSmoother2 : public gpstk::ProcessingClass
+    class CodeSmoother2 : public gnsstk::ProcessingClass
     {
     public:
 
         CodeSmoother2();
 
-        CodeSmoother2(std::list<gpstk::CodeSmoother>& smoothers, std::list<process_uptr>& markers, int interval = 600);
+        CodeSmoother2(std::list<gnsstk::CodeSmoother>& smoothers, std::list<process_uptr>& markers, int interval = 600);
 
         virtual ~CodeSmoother2();
 
-        virtual CodeSmoother2& addScMarker(gpstk::ProcessingClass& scMarker);
+        virtual CodeSmoother2& addScMarker(gnsstk::ProcessingClass& scMarker);
 
         virtual CodeSmoother2& addScMarker(process_uptr scMarker);
 
-        virtual CodeSmoother2& addSmoother(gpstk::CodeSmoother& smoother);
+        virtual CodeSmoother2& addSmoother(gnsstk::CodeSmoother& smoother);
 
-        virtual gpstk::IRinex& Process(gpstk::IRinex& gData) override;
+        virtual gnsstk::IRinex& Process(gnsstk::IRinex& gData) override;
  
         virtual std::string getClassName(void) const override
         {
@@ -41,7 +41,7 @@ namespace pod
 
     private:
         //
-        std::list<gpstk::CodeSmoother> smoothers;
+        std::list<gnsstk::CodeSmoother> smoothers;
         std::list<process_uptr> scMarkers;
 
         // smoothing window in samples

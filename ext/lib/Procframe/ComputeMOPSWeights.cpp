@@ -46,7 +46,7 @@
 #include "ComputeMOPSWeights.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       // Returns a string identifying this object.
@@ -63,7 +63,6 @@ namespace gpstk
        */
    SatTypePtrMap& ComputeMOPSWeights::Process( const CommonTime& time,
 	   SatTypePtrMap& gData )
-      throw(ProcessingException)
    {
 
       try
@@ -112,7 +111,7 @@ namespace gpstk
          ProcessingException e( getClassName() + ":"
                                 + u.what() );
 
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
 
       }
 
@@ -127,7 +126,6 @@ namespace gpstk
        * @param gData    Data object holding the data.
        */
    IRinex& ComputeMOPSWeights::Process(IRinex& gData)
-      throw(ProcessingException)
    {
 
       try
@@ -144,38 +142,13 @@ namespace gpstk
          ProcessingException e( getClassName() + ":"
                                 + u.what() );
 
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
 
       }
 
    }  // End of method 'ComputeMOPSWeightsWeights::Process()'
 
 
-
-      /* Method to set the default ephemeris to be used with GNSS
-       * data structures.
-       *
-       * @param ephem     EphemerisStore object to be used
-       */
-   ComputeMOPSWeights& ComputeMOPSWeights::setDefaultEphemeris(
-                                                   XvtStore<SatID>& ephem )
-   {
-
-         // Let's check what type ephem belongs to
-      if( dynamic_cast<GPSEphemerisStore*>(&ephem) )
-      {
-         pBCEphemeris = dynamic_cast<GPSEphemerisStore*>(&ephem);
-         pTabEphemeris = NULL;
-      }
-      else
-      {
-         pBCEphemeris = NULL;
-         pTabEphemeris = dynamic_cast<SP3EphemerisStore*>(&ephem);
-      }
-
-      return (*this);
-
-   }  // End of method 'ComputeMOPSWeights::setDefaultEphemeris()'
 
 
 
@@ -186,7 +159,6 @@ namespace gpstk
        */
    double ComputeMOPSWeights::getWeight( const SatID& sat,
                                          typeValueMap& tvMap )
-      throw(InvalidWeights)
    {
 
          // Value to store computed iono correction
@@ -252,7 +224,7 @@ namespace gpstk
       {
          InvalidWeights eWeight( "Problem when computing weights. Did you \
 call a modeler class?." );
-         GPSTK_THROW(eWeight);
+         GNSSTK_THROW(eWeight);
       }
 
       return weight;
@@ -267,7 +239,6 @@ call a modeler class?." );
                                           const double& elevation,
                                           const double& azimuth,
                                           const Position& rxPosition )
-      throw(InvalidWeights)
    {
 
          // First, let's found magnetic latitude according to ICD-GPS-200,
@@ -339,4 +310,4 @@ call a modeler class?." );
    }  // End of method 'ComputeMOPSWeightsWeights::sigma2iono()'
 
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk

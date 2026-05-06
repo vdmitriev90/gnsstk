@@ -10,7 +10,7 @@ typedef std::unique_ptr<pod::LinearCombination> linear_ptr;
 
 namespace pod
 {
-    class ProcessLinear : public gpstk::ProcessingClass
+    class ProcessLinear : public gnsstk::ProcessingClass
     {
     public:
         ProcessLinear() {};
@@ -20,7 +20,7 @@ namespace pod
        bool getUseC1() const
        { return useC1; }
 
-       virtual gpstk::IRinex& Process(gpstk::IRinex& gData) override;
+       virtual gnsstk::IRinex& Process(gnsstk::IRinex& gData) override;
 
        virtual std::string getClassName(void) const override { return "ProcessLinear"; }
 
@@ -39,7 +39,7 @@ namespace pod
     protected:
         std::list<linear_ptr> combs;
 
-        gpstk::SatTypePtrMap& Process(gpstk::SatTypePtrMap& gData) ;
+        gnsstk::SatTypePtrMap& Process(gnsstk::SatTypePtrMap& gData) ;
 
         bool useC1;
 

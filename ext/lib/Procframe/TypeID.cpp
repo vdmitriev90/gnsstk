@@ -38,13 +38,13 @@
 
 /**
  * @file TypeID.cpp
- * gpstk::TypeID - Identifies types of values
+ * gnsstk::TypeID - Identifies types of values
  */
 
 #include "TypeID.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
 
    std::map< TypeID::ValueType, std::string > TypeID::tStrings;
@@ -499,22 +499,20 @@ namespace gpstk
    int GetCarrierBand(const RinexObsID& roi)
    {
       // 1 2 5 6 7 8
-     if(roi.band == ObsID::cbL1) return 1;
-     if(roi.band == ObsID::cbG1) return 1;
-     if(roi.band == ObsID::cbB1) return 1;
+     if(roi.band == CarrierBand::L1) return 1;
+     if(roi.band == CarrierBand::G1) return 1;
+     if(roi.band == CarrierBand::B1) return 1;
 
-     if(roi.band == ObsID::cbL2) return 2;
-     if(roi.band == ObsID::cbG2) return 2;
-     if(roi.band == ObsID::cbB1) return 2;      // TD this is not correct
+     if(roi.band == CarrierBand::L2) return 2;
+     if(roi.band == CarrierBand::G2) return 2;
+     if(roi.band == CarrierBand::B2) return 2;      // TD this is not correct
+     if(roi.band == CarrierBand::L5) return 5;
 
-     if(roi.band == ObsID::cbL5) return 5;
+     if(roi.band == CarrierBand::E6) return 6;
+     if(roi.band == CarrierBand::B3) return 6;
+     if(roi.band == CarrierBand::E5b) return 7;
 
-     if(roi.band == ObsID::cbE6) return 6;
-     if(roi.band == ObsID::cbB3) return 6;
-
-     if(roi.band == ObsID::cbE5b) return 7;
-
-     if(roi.band == ObsID::cbE5ab) return 8;
+     if(roi.band == CarrierBand::E5ab) return 8;
 
      return -1;
    }
@@ -522,7 +520,7 @@ namespace gpstk
    TypeID::ValueType ConvertToTypeID(const RinexObsType& rot,
                                      const RinexSatID& sat)
    {
-      if(sat.system==SatID::systemGPS || sat.system == SatID::systemQZSS)
+      if(sat.system==SatelliteSystem::GPS || sat.system == SatelliteSystem::QZSS)
       {
          //GPS     L1         1575.42     C1,P1       L1         D1         S1
          //        L2         1227.60     C2,P2       L2         D2         S2
@@ -551,7 +549,7 @@ namespace gpstk
 		 if (rot == RinexObsHeader::D6) return TypeID::D6;
 		 if (rot == RinexObsHeader::S6) return TypeID::S6;
       }
-      else if(sat.system==SatID::systemGlonass)
+      else if(sat.system==SatelliteSystem::Glonass)
       {
          // Glonass G1         1602+k*9/16 C1,P1       L1         D1         S1
          //         G2         1246+k*7/16 C2,P2       L2         D2         S2
@@ -569,7 +567,7 @@ namespace gpstk
          if(rot == RinexObsHeader::D2) return TypeID::D2;
          if(rot == RinexObsHeader::S2) return TypeID::S2;
       }
-      else if(sat.system==SatID::systemGalileo)
+      else if(sat.system==SatelliteSystem::Galileo)
       {
          // Galileo E2-L1-E1   1575.42      C1         L1         D1         S1
          //         E5a        1176.45      C5         L5         D5         S5
@@ -602,7 +600,7 @@ namespace gpstk
          if(rot == RinexObsHeader::D6) return TypeID::D6;
          if(rot == RinexObsHeader::S6) return TypeID::S6;
       }
-      else if(sat.system==SatID::systemBeiDou)
+      else if(sat.system==SatelliteSystem::BeiDou)
       {
          // Compass E2   I/Q                 C2         L2         D2         S2
          //         E5b  I/Q                 C7         L7         D7         S7
@@ -624,7 +622,7 @@ namespace gpstk
          if(rot == RinexObsHeader::D6) return TypeID::D6;
          if(rot == RinexObsHeader::S6) return TypeID::S6;
       }
-      else if(sat.system==SatID::systemGeosync)
+      else if(sat.system==SatelliteSystem::Geosync)
       {
          // SBAS    L1         1575.42      C1         L1         D1         S1
          //         L5         1176.45      C5         L5         D5         S5
@@ -648,71 +646,96 @@ namespace gpstk
    TypeID::ValueType ConvertToTypeID(const RinexObsID& roi,
 	   const RinexSatID& sat)
    {
-	   if (sat.system == SatID::systemGPS)
+	   if (sat.system == SatelliteSystem::GPS)
 	   {
 		   //GPS     L1         1575.42     C1,P1       L1         D1         S1
 		   //        L2         1227.60     C2,P2       L2         D2         S2
 		   //        L5         1176.45      C5         L5         D5         S5
 
 		   // For L1: C1 P1 L1 D1 S1
-		   if (roi.band == ObsID::cbL1)
+		   if (roi.band == CarrierBand::L1)
 		   {
-			   if (roi.type == ObsID::otRange)
-				   return (roi.code == ObsID::tcCA) ? TypeID::C1 : TypeID::P1;
+			   if (roi.type == ObservationType::Range)
+				   return (roi.code == TrackingCode::CA) ? TypeID::C1 : TypeID::P1;
 
-			   if (roi.type == ObsID::otPhase) return TypeID::L1;
-			   if (roi.type == ObsID::otDoppler) return TypeID::D1;
-			   if (roi.type == ObsID::otSNR) return TypeID::S1;
+			   if (roi.type == ObservationType::Phase) return TypeID::L1;
+			   if (roi.type == ObservationType::Doppler) return TypeID::D1;
+			   if (roi.type == ObservationType::SNR) return TypeID::S1;
 		   }
 		   // For L2: C2 P2 L2 D2 S2
-		   else if (roi.band == ObsID::cbL2)
+		   else if (roi.band == CarrierBand::L2)
 		   {
-			   if (roi.type == ObsID::otRange)
-				   return (roi.code == ObsID::tcCA ||
-					   roi.code == ObsID::tcC2LM ||
-					   roi.code == ObsID::tcC2L ||
-					   roi.code == ObsID::tcC2M) ? TypeID::C2 : TypeID::P2;
+			   if (roi.type == ObservationType::Range)
+				   return (roi.code == TrackingCode::CA ||
+					   roi.code == TrackingCode::L2CM ||
+					   roi.code == TrackingCode::L2CL ||
+					   roi.code == TrackingCode::L2CML) ? TypeID::C2 : TypeID::P2;
 
-			   if (roi.type == ObsID::otPhase) return TypeID::L2;
-			   if (roi.type == ObsID::otDoppler) return TypeID::D2;
-			   if (roi.type == ObsID::otSNR) return TypeID::S2;
+			   if (roi.type == ObservationType::Phase) return TypeID::L2;
+			   if (roi.type == ObservationType::Doppler) return TypeID::D2;
+			   if (roi.type == ObservationType::SNR) return TypeID::S2;
 		   }
 		   // For L5: C5 L5 D5 S5
-		   else if (roi.band == ObsID::cbL5)
+		   else if (roi.band == CarrierBand::L5)
 		   {
-			   if (roi.type == ObsID::otRange) return TypeID::C5;
-			   if (roi.type == ObsID::otPhase) return TypeID::L5;
-			   if (roi.type == ObsID::otDoppler) return TypeID::D5;
-			   if (roi.type == ObsID::otSNR) return TypeID::S5;
+			   if (roi.type == ObservationType::Range) return TypeID::C5;
+			   if (roi.type == ObservationType::Phase) return TypeID::L5;
+			   if (roi.type == ObservationType::Doppler) return TypeID::D5;
+			   if (roi.type == ObservationType::SNR) return TypeID::S5;
 		   }
 	   }
-	   else if (sat.system == SatID::systemGlonass)
+	   else if (sat.system == SatelliteSystem::Glonass)
 	   {
 		   // Glonass G1         1602+k*9/16 C1,P1       L1         D1         S1
 		   //         G2         1246+k*7/16 C2,P2       L2         D2         S2
 
 		   // For L1: C1 P1 L1 D1 S1
-		   if (roi.band == ObsID::cbG1)
+		   if (roi.band == CarrierBand::G1)
 		   {
-			   if (roi.type == ObsID::otRange)   // tcGCA or tcGP
-				   return (roi.code == ObsID::tcGCA) ? TypeID::C1 : TypeID::P1;
+               if (roi.type == ObservationType::Range)   // tcGCA or tcGP
+               {
+                   if (roi.type == ObservationType::Range)
+                   {
+                       switch (roi.code)
+                       {
+                       case TrackingCode::Standard:
+                           return TypeID::C1;
+                       case TrackingCode::Precise:
+                           return TypeID::P1;
+                       default:
+                           GNSSTK_ASSERT(false, "Unknown tracking code for Glonass L1: " << roi.code);
+                           break;
+                       }
+                   }
+               }
 
-			   if (roi.type == ObsID::otPhase) return TypeID::L1;
-			   if (roi.type == ObsID::otDoppler) return TypeID::D1;
-			   if (roi.type == ObsID::otSNR) return TypeID::S1;
+			   if (roi.type == ObservationType::Phase) return TypeID::L1;
+			   if (roi.type == ObservationType::Doppler) return TypeID::D1;
+			   if (roi.type == ObservationType::SNR) return TypeID::S1;
 		   }
 		   // For L2: C2 P2 L2 D2 S2
-		   else if (roi.band == ObsID::cbG2)
+		   else if (roi.band == CarrierBand::G2)
 		   {
-			   if (roi.type == ObsID::otRange)   // tcGCA or tcGP
-				   return (roi.code == ObsID::tcGCA) ? TypeID::C2 : TypeID::P2;
+               if (roi.type == ObservationType::Range)
+               {
+                   switch (roi.code)
+                   {
+				   case TrackingCode::Standard:
+					   return TypeID::C2;
+				   case TrackingCode::Precise:
+					   return TypeID::P2;
+                   default:
+					   GNSSTK_ASSERT(false, "Unknown tracking code for Glonass L2: " << roi.code);
+                       break;
+                   }
+               }
 
-			   if (roi.type == ObsID::otPhase) return TypeID::L2;
-			   if (roi.type == ObsID::otDoppler) return TypeID::D2;
-			   if (roi.type == ObsID::otSNR) return TypeID::S2;
+			   if (roi.type == ObservationType::Phase) return TypeID::L2;
+			   if (roi.type == ObservationType::Doppler) return TypeID::D2;
+			   if (roi.type == ObservationType::SNR) return TypeID::S2;
 		   }
 	   }
-	   else if (sat.system == SatID::systemGalileo)
+	   else if (sat.system == SatelliteSystem::Galileo)
 	   {
 		   // Galileo E2-L1-E1   1575.42      C1         L1         D1         S1
 		   //         E5a        1176.45      C5         L5         D5         S5
@@ -720,43 +743,43 @@ namespace gpstk
 		   //         E5a+b      1191.795     C8         L8         D8         S8
 		   //         E6         1278.75      C6         L6         D6         S6
 		   // E2-L1-E1
-		   if (roi.band == ObsID::cbL1)         // E1
+		   if (roi.band == CarrierBand::L1)         // E1
 		   {
-			   if (roi.type == ObsID::otRange) return TypeID::C1;
-			   if (roi.type == ObsID::otPhase) return TypeID::L1;
-			   if (roi.type == ObsID::otDoppler) return TypeID::D1;
-			   if (roi.type == ObsID::otSNR) return TypeID::S1;
+			   if (roi.type == ObservationType::Range) return TypeID::C1;
+			   if (roi.type == ObservationType::Phase) return TypeID::L1;
+			   if (roi.type == ObservationType::Doppler) return TypeID::D1;
+			   if (roi.type == ObservationType::SNR) return TypeID::S1;
 		   }
-		   else if (roi.band == ObsID::cbL5)    // E5a
+		   else if (roi.band == CarrierBand::L5)    // E5a
 		   {
-			   if (roi.type == ObsID::otRange) return TypeID::C5;
-			   if (roi.type == ObsID::otPhase) return TypeID::L5;
-			   if (roi.type == ObsID::otDoppler) return TypeID::D5;
-			   if (roi.type == ObsID::otSNR) return TypeID::S5;
+			   if (roi.type == ObservationType::Range) return TypeID::C5;
+			   if (roi.type == ObservationType::Phase) return TypeID::L5;
+			   if (roi.type == ObservationType::Doppler) return TypeID::D5;
+			   if (roi.type == ObservationType::SNR) return TypeID::S5;
 		   }
-		   else if (roi.band == ObsID::cbE5b)   // E5b
+		   else if (roi.band == CarrierBand::E5b)   // E5b
 		   {
-			   if (roi.type == ObsID::otRange) return TypeID::C7;
-			   if (roi.type == ObsID::otPhase) return TypeID::L7;
-			   if (roi.type == ObsID::otDoppler) return TypeID::D7;
-			   if (roi.type == ObsID::otSNR) return TypeID::S7;
+			   if (roi.type == ObservationType::Range) return TypeID::C7;
+			   if (roi.type == ObservationType::Phase) return TypeID::L7;
+			   if (roi.type == ObservationType::Doppler) return TypeID::D7;
+			   if (roi.type == ObservationType::SNR) return TypeID::S7;
 		   }
-		   else if (roi.band == ObsID::cbE5ab)  // E5a+b
+		   else if (roi.band == CarrierBand::E5ab)  // E5a+b
 		   {
-			   if (roi.type == ObsID::otRange) return TypeID::C8;
-			   if (roi.type == ObsID::otPhase) return TypeID::L8;
-			   if (roi.type == ObsID::otDoppler) return TypeID::D8;
-			   if (roi.type == ObsID::otSNR) return TypeID::S8;
+			   if (roi.type == ObservationType::Range) return TypeID::C8;
+			   if (roi.type == ObservationType::Phase) return TypeID::L8;
+			   if (roi.type == ObservationType::Doppler) return TypeID::D8;
+			   if (roi.type == ObservationType::SNR) return TypeID::S8;
 		   }
-		   else if (roi.band == ObsID::cbE6)    // E6
+		   else if (roi.band == CarrierBand::E6)    // E6
 		   {
-			   if (roi.type == ObsID::otRange) return TypeID::C6;
-			   if (roi.type == ObsID::otPhase) return TypeID::L6;
-			   if (roi.type == ObsID::otDoppler) return TypeID::D6;
-			   if (roi.type == ObsID::otSNR) return TypeID::S6;
+			   if (roi.type == ObservationType::Range) return TypeID::C6;
+			   if (roi.type == ObservationType::Phase) return TypeID::L6;
+			   if (roi.type == ObservationType::Doppler) return TypeID::D6;
+			   if (roi.type == ObservationType::SNR) return TypeID::S6;
 		   }
 	   }
-	   else if (sat.system == SatID::systemBeiDou)
+	   else if (sat.system == SatelliteSystem::BeiDou)
 	   {
 		   // Compass B1   I/Q                 C1         L1         D1         S1
 		   //         E5b  I/Q                 C7         L7         D7         S7
@@ -764,84 +787,84 @@ namespace gpstk
 
 		   // For E2-B1
 		   //if(roi.band == ObsID::cbE1) return TypeID::Unknown;
-		   if (roi.band == ObsID::cbB1 || roi.band == ObsID::cbL2)         // TD is cbB3 correct?
+		   if (roi.band == CarrierBand::B1 || roi.band == CarrierBand::L2)         // TD is cbB3 correct?
 		   {
-			   if (roi.type == ObsID::otRange) return TypeID::C1;
-			   if (roi.type == ObsID::otPhase) return TypeID::L1;
-			   if (roi.type == ObsID::otDoppler) return TypeID::D1;
-			   if (roi.type == ObsID::otSNR) return TypeID::S1;
+			   if (roi.type == ObservationType::Range) return TypeID::C1;
+			   if (roi.type == ObservationType::Phase) return TypeID::L1;
+			   if (roi.type == ObservationType::Doppler) return TypeID::D1;
+			   if (roi.type == ObservationType::SNR) return TypeID::S1;
 		   }
-		   else if (roi.band == ObsID::cbB2)
+		   else if (roi.band == CarrierBand::B2)
 		   {
-			   if (roi.type == ObsID::otRange) return TypeID::C2;
-			   if (roi.type == ObsID::otPhase) return TypeID::L2;
-			   if (roi.type == ObsID::otDoppler) return TypeID::D2;
-			   if (roi.type == ObsID::otSNR) return TypeID::S2;
+			   if (roi.type == ObservationType::Range) return TypeID::C2;
+			   if (roi.type == ObservationType::Phase) return TypeID::L2;
+			   if (roi.type == ObservationType::Doppler) return TypeID::D2;
+			   if (roi.type == ObservationType::SNR) return TypeID::S2;
 		   }
-		   else if (roi.band == ObsID::cbB3)
+		   else if (roi.band == CarrierBand::B3)
 		   {
-			   if (roi.type == ObsID::otRange) return TypeID::C6;
-			   if (roi.type == ObsID::otPhase) return TypeID::L6;
-			   if (roi.type == ObsID::otDoppler) return TypeID::D6;
-			   if (roi.type == ObsID::otSNR) return TypeID::S6;
+			   if (roi.type == ObservationType::Range) return TypeID::C6;
+			   if (roi.type == ObservationType::Phase) return TypeID::L6;
+			   if (roi.type == ObservationType::Doppler) return TypeID::D6;
+			   if (roi.type == ObservationType::SNR) return TypeID::S6;
 		   }
 	   }
-	   else if (sat.system == SatID::systemGeosync)
+	   else if (sat.system == SatelliteSystem::Geosync)
 	   {
 		   // SBAS    L1         1575.42      C1         L1         D1         S1
 		   //         L5         1176.45      C5         L5         D5         S5
 
 		   // L1
-		   if (roi.band == ObsID::cbL1)
+		   if (roi.band == CarrierBand::L1)
 		   {
-			   if (roi.type == ObsID::otRange) return TypeID::C1;
-			   if (roi.type == ObsID::otPhase) return TypeID::L1;
-			   if (roi.type == ObsID::otDoppler) return TypeID::D1;
-			   if (roi.type == ObsID::otSNR) return TypeID::S1;
+			   if (roi.type == ObservationType::Range) return TypeID::C1;
+			   if (roi.type == ObservationType::Phase) return TypeID::L1;
+			   if (roi.type == ObservationType::Doppler) return TypeID::D1;
+			   if (roi.type == ObservationType::SNR) return TypeID::S1;
 		   }
 		   //L5
-		   else if (roi.band == ObsID::cbL5)
+		   else if (roi.band == CarrierBand::L5)
 		   {
-			   if (roi.type == ObsID::otRange) return TypeID::C5;
-			   if (roi.type == ObsID::otPhase) return TypeID::L5;
-			   if (roi.type == ObsID::otDoppler) return TypeID::D5;
-			   if (roi.type == ObsID::otSNR) return TypeID::S5;
+			   if (roi.type == ObservationType::Range) return TypeID::C5;
+			   if (roi.type == ObservationType::Phase) return TypeID::L5;
+			   if (roi.type == ObservationType::Doppler) return TypeID::D5;
+			   if (roi.type == ObservationType::SNR) return TypeID::S5;
 		   }
 	   }
-	   else if (sat.system == SatID::systemQZSS)
+	   else if (sat.system == SatelliteSystem::QZSS)
 	   {
 		   // For L1: C1 L1 D1 S1
-		   if (roi.band == ObsID::cbL1)
+		   if (roi.band == CarrierBand::L1)
 		   {
-			   if (roi.type == ObsID::otRange && roi.code == ObsID::tcJCA)
+			   if (roi.type == ObservationType::Range && roi.code == TrackingCode::L1S)
 				   return TypeID::C1;
 
-			   if (roi.type == ObsID::otPhase) return TypeID::L1;
-			   if (roi.type == ObsID::otDoppler) return TypeID::D1;
-			   if (roi.type == ObsID::otSNR) return TypeID::S1;
+			   if (roi.type == ObservationType::Phase) return TypeID::L1;
+			   if (roi.type == ObservationType::Doppler) return TypeID::D1;
+			   if (roi.type == ObservationType::SNR) return TypeID::S1;
 		   }
 		   // For L2: C2 L2 D2 S2
-		   else if (roi.band == ObsID::cbL2)
+		   else if (roi.band == CarrierBand::L2)
 		   {
-			   if (roi.type == ObsID::otRange) return TypeID::C2;
-			   if (roi.type == ObsID::otPhase) return TypeID::L2;
-			   if (roi.type == ObsID::otDoppler) return TypeID::D2;
-			   if (roi.type == ObsID::otSNR) return TypeID::S2;
+			   if (roi.type == ObservationType::Range) return TypeID::C2;
+			   if (roi.type == ObservationType::Phase) return TypeID::L2;
+			   if (roi.type == ObservationType::Doppler) return TypeID::D2;
+			   if (roi.type == ObservationType::SNR) return TypeID::S2;
 		   }
 		   // For L5: C5 L5 D5 S5
-		   else if (roi.band == ObsID::cbL5)
+		   else if (roi.band == CarrierBand::L5)
 		   {
-			   if (roi.type == ObsID::otRange) return TypeID::C5;
-			   if (roi.type == ObsID::otPhase) return TypeID::L5;
-			   if (roi.type == ObsID::otDoppler) return TypeID::D5;
-			   if (roi.type == ObsID::otSNR) return TypeID::S5;
+			   if (roi.type == ObservationType::Range) return TypeID::C5;
+			   if (roi.type == ObservationType::Phase) return TypeID::L5;
+			   if (roi.type == ObservationType::Doppler) return TypeID::D5;
+			   if (roi.type == ObservationType::SNR) return TypeID::S5;
 		   }
-		   else if (roi.band == ObsID::cbE6)
+		   else if (roi.band == CarrierBand::E6)
 		   {
-			   if (roi.type == ObsID::otRange) return TypeID::C6;
-			   if (roi.type == ObsID::otPhase) return TypeID::L6;
-			   if (roi.type == ObsID::otDoppler) return TypeID::D6;
-			   if (roi.type == ObsID::otSNR) return TypeID::S6;
+			   if (roi.type == ObservationType::Range) return TypeID::C6;
+			   if (roi.type == ObservationType::Phase) return TypeID::L6;
+			   if (roi.type == ObservationType::Doppler) return TypeID::D6;
+			   if (roi.type == ObservationType::SNR) return TypeID::S6;
 		   }
 	   }
 
@@ -922,7 +945,6 @@ namespace gpstk
 
       // get the user registered TypeID by name string
    TypeID TypeID::byName(std::string name)
-      throw(InvalidRequest)
    {
       // registerMyTypeID();
 
@@ -935,8 +957,8 @@ namespace gpstk
       {
          InvalidRequest e("There are no registered TypeID name as '"
             + name + "'.");
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
       }
    } // End of 'TypeID TypeID::byName(std::string name)'
 
-} // End of namespace gpstk
+} // End of namespace gnsstk

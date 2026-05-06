@@ -43,7 +43,7 @@
 #include "PhaseCodeAlignment.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       // Returns a string identifying this object.
@@ -104,7 +104,6 @@ namespace gpstk
        */
    SatTypePtrMap& PhaseCodeAlignment::Process( const CommonTime& epoch,
                                            SatTypePtrMap& gData )
-      throw(ProcessingException)
    {
 
       try
@@ -242,7 +241,7 @@ namespace gpstk
          ProcessingException e( getClassName() + ":"
                                 + u.what() );
 
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
 
       }
 
@@ -258,7 +257,6 @@ namespace gpstk
        * @param gData    Data object holding the data.
        */
    IRinex& PhaseCodeAlignment::Process(IRinex& gData)
-      throw(ProcessingException)
    {
 
       try
@@ -275,11 +273,11 @@ namespace gpstk
          ProcessingException e( getClassName() + ":"
                                 + u.what() );
 
-         GPSTK_THROW(e);
+         GNSSTK_THROW(e);
 
       }
 
    }  // End of 'PhaseCodeAlignment::Process()'
 
 
-} // End of namespace gpstk
+} // End of namespace gnsstk

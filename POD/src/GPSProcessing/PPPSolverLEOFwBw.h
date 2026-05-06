@@ -177,7 +177,7 @@ namespace pod
 
 
         /// List holding the information regarding every observation.
-        std::list<gpstk::irinex_uptr> ObsData;
+        std::list<gnsstk::irinex_uptr> ObsData;
 
 
         /// Set storing the TypeID's that we want to keep.

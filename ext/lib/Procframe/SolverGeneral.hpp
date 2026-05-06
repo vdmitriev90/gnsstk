@@ -52,7 +52,7 @@
 #include "ConstraintSystem.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       /// @ingroup GPSsolutions
@@ -99,7 +99,7 @@ namespace gpstk
        *   dz.setInitialVariance( 100.0 );
        *
        *   Variable cdt( TypeID::cdt );
-       *   cdt.setDefaultForced(true);   // Force default coefficient (1.0)
+       *   cdt.setDefaultgnsstk::d(true);   // gnsstk:: default coefficient (1.0)
        *
        *   Variable tropo( TypeID::wetMap, &tropoModel );
        *   tropo.setInitialVariance( 25.0 );
@@ -107,7 +107,7 @@ namespace gpstk
        *
        *      // The following variable is, SourceID and SatID-indexed
        *   Variable ambi( TypeID::BLC, &ambiModel, true, true );
-       *   ambi.setDefaultForced(true);   // Force default coefficient (1.0)
+       *   ambi.setDefaultgnsstk::d(true);   // gnsstk:: default coefficient (1.0)
        *
        *      // This will be the independent term for code equation
        *   Variable prefitC( TypeID::prefitC );
@@ -277,8 +277,7 @@ namespace gpstk
           *
           * @param gData    Data object holding the data.
           */
-      virtual IRinex& Process(IRinex& gData )
-         throw(ProcessingException);
+      virtual IRinex& Process(IRinex& gData );
 
 
          /** Returns a reference to a gnssDataMap object after solving
@@ -286,16 +285,14 @@ namespace gpstk
           *
           * @param gdsMap    Data object holding the data.
           */
-      virtual gnssDataMap& Process( gnssDataMap& gdsMap )
-         throw(ProcessingException);
+      virtual gnssDataMap& Process( gnssDataMap& gdsMap );
 
 
          /** Returns the solution associated to a given Variable.
           *
           * @param variable    Variable object solution we are looking for.
           */
-      virtual double getSolution( const Variable& variable ) const
-         throw(InvalidRequest);
+      virtual double getSolution( const Variable& variable ) const;
 
 
          /** Returns the solution associated to a given TypeID.
@@ -305,8 +302,7 @@ namespace gpstk
           * \warning In the case the solution contains more than one variable
           * of this type, only the first one will be returned.
           */
-      virtual double getSolution( const TypeID& type ) const
-         throw(InvalidRequest);
+      virtual double getSolution( const TypeID& type ) const;
 
 
          /** Returns the solution associated to a given TypeID and SourceID.
@@ -318,8 +314,7 @@ namespace gpstk
           * of this type, only the first one will be returned.
           */
       virtual double getSolution( const TypeID& type,
-                                  const SourceID& source ) const
-         throw(InvalidRequest);
+                                  const SourceID& source ) const;
 
    
          /** Returns the solution associated to a given TypeID, SourceID and
@@ -332,8 +327,7 @@ namespace gpstk
           * of this type, only the first one will be returned.
           */
       virtual double getSolution( const TypeID& type,
-                                  const SatID& sat ) const
-         throw(InvalidRequest);
+                                  const SatID& sat ) const;
 
 
          /** Returns the solution associated to a given TypeID, SourceID and
@@ -348,8 +342,7 @@ namespace gpstk
           */
       virtual double getSolution( const TypeID& type,
                                   const SourceID& source,
-                                  const SatID& sat ) const
-         throw(InvalidRequest);
+                                  const SatID& sat ) const;
 
 
          /** Returns the covariance associated to a given Variable.
@@ -358,16 +351,14 @@ namespace gpstk
           * @param var2    second variable object
           */
       virtual double getCovariance( const Variable& var1, 
-                                    const Variable& var2 ) const 
-         throw(InvalidRequest);
+                                    const Variable& var2 ) const ;
 
 
          /** Returns the variance associated to a given Variable.
           *
           * @param variable    Variable object variance we are looking for.
           */
-      virtual double getVariance( const Variable& variable ) const
-         throw(InvalidRequest);
+      virtual double getVariance( const Variable& variable ) const;
 
 
          /** Returns the variance associated to a given TypeID.
@@ -377,8 +368,7 @@ namespace gpstk
           * \warning In the case the solution contains more than one variable
           * of this type, only the first one will be returned.
           */
-      virtual double getVariance( const TypeID& type ) const 
-         throw(InvalidRequest);
+      virtual double getVariance( const TypeID& type ) const ;
 
 
          /** Returns the variance associated to a given TypeID.
@@ -390,8 +380,7 @@ namespace gpstk
           * of this type, only the first one will be returned.
           */
       virtual double getVariance( const TypeID& type,
-                                  const SourceID& source ) const 
-         throw(InvalidRequest);
+                                  const SourceID& source ) const ;
 
 
          /** Returns the variance associated to a given TypeID.
@@ -404,8 +393,7 @@ namespace gpstk
           * of this type, only the first one will be returned.
           */
       virtual double getVariance( const TypeID& type,
-                                  const SatID& sat ) const 
-         throw(InvalidRequest);
+                                  const SatID& sat ) const ;
 
 
          /** Returns the variance associated to a given TypeID.
@@ -419,8 +407,7 @@ namespace gpstk
           */
       virtual double getVariance( const TypeID& type,
                                   const SourceID& source,
-                                  const SatID& sat ) const 
-         throw(InvalidRequest);
+                                  const SatID& sat ) const ;
 
 
 
@@ -457,16 +444,14 @@ namespace gpstk
           *
           * @param gData    Data object holding the data.
           */
-      virtual gnssDataMap& preCompute( gnssDataMap& gdsMap )
-         throw(ProcessingException);
+      virtual gnssDataMap& preCompute( gnssDataMap& gdsMap );
 
 
          /** Code to be executed after 'Compute()' method.
           *
           * @param gData    Data object holding the data.
           */
-      virtual gnssDataMap& postCompute( gnssDataMap& gdsMap )
-         throw(ProcessingException);
+      virtual gnssDataMap& postCompute( gnssDataMap& gdsMap );
 
 
          /** Set the solution associated to a given Variable.
@@ -475,8 +460,7 @@ namespace gpstk
           * @param val         solution value for the Variable object
           */
       virtual SolverGeneral& setSolution( const Variable& variable,
-                                          const double& val )
-         throw(InvalidRequest);
+                                          const double& val );
 
 
          /** Set the covariance associated to a given Variable.
@@ -487,8 +471,7 @@ namespace gpstk
           */
       virtual SolverGeneral& setCovariance( const Variable& var1, 
                                             const Variable& var2,
-                                            const double& cov)
-         throw(InvalidRequest);
+                                            const double& cov);
 
    private:
 
@@ -560,8 +543,7 @@ namespace gpstk
           */
       virtual int Compute( const Vector<double>& prefitResiduals,
                            const Matrix<double>& designMatrix,
-                           const Matrix<double>& weightMatrix )
-         throw(InvalidSolver);
+                           const Matrix<double>& weightMatrix );
 
       friend class GeneralConstraint;
 
@@ -569,5 +551,5 @@ namespace gpstk
 
       //@}
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk
 #endif   // GPSTK_SOLVERGENERAL_HPP

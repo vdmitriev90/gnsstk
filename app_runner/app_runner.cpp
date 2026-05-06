@@ -1,3 +1,7 @@
+#include <iostream>
+#include<filesystem>
+#include <boost/dynamic_bitset.hpp>
+
 #include "Rinex3EphemerisStore.hpp"
 #include"Solution.h"
 #include"Action.h"
@@ -5,12 +9,9 @@
 #include"SerialDataSource.hpp"
 #include"BitSetProxy.hpp"
 
-#include <iostream>
-#include<filesystem>
-#include <boost/dynamic_bitset.hpp>
 
 using namespace std;
-using namespace gpstk;
+using namespace gnsstk;
 using namespace pod;
 namespace fs = std::filesystem;
 typedef unsigned char uchar;
@@ -29,7 +30,7 @@ void testRinNav(char* path)
 {
     Rinex3EphemerisStore nrin;
     cout<< nrin.loadFile(path) << endl;
-    const SatID sid = SatID(1, SatID::SatelliteSystem::systemGPS);
+    const SatID sid = SatID(1, SatelliteSystem::GPS);
     CommonTime t0 = nrin.getInitialTime(sid);
     CommonTime te = nrin.getFinalTime(sid);
     nrin.SearchNear();

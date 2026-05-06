@@ -43,7 +43,7 @@
 #include "ProcessingVector.hpp"
 
 
-namespace gpstk
+namespace gnsstk
 {
 
       // Returns a string identifying this object.
@@ -73,4 +73,4 @@ namespace gpstk
    }  // End of method 'ProcessingVector::Process()'
 
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk

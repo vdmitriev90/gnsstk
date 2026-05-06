@@ -21,7 +21,7 @@ namespace pod
         return gData;
     }
 
-    gpstk::SatTypePtrMap& ComputeWeightSimple::Process(gpstk::SatTypePtrMap& gData)
+    gnsstk::SatTypePtrMap& ComputeWeightSimple::Process(gnsstk::SatTypePtrMap& gData)
     {
         SatIDSet rejSatSet;
         for (auto& it: gData)
@@ -35,7 +35,7 @@ namespace pod
                     invsig = (::sin(el->second * DEG_TO_RAD) / sin0);
                     //invsig = 0.5/(::sin(el->second * DEG_TO_RAD) / sin0);
 
-                double factor = (it.first.system == SatID::systemGlonass) ? glnSigmaFactor : 1;
+                double factor = (it.first.system == SatelliteSystem::Glonass) ? glnSigmaFactor : 1;
                 
                 it.second->get_value()[TypeID::weight] = invsig*invsig/factor;
             }
