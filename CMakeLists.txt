@@ -184,31 +184,6 @@ if( BUILD_EXT )
 
 endif()
 
-if( BUILD_POD )
-  include_directories(third_party/SOFA)
-  add_subdirectory(third_party/SOFA )
-  
-  include_directories(third_party/sqlite)
-  add_subdirectory(third_party/sqlite)
-
-
-  file( GLOB_RECURSE POD_INC_FILES "pod/src/*.h" "pod/src/*.hpp" )
-  # initialize list of include directories
-  set( POD_INC_DIRS "" )
-  #
-  # include pod directories
-  foreach( _headerFile ${POD_INC_FILES} )
-    get_filename_component( _dir ${_headerFile} PATH )
-    list( APPEND POD_INC_DIRS ${_dir} )
-  endforeach()
-  list( REMOVE_DUPLICATES POD_INC_DIRS )
-  include_directories(${POD_INC_DIRS})
-  
-  add_subdirectory( pod )
-  #add_subdirectory( swig_wrapper )
-  add_subdirectory( app_runner )
-endif()
-
 #============================================================
 # GNSSTK Library, Build and Install Targets
 #============================================================
@@ -236,6 +211,30 @@ install( TARGETS gnsstk DESTINATION "${CMAKE_INSTALL_LIBDIR}" EXPORT "${EXPORT_T
 # GNSSTk header file install target (whether it is version dependent changes based on user flag)
 install( FILES ${GNSSTK_INC_FILES} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} )
 
+if( BUILD_POD )
+  include_directories(third_party/SOFA)
+  add_subdirectory(third_party/SOFA )
+  
+  include_directories(third_party/sqlite)
+  add_subdirectory(third_party/sqlite)
+
+
+  file( GLOB_RECURSE POD_INC_FILES "pod/src/*.h" "pod/src/*.hpp" )
+  # initialize list of include directories
+  set( POD_INC_DIRS "" )
+  #
+  # include pod directories
+  foreach( _headerFile ${POD_INC_FILES} )
+    get_filename_component( _dir ${_headerFile} PATH )
+    list( APPEND POD_INC_DIRS ${_dir} )
+  endforeach()
+  list( REMOVE_DUPLICATES POD_INC_DIRS )
+  include_directories(${POD_INC_DIRS})
+  
+  add_subdirectory( pod )
+  #add_subdirectory( swig_wrapper )
+  add_subdirectory( app_runner )
+endif()
 
 #============================================================
 # GNSSTK Library parameters
