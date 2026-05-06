@@ -102,7 +102,7 @@ namespace gnsstk
        * mapping_function() routine is called for an invalid
        * TropModel.
        */
-   class TropModel
+   class    TropModel
    {
    public:
       GNSSTK_EXPORT static const double CELSIUS_TO_KELVIN;
@@ -195,6 +195,15 @@ namespace gnsstk
           */
       virtual double wet_mapping_function(double elevation)
          const = 0;
+
+         /** Compute and return the gradient mapping function for
+          * tropospheric horizontal gradients.
+          * @param elevation Elevation of satellite as seen at
+          *   receiver, in degrees
+          * @return Gradient mapping function value
+          */
+      virtual double gradient_mapping_function(double elevation) const
+      { return 0.0; }
 
          /** Re-define the tropospheric model with explicit weather data.
           * Typically called just before correction().

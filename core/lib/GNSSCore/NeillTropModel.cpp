@@ -418,4 +418,11 @@ namespace gnsstk
       if (valid) setWeather();
    }
 
+   double NeillTropModel::gradient_mapping_function(double elevation) const
+   {
+      const double c = 0.0032;
+      double el_rad = elevation * DEG_TO_RAD;
+      return 1.0 / (::sin(el_rad) * ::tan(el_rad) + c);
+   }
+
 }

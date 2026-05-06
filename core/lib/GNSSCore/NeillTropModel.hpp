@@ -242,6 +242,9 @@ namespace gnsstk
          /// @copydoc wet_mapping_function(double) const
       virtual double wet_mapping_function(double elevation) const;
 
+      /// Compute and return the tropospheric gradient mapping function
+      /// @param elevation Elevation of satellite as seen at receiver, in degrees
+      double gradient_mapping_function(double elevation) const override;
 
          /** This method configure the model to estimate the weather using
           * height, latitude and day of year (DOY). It is called
