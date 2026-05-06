@@ -108,8 +108,8 @@ namespace gnsstk
       std::string fileAgency;
       std::string date;
       std::vector<std::string> commentList;
-      FormattedDouble ionAlpha[4];
-      FormattedDouble ionBeta[4];
+      double ionAlpha[4];
+      double ionBeta[4];
       RNDouble A0;
       RNDouble A1;
       long UTCRefTime;

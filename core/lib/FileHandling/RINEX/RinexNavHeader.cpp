@@ -1,4 +1,4 @@
-//==============================================================================
+﻿//==============================================================================
 //
 //  This file is part of GNSSTk, the ARL:UT GNSS Toolkit.
 //
@@ -66,22 +66,8 @@ namespace gnsstk
 
    RinexNavHeader::RinexNavHeader()
          : valid(0), version(2.1),
-           ionAlpha{FormattedDouble(0., FFLead::Decimal, 4, 2, 12, 'D',
-                                    FFSign::NegOnly, FFAlign::Right),
-                    FormattedDouble(0., FFLead::Decimal, 4, 2, 12, 'D',
-                                    FFSign::NegOnly, FFAlign::Right),
-                    FormattedDouble(0., FFLead::Decimal, 4, 2, 12, 'D',
-                                    FFSign::NegOnly, FFAlign::Right),
-                    FormattedDouble(0., FFLead::Decimal, 4, 2, 12, 'D',
-                                    FFSign::NegOnly, FFAlign::Right) },
-           ionBeta {FormattedDouble(0., FFLead::Decimal, 4, 2, 12, 'D',
-                                    FFSign::NegOnly, FFAlign::Right),
-                    FormattedDouble(0., FFLead::Decimal, 4, 2, 12, 'D',
-                                    FFSign::NegOnly, FFAlign::Right),
-                    FormattedDouble(0., FFLead::Decimal, 4, 2, 12, 'D',
-                                    FFSign::NegOnly, FFAlign::Right),
-                    FormattedDouble(0., FFLead::Decimal, 4, 2, 12, 'D',
-                                    FFSign::NegOnly, FFAlign::Right) },
+           ionAlpha{0.0, 0.0, 0.0, 0.0},
+           ionBeta{0.0, 0.0, 0.0, 0.0},
            A0(0), A1(0), UTCRefTime(0), UTCRefWeek(0), leapSeconds(0)
    {}
 
@@ -149,7 +135,8 @@ namespace gnsstk
          strm << "  ";
          for (int i = 0; i < 4; i++)
          {
-            strm << ionAlpha[i];
+            strm << FormattedDouble(ionAlpha[i], FFLead::Decimal, 4, 2, 12, 'D',
+                                   FFSign::NegOnly, FFAlign::Right);
          }
          strm << setw(10) << " " << ionAlphaString << endl;
          strm.lineNumber++;
@@ -159,7 +146,8 @@ namespace gnsstk
          strm << "  ";
          for (int i = 0; i < 4; i++)
          {
-            strm << ionBeta[i];
+            strm << FormattedDouble(ionBeta[i], FFLead::Decimal, 4, 2, 12, 'D',
+                                   FFSign::NegOnly, FFAlign::Right);
          }
          strm << setw(10) << " " << ionBetaString << endl;
          strm.lineNumber++;
@@ -244,13 +232,19 @@ namespace gnsstk
          else if (thisLabel == ionAlphaString)
          {
             for(int i = 0; i < 4; i++)
-               ionAlpha[i] = line.substr(2 + 12 * i,12);
+            {
+               FormattedDouble temp(line.substr(2 + 12 * i, 12), 12, 'D');
+               ionAlpha[i] = temp;  // Автоматическая конверсия через operator double()
+            }
             valid |= ionAlphaValid;
          }
          else if (thisLabel == ionBetaString)
          {
             for(int i = 0; i < 4; i++)
-               ionBeta[i] = line.substr(2 + 12 * i,12);
+            {
+               FormattedDouble temp(line.substr(2 + 12 * i, 12), 12, 'D');
+               ionBeta[i] = temp;
+            }
             valid |= ionBetaValid;
          }
          else if (thisLabel == deltaUTCString)
