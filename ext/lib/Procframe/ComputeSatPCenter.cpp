@@ -79,37 +79,53 @@ namespace gnsstk
          {
 
                // Use ephemeris if satellite position is not already computed
-             if (((*it).second->get_value().find(TypeID::satX) == (*it).second->get_value().end()) ||
-                 ((*it).second->get_value().find(TypeID::satY) == (*it).second->get_value().end()) ||
-                 ((*it).second->get_value().find(TypeID::satZ) == (*it).second->get_value().end()))
-             {
+            if( ( (*it).second->get_value().find(TypeID::satX) == (*it).second->get_value().end() ) ||
+                ( (*it).second->get_value().find(TypeID::satY) == (*it).second->get_value().end() ) ||
+                ( (*it).second->get_value().find(TypeID::satZ) == (*it).second->get_value().end() ) )
+            {
 
-                 // For our purposes, position at receive time
-                 // is fine enough
-                 const NavSatelliteID nav_id((*it).first);
-                 Xvt sv_pos_vel;
-                 if (ephemeris_.getXvt(nav_id, time, sv_pos_vel))
-                 {
+               if(pEphemeris==NULL)
+               {
+
+                     // If ephemeris is missing, then remove all satellites
+                  satRejectedSet.insert( (*it).first );
+
+                  continue;
+               }
+               else
+               {
+
+                  // Try to get satellite position
+                  // if it is not already computed
+                  Xvt svPosVel;
+                  if(pEphemeris->getXvt( (*it).first, time, svPosVel))
+                  {
                      // If everything is OK, then continue processing.
-                     svPos = sv_pos_vel.x;
-                 }
-                 else
-                 {
-                     // If satellite is missing, then schedule it
-                     // for removal
-                     satRejectedSet.insert((*it).first);
+                     svPos[0] = svPosVel.x.theArray[0];
+                     svPos[1] = svPosVel.x.theArray[1];
+                     svPos[2] = svPosVel.x.theArray[2];
+
+                  }
+                  else
+                  {
+
+                        // If satellite is missing, then schedule it
+                        // for removal
+                     satRejectedSet.insert( (*it).first );
+
                      continue;
-                 }
+                  }
 
+               }
 
-             }
+            }
             else
             {
 
-                // Get satellite position out of GDS
-                svPos[0] = (*it).second->get_value()[TypeID::satX];
-                svPos[1] = (*it).second->get_value()[TypeID::satY];
-                svPos[2] = (*it).second->get_value()[TypeID::satZ];
+                  // Get satellite position out of GDS
+               svPos[0] = (*it).second->get_value()[TypeID::satX];
+               svPos[1] = (*it).second->get_value()[TypeID::satY];
+               svPos[2] = (*it).second->get_value()[TypeID::satZ];
 
             }  // End of 'if( ( (*it).second->get_value().find(TypeID::satX) == ...'
 
@@ -219,7 +235,7 @@ namespace gnsstk
 
             // The nadir angle should always smaller than 14.0 deg, 
             // but some times it's a bit bigger than 14.0 deg, we 
-            // gnsstk:: it to 14.0 deg to stop throwing an exception.
+            // force it to 14.0 deg to stop throwing an exception.
             // The Reference is available at:
             // http://igscb.jpl.nasa.gov/igscb/resource/pubs/02_ott/session_8.pdf
          nadir = (nadir>14) ? 14.0 : nadir;
@@ -299,7 +315,7 @@ namespace gnsstk
                svPCcorr = 0.0;
             }
 
-         }  // End of 'if( satid.system == SatelliteSystem::GPS )...'
+         }  // End of 'if( satid.system == SatID::systemGPS )...'
 
       }
       else
@@ -350,4 +366,4 @@ namespace gnsstk
 
 
 
-}  // End of namespace gnsstk
+}  // End of namespace gpstk

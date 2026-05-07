@@ -1,6 +1,6 @@
 #include"UsedInPvtMarker.hpp"
 
-using namespace gpstk;
+using namespace gnsstk;
 namespace pod
 {
 	

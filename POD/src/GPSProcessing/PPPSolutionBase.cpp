@@ -17,7 +17,7 @@
 
 #include"GnssSolution.h"
 
-using namespace gpstk;
+using namespace gnsstk;
 
 namespace pod
 {
@@ -114,13 +114,13 @@ namespace pod
                     {
                         try
                         {
-                            solverPR->prepare(rod.time, data->SP3EphList, svData);
+                            solverPR->prepare(rod.time, data->navLibrary_, svData);
                             res = solverPR->solve(rod.time, data->bceIonoStore, svData);
                             os << res;
                         }
                         catch (Exception &e)
                         {
-                            GPSTK_RETHROW(e)
+                            GNSSTK_RETHROW(e)
                         }
                     }
                     else
@@ -146,7 +146,7 @@ namespace pod
             catch (Exception& e)
             {
                 std::cerr << e << std::endl;
-                GPSTK_RETHROW(e);
+                GNSSTK_RETHROW(e);
             }
             catch (...)
             {

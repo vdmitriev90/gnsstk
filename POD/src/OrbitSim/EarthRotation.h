@@ -1,9 +1,9 @@
 #ifndef POD_EARTH_ROTATION_H
 #define POD_EARTH_ROTATION_H
 
-#include"EOPDataStore.hpp"
 #include"Matrix.hpp"
 #include"CivilTime.hpp"
+#include"EOPStore.hpp"
 
 using namespace gnsstk;
 
@@ -12,11 +12,14 @@ namespace pod
     class EarthRotation
 	{
     public:
-        static  EarthRotation eopStore;
+  
+        static EarthRotation& eopStore()
+        {
+            static EarthRotation instance;
+            return instance;
+        }
 
-        EarthRotation();
-        EarthRotation(const EOPDataStore & eop);
-        bool loadEOP(const string& file, EOPDataStore::EOPSource source = EOPDataStore::EOPSource::IERS);
+        bool loadEOP(const std::string& fileName);
         /// get Inertial to terestriel matrix by IAU 2000A, CIO based, using classical angles
         Matrix<double> getJ2k2Ecef00(const CommonTime & t);
         Matrix<double> getEcef2J2k00(const CommonTime & t);
@@ -25,15 +28,16 @@ namespace pod
 
         virtual ~EarthRotation()
         {
-            eopData.clear();
+            eopData_.clear();
         }
 
         bool test();
-    protected:
-        EOPDataStore eopData;
-		
+
     private:
-		static CivilTime toTAI(const CommonTime & t);
+        EarthRotation() = default;
+        EarthRotation(const EOPStore& eop);
+
+        EOPStore eopData_;
     };
 }
 #endif // !POD_EARTH_ROTATION_H

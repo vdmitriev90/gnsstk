@@ -1,6 +1,6 @@
 #pragma once 
 #include"RinexEpoch.h"
-#include"XvtStore.hpp"
+#include"NavLibrary.hpp"
 #include"Position.hpp"
 
 namespace pod
@@ -19,12 +19,12 @@ namespace pod
 
 		static std::map<PositionSource, std::string> posSource2Str;
 
-		static int ComputeApprSol(const gpstk::IRinex & gRin, const gpstk::XvtStore<gpstk::SatID>& Eph, gpstk::Vector<double> & pos);
+		static int ComputeApprSol(const gnsstk::IRinex & gRin, const gnsstk::NavLibrary& Eph, gnsstk::Vector<double> & pos);
 
 		IApprPosProvider() = default;
 		virtual ~IApprPosProvider() = default;
 
-		virtual int getPosition(const gpstk::IRinex & gRin, gpstk::Position& pos) = 0;
+		virtual int getPosition(const gnsstk::IRinex & gRin, gnsstk::Position& pos) = 0;
 
 		virtual PositionSource getSource() const = 0;
 
@@ -35,26 +35,26 @@ namespace pod
 	{
 
 	public:
-		ComputeApprPos(gpstk::XvtStore<gpstk::SatID>& eStore, const gpstk::Position & pos)
-			:ephStore(&eStore), prePos(pos)
+		ComputeApprPos( gnsstk::NavLibrary& eStore, const gnsstk::Position & pos)
+			:ephStore(eStore), prePos(pos)
 		{}
-		ComputeApprPos(gpstk::XvtStore<gpstk::SatID>& eStore)
-			:ephStore(&eStore), prePos(gpstk::Position::CENTER_OF_EARTH)
+		ComputeApprPos( gnsstk::NavLibrary& eStore)
+			:ephStore(eStore)
 		{}
 
 		// Inherited via IApprPosProvider
-		virtual IApprPosProvider & setNominalPosition(const gpstk::Position & pos)
+		virtual IApprPosProvider & setNominalPosition(const gnsstk::Position & pos)
 		{
 			prePos = pos;
 			return *this;
 		}
 
-		virtual gpstk::Position getNominalPosition() const
+		virtual gnsstk::Position getNominalPosition() const
 		{
 			return prePos;
 		}
 
-		virtual int getPosition(const gpstk::IRinex & gRin, gpstk::Position & pos) override;
+		virtual int getPosition(const gnsstk::IRinex & gRin, gnsstk::Position & pos) override;
 
 		virtual PositionSource getSource() const override
 		{
@@ -63,23 +63,23 @@ namespace pod
 
 	private:
 
-		gpstk::XvtStore<gpstk::SatID>* ephStore;
+		 gnsstk::NavLibrary& ephStore;
 
-		std::map<gpstk::CommonTime, gpstk::Xvt> pvtStore;
+		std::map<gnsstk::CommonTime, gnsstk::Xvt> pvtStore;
 
-		gpstk::Position prePos;
+		gnsstk::Position prePos;
 
 	};
 
 	class ComputeOnePos : public IApprPosProvider
 	{
 	public:
-		ComputeOnePos(gpstk::XvtStore<gpstk::SatID>& eStore)
-			:ephStore(&eStore), isFirstTime(true)
+		ComputeOnePos( gnsstk::NavLibrary& ephem)
+			:ephStore(ephem), isFirstTime(true)
 		{}
 
 		// Inherited via IApprPosProvider
-		virtual int getPosition(const gpstk::IRinex & gRin, gpstk::Position & pos) override;
+		virtual int getPosition(const gnsstk::IRinex & gRin, gnsstk::Position & pos) override;
 
 		virtual PositionSource getSource() const override
 		{
@@ -88,11 +88,11 @@ namespace pod
 
 	private:
 
-		gpstk::XvtStore<gpstk::SatID>* ephStore;
+		 gnsstk::NavLibrary& ephStore;
 
 		bool isFirstTime;
 
-		gpstk::Position apprPos;
+		gnsstk::Position apprPos;
 	};
 
 	class PositionFromFile : public IApprPosProvider
@@ -105,7 +105,7 @@ namespace pod
 			loadApprPos(path);
 		}
 		
-		int getPosition(const gpstk::IRinex & gRin, gpstk::Position & pos) override;
+		int getPosition(const gnsstk::IRinex & gRin, gnsstk::Position & pos) override;
 		
 		int size()
 		{
@@ -118,7 +118,7 @@ namespace pod
 	private:
 		bool loadApprPos(const std::string & path);
 
-		std::map<gpstk::CommonTime, gpstk::Xvt> pvtStore;
+		std::map<gnsstk::CommonTime, gnsstk::Xvt> pvtStore;
 
 	};
 
@@ -126,9 +126,9 @@ namespace pod
 	{
 
 	public:
-		ApprPosSimple( const gpstk::Position & pos): apprPos(pos)
+		ApprPosSimple( const gnsstk::Position & pos): apprPos(pos)
 		{};
-		int getPosition(const gpstk::IRinex & gRin, gpstk::Position & pos) override
+		int getPosition(const gnsstk::IRinex & gRin, gnsstk::Position & pos) override
 		{
 			pos = apprPos;
 			return 0;
@@ -140,7 +140,7 @@ namespace pod
 		}
 
 	private :
-		gpstk::Position apprPos;
+		gnsstk::Position apprPos;
 	};
 
 }

@@ -135,7 +135,7 @@ namespace pod
             return solver.getVariance(type);
         }
 		
-        KalmanSolverFB& setLimits(const std::list<double>& codeLims, const std::list<double>& phaseLims);
+        KalmanSolverFB& setLimits(const std::vector<double>& codeLims, const std::vector<double>& phaseLims);
 
         KalmanSolverFB& setCyclesNumber(size_t number)
         {

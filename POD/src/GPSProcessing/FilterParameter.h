@@ -7,7 +7,7 @@
 #include<set>
 namespace pod
 {
-    typedef std::map<gnsstk::SatID::SatelliteSystem, gnsstk::SatIDSet> System2SatSetMap;
+    typedef std::map<gnsstk::SatelliteSystem, gnsstk::SatIDSet> System2SatSetMap;
 
 
     class FilterParameter

@@ -45,10 +45,11 @@
 #include"MWCSDetector.hpp"
 #include"SatArcMarker.hpp"
 
+using namespace gnsstk;
+
 namespace pod
 {
-
-      // Returns a string identifying this object.
+   // Returns a string identifying this object.
    std::string SolverPPPFB::getClassName() const
    { return "SolverPPPFB"; }
 
@@ -65,7 +66,8 @@ namespace pod
        double clkSigma,
        double weightFactor
    )
-       :SolverPPP(isUseAdvClkModel, tropoQ, posSigma, clkSigma, weightFactor), firstIteration(true)
+       : SolverPPP(isUseAdvClkModel, tropoQ, posSigma, clkSigma, weightFactor)
+       , firstIteration(true)
    {
 
        // Initialize the counter of processed measurements
@@ -108,7 +110,6 @@ namespace pod
        * @param gData     Data object holding the data.
        */
    IRinex& SolverPPPFB::Process(IRinex& gData)
-      throw(ProcessingException)
    {
 
       try
@@ -156,7 +157,6 @@ namespace pod
        * you introduce a smaller number, 'cycles' will be set to "1".
        */
    void SolverPPPFB::ReProcess(int cycles)
-      throw(ProcessingException)
    {
 
          // Check number of cycles. The minimum allowed is "1".
@@ -221,12 +221,11 @@ namespace pod
        * limitsPhaseList.
        */
    void SolverPPPFB::ReProcess( void )
-      throw(ProcessingException)
    {
 
          // Let's use a copy of the lists
-      std::list<double> codeList( limitsCodeList );
-      std::list<double> phaseList( limitsPhaseList );
+      std::list<double> codeList( limitsCodeList.begin(), limitsCodeList.end());
+      std::list<double> phaseList( limitsPhaseList.begin(), limitsPhaseList.end());
 
          // Get maximum size
       size_t maxSize( codeList.size() );
@@ -328,7 +327,6 @@ namespace pod
        * @return FALSE when all data is processed, TRUE otherwise.
        */
    bool SolverPPPFB::LastProcess(IRinex& gData)
-      throw(ProcessingException)
    {
       try
       {
@@ -421,4 +419,4 @@ namespace pod
    }  // End of method 'SolverPPPFB::checkLimits()'
 
 
-}  // End of namespace gpstk
+}  // End of namespace gnsstk

@@ -117,7 +117,6 @@ namespace gnsstk
                                     const Vector<double>& measurements,
                                     const Matrix<double>& measurementsMatrix,
                             const Matrix<double>& measurementsNoiseCovariance )
-      throw(InvalidSolver)
    {
 
       try
@@ -165,7 +164,7 @@ namespace gnsstk
        const Vector<double>& measurements,
        const Matrix<double>& measurementsMatrix,
        const Matrix<double>& measurementsNoiseCovariance)
-       throw(InvalidSolver)
+       
    {
 
        try
@@ -221,7 +220,7 @@ namespace gnsstk
                                     const double& measurement,
                                     const double& measurementsGain,
                                     const double& measurementsNoiseVariance )
-      throw(InvalidSolver)
+      
    {
 
       try
@@ -267,7 +266,7 @@ namespace gnsstk
                                     const double& measurement,
                                     const double& measurementsGain,
                                     const double& measurementsNoiseVariance )
-      throw(InvalidSolver)
+      
    {
 
       try
@@ -312,7 +311,7 @@ namespace gnsstk
                                     const double& controlGain,
                                     const double& controlInput,
                                     const double& processNoiseVariance )
-      throw(InvalidSolver)
+      
    {
 
          // Create dummy matrices and vectors and call the full
@@ -350,7 +349,7 @@ namespace gnsstk
    int SimpleKalmanFilter::Predict( const Matrix<double>& phiMatrix,
                                     const Vector<double>& previousState,
                                 const Matrix<double>& processNoiseCovariance )
-      throw(InvalidSolver)
+      
    {
 
          // Create dummy matrices and vectors and call the full
@@ -387,7 +386,7 @@ namespace gnsstk
    int SimpleKalmanFilter::Predict( const double& phiValue,
                                     const double& previousState,
                                     const double& processNoiseVariance )
-      throw(InvalidSolver)
+      
    {
 
          // Create dummy matrices and vectors and call the full
@@ -427,7 +426,7 @@ namespace gnsstk
                                     const Matrix<double>& controlMatrix,
                                     const Vector<double>& controlInput,
                                  const Matrix<double>& processNoiseCovariance )
-      throw(InvalidSolver)
+      
    {
          // Let's check sizes before start
       size_t aposterioriStateRow(xhat.size());
@@ -518,8 +517,7 @@ process noise covariance matrix do not match.");
       //
    int SimpleKalmanFilter::Correct( const Vector<double>& measurements,
                                     const Matrix<double>& measurementsMatrix,
-                           const Matrix<double>& measurementsNoiseCovariance )
-      throw(InvalidSolver)
+                           const Matrix<double>& measurementsNoiseCovariance )      
    {
          // Let's check sizes before start
       size_t measRow(measurements.size());
@@ -651,7 +649,6 @@ matrix and a priori state estimation vector do not match.");
    int SimpleKalmanFilter::Correct( const double& measurement,
                                     const double& measurementsGain,
                                     const double& measurementsNoiseVariance )
-      throw(InvalidSolver)
    {
 
          // Create dummy matrices and vectors and call the full

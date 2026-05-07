@@ -3,7 +3,7 @@
 #include"WinUtils.h"
 #include"StringUtils.h"
 #include"GnssSolution.h"
-using namespace gpstk;
+using namespace gnsstk;
 
 namespace pod
 {
@@ -118,17 +118,10 @@ namespace pod
 		return gRin;
 	}
 
-	KalmanSolverFB& KalmanSolverFB::setLimits(const std::list<double>& codeLims, const std::list<double>& phaseLims)
+    KalmanSolverFB& KalmanSolverFB::setLimits(const std::vector<double>& codeLims, const std::vector<double>& phaseLims)
     {
-        size_t i = 0;
-        tresholds.codeLimits.resize(codeLims.size());
-        for (auto val : codeLims)
-            tresholds.codeLimits[i] = val;
-
-        i = 0;
-        tresholds.phaseLimits.resize(phaseLims.size());
-        for (auto val : phaseLims)
-            tresholds.phaseLimits[i] = val;
+        tresholds.codeLimits = codeLims;
+        tresholds.phaseLimits = phaseLims;
 
         return *this;
     }

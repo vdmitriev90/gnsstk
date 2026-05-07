@@ -87,7 +87,7 @@ namespace gnsstk
 
          /// Constructor. Set EphemerisNumber to -1 to indicate that nothing has been
          /// read yet.
-      PlanetEphemeris(void) throw() : EphemerisNumber(-1) {};
+      PlanetEphemeris(void): EphemerisNumber(-1) {};
 
          /// Read the header from a JPL ASCII planetary ephemeris file. Note that this
          /// routine clears the 'store' map and defines the 'constants' hash. It also
@@ -146,7 +146,7 @@ namespace gnsstk
 
          /// clear the store map containing all the data read by
          /// readASCIIdata() or readBinaryData(true).
-      void clearStorage(void) throw() { store.clear(); }
+      void clearStorage(void){ store.clear(); }
 
          /// Read header and data from a binary file, storing ALL the data in store.
          /// For use with copying, merging or editing data files. Closes the stream before
@@ -207,18 +207,16 @@ namespace gnsstk
          /// been read, return -1.0.
          /// @return the value of 1 AU in km;
          ///                return -1 if ephemeris has not been initialized.
-      double AU(void) throw()
-      { if(EphemerisNumber == -1) return -1.0; return constants["AU"]; }
+      double AU(void){ if(EphemerisNumber == -1) return -1.0; return constants["AU"]; }
 
          /// Return the ephemeris number.
          /// @return JPL ephemeris number, e.g. 403,
          ///                                -1 if ephemeris has not been initialized.
-      int JPLNumber(void) const throw()
-      { return EphemerisNumber; }
+      int JPLNumber(void) const{ return EphemerisNumber; }
 
          /// @return the value of the contant with the given name. If the header
          /// has not been read, return -1. Return zero if the constant is not found.
-      double getConstant(std::string name) throw() {
+      double getConstant(std::string name){
          if(EphemerisNumber == -1) return -1.0;
          if(constants.find(name) != constants.end()) return constants[name];
          return 0.0;

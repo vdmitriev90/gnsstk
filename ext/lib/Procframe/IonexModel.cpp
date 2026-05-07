@@ -363,7 +363,6 @@ namespace gnsstk
    double IonexModel::getDCBCorrections( const CommonTime& time,
                                          const IonexStore& Maps,
                                          SatID sat )
-      throw()
    {
 
       try

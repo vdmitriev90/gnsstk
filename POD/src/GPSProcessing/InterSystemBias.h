@@ -23,8 +23,8 @@ namespace pod
         public  EquationBase
     {
     private:
-        static std::map< gnsstk::SatID::SatelliteSystem, FilterParameter> ss2isb;
-        static std::map<FilterParameter, gnsstk::SatID::SatelliteSystem> isb2ss;
+        static std::map< gnsstk::SatelliteSystem, FilterParameter> ss2isb;
+        static std::map<FilterParameter, gnsstk::SatelliteSystem> isb2ss;
 
         static const  gnsstk::TypeIDSet l1Types;
 
@@ -50,7 +50,7 @@ namespace pod
 
         virtual int getNumUnknowns() const override;
 
-        virtual InterSystemBias& setStochasicModel(const gnsstk::SatID::SatelliteSystem& system, gnsstk::StochasticModel_uptr newModel);
+        virtual InterSystemBias& setStochasicModel(const gnsstk::SatelliteSystem& system, gnsstk::StochasticModel_uptr newModel);
 
 
     private:

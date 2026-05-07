@@ -135,7 +135,7 @@ namespace gnsstk
           * @param mwSize        Maximum  size of filter window, in samples.
           */
       CodeSmoother( const TypeID& codeT,
-                    const int& mwSize = 100 );
+                    const int mwSize = 100 );
 
 
          /** Returns a satTypeValueMap object, adding the new data generated

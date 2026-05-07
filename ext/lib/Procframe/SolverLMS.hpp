@@ -217,7 +217,7 @@ namespace gnsstk
 
    protected:
 
-       void SolverLMS::updateCurPar(IRinex& gRin);
+       void updateCurPar(IRinex& gRin);
 
          /** Default equation definition to be used when fed with
           *  GNSS data structures.

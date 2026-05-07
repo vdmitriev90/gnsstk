@@ -226,7 +226,7 @@ namespace gnsstk
           * @param gData    Data object holding the data.
           */
       //virtual gnssSatTypeValue& Process(gnssSatTypeValue& gData)
-      //   throw(ProcessingException);
+      //;
 
 
          /** Returns a gnnsRinex object, adding the new data generated when
@@ -243,7 +243,7 @@ namespace gnsstk
           * @param gData    Data object holding the data.
           */
       //virtual gnssDataMap& Process(gnssDataMap& gData)
-      //   throw(ProcessingException);
+      //;
 
 
          /// Returns a string identifying this object.

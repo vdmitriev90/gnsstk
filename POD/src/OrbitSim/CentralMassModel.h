@@ -3,7 +3,7 @@
 
 #include "GravityModel.h"
 
-using namespace gpstk;
+
 
 namespace pod
 {
@@ -12,7 +12,7 @@ namespace pod
     public:
         CentralMassModel(const GravityModelData &gMData);
 
-        void doCompute(Epoch time, Spacecraft& sc);
+        void doCompute(gnsstk::Epoch time, gnsstk::Spacecraft& sc);
 
         virtual void test() {};
 

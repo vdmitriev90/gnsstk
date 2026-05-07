@@ -48,7 +48,7 @@
 
 #include<memory>
 
-using namespace gpstk;
+using namespace gnsstk;
 
 namespace pod
 {
@@ -79,25 +79,24 @@ namespace pod
 
         Triple pos;
         int i = 0;
-        for (auto& it : confReader().getListValueAsDouble("nominalPosition", opts().SiteBase))
+        for (auto& it : confReader().getValueListAsDouble("nominalPosition", opts().SiteBase))
             pos[i++] = it;
         Position refPos(pos);
 
         // basic model object for ref. station
-        BasicModel modelRef;
-        modelRef.setDefaultEphemeris(data->SP3EphList);
+        BasicModel modelRef(data->navLibrary_);
         modelRef.setDefaultObservable(codeL1);
         modelRef.setMinElev(opts().maskEl);
         // basic model object for rover has the same settings as BasicModel for ref. station
         BasicModel modelRover(modelRef);
-        modelRef.rxPos = refPos;
+        modelRef.setRxPosition(refPos);
         RinexEpoch gRin, gRef;
         SyncObs sync(data->getObsFiles(opts().SiteBase), gRin);
 
         //Object to decimate data
         Decimate decimateData(confReader().getValueAsDouble("decimationInterval"),
             confReader().getValueAsDouble("decimationTolerance"),
-            data->SP3EphList.getInitialTime());
+            data->navLibrary_.getInitialTime());
 
 #pragma region troposhere modeling objects
 
@@ -154,22 +153,22 @@ namespace pod
 
 #pragma region correct observable
 
-        CorrectObservables corrBase(data->SP3EphList);
+        CorrectObservables corrBase(data->navLibrary_);
         corrBase.setNominalPosition(refPos);
 
-        CorrectObservables corrRover(data->SP3EphList);
+        CorrectObservables corrRover(data->navLibrary_);
 
         // Vector from monument to antenna ARP [UEN], in meters
         //for base
         Triple offsetARP;
         i = 0;
-        for (auto &it : confReader().getListValueAsDouble("offsetARP", opts().SiteBase))
+        for (auto &it : confReader().getValueListAsDouble("offsetARP", opts().SiteBase))
             offsetARP[i++] = it;
         corrBase.setMonument(offsetARP);
 
         //for rover
         i = 0;
-        for (auto &it : confReader().getListValueAsDouble("offsetARP", opts().SiteRover))
+        for (auto &it : confReader().getValueListAsDouble("offsetARP", opts().SiteRover))
             offsetARP[i++] = it;
         corrRover.setMonument(offsetARP);
 
@@ -192,13 +191,13 @@ namespace pod
         OceanLoading ocean;
         ocean.setFilename(opts().genericFilesDirectory + confReader().getValue("oceanLoadingFile"));
 
-        ComputeWindUp windupBase(data->SP3EphList, refPos, opts().genericFilesDirectory + confReader().getValue("satDataFile"));
-        ComputeWindUp windupRover(data->SP3EphList, refPos, opts().genericFilesDirectory + confReader().getValue("satDataFile"));
+        ComputeWindUp windupBase(data->navLibrary_, refPos, opts().genericFilesDirectory + confReader().getValue("satDataFile"));
+        ComputeWindUp windupRover(data->navLibrary_, refPos, opts().genericFilesDirectory + confReader().getValue("satDataFile"));
 
         ComputeSatPCenter svPcenterBase(refPos);
         svPcenterBase.setAntexReader(antexReader);
 
-        ComputeSatPCenter svPcenterRover;
+        ComputeSatPCenter svPcenterRover(refPos);
         svPcenterRover.setAntexReader(antexReader);
 
         ProcessLinear linearIonoFree;
@@ -222,7 +221,7 @@ namespace pod
         if (forwardBackwardCycles > 0)
         {
             solverFb.setCyclesNumber(forwardBackwardCycles);
-            solverFb.setLimits(confReader().getListValueAsDouble("codeLimList"), confReader().getListValueAsDouble("phaseLimList"));
+            solverFb.setLimits(confReader().getValueListAsDouble("codeLimList"), confReader().getValueListAsDouble("phaseLimList"));
         }
  
         bool firstTime = true;
@@ -275,7 +274,7 @@ namespace pod
                    /* if (computeApprPos(gRin, data->SP3EphList, nominalPos))
                         continue;*/
                     i = 0;
-                    for (auto& it : confReader().getListValueAsDouble("nominalPosition", opts().SiteRover))
+                    for (auto& it : confReader().getValueListAsDouble("nominalPosition", opts().SiteRover))
                         pos[i++] = it;
                     nominalPos = Position(pos);
 
@@ -289,7 +288,7 @@ namespace pod
                 tropoBasePtr.setAllParameters(t, refPos);
                 ionoModel.setInitialRxPosition(nominalPos);
 
-                modelRover.rxPos = nominalPos;
+                modelRover.setRxPosition(nominalPos);
                 corrRover.setNominalPosition(nominalPos);
                 windupRover.setNominalPosition(nominalPos);
                 svPcenterRover.setNominalPosition(nominalPos);

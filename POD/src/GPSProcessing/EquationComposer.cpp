@@ -1,6 +1,6 @@
 #include "EquationComposer.h"
 
-using namespace gpstk;
+using namespace gnsstk;
 
 namespace pod
 {
@@ -222,7 +222,7 @@ namespace pod
 		int satNum = gData.getBody().size();
 		int numResTypes = residTypes().size();
 
-		assert(satNum * numResTypes == resNum);
+		GNSSTK_ASSERT(satNum * numResTypes == resNum);
 
 		int i_res = 0;
 		for (auto&& resType : residTypes())

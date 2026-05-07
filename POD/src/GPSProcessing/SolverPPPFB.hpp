@@ -317,8 +317,7 @@ namespace pod
           *
           * @param gData    Data object holding the data.
           */
-      virtual IRinex& Process(IRinex& gData)
-         throw(ProcessingException);
+      virtual gnsstk::IRinex& Process(gnsstk::IRinex& gData);
 
 
          /** Reprocess the data stored during a previous 'Process()' call.
@@ -328,8 +327,7 @@ namespace pod
           * \warning The minimum number of cycles allowed is "1". In fact, if
           * you introduce a smaller number, 'cycles' will be set to "1".
           */
-      virtual void ReProcess( int cycles )
-         throw(ProcessingException);
+      virtual void ReProcess( int cycles );
 
 
          /** Reprocess the data stored during a previous 'Process()' call.
@@ -338,8 +336,7 @@ namespace pod
           * residual is bigger than the limits indicated by limitsCodeList and
           * limitsPhaseList.
           */
-      virtual void ReProcess( void )
-         throw(ProcessingException);
+      virtual void ReProcess( void );
 
 
 
@@ -350,12 +347,11 @@ namespace pod
           *
           * @return FALSE when all data is processed, TRUE otherwise.
           */
-      virtual bool LastProcess(IRinex& gData)
-         throw(ProcessingException);
+      virtual bool LastProcess(gnsstk::IRinex& gData);
 
 
          /// Gets the list storing the limits for postfit residuals in code.
-      virtual std::list<double> getCodeList( void ) const
+      virtual std::vector<double> getCodeList( void ) const
       { return limitsCodeList; };
 
 
@@ -365,7 +361,7 @@ namespace pod
           *
           * \warning Limits will be applied in the same order they were added.
           */
-      virtual SolverPPPFB& setCodeList( std::list<double> codeList )
+      virtual SolverPPPFB& setCodeList( std::vector<double> codeList )
       { limitsCodeList = codeList; return (*this); };
 
 
@@ -385,7 +381,7 @@ namespace pod
 
 
          /// Gets the list storing the limits for postfit residuals in phase.
-      virtual std::list<double> getPhaseList( void ) const
+      virtual std::vector<double> getPhaseList( void ) const
       { return limitsPhaseList; };
 
 
@@ -395,7 +391,7 @@ namespace pod
           *
           * \warning Limits will be applied in the same order they were added.
           */
-      virtual SolverPPPFB& setPhaseList( std::list<double> phaseList )
+      virtual SolverPPPFB& setPhaseList( std::vector<double> phaseList )
       { limitsPhaseList = phaseList; return (*this); };
 
 
@@ -439,14 +435,14 @@ namespace pod
 
 
          /// List holding the information regarding every observation.
-      std::list< gpstk::irinex_uptr> ObsData;
+      std::list< gnsstk::irinex_uptr> ObsData;
 
-      std::list< Vector<double>> sols;
-      std::list< Vector<double>> ress;
-      std::list< Matrix<double>> covs;
+      std::list< gnsstk::Vector<double>> sols;
+      std::list< gnsstk::Vector<double>> ress;
+      std::list< gnsstk::Matrix<double>> covs;
 
          /// Set storing the TypeID's that we want to keep.
-      TypeIDSet keepTypeSet;
+      gnsstk::TypeIDSet keepTypeSet;
 
 
          /// Number of processed measurements.
@@ -458,31 +454,30 @@ namespace pod
 
 
          /// List storing the limits for postfit residuals in code.
-      std::list<double> limitsCodeList;
+      std::vector<double> limitsCodeList;
 
 
          /// List storing the limits for postfit residuals in phase.
-      std::list<double> limitsPhaseList;
+      std::vector<double> limitsPhaseList;
 
 
          /// This method checks the limits and modifies 'gData' accordingly.
-      void checkLimits(IRinex& gData, double codeLimit, double phaseLimit );
+      void checkLimits(gnsstk::IRinex& gData, double codeLimit, double phaseLimit );
 
 
          // Some methods that we want to hide
-      virtual int Compute( const Vector<double>& prefitResiduals,
-                           const Matrix<double>& designMatrix )
-         throw(InvalidSolver)
+      virtual int Compute( const gnsstk::Vector<double>& prefitResiduals,
+                           const gnsstk::Matrix<double>& designMatrix )
       { return 0; };
 
 
       virtual SolverPPPFB& setDefaultEqDefinition(
-                                       const gnssEquationDefinition& eqDef )
+                                       const gnsstk::gnssEquationDefinition& eqDef )
       { return (*this); };
 
 
-      virtual SolverPPPFB& Reset( const Vector<double>& newState,
-                                  const Matrix<double>& newErrorCov )
+      virtual SolverPPPFB& Reset( const gnsstk::Vector<double>& newState,
+                                  const gnsstk::Matrix<double>& newErrorCov )
       { return (*this); };
 
 

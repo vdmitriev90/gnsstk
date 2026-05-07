@@ -1,7 +1,7 @@
 #include "PrefitResCatcher.h"
 #include"WinUtils.h"
 
-using namespace gpstk;
+using namespace gnsstk;
 namespace pod
 {
     bool getDetection(const Vector<double> sample, int excl, double maxRatio, double& ratio)

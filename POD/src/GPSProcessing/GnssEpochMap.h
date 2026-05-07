@@ -94,7 +94,7 @@ namespace pod
         gnsstk::CommonTime getInitialTime() const
         {
             if (data.size() == 0)
-                GPSTK_THROW(gnsstk::InvalidRequest("GnssEpochMap objects contais no elements"));
+                GNSSTK_THROW(gnsstk::InvalidRequest("GnssEpochMap objects contais no elements"));
 
             return begin()->first;
         }
@@ -102,7 +102,7 @@ namespace pod
         gnsstk::CommonTime getFinalTime() const
         {
             if (data.size() == 0)
-                GPSTK_THROW(gnsstk::InvalidRequest("GnssEpochMap objects contais no elements"));
+                GNSSTK_THROW(gnsstk::InvalidRequest("GnssEpochMap objects contais no elements"));
 
             return rbegin()->first;
         }

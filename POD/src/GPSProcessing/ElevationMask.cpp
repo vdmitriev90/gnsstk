@@ -1,7 +1,7 @@
 #include"ElevationMask.hpp"
 #include"Exception.hpp"
 #include"boost/format.hpp"
-using namespace gpstk;
+using namespace gnsstk;
 
 namespace pod
 {

@@ -1,11 +1,11 @@
 #include "InterFrequencyBiases.h"
 
-using namespace gpstk;
+using namespace gnsstk;
 
 namespace pod
 {
-	std::map< SatID::SatelliteSystem, FilterParameter> InterFrequencyBiases::ss2ifb;
-	std::map< FilterParameter, SatID::SatelliteSystem> InterFrequencyBiases::ifb2ss;
+	std::map< SatelliteSystem, FilterParameter> InterFrequencyBiases::ss2ifb;
+	std::map< FilterParameter, SatelliteSystem> InterFrequencyBiases::ifb2ss;
 
 	const TypeIDSet InterFrequencyBiases::l2Types{ TypeID::prefitP2, TypeID::prefitL2 };
 
@@ -13,10 +13,10 @@ namespace pod
 
 	InterFrequencyBiases::Initilizer::Initilizer()
 	{
-		ss2ifb[SatID::SatelliteSystem::systemGPS] = FilterParameter(TypeID::recIFB_GPS_L2);
-		ss2ifb[SatID::SatelliteSystem::systemGlonass] = FilterParameter(TypeID::recIFB_GLN_L2);
-		ss2ifb[SatID::SatelliteSystem::systemGalileo] = FilterParameter(TypeID::recIFB_GAL_E5);
-		ss2ifb[SatID::SatelliteSystem::systemBeiDou] = FilterParameter(TypeID::recIFB_BDS_B2);
+		ss2ifb[SatelliteSystem::GPS] = FilterParameter(TypeID::recIFB_GPS_L2);
+		ss2ifb[SatelliteSystem::Glonass] = FilterParameter(TypeID::recIFB_GLN_L2);
+		ss2ifb[SatelliteSystem::Galileo] = FilterParameter(TypeID::recIFB_GAL_E5);
+		ss2ifb[SatelliteSystem::BeiDou] = FilterParameter(TypeID::recIFB_BDS_B2);
 
 		for (const auto& it : ss2ifb)
 			ifb2ss.insert(std::make_pair(it.second, it.first));
@@ -93,7 +93,7 @@ namespace pod
 	}
 
 	InterFrequencyBiases& InterFrequencyBiases::setStochasicModel(
-		const SatID::SatelliteSystem& system,
+		const SatelliteSystem& system,
 		StochasticModel_uptr newModel)
 	{
 		stochasticModels[ss2ifb.at(system)] = std::move(newModel);

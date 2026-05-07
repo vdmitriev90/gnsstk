@@ -6,7 +6,6 @@
 #include"SolverPPP.hpp"
 #include"CodeSolverLEO.h"
 #include"ComputeDOP.hpp"
-#include"SP3EphemerisStore.hpp"
 #include"ConfDataReader.hpp"
 #include"GnssEpochMap.h"
 #include"EOPStore.hpp"

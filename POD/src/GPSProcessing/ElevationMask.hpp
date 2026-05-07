@@ -3,7 +3,7 @@
 
 namespace pod
 {
-	class ElevationMask : public gpstk::ProcessingClass
+	class ElevationMask : public gnsstk::ProcessingClass
 	{
 
 	public:
@@ -15,7 +15,7 @@ namespace pod
 		{}
 
 		// Inherited via ProcessingClass
-		virtual gpstk::IRinex & Process(gpstk::IRinex & gData);
+		virtual gnsstk::IRinex & Process(gnsstk::IRinex & gData);
 
 
 		double getElevation() const

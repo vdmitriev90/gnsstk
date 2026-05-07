@@ -114,10 +114,7 @@ namespace gnsstk
          /// Default constructor deleted - NavLibrary reference is required
       BasicModel() = delete;
 
-
-
-
-         /** Explicit constructor, taking as input reference station
+      /** Explicit constructor, taking as input reference station
           *  coordinates, ephemeris to be used and whether TGD will
           *  be computed or not.
           *
@@ -130,6 +127,21 @@ namespace gnsstk
           */
       BasicModel( const Position& RxCoordinates,
                   NavLibrary& navLib,
+                  const TypeID& dObservable = TypeID::C1,
+                  const bool& applyTGD = false,
+                  const bool& addTGD = false );
+
+
+         /** Explicit constructor without initial receiver position.
+          *  Receiver position can be set later using setRxPosition().
+          *
+          * @param navLib        NavLibrary object to be used.
+          * @param dObservable   Observable type to be used by default.
+          * @param applyTGD      Whether or not C1 observable will be
+          *                      corrected from TGD effect.
+          * @param addTGD        Whether TGD value will be calculated and added to GDS.
+          */
+      BasicModel( NavLibrary& navLib,
                   const TypeID& dObservable = TypeID::C1,
                   const bool& applyTGD = false,
                   const bool& addTGD = false );
@@ -202,9 +214,18 @@ namespace gnsstk
       { return navLibrary; };
 
 
-         /// Either estimated or "a priori" position of receiver
-      Position rxPos;
+      /// Method to set the receiver position.
+      virtual BasicModel& setRxPosition(const Position& pos)
+      {
+          rxPos = pos;
+          return (*this);
+      };
 
+      /// Method to get the receiver position.
+      virtual Position getRxPosition() const
+      {
+          return rxPos;
+      };
 
          /// Returns a string identifying this object.
       virtual std::string getClassName(void) const;
@@ -216,6 +237,8 @@ namespace gnsstk
 
    protected:
 
+       /// Either estimated or "a priori" position of receiver
+       Position rxPos;
 
          /// The elevation cut-off angle for accepted satellites.
          /// By default it is set to 10 degrees.
@@ -247,28 +270,10 @@ namespace gnsstk
 
       double defInterval;
 
-         /** Method to set the initial (a priori) position of receiver.
-          * @return
-          *  0 if OK
-          *  -1 if problems arose
-          */
-      virtual int setInitialRxPosition( const double& aRx,
-                                        const double& bRx,
-                                        const double& cRx,
-                                        Position::CoordinateSystem s = Position::Cartesian,
-                                        EllipsoidModel *ell = NULL,
-                                        const RefFrame& frame = RefFrame());
-
-         /// Method to set the initial (a priori) position of receiver.
-      virtual int setInitialRxPosition(const Position& RxCoordinates);
-
-
-         /// Method to set the initial (a priori) position of receiver.
-      virtual int setInitialRxPosition();
-
-
          /// Method to get TGD corrections.
       virtual double getTGDCorrections(const CommonTime& Tr, const SatID& sat);
+
+
 
    }; // End of class 'BasicModel'
 

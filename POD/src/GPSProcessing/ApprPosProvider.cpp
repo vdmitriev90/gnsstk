@@ -6,7 +6,7 @@
 
 #include<filesystem>
 
-using namespace gpstk;
+using namespace gnsstk;
 namespace fs = std::experimental::filesystem;
 
 namespace pod
@@ -20,7 +20,7 @@ namespace pod
 	};
 
 	int IApprPosProvider::ComputeApprSol(const gnsstk::IRinex & gRin, 
-		const gnsstk::XvtStore<gnsstk::SatID>& eph,
+		const NavLibrary& eph,
 		gnsstk::Vector<double> & solution)
 	{
 		auto svs = gRin.getBody().getVectorOfSatID().toStdVector();
@@ -45,7 +45,7 @@ namespace pod
 		if (it == pvtStore.end())
 		{
 			Vector<double> vect;
-			int rc = IApprPosProvider::ComputeApprSol(gRin, *ephStore, vect);
+			int rc = IApprPosProvider::ComputeApprSol(gRin, ephStore, vect);
 			if (!rc)
 			{
 				pos = Position(vect[0], vect[1], vect[2]);
@@ -69,7 +69,7 @@ namespace pod
 		if (isFirstTime)
 		{
 			Vector<double> vect;
-			int rc = IApprPosProvider::ComputeApprSol(gRin, *ephStore, vect);
+			int rc = IApprPosProvider::ComputeApprSol(gRin, ephStore, vect);
 			if (!rc)
 			{
 				apprPos = Position(vect[0], vect[1], vect[2]);

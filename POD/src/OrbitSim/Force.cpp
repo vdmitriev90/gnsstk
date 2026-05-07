@@ -1,6 +1,7 @@
 
 #include "Force.h"
 
+using namespace gnsstk;
 namespace pod
 {
          /// Default constructor

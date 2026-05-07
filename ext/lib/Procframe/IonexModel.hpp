@@ -247,8 +247,7 @@ namespace gnsstk
           */
       virtual double getDCBCorrections( const CommonTime& time,
                                         const IonexStore& Maps,
-                                        SatID sat )
-         throw();
+                                        SatID sat );
 
 
          /// Returns a string identifying this object.

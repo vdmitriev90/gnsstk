@@ -43,15 +43,12 @@
 #ifndef POD_SOLVERPPP_HPP
 #define POD_SOLVERPPP_HPP
 
-#include "CodeKalmanSolver.hpp"
+#include"CodeKalmanSolver.hpp"
 #include"AdvClockModel.h"
 #include"PhaseAmbiguityModel.hpp"
 
-using namespace gpstk;
-
 namespace pod
 {
-
       /// @ingroup GPSsolutions
       //@{
 
@@ -220,7 +217,7 @@ namespace pod
        * base classes.
        *
        */
-   class SolverPPP : public CodeKalmanSolver
+   class SolverPPP : public gnsstk::CodeKalmanSolver
    {
    public:
 
@@ -251,10 +248,9 @@ namespace pod
           *  0 if OK
           *  -1 if problems arose
           */
-      virtual int Compute( const Vector<double>& prefitResiduals,
-                           const Matrix<double>& designMatrix,
-                           const Matrix<double>& weightMatrix )
-         throw(InvalidSolver);
+      virtual int Compute( const gnsstk::Vector<double>& prefitResiduals,
+                           const gnsstk::Matrix<double>& designMatrix,
+                           const gnsstk::Matrix<double>& weightMatrix );
 
 
          /** Compute the PPP Solution of the given equations set.
@@ -272,10 +268,9 @@ namespace pod
           *  0 if OK
           *  -1 if problems arose
           */
-      virtual int Compute( const Vector<double>& prefitResiduals,
-                           const Matrix<double>& designMatrix,
-                           const Vector<double>& weightVector )
-         throw(InvalidSolver);
+      virtual int Compute( const gnsstk::Vector<double>& prefitResiduals,
+                           const gnsstk::Matrix<double>& designMatrix,
+                           const gnsstk::Vector<double>& weightVector );
 
 
 
@@ -285,8 +280,7 @@ namespace pod
           *
           * @param gData    Data object holding the data.
           */
-      virtual IRinex& Process(IRinex& gData)
-         throw(ProcessingException);
+      virtual gnsstk::IRinex& Process(gnsstk::IRinex& gData);
 
 
          /** Resets the PPP internal Kalman filter.
@@ -298,8 +292,8 @@ namespace pod
           * and newErrorCov must be 6x6.
           *
           */
-      virtual SolverPPP& Reset( const Vector<double>& newState,
-                                const Matrix<double>& newErrorCov )
+      virtual SolverPPP& Reset( const gnsstk::Vector<double>& newState,
+                                const gnsstk::Matrix<double>& newErrorCov )
       { kFilter.Reset( newState, newErrorCov ); return (*this); };
 
 
@@ -323,7 +317,7 @@ namespace pod
 
 
          /// Get stochastic model pointer for dx (or dLat) coordinate
-      IStochasticModel* getXCoordinatesModel() const
+      gnsstk::IStochasticModel* getXCoordinatesModel() const
       { return pCoordXStoModel; };
 
 
@@ -332,12 +326,12 @@ namespace pod
           * @param pModel      Pointer to StochasticModel associated with
           *                    dx (or dLat) coordinate.
           */
-      SolverPPP& setXCoordinatesModel(IStochasticModel* pModel)
+      SolverPPP& setXCoordinatesModel(gnsstk::IStochasticModel* pModel)
       { pCoordXStoModel = pModel; return (*this); };
 
 
          /// Get stochastic model pointer for dy (or dLon) coordinate
-	  IStochasticModel* getYCoordinatesModel() const
+	  gnsstk::IStochasticModel* getYCoordinatesModel() const
       { return pCoordYStoModel; };
 
 
@@ -346,16 +340,16 @@ namespace pod
           * @param pModel      Pointer to StochasticModel associated with
           *                    dy (or dLon) coordinate.
           */
-      SolverPPP& setYCoordinatesModel(IStochasticModel* pModel)
+      SolverPPP& setYCoordinatesModel(gnsstk::IStochasticModel* pModel)
       { pCoordYStoModel = pModel; return (*this); };
     
-      SolverPPP& setISBModel(IStochasticModel* pModel)
+      SolverPPP& setISBModel(gnsstk::IStochasticModel* pModel)
       {
           pBiasStoModel = pModel; return  (*this);
       }
 
          /// Get stochastic model pointer for dz (or dH) coordinate
-	  IStochasticModel* getZCoordinatesModel() const
+	  gnsstk::IStochasticModel* getZCoordinatesModel() const
       { return pCoordZStoModel; };
 
 
@@ -364,7 +358,7 @@ namespace pod
           * @param pModel      Pointer to StochasticModel associated with
           *                    dz (or dH) coordinate.
           */
-      SolverPPP& setZCoordinatesModel(IStochasticModel* pModel)
+      SolverPPP& setZCoordinatesModel(gnsstk::IStochasticModel* pModel)
       { pCoordZStoModel = pModel; return (*this); };
 
       SolverPPP& setAdvClkModel(const AdvClockModel & pModel)
@@ -387,11 +381,11 @@ namespace pod
           * this method only with non-state-aware stochastic models like
           * 'StochasticModel' (constant coordinates) or 'WhiteNoiseModel'.
           */
-      virtual SolverPPP& setCoordinatesModel(IStochasticModel* pModel);
+      virtual SolverPPP& setCoordinatesModel(gnsstk::IStochasticModel* pModel);
 
 
          /// Get wet troposphere stochastic model pointer
-      virtual IStochasticModel* getTroposphereModel(void) const
+      virtual gnsstk::IStochasticModel* getTroposphereModel(void) const
       { return pTropoStoModel; };
 
 
@@ -405,12 +399,12 @@ namespace pod
           * If that is your case, you MUST NOT use the SAME model in DIFFERENT
           * solver objects.
           */
-      virtual SolverPPP& setTroposphereModel(IStochasticModel* pModel)
+      virtual SolverPPP& setTroposphereModel(gnsstk::IStochasticModel* pModel)
       { pTropoStoModel = pModel; return (*this); };
 
 
          /// Get receiver clock stochastic model pointer
-      virtual IStochasticModel* getReceiverClockModel(void) const
+      virtual gnsstk::IStochasticModel* getReceiverClockModel(void) const
       { return pClockStoModel; };
 
 
@@ -424,12 +418,12 @@ namespace pod
           * If that is your case, you MUST NOT use the SAME model in DIFFERENT
           * solver objects.
           */
-      virtual SolverPPP& setReceiverClockModel(IStochasticModel* pModel)
+      virtual SolverPPP& setReceiverClockModel(gnsstk::IStochasticModel* pModel)
       { pClockStoModel = pModel; return (*this); };
 
 
          /// Get phase biases stochastic model pointer
-      virtual IStochasticModel* getPhaseBiasesModel(void) const
+      virtual gnsstk::IStochasticModel* getPhaseBiasesModel(void) const
       { return pBiasStoModel; };
 
 
@@ -446,12 +440,12 @@ namespace pod
           * \warning This method should be used with caution, because model
           * must be of PhaseAmbiguityModel class in order to make sense.
           */
-      virtual SolverPPP& setPhaseBiasesModel(IStochasticModel* pModel)
+      virtual SolverPPP& setPhaseBiasesModel(gnsstk::IStochasticModel* pModel)
       { pBiasStoModel = pModel; return (*this); };
 
 
          /// Get the State Transition Matrix (phiMatrix)
-      virtual Matrix<double> getPhiMatrix(void) const
+      virtual gnsstk::Matrix<double> getPhiMatrix(void) const
       { return phiMatrix; };
 
 
@@ -464,12 +458,12 @@ namespace pod
           * the Compute() methods directly if you use this method.
           *
           */
-      virtual SolverPPP& setPhiMatrix(const Matrix<double> & pMatrix)
+      virtual SolverPPP& setPhiMatrix(const gnsstk::Matrix<double> & pMatrix)
       { phiMatrix = pMatrix; return (*this); };
 
 
          /// Get the Noise covariance matrix (QMatrix)
-      virtual Matrix<double> getQMatrix(void) const
+      virtual gnsstk::Matrix<double> getQMatrix(void) const
       { return qMatrix; };
 
 
@@ -482,7 +476,7 @@ namespace pod
           * the Compute() methods directly if you use this method.
           *
           */
-      virtual SolverPPP& setQMatrix(const Matrix<double> & pMatrix)
+      virtual SolverPPP& setQMatrix(const gnsstk::Matrix<double> & pMatrix)
       { qMatrix = pMatrix; return (*this); };
 
 
@@ -527,51 +521,51 @@ namespace pod
 
 
          /// Pointer to stochastic model for dx (or dLat) coordinate
-	  IStochasticModel* pCoordXStoModel;
+	  gnsstk::IStochasticModel* pCoordXStoModel;
 
 
          /// Pointer to stochastic model for dy (or dLon) coordinate
-	  IStochasticModel* pCoordYStoModel;
+	  gnsstk::IStochasticModel* pCoordYStoModel;
 
 
          /// Pointer to stochastic model for dz (or dH) coordinate
-	  IStochasticModel* pCoordZStoModel;
+	  gnsstk::IStochasticModel* pCoordZStoModel;
 
 
          /// Pointer to stochastic model for troposphere
-	  IStochasticModel* pTropoStoModel;
+	  gnsstk::IStochasticModel* pTropoStoModel;
 
 
          /// Pointer to stochastic model for receiver clock
-	  IStochasticModel* pClockStoModel;
+	  gnsstk::IStochasticModel* pClockStoModel;
 
          /// Pointer to stochastic model for intersystem bias
-	  IStochasticModel* pInterSysBiasStoModel;
+	  gnsstk::IStochasticModel* pInterSysBiasStoModel;
 
          /// Pointer to stochastic model for phase biases
-	  IStochasticModel* pBiasStoModel;
+	  gnsstk::IStochasticModel* pBiasStoModel;
 
       //
       AdvClockModel advClkStoModel;
 
          /// State Transition Matrix (PhiMatrix)
-      Matrix<double> phiMatrix;
+      gnsstk::Matrix<double> phiMatrix;
 
 
          /// Noise covariance matrix (QMatrix)
-      Matrix<double> qMatrix;
+      gnsstk::Matrix<double> qMatrix;
 
 
          /// Geometry matrix
-      Matrix<double> hMatrix;
+      gnsstk::Matrix<double> hMatrix;
 
 
          /// Weights matrix
-      Matrix<double> rMatrix;
+      gnsstk::Matrix<double> rMatrix;
 
 
          /// Measurements vector (Prefit-residuals)
-      Vector<double> measVector;
+      gnsstk::Vector<double> measVector;
 
 
          /// Boolean indicating if this filter was run at least once
@@ -579,7 +573,7 @@ namespace pod
 
 
          /// Set with all satellites being processed this epoch
-      SatIDSet satSet;
+      gnsstk::SatIDSet satSet;
 
 
          /// A structure used to store Kalman filter data.
@@ -589,17 +583,17 @@ namespace pod
          coreFilterData() : ambiguity(0.0) {};
 
          double ambiguity;                  ///< Ambiguity value.
-         std::map<TypeID, double> vCovMap;  ///< Variables covariance values.
-         std::map<SatID,  double> aCovMap;  ///< Ambiguities covariance values.
+         std::map<gnsstk::TypeID, double> vCovMap;  ///< Variables covariance values.
+         std::map<gnsstk::SatID,  double> aCovMap;  ///< Ambiguities covariance values.
       };
 
 
          /// Map holding the information regarding every satellite
-      std::map<SatID, coreFilterData> KalmanData;
+      std::map<gnsstk::SatID, coreFilterData> KalmanData;
 
 
          /// General Kalman filter object
-      SimpleKalmanFilter kFilter;
+      gnsstk::SimpleKalmanFilter kFilter;
 
 
          /// Initializing method.
@@ -612,30 +606,30 @@ namespace pod
           );
 
         /// update transition (Phi) and process noise (Q) matrices
-      void updateMatrices(Matrix<double> & phiMatrix, Matrix<double> & qMatrix, IRinex& gData);
+      void updateMatrices(gnsstk::Matrix<double> & phiMatrix, gnsstk::Matrix<double> & qMatrix, gnsstk::IRinex& gData);
        
       ///update weight Matrix
-      void updateWeightMatrix(Matrix<double> & rMatrix, IRinex& gData, int numCurrentSV);
+      void updateWeightMatrix(gnsstk::Matrix<double> & rMatrix, gnsstk::IRinex& gData, int numCurrentSV);
 
          /// Constant stochastic model
-      ConstantModel constantModel;
+      gnsstk::ConstantModel constantModel;
 
          /// White noise stochastic model for position
-      WhiteNoiseModel whitenoiseModelX;
-      WhiteNoiseModel whitenoiseModelY;
-      WhiteNoiseModel whitenoiseModelZ;
+      gnsstk::WhiteNoiseModel whitenoiseModelX;
+      gnsstk::WhiteNoiseModel whitenoiseModelY;
+      gnsstk::WhiteNoiseModel whitenoiseModelZ;
 
 
          /// Random Walk stochastic model
-      RandomWalkModel rwalkModel;
+      gnsstk::RandomWalkModel rwalkModel;
 
 
          /// White noise stochastic model
-      WhiteNoiseModel whitenoiseModel;
+      gnsstk::WhiteNoiseModel whitenoiseModel;
 
 
          /// Phase biases stochastic model (constant + white noise)
-      PhaseAmbiguityModel biasModel;
+      gnsstk::PhaseAmbiguityModel biasModel;
 
 
          // Some methods that we want to hide
@@ -650,14 +644,13 @@ namespace pod
       { index = classIndex++; };
 
 
-      virtual int Compute( const Vector<double>& prefitResiduals,
-                           const Matrix<double>& designMatrix )
-         throw(InvalidSolver)
+      virtual int Compute( const gnsstk::Vector<double>& prefitResiduals,
+                           const gnsstk::Matrix<double>& designMatrix )
       { return 0; };
 
 
       virtual SolverPPP& setDefaultEqDefinition(
-         const gnssEquationDefinition& eqDef )
+         const gnsstk::gnssEquationDefinition& eqDef )
       { return (*this); };
 
 

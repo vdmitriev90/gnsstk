@@ -1,6 +1,6 @@
 #include "PositionEquations.h"
 
-using namespace gpstk;
+using namespace gnsstk;
 
 namespace pod
 {

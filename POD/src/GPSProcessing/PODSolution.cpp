@@ -65,7 +65,7 @@
 #include "ConfDataReader.hpp"
 #include"BasicModel.hpp"
 
-using namespace gpstk;
+using namespace gnsstk;
 namespace pod
 {
     PODSolution::PODSolution(GnssDataStore_sptr confData):
@@ -117,11 +117,11 @@ namespace pod
         Decimate decimateData(
             newSampling,
             confReader().getValueAsDouble("decimationTolerance"),
-            data->SP3EphList.getInitialTime());
+            data->navLibrary_.getInitialTime());
 
         // Declare a basic modeler
         //BasicModel basic(Position(0.0, 0.0, 0.0), SP3EphList);
-        BasicModel basic(nominalPos, data->SP3EphList);
+        BasicModel basic(nominalPos, data->navLibrary_);
         // Set the minimum elevation
         basic.setMinElev(opts().maskEl);
 
@@ -136,11 +136,11 @@ namespace pod
         // Vector from monument to antenna ARP [UEN], in meters
         Triple offsetARP;
         int i = 0;
-        for (auto &it : confReader().getListValueAsDouble("offsetARP"))
+        for (auto &it : confReader().getValueListAsDouble("offsetARP"))
             offsetARP[i++] = it;
 
         // Declare an object to correct observables to monument
-        CorrectObservables corr(data->SP3EphList);
+        CorrectObservables corr(data->navLibrary_);
         corr.setMonument(offsetARP);
 
         // Feed Antex reader object with Antex file
@@ -177,10 +177,10 @@ namespace pod
         {
             Triple ofstL1(0.0, 0.0, 0.0), ofstL2(0.0, 0.0, 0.0); 
             int i = 0;
-            for (auto& it: confReader().getListValueAsDouble("offsetL1"))
+            for (auto& it: confReader().getValueListAsDouble("offsetL1"))
                 ofstL1[i++] = it;
             i = 0;
-            for (auto& it : confReader().getListValueAsDouble("offsetL2"))
+            for (auto& it : confReader().getValueListAsDouble("offsetL2"))
                 ofstL2[i++] = it;
 
             corr.setL1pc(ofstL1);
@@ -190,7 +190,7 @@ namespace pod
 #pragma endregion
 
         // Object to compute wind-up effect
-        ComputeWindUp windup(data->SP3EphList, nominalPos, opts().genericFilesDirectory + confReader().getValue("satDataFile"));
+        ComputeWindUp windup(data->navLibrary_, nominalPos, opts().genericFilesDirectory + confReader().getValue("satDataFile"));
 
         // Object to compute ionosphere-free combinations to be used
         // as observables in the PPP processing
@@ -230,10 +230,10 @@ namespace pod
         int cycles(confReader().getValueAsInt("forwardBackwardCycles"));
 
         std::list<double> phaseLimits, codeLimits;
-        for (double val: confReader().getListValueAsDouble("codeLimits"))
+        for (double val: confReader().getValueListAsDouble("codeLimits"))
         if(val != 0.0) codeLimits.push_back(val);
 
-        for (double val : confReader().getListValueAsDouble("phaseLimits"))
+        for (double val : confReader().getValueListAsDouble("phaseLimits"))
         if (val != 0.0) phaseLimits.push_back(val);
 
         fbpppSolver.setPhaseList(phaseLimits);
@@ -292,7 +292,7 @@ namespace pod
 
                 ///update the nominal position in processing objects
                 XYZ2NEU baseChange(nominalPos);
-                basic.rxPos = nominalPos;
+                basic.setRxPosition(nominalPos);
                 grDelay.setNominalPosition(nominalPos);
                 svPcenter.setNominalPosition(nominalPos);
                 windup.setNominalPosition(nominalPos);
@@ -533,7 +533,7 @@ namespace pod
         }
         catch (Exception &gpstk_e)
         {
-            GPSTK_RETHROW(gpstk_e);
+            GNSSTK_RETHROW(gpstk_e);
         }
         catch (std::exception &std_e)
         {

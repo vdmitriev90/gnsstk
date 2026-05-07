@@ -1,7 +1,7 @@
 #include"StringUtils.h"
 #include<regex>
 
-using namespace gpstk;
+using namespace gnsstk;
 
 namespace pod
 {

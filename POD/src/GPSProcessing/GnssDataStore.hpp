@@ -2,15 +2,14 @@
 #define POD_GNSSDATA_STORE_H
 
 #include"CommonTime.hpp"
-#include"SP3EphemerisStore.hpp"
 #include"IonoModelStore.hpp"
 #include"CorrectCodeBiases.hpp"
 #include"EOPStore.hpp"
 #include"ConfDataReader.hpp"
 #include"ComputeIonoModel.hpp"
-#include"IonoModelStore.hpp"
 #include"IonexStore.hpp"
 #include"ApprPosProvider.hpp"
+#include"NavLibrary.hpp"
 
 #include<memory>
 #include<string>
@@ -18,7 +17,7 @@
 
 namespace pod
 { 
-    typedef gpstk::ComputeIonoModel::IonoModelType IonoModelType;
+    typedef gnsstk::ComputeIonoModel::IonoModelType IonoModelType;
     
     //
     enum CarrierBand
@@ -63,9 +62,9 @@ namespace pod
         static Initializer GnssDataInitializer;
 
 #pragma region Constructors
-    public: GnssDataStore(gpstk::ConfDataReader& confReader) :confReader(&confReader)
-    {
-    }
+    public: GnssDataStore() = delete;
+
+    public: GnssDataStore(gnsstk::ConfDataReader& confReader);
 
     public:  ~GnssDataStore()
     {
@@ -90,7 +89,7 @@ namespace pod
     private: bool loadEOPData();
     private: bool loadCodeBiades();
 	private: bool createPosProvider();
-	private: gpstk::Position getPosition(std::string siteId);
+	private: gnsstk::Position getPosition(std::string siteId);
     public: std::list<std::string> getObsFiles(const std::string & siteID) const;
 
 #pragma endregion
@@ -98,33 +97,35 @@ namespace pod
 #pragma region Fields
 
              // pointer to  configuration file reader
-    public: gpstk::ConfDataReader* confReader;
+    public: gnsstk::ConfDataReader* confReader;
+
+    public: gnsstk::NavDataFactoryPtr sp3NavFactory_;
 
             //object to handle precise ephemeris and clocks
-    public: gpstk::SP3EphemerisStore SP3EphList;
+    public: gnsstk::NavLibrary navLibrary_;
 
             //Earth orintation parameters store
-    public: gpstk::EOPStore eopStore;
+    public: gnsstk::EOPStore eopStore;
 
             //GPS Navigation Message based ionospheric models store
-    public: gpstk::IonoModelStore bceIonoStore;
+    public: gnsstk::IonoModelStore bceIonoStore;
 
             //ionosphere map store
-    public: gpstk::IonexStore ionexStore;
+    public: gnsstk::IonexStore ionexStore;
 
             // compute the  values related to a given GNSS ionospheric model.
-    public: gpstk::ComputeIonoModel ionoCorrector;
+    public: gnsstk::ComputeIonoModel ionoCorrector;
 
 
             //path to approximate position and code clock bias file
     public: std::string apprPosFile;
 
             //store of  approximate position and code clock bias 
-    //public: std::map<gpstk::CommonTime, gpstk::Xvt, std::less<gpstk::CommonTime>> apprPos;
+    //public: std::map<gnsstk::CommonTime, gnsstk::Xvt, std::less<gnsstk::CommonTime>> apprPos;
 	public: posProvider_uptr apprPos;
 
             //class to corrects observables from differential code biases
-    public: gpstk::CorrectCodeBiases DCBData;
+    public: gnsstk::CorrectCodeBiases DCBData;
 
             // receiver dynamic mode
     public: enum Dynamics
@@ -170,7 +171,7 @@ namespace pod
         int DoY = 0;
 
         // Satellite systems used for position computation 
-        gpstk::SatSystSet systems;
+        gnsstk::SatSystSet systems;
 
         // Satellite systems used for position computation 
         std::set<CarrierBand> carrierBands;

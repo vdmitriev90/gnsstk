@@ -209,8 +209,7 @@ namespace gnsstk
                            const Matrix<double>& processNoiseCovariance,
                            const Vector<double>& measurements,
                            const Matrix<double>& measurementsMatrix,
-                           const Matrix<double>& measurementsNoiseCovariance )
-         throw(InvalidSolver);
+                           const Matrix<double>& measurementsNoiseCovariance );
 
 
          /** Compute the a posteriori estimate of the system state, as well
@@ -233,8 +232,7 @@ namespace gnsstk
                            const Matrix<double>& processNoiseCovariance,
                            const Vector<double>& measurements,
                            const Matrix<double>& measurementsMatrix,
-                           const Matrix<double>& measurementsNoiseCovariance )
-         throw(InvalidSolver);
+                           const Matrix<double>& measurementsNoiseCovariance );
 
 
          /** Compute the a posteriori estimate of the system state, as well
@@ -259,8 +257,7 @@ namespace gnsstk
                            const double& processNoiseVariance,
                            const double& measurement,
                            const double& measurementsGain,
-                           const double& measurementsNoiseVariance )
-         throw(InvalidSolver);
+                           const double& measurementsNoiseVariance );
 
 
          /** Compute the a posteriori estimate of the system state, as well
@@ -281,8 +278,7 @@ namespace gnsstk
                            const double& processNoiseVariance,
                            const double& measurement,
                            const double& measurementsGain,
-                           const double& measurementsNoiseVariance )
-         throw(InvalidSolver);
+                           const double& measurementsNoiseVariance );
 
 
          /** Predicts (or "time updates") the a priori estimate of the
@@ -313,9 +309,7 @@ namespace gnsstk
           *  -1 if problems arose
           */
       virtual int TimeUpdate( const Matrix<double>& phiMatrix,
-                              const Matrix<double>& processNoiseCovariance )
-         throw(InvalidSolver)
-      { return Predict(phiMatrix,xhat,processNoiseCovariance); }
+                              const Matrix<double>& processNoiseCovariance ){ return Predict(phiMatrix,xhat,processNoiseCovariance); }
 
 
          /** Predicts (or "time updates") the a priori estimate of the
@@ -334,9 +328,7 @@ namespace gnsstk
           */
       virtual int TimeUpdate( const Matrix<double>& phiMatrix,
                               const Vector<double>& previousState,
-                              const Matrix<double>& processNoiseCovariance )
-         throw(InvalidSolver)
-      { return Predict(phiMatrix,previousState,processNoiseCovariance); }
+                              const Matrix<double>& processNoiseCovariance ){ return Predict(phiMatrix,previousState,processNoiseCovariance); }
 
 
 
@@ -358,9 +350,7 @@ namespace gnsstk
           */
       virtual int MeasUpdate( const Vector<double>& measurements,
                               const Matrix<double>& measurementsMatrix,
-                              const Matrix<double>& measurementsNoiseCovariance)
-         throw(InvalidSolver)
-      { 
+                              const Matrix<double>& measurementsNoiseCovariance){ 
          return Correct(measurements,
                         measurementsMatrix,
                         measurementsNoiseCovariance); 
@@ -409,8 +399,7 @@ namespace gnsstk
                            const Vector<double>& previousState,
                            const Matrix<double>& controlMatrix,
                            const Vector<double>& controlInput,
-                           const Matrix<double>& processNoiseCovariance )
-         throw(InvalidSolver);
+                           const Matrix<double>& processNoiseCovariance );
 
 
          /** Predicts (or "time updates") the a priori estimate of the
@@ -432,8 +421,7 @@ namespace gnsstk
                            const double& previousState,
                            const double& controlGain,
                            const double& controlInput,
-                           const double& processNoiseVariance )
-         throw(InvalidSolver);
+                           const double& processNoiseVariance );
 
 
          /** Predicts (or "time updates") the a priori estimate of the
@@ -452,8 +440,7 @@ namespace gnsstk
           */
       virtual int Predict( const Matrix<double>& phiMatrix,
                            const Vector<double>& previousState,
-                           const Matrix<double>& processNoiseCovariance )
-         throw(InvalidSolver);
+                           const Matrix<double>& processNoiseCovariance );
 
 
          /** Predicts (or "time updates") the a priori estimate of the
@@ -472,8 +459,7 @@ namespace gnsstk
           */
       virtual int Predict( const double& phiValue,
                            const double& previousState,
-                           const double& processNoiseVariance )
-         throw(InvalidSolver);
+                           const double& processNoiseVariance );
 
 
          /** Corrects (or "measurement updates") the a posteriori estimate
@@ -494,8 +480,7 @@ namespace gnsstk
           */
       virtual int Correct( const Vector<double>& measurements,
                            const Matrix<double>& measurementsMatrix,
-                           const Matrix<double>& measurementsNoiseCovariance )
-         throw(InvalidSolver);
+                           const Matrix<double>& measurementsNoiseCovariance );
 
 
          /** Corrects (or "measurement updates") the a posteriori estimate
@@ -514,8 +499,7 @@ namespace gnsstk
           */
       virtual int Correct( const double& measurement,
                            const double& measurementsGain,
-                           const double& measurementsNoiseVariance )
-         throw(InvalidSolver);
+                           const double& measurementsNoiseVariance );
 
 
    }; // End of class 'SimpleKalmanFilter'

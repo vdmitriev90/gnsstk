@@ -5,7 +5,7 @@
 
 #include"FsUtils.h"
 #include"ComputeStatistic.h"
-using namespace gpstk;
+using namespace gnsstk;
 namespace pod
 {
 	namespace fs = std::filesystem;
@@ -38,7 +38,7 @@ namespace pod
 			std::cerr << e.getLocation() << std::endl;
 			std::cerr << e.getText() << std::endl;
 
-            GPSTK_RETHROW(e);
+            GNSSTK_RETHROW(e);
         }
     }
     void Solution::saveStatistic()

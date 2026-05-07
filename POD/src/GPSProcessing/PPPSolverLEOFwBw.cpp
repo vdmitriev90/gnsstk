@@ -1,4 +1,7 @@
 #include "PPPSolverLEOFwBw.h"
+
+using namespace gnsstk;
+
 namespace pod
 {
     // Returns a string identifying this object.
@@ -60,7 +63,6 @@ namespace pod
        * @param gData     Data object holding the data.
        */
 	IRinex& PPPSolverLEOFwBw::Process(IRinex& gData)
-        throw(ProcessingException)
     {
 
         try
@@ -109,7 +111,6 @@ namespace pod
        * you introduce a smaller number, 'cycles' will be set to "1".
        */
     void PPPSolverLEOFwBw::ReProcess(int cycles)
-        throw(ProcessingException)
     {
 
         // Check number of cycles. The minimum allowed is "1".
@@ -174,7 +175,6 @@ namespace pod
        * limitsPhaseList.
        */
     void PPPSolverLEOFwBw::ReProcess(void)
-        throw(ProcessingException)
     {
 
         // Let's use a copy of the lists
@@ -282,7 +282,6 @@ namespace pod
        * @return FALSE when all data is processed, TRUE otherwise.
        */
     bool PPPSolverLEOFwBw::LastProcess(IRinex& gData)
-        throw(ProcessingException)
     {
 
         try

@@ -15,7 +15,7 @@
 namespace pod
 {
     typedef std::map<gnsstk::TypeID, gnsstk::RinexObsID> type2ID;
-    typedef std::map<gnsstk::SatID::SatelliteSystem, type2ID> ObsTypes;
+    typedef std::map<gnsstk::SatelliteSystem, type2ID> ObsTypes;
     struct CodeProcSvData
     {
         struct SvDataItem
@@ -56,7 +56,7 @@ namespace pod
         
         ///
         ///get number of satellies with 'use==true' for given satellie system
-        size_t CodeProcSvData::getNumUsedSv(gnsstk::SatID::SatelliteSystem sys) const;
+        size_t getNumUsedSv(gnsstk::SatelliteSystem sys) const;
         
         ///
         ///get number of parameters for autonomous code position computation 
@@ -69,7 +69,7 @@ namespace pod
         
         ///
         ///add system clock corrections to PR residuals vector
-        double appendResid(gnsstk::Vector<double> & sol, gnsstk::SatID::SatelliteSystem sys) const;
+        double appendResid(gnsstk::Vector<double> & sol, gnsstk::SatelliteSystem sys) const;
         
         ///
         ///forming  a system of equations for autonomous code position computation 
@@ -86,7 +86,7 @@ namespace pod
         ///
         void clear();
 
-		std::set<gnsstk::SatID::SatelliteSystem> satSyst;
+		std::set<gnsstk::SatelliteSystem> satSyst;
 
 		std::map<gnsstk::SatID, SvDataItem> data;
 

@@ -69,14 +69,34 @@ namespace gnsstk
                            const TypeID& dObservable,
                            const bool& applyTGD,
                            const bool& isaddTGD)
+       : minElev(10.0), navLibrary(navLib), rxPos(RxCoordinates),
+         defaultObservable(dObservable), useTGD(applyTGD), addTGD(isaddTGD),
+         useCdtDot(false), isFirstTime(false), currTime(CommonTime::END_OF_TIME),
+         prevTime(CommonTime::BEGINNING_OF_TIME), defInterval(30)
+   {
+    
+   }  // End of 'BasicModel::BasicModel()'
+
+
+      /* Explicit constructor without initial receiver position.
+       * Receiver position can be set later using setRxPosition().
+       *
+       * @param navLib        NavLibrary object to be used.
+       * @param dObservable   Observable type to be used by default.
+       * @param applyTGD      Whether or not C1 observable will be
+       *                      corrected from TGD effect or not.
+       * @param isaddTGD      Whether TGD value will be calculated and added to GDS.
+       */
+   BasicModel::BasicModel( NavLibrary& navLib,
+                           const TypeID& dObservable,
+                           const bool& applyTGD,
+                           const bool& isaddTGD)
        : minElev(10.0), navLibrary(navLib), defaultObservable(dObservable), 
          useTGD(applyTGD), addTGD(isaddTGD),
          useCdtDot(false), isFirstTime(false), currTime(CommonTime::END_OF_TIME),
          prevTime(CommonTime::BEGINNING_OF_TIME), defInterval(30)
    {
-
-      setInitialRxPosition(RxCoordinates);
-    
+      // Receiver position is not initialized - must be set later using setRxPosition()
    }  // End of 'BasicModel::BasicModel()'
 
 
@@ -245,72 +265,7 @@ namespace gnsstk
    }  // End of method 'BasicModel::Process()'
 
 
-
-      /* Method to set the initial (a priori) position of receiver.
-       * @return
-       *  0 if OK
-       *  -1 if problems arose
-       */
-   int BasicModel::setInitialRxPosition( const double& aRx,
-                                         const double& bRx,
-                                         const double& cRx,
-                                         Position::CoordinateSystem s,
-                                         EllipsoidModel *ell,
-                                         const RefFrame& frame )
-   {
-
-      try
-      {
-         Position rxpos( aRx, bRx, cRx, s, ell, frame );
-         setInitialRxPosition(rxpos);
-         return 0;
-      }
-      catch(GeometryException& e)
-      {
-         return -1;
-      }
-
-   }  // End of method 'BasicModel::setInitialRxPosition()'
-
-
-
-      // Method to set the initial (a priori) position of receiver.
-   int BasicModel::setInitialRxPosition(const Position& RxCoordinates)
-   {
-
-      try
-      {
-         rxPos = RxCoordinates;
-         return 0;
-      }
-      catch(GeometryException& e)
-      {
-         return -1;
-      }
-
-   }  // End of method 'BasicModel::setInitialRxPosition()'
-
-
-
-      // Method to set the initial (a priori) position of receiver.
-   int BasicModel::setInitialRxPosition()
-   {
-      try
-      {
-         Position rxpos(0.0, 0.0, 0.0, Position::Cartesian, NULL);
-         setInitialRxPosition(rxpos);
-         return 0;
-      }
-      catch(GeometryException& e)
-      {
-         return -1;
-      }
-
-   }  // End of method 'BasicModel::setInitialRxPosition()'
-
-
-
-      // Method to get TGD corrections.
+   // Method to get TGD corrections.
    double BasicModel::getTGDCorrections(const CommonTime& Tr, const SatID& sat)
    {
        // TODO: Implement TGD correction retrieval from NavLibrary

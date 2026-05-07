@@ -1,6 +1,6 @@
 
 #pragma region gpstk includes
-#include"SP3EphemerisStore.hpp"
+#include"NavLibrary.hpp"
 #include"XYZ2NEU.hpp"
 #include"RequireObservables.hpp"
 #include"SimpleFilter.hpp"
@@ -57,7 +57,7 @@ namespace pod
     {
         Triple pos;
         int i = 0;
-        for (auto& it : confReader().getListValueAsDouble("nominalPosition", opts().SiteRover))
+        for (auto& it : confReader().getValueListAsDouble("nominalPosition", opts().SiteRover))
             pos[i++] = it;
         nominalPos = Position(pos);
 
@@ -90,11 +90,11 @@ namespace pod
         Decimate decimateData(
             confReader().getValueAsDouble("decimationInterval"),
             confReader().getValueAsDouble("decimationTolerance"),
-            data->SP3EphList.getInitialTime());
+            data->navLibrary_.getInitialTime());
      
         // Declare a basic modeler
         //BasicModel basic(Position(0.0, 0.0, 0.0), SP3EphList);
-        BasicModel basic(nominalPos, data->SP3EphList);
+        BasicModel basic(nominalPos, data->navLibrary_);
         // Set the minimum elevation
         basic.setMinElev(opts().maskEl);
 
@@ -109,7 +109,7 @@ namespace pod
         // Vector from monument to antenna ARP [UEN], in meters
         Triple offsetARP;
         i = 0;
-        for(auto &it:confReader().getListValueAsDouble("offsetARP", opts().SiteRover))
+        for(auto &it:confReader().getValueListAsDouble("offsetARP", opts().SiteRover))
             offsetARP[i++] = it;
 
         AntexReader antexReader;
@@ -131,7 +131,7 @@ namespace pod
         svPcenter.setAntexReader(antexReader);
 
         // Declare an object to correct observables to monument
-        CorrectObservables corr(data->SP3EphList);
+        CorrectObservables corr(data->navLibrary_);
 
         corr.setMonument(offsetARP);
 
@@ -145,7 +145,7 @@ namespace pod
         }
 
         // Object to compute wind-up effect
-        ComputeWindUp windup(data->SP3EphList, nominalPos, opts().genericFilesDirectory + confReader().getValue("satDataFile"));
+        ComputeWindUp windup(data->navLibrary_, nominalPos, opts().genericFilesDirectory + confReader().getValue("satDataFile"));
       
         // Object to compute the tropospheric data
         ComputeTropModel computeTropo(tropModel);
@@ -193,9 +193,9 @@ namespace pod
         SolverPPP   pppSolver (useAdvClkModel,tropoQ, posSigma, clkSigma, weightFactor);
         SolverPPPFB fbpppSolver(useAdvClkModel, tropoQ, posSigma, clkSigma, weightFactor);
        
-        std::list<double> phaselims = confReader().getListValueAsDouble("phaseLimlist");
+        std::vector<double> phaselims = confReader().getValueListAsDouble("phaseLimlist");
         fbpppSolver.setPhaseList(phaselims);
-		std::list<double> codelims = confReader().getListValueAsDouble("codeLimList");
+		std::vector<double> codelims = confReader().getValueListAsDouble("codeLimList");
         fbpppSolver.setCodeList(codelims);
         int cycles(std::max<int>(phaselims.size(), codelims.size()));
         std::cout <<"cycles "<< cycles << std::endl;
@@ -370,7 +370,7 @@ namespace pod
             // Close output file for this station
             outfile.close();
 
-            GPSTK_RETHROW(e);
+            GNSSTK_RETHROW(e);
 
         }  // End of 'try-catch' block
     
@@ -484,7 +484,7 @@ namespace pod
         }
         catch (Exception &gpstk_e)
         {
-            GPSTK_RETHROW(gpstk_e);
+            GNSSTK_RETHROW(gpstk_e);
         }
         catch (std::exception &std_e)
         {

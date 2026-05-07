@@ -1,6 +1,6 @@
 #include "IonoEquations.h"
 
-using namespace gpstk;
+using namespace gnsstk;
 namespace pod
 {
     const double IonoEquations::SQR_L1_WL_GPS = L1_WAVELENGTH_GPS*L1_WAVELENGTH_GPS;
@@ -91,7 +91,7 @@ namespace pod
             for (const auto& sv: currParameters)
             {
                 int fcn = sv.sv.getGloFcn();
-                double wl = getWavelength(sv.sv, band, fcn);
+                double wl = getWavelength(sv.sv.system, band, fcn);
                 wl *= wl;
                 H(row, col_0 + i) = sign*wl / SQR_L1_WL_GPS;
                 row++;

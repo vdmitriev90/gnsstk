@@ -2,7 +2,7 @@
 #include"GNSSconstants.hpp"
 #include"WinUtils.h"
 
-using namespace gpstk;
+using namespace gnsstk;
 namespace pod
 {
 	const double CODE_RES = 0.02;
@@ -65,7 +65,7 @@ namespace pod
 	bool Rtcm3_1004::parseSatData(BitSetProxy &buffer, Rtcm3Decoder& decoder)
 	{
 		int id = buffer.getUint32(0, 6);
-		SatID satId(id, SatID::SatelliteSystem::systemGPS);
+		SatID satId(id, SatelliteSystem::GPS);
 		TypeID typeIdL1 = buffer.bits()[6] ? TypeID::P1 : TypeID::C1;
 
 		int prL1 = buffer.getUint32(7, 24);

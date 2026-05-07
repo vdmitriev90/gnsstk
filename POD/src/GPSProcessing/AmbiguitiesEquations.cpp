@@ -2,7 +2,7 @@
 #include"GNSSconstants.hpp"
 #include"LinearCombination.h"
 
-using namespace gpstk;
+using namespace gnsstk;
 
 namespace pod
 {
@@ -102,7 +102,7 @@ namespace pod
                 // Find in which position of 'satSet' is the current '(*itSat)'
                 // Please note that 'currSatSet' is a subset of 'satSet'
                 int j(0);
-                auto& itSat2 = csFlags.begin();
+                auto itSat2 = csFlags.begin();
                 while ((itSat2->first) != (itSat))
                 {
                     ++j;
@@ -114,10 +114,10 @@ namespace pod
                 switch (type.type)
                 {
                 case TypeID::BL1:
-                    wavelength = getWavelength(itSat, 1, fcn);
+                    wavelength = getWavelength(itSat.system, 1, fcn);
                     break;
                 case TypeID::BL2:
-                    wavelength = getWavelength(itSat, 2, fcn);
+                    wavelength = getWavelength(itSat.system, 2, fcn);
                     break;
                 case TypeID::BLC:
                     wavelength = 1.0;// LinearCombination::getIonoFreeWaveLength(itSat, 1, 2);

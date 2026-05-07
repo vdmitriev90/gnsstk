@@ -80,7 +80,7 @@ namespace gnsstk
    public:
 
          /// Default constructor
-      SunPosition() throw() {}
+      SunPosition(){}
 
          /// Destructor
       virtual ~SunPosition() {}

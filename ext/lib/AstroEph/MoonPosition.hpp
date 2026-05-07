@@ -84,7 +84,7 @@ namespace gnsstk
    public:
 
          /// Default constructor
-      MoonPosition() throw() {}
+      MoonPosition(){}
 
          /// Destructor
       virtual ~MoonPosition() {}

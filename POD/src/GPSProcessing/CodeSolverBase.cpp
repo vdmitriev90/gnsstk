@@ -4,7 +4,7 @@
 #include"FsUtils.h"
 #include"WinUtils.h"
 
-using namespace gpstk;
+using namespace gnsstk;
 namespace pod
 {
     double CodeSolverBase::eps = 1e-3;
@@ -40,7 +40,7 @@ namespace pod
     void  CodeSolverBase::selectObservables(
         const Rinex3ObsData &rod,
         const Rinex3ObsHeader& roh,
-        const std::set<SatID::SatelliteSystem> &systems,
+        const std::set<SatelliteSystem> &systems,
         const ObsTypes & typeMap,
         CodeProcSvData & svData,
         bool isApplyRCO 
@@ -104,44 +104,34 @@ namespace pod
         }
     }
 
-    void CodeSolverBase::prepare(
-        const CommonTime &t,
-        const XvtStore<SatID>& Eph,
-        CodeProcSvData & svData)
+    void CodeSolverBase::prepare(const CommonTime &t, NavLibrary& eph, CodeProcSvData & svData)
     {
-        CommonTime tx;
 
         for (auto it = svData.data.rbegin();it!= svData.data.rend();  ++it)
         {
             if (it->second.use)
             {
                 // transmit time
-                Xvt PVT;
+                Xvt pvt;
+                
                 // first estimate of transmit time
-                tx = t;
+                CommonTime tx = t;
                 tx -= it->second.pr / C_MPS;
 
-                // get ephemeris range, etc
-                try
-                {
-                    PVT = Eph.getXvt(it->first, tx);
-                }
-                catch (InvalidRequest& e)
+                if (!eph.getXvt(NavSatelliteID(it->first), tx, pvt))
                 {
                     svData.tryRemove(it->first);
                     continue;
                 }
 
-                tx -= PVT.clkbias + PVT.relcorr;
+                tx -= pvt.clkbias + pvt.relcorr;
 
                 // SVP = {SV position at transmit time}, raw range + clk + rel
                 for (int l = 0; l < 3; l++)
-                {
-                    it->second.pos[l] = PVT.x[l];
-                }
-                it->second.pr = it->second.pr + C_MPS * (PVT.clkbias + PVT.relcorr);
-            }
-          
+                    it->second.pos[l] = pvt.x[l];
+
+                it->second.pr = it->second.pr + C_MPS * (pvt.clkbias + pvt.relcorr);
+            }          
         }
     }
 

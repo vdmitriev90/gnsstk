@@ -1,7 +1,7 @@
 #include "RefSatHandler.h"
 #include"WinUtils.h"
 
-using namespace gpstk;
+using namespace gnsstk;
 
 namespace pod
 {
@@ -45,7 +45,7 @@ namespace pod
         refSvSet = getRefSats(gData);
 
         auto currRefSv = refSvSet.begin();
-        std::map<SatID::SatelliteSystem, SatIDSet> svs_by_ss;
+        std::map<SatelliteSystem, SatIDSet> svs_by_ss;
 
         for_each(svs.begin(), svs.end(), [&svs_by_ss](const SatID & sv) {svs_by_ss[sv.system].insert(sv); });
 

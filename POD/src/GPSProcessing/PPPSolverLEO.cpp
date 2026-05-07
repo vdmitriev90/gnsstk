@@ -42,7 +42,7 @@
 */
 
 #include "PPPSolverLEO.h"
-using namespace gpstk;
+using namespace gnsstk;
 
 namespace pod
 {
@@ -110,7 +110,6 @@ namespace pod
     int PPPSolverLEO::Compute(const gnsstk::Vector<double>& prefitResiduals,
                               const gnsstk::Matrix<double>& designMatrix,
                               const gnsstk::Vector<double>& weightVector)
-        throw(InvalidSolver)
     {
 
         // By default, results are invalid
@@ -161,7 +160,6 @@ of weightVector");
     int PPPSolverLEO::Compute(const gnsstk:: Vector<double>& prefitResiduals,
                               const gnsstk:: Matrix<double>& designMatrix,
                               const gnsstk:: Matrix<double>& weightMatrix)
-        throw(InvalidSolver)
     {
 
         // By default, results are invalid
@@ -248,7 +246,7 @@ covariance matrix.");
         }
         catch (InvalidSolver& e)
         {
-            GPSTK_RETHROW(e);
+            GNSSTK_RETHROW(e);
         }
 
         // Store the solution
@@ -274,7 +272,6 @@ covariance matrix.");
        * @param gData     Data object holding the data.
        */
 	IRinex& PPPSolverLEO::Process(IRinex& gData)
-        throw(ProcessingException)
     {
         try
         {

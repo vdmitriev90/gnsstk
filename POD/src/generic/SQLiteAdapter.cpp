@@ -5,12 +5,11 @@
 #include"WinUtils.h"
 #include"StringUtils.h"
 
-using namespace gpstk;
+using namespace gnsstk;
 using boost::format;
 
 namespace pod
 {
-
     void SQLiteAdapter::testSQLite(const char* path2obs, const char* path2GlnNav)
     {
         SatID::loadGloFcn(path2GlnNav);

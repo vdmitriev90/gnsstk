@@ -4,7 +4,7 @@
 #include"typenames.hpp"
 #include"PowerSum.hpp"
 #include "Rinex3ObsData.hpp"
-#include "XvtStore.hpp"
+#include "NavLibrary.hpp"
 #include "GPSEllipsoid.hpp"
 #include"IonoModelStore.hpp"
 #include"Matrix.hpp"
@@ -37,33 +37,19 @@ namespace pod
         void  selectObservables(
             const gnsstk::Rinex3ObsData &rod,
             const gnsstk::Rinex3ObsHeader& roh,
-            const std::set<gnsstk::SatID::SatelliteSystem> &systems,
+            const std::set<gnsstk::SatelliteSystem> &systems,
             const ObsTypes & typeMap,
             CodeProcSvData & svData,
             bool isApplyRCO = false
         );
 
-        void prepare(
-            const gnsstk::CommonTime &t,
-            const gnsstk::XvtStore<gnsstk::SatID>& Eph,
-            CodeProcSvData & svData
-        );
+        void prepare(const gnsstk::CommonTime& t, gnsstk::NavLibrary& Eph, CodeProcSvData& svData);
 
-        int solve(
-            const gnsstk::CommonTime &t,
-            const gnsstk::IonoModelStore &iono,
-            CodeProcSvData & svData
-        );
-
-       // string printSolution(const CodeProcSvData &useSat);
-
+        int solve(const gnsstk::CommonTime &t, const gnsstk::IonoModelStore &iono, CodeProcSvData & svData);
 
         virtual gnsstk::NeillTropModel initTropoModel(const gnsstk::Position &nominalPos, int DoY) = 0;
 
-        virtual double getTropoCorrection(
-            const gnsstk::Position &rxPos,
-            const gnsstk::Position &svPos,
-            const gnsstk::CommonTime &t) const = 0;
+        virtual double getTropoCorrection(const gnsstk::Position &rxPos, const gnsstk::Position &svPos, const gnsstk::CommonTime &t) const = 0;
 
     protected:
          int solveInter(
@@ -73,7 +59,7 @@ namespace pod
 			 gnsstk::Matrix<double>& Cov
 
         );
-         void CodeSolverBase::calcSigma(
+         void calcSigma(
              const gnsstk::Position& rxPos,
              const gnsstk::Matrix<double> & W,
              const gnsstk::Vector<double> & b,
@@ -81,7 +67,7 @@ namespace pod
 
         void calcStat(const gnsstk::Matrix<double>& Cov);
 
-        int CodeSolverBase::catchSatByResid(
+        int catchSatByResid(
             const gnsstk::CommonTime & t,
             const gnsstk::IonoModelStore & iono,
             CodeProcSvData & svsData

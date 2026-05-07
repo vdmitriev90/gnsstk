@@ -22,7 +22,7 @@
 
 #include<memory>
 
-using namespace gpstk;
+using namespace gnsstk;
 
 namespace pod
 {
@@ -48,20 +48,19 @@ namespace pod
 
         Triple pos;
         int i = 0;
-        for (auto& it : confReader().getListValueAsDouble("nominalPosition",opts().SiteBase))
+        for (auto& it : confReader().getValueListAsDouble("nominalPosition",opts().SiteBase))
             pos[i++] = it;
         Position refPos(pos);
 
         // basic model object for ref. station
-        BasicModel modelRef;
-        modelRef.setDefaultEphemeris(data->SP3EphList);
+        BasicModel modelRef(data->navLibrary_);
         modelRef.setDefaultObservable(codeL1);
         modelRef.setMinElev(confReader().getValueAsInt("ElMask"));
 
         // basic model object for rover has the same settings as BasicModel for ref. station
         BasicModel modelRover(modelRef);
 
-        modelRef.rxPos = refPos;
+        modelRef.setRxPosition(refPos);
 
         RinexEpoch gRin, gRef;
         SyncObs sync(data->getObsFiles(opts().SiteBase), gRin);
@@ -70,7 +69,7 @@ namespace pod
         Decimate decimateData(
             confReader().getValueAsDouble("decimationInterval"),
             confReader().getValueAsDouble("decimationTolerance"),
-            data->SP3EphList.getInitialTime());
+            data->navLibrary_.getInitialTime());
 
         //troposhere modeling objects
         //for base 
@@ -96,7 +95,7 @@ namespace pod
         if (forwardBackwardCycles > 0)
         {
             solverFb.setCyclesNumber(forwardBackwardCycles);
-            solverFb.setLimits(confReader().getListValueAsDouble("codeLimList"), confReader().getListValueAsDouble("phaseLimList"));
+            solverFb.setLimits(confReader().getValueListAsDouble("codeLimList"), confReader().getValueListAsDouble("phaseLimList"));
         }
 
         bool firstTime = true;
@@ -150,7 +149,7 @@ namespace pod
                 
                 tropoRov.setAllParameters(t, nominalPos);
                 tropoBase.setAllParameters(t, refPos);
-                modelRover.rxPos = nominalPos;
+                modelRover.setRxPosition(nominalPos);
 
                 gRin >> requireObs;
                 gRin >> CodeFilter;
@@ -320,11 +319,11 @@ namespace pod
 
         if (opts().isSmoothCode)
         {
-            codeSmoother.addSmoother(CodeSmoother(codeL1));
-            codeSmoother.addSmoother(CodeSmoother(TypeID::P2));
+            codeSmoother.addSmoother(std::make_unique<CodeSmoother>(codeL1));
+            codeSmoother.addSmoother(std::make_unique<CodeSmoother>(TypeID::P2));
 
-            codeSmootherRef.addSmoother(CodeSmoother(codeL1));
-            codeSmootherRef.addSmoother(CodeSmoother(TypeID::P2));
+            codeSmootherRef.addSmoother(std::make_unique<CodeSmoother>(codeL1));
+            codeSmootherRef.addSmoother(std::make_unique<CodeSmoother>(TypeID::P2));
 
             // add linear combinations, requared  for CS detections 
             computeLinear.add(std::make_unique<LICombimnation>());

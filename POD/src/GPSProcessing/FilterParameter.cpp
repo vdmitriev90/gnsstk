@@ -1,6 +1,6 @@
 #include "FilterParameter.h"
 
-using namespace gpstk;
+using namespace gnsstk;
 namespace pod
 {
     System2SatSetMap FilterParameter::get_sv_by_ss(const std::set<FilterParameter>& parameters)
@@ -12,8 +12,8 @@ namespace pod
             svs.insert(par.sv);
             svs_by_ss[par.sv.system].insert(par.sv);
         }
-        return svs_by_ss;
 
+        return svs_by_ss;
     }
     
     SatIDSet FilterParameter::get_all_sv(const std::set<FilterParameter>& parameters)

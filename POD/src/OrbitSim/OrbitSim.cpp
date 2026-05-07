@@ -1,7 +1,7 @@
 #include"OrbitSim.h"
 
 #include"KeplerOrbit.hpp"
-using namespace gpstk;
+using namespace gnsstk;
 
 namespace pod
 {
@@ -72,7 +72,7 @@ namespace pod
         }
         catch (Exception& e)
         {
-            GPSTK_RETHROW(e);
+            GNSSTK_RETHROW(e);
         }
 
         catch (...)
@@ -251,41 +251,41 @@ namespace pod
         if (isJ2k)
             return rvVector;
         else
-            return EarthRotation::eopStore.convertJ2k2Ecef(getCurTime(), rvVector);
+            return EarthRotation::eopStore().convertJ2k2Ecef(getCurTime(), rvVector);
     }  // End of method 'OrbitSim::rvState()'
 
 
        /// write curT curState to a file
-    void OrbitSim::writeToFile(ostream& s) const
+    void OrbitSim::writeToFile(std::ostream& s) const
     {
         Epoch utcRef = pOrbit->getRefEpoch();
         utcRef += curT;
 
         const int np = getNP();
 
-        s << fixed;
+        s << std::fixed;
         s << "#" << utcRef << " "
-            << setprecision(12) << utcRef << endl;
+            << std::setprecision(12) << utcRef << std::endl;
 
         for (int i = 0; i<6; i++)
         {
-            s << setw(20) << setprecision(12) << rvVector(i) << " ";
+            s << std::setw(20) << std::setprecision(12) << rvVector(i) << " ";
         }
-        s << endl;
+        s << std::endl;
 
         // [phi s]
         for (int i = 0; i<6; i++)
         {
             for (int j = 0; j<6; j++)
             {
-                s << setw(20) << setprecision(12) << phiMatrix(i, j) << " ";
+                s << std::setw(20) << std::setprecision(12) << phiMatrix(i, j) << " ";
             }
             for (int j = 0; j<np; j++)
             {
-                s << setw(20) << setprecision(12) << sMatrix(i, j) << " ";
+                s << std::setw(20) << std::setprecision(12) << sMatrix(i, j) << " ";
             }
 
-            s << endl;
+            s << std::endl;
         }
     }
 
@@ -303,14 +303,14 @@ namespace pod
     */
     void OrbitSim::test()
     {
-        cout << "testing OrbitPropagator[KeplerOrbit]" << endl;
-        cout << fixed << setprecision(6);
+        std::cout << "testing OrbitPropagator[KeplerOrbit]" << std::endl;
+        std::cout << std::fixed << std::setprecision(6);
 
         // load global data
       //  IERS::loadSTKFile("ERP\\COD17252.ERP");
         //ReferenceFrames::setJPLEphFile("InputData\\DE405\\jplde405");
 
-        ofstream fout("outorbit.txt");
+        std::ofstream fout("outorbit.txt");
 
         CommonTime t0 = (CommonTime)CivilTime(2013, 1, 30, 0, 0, 0.0,TimeSystem::GPS);
 
@@ -352,7 +352,7 @@ namespace pod
         double tt = 3600.0 * 24;
         double step = 60.0;
 
-        cout << fixed << setw(12) << setprecision(5);
+        std::cout << std::fixed << std::setw(12) << std::setprecision(5);
 
         double t = 0.0;
         while (t < tt)
@@ -380,8 +380,8 @@ namespace pod
             Vector<double> diff = yy_out - yy_ref;
 
            // UTCTime utc = op.getCurTime();
-           // cout << utc << " " << diff << endl;
-            cout << phi - phi_ref << endl;
+           // std::cout << utc << " " << diff << std::endl;
+            std::cout << phi - phi_ref << std::endl;
 
             t += step;
             y0 = yy;
@@ -400,9 +400,9 @@ namespace pod
     }
     void OrbitSim::testKepler()
     {
-        cout << "Test kepler motion" << endl;
+        std::cout << "Test kepler motion" << std::endl;
 
-        ofstream os("Integr_test.out");
+        std::ofstream os("Integr_test.out");
 
         OrbitSim op;
         ForceModelData fmd;
@@ -428,8 +428,8 @@ namespace pod
         op.setInitState(t0, sv);
       
         auto sv0 = op.getCurState();
-        os << fixed << setw(12) << setprecision(6);
-        os << op.getCurTime() << " " << op.getCurState() << endl;
+        os << std::fixed << std::setw(12) << std::setprecision(6);
+        os << op.getCurTime() << " " << op.getCurState() << std::   endl;
 
         //
         double t = 0, dMax = 0;
@@ -439,7 +439,7 @@ namespace pod
         {
             if (!op.integrateTo(t + step))
             {
-                cout << "failed to integrate\n";
+                std::cout << "failed to integrate\n";
                 break;
             }
 
@@ -453,16 +453,16 @@ namespace pod
                 d += dsv[i] * dsv[i];
             d = sqrt(d) * 1000;
             dMax = (d > dMax) ? d : dMax;
-            os << op.getCurTime() << " " << d << endl;
+            os << op.getCurTime() << " " << d << std::endl;
         }
-        os << "max Err"<< " " << dMax << endl;
+        os << "max Err"<< " " << dMax << std::endl;
         os.close();
     }
     void OrbitSim::testFwBw()
     {
-        cout << "Test Fwd-Bwd" << endl;
+        std::cout << "Test Fwd-Bwd" << std::endl;
 
-        ofstream os("Integr_test.out");
+        std::ofstream os("Integr_test.out");
 
         OrbitSim op;
         ForceModelData fmd;
@@ -487,25 +487,25 @@ namespace pod
         op.setInitState(t0, sv);
 
         auto sv0 = op.getCurState();
-        os << fixed << setw(12) << setprecision(6);
-        os << op.getCurTime() << " " << op.getCurState() << endl;
+        os << std::fixed << std::setw(12) << std::setprecision(6);
+        os << op.getCurTime() << " " << op.getCurState() << std::endl;
 
         //
         double t = 0, dMax = 0;
 
         if (!op.integrateTo( tt))
         {
-            cout << "failed to  fwd integrate\n";
+            std::cout << "failed to  fwd integrate\n";
         }
-        os << op.getCurTime() << " " << op.getCurState() << endl;
+        os << op.getCurTime() << " " << op.getCurState() << std::endl;
         op.updateRefEpoch();
-        os << op.getCurTime() << " " << op.getCurState() << endl;
+        os << op.getCurTime() << " " << op.getCurState() << std::endl;
         if (!op.integrateTo(-tt))
         {
-            cout << "failed to bwd integrate\n";
+            std::cout << "failed to bwd integrate\n";
         }
 
-        os << op.getCurTime() << " " << op.getCurState() << endl;
+        os << op.getCurTime() << " " << op.getCurState() << std::endl;
         auto svi = op.getCurState();
         auto dsv = svi - sv0;
 
@@ -515,7 +515,7 @@ namespace pod
         d = sqrt(d) * 1000;
         dMax = (d > dMax) ? d : dMax;
        
-        os << op.getCurTime() << " " << d << endl;
+        os << op.getCurTime() << " " << d << std::endl;
 
         //  os << "max Err" << " " << dMax << endl;
         os.close();

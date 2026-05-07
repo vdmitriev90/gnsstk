@@ -77,7 +77,7 @@ namespace gnsstk
    public:
 
          /// Default constructor
-      SolidTides() throw() {}
+      SolidTides(){}
 
          /// Destructor
       virtual ~SolidTides() {}

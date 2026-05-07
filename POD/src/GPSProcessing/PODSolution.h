@@ -2,7 +2,7 @@
 #define POD_POD_SOLUTION_H
 
 #include"PPPSolutionBase.h"
-using namespace gpstk;
+
 namespace pod
 {
     class PODSolution : public PPPSolutionBase
@@ -20,7 +20,7 @@ namespace pod
 
     protected: virtual void updateRequaredObs() override;
 
-	protected:  void printSolution(std::ofstream& of, const SolverLMS& solver, const CommonTime& time, GnssEpoch& gEpoch) ;
+	protected:  void printSolution(std::ofstream& of, const gnsstk::SolverLMS& solver, const gnsstk::CommonTime& time, GnssEpoch& gEpoch) ;
 
     };
 }

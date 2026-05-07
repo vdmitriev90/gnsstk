@@ -28,12 +28,10 @@ namespace pod
         *
         * @param gData    Data object holding the data.
         */
-        virtual gnsstk::IRinex& Process(gnsstk::IRinex& gData)
-            throw(gnsstk::ProcessingException);
+        virtual gnsstk::IRinex& Process(gnsstk::IRinex& gData);
 
         virtual  gnsstk::SatTypePtrMap& Process(const gnsstk::CommonTime& epoch,
-            gnsstk::SatTypePtrMap& gData)
-            throw(gnsstk::ProcessingException);
+            gnsstk::SatTypePtrMap& gData);
 
         /** Method that implements the LI cycle slip detection algorithm
         *

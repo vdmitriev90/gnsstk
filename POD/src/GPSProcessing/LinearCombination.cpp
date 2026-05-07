@@ -10,8 +10,8 @@ namespace pod
     double LinearCombination::getIonoFreeWaveLength(const gnsstk::SatID &sv, int band1, int band2)
     {
         int fcn = sv.getGloFcn();
-        double wlL1 = getWavelength(sv, 1, fcn);
-        double wlL2 = getWavelength(sv, 2, fcn);
+        double wlL1 = getWavelength(sv.system, 1, fcn);
+        double wlL2 = getWavelength(sv.system, 2, fcn);
 
 		return  wlL1 * wlL2*(wlL1 + wlL2);
     }
@@ -35,8 +35,8 @@ namespace pod
         if (itL2 == tvMap.end()) return false;
 
         int fcn = sv.getGloFcn();
-        double F1 = C_MPS / getWavelength(sv, 1, fcn);
-        double F2 = C_MPS / getWavelength(sv, 2, fcn);
+        double F1 = C_MPS / getWavelength(sv.system, 1, fcn);
+        double F2 = C_MPS / getWavelength(sv.system, 2, fcn);
 
         value = (itL1->second * F1 - itL2->second * F2) / (F1 - F2) -
             (itC1->second * F1 + itC2->second * F2) / (F1 + F2);
@@ -64,8 +64,8 @@ namespace pod
         if (itC2 == tvMap.end()) return false;
 
         int fcn = sv.getGloFcn();
-        double F1 = C_MPS / getWavelength(sv, 1, fcn);
-        double F2 = C_MPS / getWavelength(sv, 2, fcn);
+        double F1 = C_MPS / getWavelength(sv.system, 1, fcn);
+        double F2 = C_MPS / getWavelength(sv.system, 2, fcn);
 
         double c = F1 / (F1 + F2);
         double d = F2 / (F1 + F2);
@@ -93,8 +93,8 @@ namespace pod
         if (itL2 == tvMap.end()) return false;
 
         int fcn = sv.getGloFcn();
-        double F1 = C_MPS / getWavelength(sv, 1, fcn);
-        double F2 = C_MPS / getWavelength(sv, 2, fcn);
+        double F1 = C_MPS / getWavelength(sv.system, 1, fcn);
+        double F2 = C_MPS / getWavelength(sv.system, 2, fcn);
 
         double e = F1 / (F1 - F2);
         double f = F2 / (F1 - F2);
@@ -124,8 +124,8 @@ namespace pod
         if (itC2 == tvMap.end()) return false;
 
         int fcn = sv.getGloFcn();
-        double F1 = C_MPS / getWavelength(sv, 1, fcn);
-        double F2 = C_MPS / getWavelength(sv, 2, fcn);
+        double F1 = C_MPS / getWavelength(sv.system, 1, fcn);
+        double F2 = C_MPS / getWavelength(sv.system, 2, fcn);
 
         F1 = F1 * F1;
         F2 = F2 * F2;
@@ -153,8 +153,8 @@ namespace pod
         if (itL2 == tvMap.end()) return false;
 
         int fcn = sv.getGloFcn();
-        double F1 = C_MPS / getWavelength(sv, 1, fcn);
-        double F2 = C_MPS / getWavelength(sv, 2, fcn);
+        double F1 = C_MPS / getWavelength(sv.system, 1, fcn);
+        double F2 = C_MPS / getWavelength(sv.system, 2, fcn);
 
         F1 = F1 * F1;
         F2 = F2 * F2;
@@ -197,7 +197,7 @@ namespace pod
         value = NAN;
 
         // C1 code pseudorange
-        auto& it = tvMap.find(TypeID::C1);
+        auto it = tvMap.find(TypeID::C1);
         if (it == tvMap.end())
             return false;
         else
@@ -277,7 +277,7 @@ namespace pod
         value = NAN;
 
         // P1 code pseudorange
-        auto& it = tvMap.find(TypeID::P1);
+        auto it = tvMap.find(TypeID::P1);
         if (it == tvMap.end())
             return false;
         else
@@ -360,7 +360,7 @@ namespace pod
         value = NAN;
 
         // P1 code pseudorange
-        auto& it = tvMap.find(TypeID::P2);
+        auto it = tvMap.find(TypeID::P2);
         if (it == tvMap.end())
             return false;
         else
@@ -431,7 +431,7 @@ namespace pod
         value = NAN;
 
         // L1 phase pseudorange
-        auto& it = tvMap.find(TypeID::PC);
+        auto it = tvMap.find(TypeID::PC);
         if (it == tvMap.end())
             return false;
         else
@@ -508,7 +508,7 @@ namespace pod
 		value = NAN;
 
 		// L1 phase pseudorange
-		auto& it = tvMap.find(TypeID::L1);
+		auto it = tvMap.find(TypeID::L1);
 		if (it == tvMap.end())
 			return false;
 		else
@@ -566,7 +566,7 @@ namespace pod
 		if (it == tvMap.end())
 			return false;
 		else
-			value -= it->second*getWavelength(sv, 1, sv.getGloFcn()) / TWO_PI;
+			value -= it->second*getWavelength(sv.system, 1, sv.getGloFcn()) / TWO_PI;
 
 		//multipath L1
 		it = tvMap.find(TypeID::mpL1);
@@ -588,7 +588,7 @@ namespace pod
 		value = NAN;
 
 		// L1 phase pseudorange
-		auto& it = tvMap.find(TypeID::L2);
+		auto it = tvMap.find(TypeID::L2);
 		if (it == tvMap.end())
 			return false;
 		else
@@ -646,7 +646,7 @@ namespace pod
 		if (it == tvMap.end())
 			return false;
 		else
-			value -= it->second*getWavelength(sv, 2, sv.getGloFcn()) / TWO_PI;
+			value -= it->second*getWavelength(sv.system, 2, sv.getGloFcn()) / TWO_PI;
 
 		//multipath L1
 		it = tvMap.find(TypeID::mpL2);
@@ -670,7 +670,7 @@ namespace pod
         value = NAN;
 
         // L1 phase pseudorange
-        auto& it = tvMap.find(TypeID::LC);
+        auto it = tvMap.find(TypeID::LC);
         if (it == tvMap.end())
             return false;
         else
@@ -751,8 +751,8 @@ namespace pod
         if (itP2 == tvMap.end()) return false;
 
         int fcn = sv.getGloFcn();
-        double F1 = C_MPS / getWavelength(sv, 1, fcn);
-        double F2 = C_MPS / getWavelength(sv, 2, fcn);
+        double F1 = C_MPS / getWavelength(sv.system, 1, fcn);
+        double F2 = C_MPS / getWavelength(sv.system, 2, fcn);
 
         F1 *= F1;
         F2 *= F2;
@@ -784,8 +784,8 @@ namespace pod
         if (itP2 == tvMap.end()) return false;
 
         int fcn = sv.getGloFcn();
-        double F1 = C_MPS / getWavelength(sv, 1, fcn);
-        double F2 = C_MPS / getWavelength(sv, 2, fcn);
+        double F1 = C_MPS / getWavelength(sv.system, 1, fcn);
+        double F2 = C_MPS / getWavelength(sv.system, 2, fcn);
 
         F1 *= F1;
         F2 *= F2;
@@ -801,5 +801,4 @@ namespace pod
     }
 
 #pragma endregion
-
 }

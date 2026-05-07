@@ -1,28 +1,22 @@
 
-#include"EarthRotation.h"
-#include"EOPDataStore.hpp"
-//#include"sofa.h"
+#include"EOPStore.hpp"
 
-using namespace gpstk;
-using namespace std;
+#include"EarthRotation.h"
+
+using namespace gnsstk;
 
 namespace pod
 {
-    ///
-    EarthRotation EarthRotation::eopStore;
-
-    EarthRotation::EarthRotation():eopData(10)
-    {
-    }
-    EarthRotation::EarthRotation(const EOPDataStore & eop): eopData(eop)
+    EarthRotation::EarthRotation(const EOPStore & eop)
+		: eopData_(eop)
     {
     }
 
-    bool EarthRotation:: loadEOP(const string &  file, EOPDataStore::EOPSource source)
+    bool EarthRotation:: loadEOP(const std::string & fileName)
     {
         try
         {
-            eopData.loadFile(file,source);
+			eopData_.addFile(fileName);
         }
         catch (const std::exception&)
         {
@@ -129,14 +123,14 @@ namespace pod
     {
         return getEcef2J2k00(t)*pos;
     }
-	 CivilTime EarthRotation::toTAI(const CommonTime & t)
+	 CivilTime toTAI(const CommonTime & t)
 	{
 		TimeSystem inTS = t.getTimeSystem();
 		if (inTS == TimeSystem::Any || inTS == TimeSystem::Unknown) 
 			throw InvalidParameter("TimeSystem is invalid (Any or Unknown)");
 
 		CivilTime ct = (CivilTime)t;
-		double dTAI = TimeSystem::Correction(inTS, TimeSystem::TAI, ct.year, ct.month, ct.day);
+		double dTAI = gnsstk::getTimeSystemCorrection(inTS, TimeSystem::TAI, ct.year, ct.month, ct.day);
 
 		CommonTime TAI = t;
 		TAI.addSeconds(dTAI);
@@ -146,7 +140,7 @@ namespace pod
 
      bool EarthRotation::test()
      {
-         ofstream os("EarthRotation_test.txt");
+		 std::ofstream os("EarthRotation_test.txt");
          int iy, im, id, ih, min, j;
          double sec, djmjd0, date, time, dat;
         
@@ -159,20 +153,20 @@ namespace pod
          sec = 0.0;
 
          //j = iauCal2jd(iy, im, id, &djmjd0, &date);
-         if (j < 0) return j;
+         //if (j < 0) return j;
          //time = (60.0*(double)(60 * ih + min) + sec) / DAYSEC;
-         double utc = date + time;
+         //double utc = date + time;
          //j = iauDat(iy, im, id, time, &dat);
-         if (j < 0) return j;
-       //  double  tai = utc + dat / DAYSEC;
-         CivilTime ctTAI(iy, im, id, ih, min, sec, TimeSystem::TAI);
+         //if (j < 0) return j;
+         //double  tai = utc + dat / DAYSEC;
+         //CivilTime ctTAI(iy, im, id, ih, min, sec, TimeSystem::TAI);
 
-         CommonTime TAI = (CommonTime)ctTAI;
-         TAI = TAI.addSeconds(dat);
+         //CommonTime TAI = (CommonTime)ctTAI;
+         //TAI = TAI.addSeconds(dat);
 
-         Matrix<double>J2k2ECEF = getJ2k2Ecef00(TAI);
+         //Matrix<double>J2k2ECEF = getJ2k2Ecef00(TAI);
 
-         os << setprecision(18) << J2k2ECEF <<endl;
+         //os << std::setprecision(18) << J2k2ECEF << std::endl;
          return true;
      }
 

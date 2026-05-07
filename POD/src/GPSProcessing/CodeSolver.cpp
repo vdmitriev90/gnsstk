@@ -1,6 +1,6 @@
 #include"CodeSolver.h"
 
-using namespace gpstk;
+using namespace gnsstk;
 
 namespace pod
 {

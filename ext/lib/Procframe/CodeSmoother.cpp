@@ -46,7 +46,6 @@
 
 namespace gnsstk
 {
-
       // Returns a string identifying this object.
    std::string CodeSmoother::getClassName() const
    { return "CodeSmoother"; }
@@ -59,7 +58,7 @@ namespace gnsstk
        * @param mwSize        Maximum  size of filter window, in samples.
        */
    CodeSmoother::CodeSmoother( const TypeID& codeT,
-                               const int& mwSize )
+                               const int mwSize )
       : codeType(codeT)
    {
 

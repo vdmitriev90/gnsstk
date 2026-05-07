@@ -1,5 +1,5 @@
 #include "SNRCatcher.h"
-using namespace gpstk;
+using namespace gnsstk;
 
 namespace pod
 {
@@ -22,7 +22,6 @@ namespace pod
     {};
 
     IRinex& SNRCatcher::Process(IRinex& gData)
-        throw(ProcessingException)
     {
         try
         {
@@ -47,9 +46,8 @@ namespace pod
        * @param gData     Data object holding the data.
        * @param epochflag Epoch flag.
        */
-	SatTypePtrMap& SNRCatcher::Process(const CommonTime& epoch,
+    SatTypePtrMap& SNRCatcher::Process(const CommonTime& epoch,
         SatTypePtrMap& gData)
-        throw(ProcessingException)
     {
         try
         {

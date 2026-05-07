@@ -9,31 +9,31 @@ namespace pod
 	//This flag mean, that such satellites are ponentially can be used 
 	//in solution during reprocessing (while forward - backward processing).
 	//Only non-zero residuals are indicates that  particular satellite has been used in pvt computation.
-	class UsedInPvtMarker: public gpstk::ProcessingClass
+	class UsedInPvtMarker: public gnsstk::ProcessingClass
 	{
 
 
 	public:
-		UsedInPvtMarker(gpstk::TypeID tp) :type(tp) {};
-		UsedInPvtMarker() :type(gpstk::TypeID::satStatus){};
+		UsedInPvtMarker(gnsstk::TypeID tp) :type(tp) {};
+		UsedInPvtMarker() :type(gnsstk::TypeID::satStatus){};
 		
 		~UsedInPvtMarker() {};
 
 		// mark all SV in IRinex as useable in PVT  
-		gpstk::IRinex& Process(gpstk::IRinex& gRin) override;
+		gnsstk::IRinex& Process(gnsstk::IRinex& gRin) override;
 		
 		// mark all SV in SatTypePtrMap as useable in PVT  
-		gpstk::SatTypePtrMap& markAsUsed(gpstk::SatTypePtrMap& satData) const;
+		gnsstk::SatTypePtrMap& markAsUsed(gnsstk::SatTypePtrMap& satData) const;
 		
 		// keep only Satellites marked as useable (TypeID::satStatus)
-		gpstk::SatTypePtrMap& keepOnlyUsed(gpstk::SatTypePtrMap& satData) const;
+		gnsstk::SatTypePtrMap& keepOnlyUsed(gnsstk::SatTypePtrMap& satData) const;
 		
 		//
-		gpstk::SatTypePtrMap& CleanScFlags(gpstk::SatTypePtrMap& satData) const;
+		gnsstk::SatTypePtrMap& CleanScFlags(gnsstk::SatTypePtrMap& satData) const;
 
-		gpstk::SatTypePtrMap& CleanSatArcFlags(gpstk::SatTypePtrMap& satData) const;
+		gnsstk::SatTypePtrMap& CleanSatArcFlags(gnsstk::SatTypePtrMap& satData) const;
 
-		UsedInPvtMarker& updateLastEpoch(const gpstk::IRinex& gRin);
+		UsedInPvtMarker& updateLastEpoch(const gnsstk::IRinex& gRin);
 
 		virtual std::string getClassName(void) const
 		{
@@ -41,12 +41,12 @@ namespace pod
 		}
 
 	private:
-		gpstk::TypeID type;
+		gnsstk::TypeID type;
 		
 		//last epoch time
-		gpstk::CommonTime preEpoch;
+		gnsstk::CommonTime preEpoch;
 		//sats in view on last epoch 
-		gpstk::SatIDSet preEpochSats;
+		gnsstk::SatIDSet preEpochSats;
 	};
 
 }

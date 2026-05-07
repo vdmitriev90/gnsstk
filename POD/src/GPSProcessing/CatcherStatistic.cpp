@@ -1,7 +1,7 @@
 #include "CatcherStatistic.h"
 #include<iostream>
 
-using namespace gpstk;
+using namespace gnsstk;
 
 namespace pod
 {

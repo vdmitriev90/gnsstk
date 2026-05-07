@@ -1,12 +1,12 @@
 #include "InterSystemBias.h"
 
 
-using namespace gpstk;
+using namespace gnsstk;
 
 namespace pod
 {
-    std::map< SatID::SatelliteSystem, FilterParameter> InterSystemBias::ss2isb;
-    std::map< FilterParameter, SatID::SatelliteSystem> InterSystemBias::isb2ss;
+    std::map< SatelliteSystem, FilterParameter> InterSystemBias::ss2isb;
+    std::map< FilterParameter, SatelliteSystem> InterSystemBias::isb2ss;
     
     // 
     const TypeIDSet InterSystemBias::l1Types{ TypeID::prefitC, TypeID::prefitL1,TypeID::prefitPC, TypeID::prefitLC };
@@ -15,9 +15,9 @@ namespace pod
 
     InterSystemBias::Initilizer:: Initilizer()
     {
-        ss2isb[SatID::SatelliteSystem::systemGlonass] = FilterParameter(TypeID::recISB_GLN);
-        //ss2isb[SatID::SatelliteSystem::systemGalileo] = FilterParameter(TypeID::recISB_GAL);
-        ss2isb[SatID::SatelliteSystem::systemBeiDou] = FilterParameter(TypeID::recISB_BDS);
+        ss2isb[SatelliteSystem::Glonass] = FilterParameter(TypeID::recISB_GLN);
+        //ss2isb[SatelliteSystem::Galileo] = FilterParameter(TypeID::recISB_GAL);
+        ss2isb[SatelliteSystem::BeiDou] = FilterParameter(TypeID::recISB_BDS);
 
         for (const auto& it : ss2isb)
             isb2ss[it.second] = it.first; 
@@ -34,7 +34,7 @@ namespace pod
         //update current set of Satellite systems
         types.clear();
         for (const auto& it : gData.getBody())
-            if (it.first.system != SatID::SatelliteSystem::systemGPS)
+            if (it.first.system != SatelliteSystem::GPS)
                 types.insert(ss2isb[it.first.system]);
         
         for (const auto &ss : types)
@@ -55,7 +55,7 @@ namespace pod
 
             for (const auto& sv : currentSatSet)
             {
-                if (sv.system != SatID::SatelliteSystem::systemGPS)
+                if (sv.system != SatelliteSystem::GPS)
                 {
                     auto it = types.find(ss2isb[sv.system]);
                     int j = std::distance(types.begin(), it);
@@ -68,7 +68,7 @@ namespace pod
     }
 
     InterSystemBias& InterSystemBias::setStochasicModel(
-        const SatID::SatelliteSystem& system,
+        const SatelliteSystem& system,
         StochasticModel_uptr newModel)
     {
         stochasticModels[ss2isb.at(system)] = std::move(newModel);

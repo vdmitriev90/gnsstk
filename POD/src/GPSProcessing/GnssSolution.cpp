@@ -4,7 +4,7 @@
 #include"PowerSum.hpp"
 #include"KalmanSolver.h"
 
-using namespace gpstk;
+using namespace gnsstk;
 
 namespace pod
 {

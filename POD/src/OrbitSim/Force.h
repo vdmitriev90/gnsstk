@@ -49,7 +49,7 @@
 #include"Epoch.hpp"
 #include"Spacecraft.hpp"
 
-using namespace gpstk;
+
 
 namespace pod
 {
@@ -100,7 +100,7 @@ namespace pod
 	  virtual ~Force();
 
          /// this is the real one to do computation
-	  virtual void doCompute(gnsstk:: Epoch t, Spacecraft& sc);
+	  virtual void doCompute(gnsstk::Epoch t, gnsstk::Spacecraft& sc);
   
          
          /// return the force model name
@@ -117,42 +117,42 @@ namespace pod
           * Return the acceleration
           * @return  acceleration
           */
-      virtual Vector<double> getAccel() const
+      virtual gnsstk::Vector<double> getAccel() const
       { return a; }
 
          /**
           * Return the partial derivative of acceleration wrt position
           * @return Matrix containing the partial derivative of acceleration wrt velocity
           */
-      virtual Matrix<double> partialR() const
+      virtual gnsstk::Matrix<double> partialR() const
       { return da_dr; }
 
          /**
           * Return the partial derivative of acceleration wrt velocity
           * @return Matrix containing the partial derivative of acceleration wrt velocity
           */
-      virtual Matrix<double> partialV() const
+      virtual gnsstk::Matrix<double> partialV() const
       { return da_dv; }
 
          /**
           * Return the partial derivative of acceleration wrt velocity
           * @return Matrix containing the partial derivative of acceleration wrt velocity
           */
-      virtual Matrix<double> partialP() const
+      virtual gnsstk::Matrix<double> partialP() const
       { return da_dp; }
 
          /**
           * Return the partial derivative of acceleration wrt velocity
           * @return Matrix containing the partial derivative of acceleration wrt cd
           */
-      virtual Matrix<double> partialCd() const
+      virtual gnsstk::Matrix<double> partialCd() const
       { return da_dcd; } 
 
          /**
           * Return the partial derivative of acceleration wrt velocity
           * @return Matrix containing the partial derivative of acceleration wrt cr
           */
-      virtual Matrix<double> partialCr() const
+      virtual gnsstk::Matrix<double> partialCr() const
       { return da_dcr; }
 
          /** return number of np
@@ -161,28 +161,28 @@ namespace pod
       { return da_dp.cols(); }
 
          /// get A Matrix
-	  Matrix<double> getAMatrix() const;
+	  gnsstk::Matrix<double> getAMatrix() const;
       
 
    protected:
 
          /// Acceleration
-      Vector<double> a;         // 3
+      gnsstk::Vector<double> a;         // 3
       
          /// Partial derivative of acceleration wrt position
-      Matrix<double> da_dr;      // 3*3
+      gnsstk::Matrix<double> da_dr;      // 3*3
       
          /// Partial derivative of acceleration wrt velocity
-      Matrix<double> da_dv;      // 3*3
+      gnsstk::Matrix<double> da_dv;      // 3*3
       
          /// Partial derivative of acceleration wrt dynamic parameters
-      Matrix<double> da_dp;      // 3*np
+      gnsstk::Matrix<double> da_dp;      // 3*np
          
          /// Partial derivative of acceleration wrt Cd
-      Matrix<double> da_dcd;      // 3*1
+      gnsstk::Matrix<double> da_dcd;      // 3*1
          
          /// Partial derivative of acceleration wrt Cr
-      Matrix<double> da_dcr;      // 3*1
+      gnsstk::Matrix<double> da_dcr;      // 3*1
 
       
 
@@ -197,10 +197,10 @@ namespace pod
    inline std::ostream& operator<<( std::ostream& s,
                                     const pod::Force& fm )
    {
-      Vector<double> a = fm.getAccel();
-      Matrix<double> da_dr = fm.partialR();
-      Matrix<double> da_dv = fm.partialV();
-      Matrix<double> da_dp = fm.partialP();
+      gnsstk::Vector<double> a = fm.getAccel();
+      gnsstk::Matrix<double> da_dr = fm.partialR();
+      gnsstk::Matrix<double> da_dv = fm.partialV();
+      gnsstk::Matrix<double> da_dp = fm.partialP();
 
       s << "a [" << a.size() << "]\n{\n"
           << a << std::endl << "}\n\n";
@@ -214,7 +214,7 @@ namespace pod
       s << "da/dp [" << da_dp.rows() << "," << da_dp.cols() << "]\n{\n"
           << da_dp << std::endl << "}\n\n";
 
-      Matrix<double> A = fm.getAMatrix();
+      gnsstk::Matrix<double> A = fm.getAMatrix();
 
       s << "A = [" << A.rows() << "," << A.cols() << "]\n{\n"
           << A << std::endl << "}\n\n";

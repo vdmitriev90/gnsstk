@@ -2,7 +2,7 @@
 #include"RtcmUtils.hpp"
 #include"BitSetProxy.hpp"
 
-using namespace gpstk;
+using namespace gnsstk;
 
 namespace pod
 {

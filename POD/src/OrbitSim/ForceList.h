@@ -43,14 +43,13 @@
 #ifndef POD_FORCE_MODEL_LIST_H
 #define POD_FORCE_MODEL_LIST_H
 
+#include <list>
+#include <memory>
 
 #include"Vector.hpp"
 #include"Matrix.hpp"
-#include "Force.h"
+#include"Force.h"
 #include"Spacecraft.hpp"
-
-#include <list>
-#include <memory>
 
 namespace pod
 {
@@ -81,7 +80,7 @@ namespace pod
 
 
          /// interface implementation for the 'Force'
-      virtual Vector<double> getDerivatives(const Epoch &t, Spacecraft& sc);
+      virtual gnsstk::Vector<double> getDerivatives(const gnsstk::Epoch &t, gnsstk::Spacecraft& sc);
       
 
          /// return the force model name

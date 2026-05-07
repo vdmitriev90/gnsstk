@@ -9,15 +9,15 @@ namespace pod
 	{
 	public:
 		TropoEquationsAdv()
-			:typeSet{ FilterParameter( gpstk::TypeID::wetMap), FilterParameter(gpstk::TypeID::wetMapDot) },
-			previousTime(gpstk::CommonTime::BEGINNING_OF_TIME),
-			currentTime(gpstk::CommonTime::END_OF_TIME),
+			:typeSet{ FilterParameter( gnsstk::TypeID::wetMap), FilterParameter(gnsstk::TypeID::wetMapDot) },
+			previousTime(gnsstk::CommonTime::BEGINNING_OF_TIME),
+			currentTime(gnsstk::CommonTime::END_OF_TIME),
 			dt(DBL_MAX), isFirstTime(true)
 		{};
 		TropoEquationsAdv(double q_1, double q_2)
-			:typeSet{ FilterParameter(gpstk::TypeID::wetMap), FilterParameter(gpstk::TypeID::wetMapDot) },
-			previousTime(gpstk::CommonTime::BEGINNING_OF_TIME),
-			currentTime(gpstk::CommonTime::END_OF_TIME),
+			:typeSet{ FilterParameter(gnsstk::TypeID::wetMap), FilterParameter(gnsstk::TypeID::wetMapDot) },
+			previousTime(gnsstk::CommonTime::BEGINNING_OF_TIME),
+			currentTime(gnsstk::CommonTime::END_OF_TIME),
 			dt(DBL_MAX), isFirstTime(true), q1(q_1), q2(q_2)
 		{};
 
@@ -25,20 +25,20 @@ namespace pod
 
 #pragma region Inherited via EquationBase
 
-		virtual void Prepare(gpstk::IRinex & gData) override;
+		virtual void Prepare(gnsstk::IRinex & gData) override;
 
-		virtual void updateH(const gpstk::IRinex& gData, const gpstk::TypeIDSet& types, gpstk::Matrix<double>& H, int& col_0) override;
+		virtual void updateH(const gnsstk::IRinex& gData, const gnsstk::TypeIDSet& types, gnsstk::Matrix<double>& H, int& col_0) override;
 
 		virtual  ParametersSet getParameters() const override
 		{
 			return typeSet;
 		}
 
-		virtual void updatePhi(gpstk::Matrix<double>& Phi, int & index) const override;
+		virtual void updatePhi(gnsstk::Matrix<double>& Phi, int & index) const override;
 
-		virtual void updateQ(gpstk::Matrix<double>& Q, int & index) const override;
+		virtual void updateQ(gnsstk::Matrix<double>& Q, int & index) const override;
 
-		virtual void defStateAndCovariance(gpstk::Vector<double>& x, gpstk::Matrix<double>& P, int & index) const override;
+		virtual void defStateAndCovariance(gnsstk::Vector<double>& x, gnsstk::Matrix<double>& P, int & index) const override;
 
 		virtual int getNumUnknowns() const override
 		{
@@ -47,7 +47,7 @@ namespace pod
 
 #pragma endregion
 
-		virtual TropoEquationsAdv& setPreviousTime(const gpstk::CommonTime& prevTime)
+		virtual TropoEquationsAdv& setPreviousTime(const gnsstk::CommonTime& prevTime)
 		{
 			previousTime = prevTime; return (*this);
 		}
@@ -57,7 +57,7 @@ namespace pod
 		* @param currTime   Value of current epoch
 		*
 		*/
-		virtual TropoEquationsAdv& setCurrentTime(const gpstk::CommonTime& currTime)
+		virtual TropoEquationsAdv& setCurrentTime(const gnsstk::CommonTime& currTime)
 		{
 			currentTime = currTime;
 			return (*this);
@@ -66,7 +66,7 @@ namespace pod
 
 #pragma region Fields
 
-		//gpstk::StochasticModel_uptr pStochasticModel;
+		//gnsstk::StochasticModel_uptr pStochasticModel;
 
 		ParametersSet typeSet;
 
@@ -79,14 +79,14 @@ namespace pod
 		double q2;
 
 		/// Epoch of previous measurement
-		gpstk::CommonTime previousTime;
+		gnsstk::CommonTime previousTime;
 
 		/// Epoch of current measurement
-		gpstk::CommonTime currentTime;
+		gnsstk::CommonTime currentTime;
 
 		double dt;
 
-		gpstk::TypeID typeId = gpstk::TypeID::wetMap;
+		gnsstk::TypeID typeId = gnsstk::TypeID::wetMap;
 		 
 		mutable bool isFirstTime;
 

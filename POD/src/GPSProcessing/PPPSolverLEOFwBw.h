@@ -2,7 +2,7 @@
 #define POD_PPP_SOLVER_LEOFWBW_H
 
 #include "PPPSolverLEO.h"
-using namespace gpstk;
+
 namespace pod
 {
     class PPPSolverLEOFwBw : public PPPSolverLEO
@@ -23,8 +23,7 @@ namespace pod
         *
         * @param gData    Data object holding the data.
         */
-        virtual IRinex& Process(IRinex& gData)
-            throw(ProcessingException);
+        virtual gnsstk::IRinex& Process(gnsstk::IRinex& gData);
 
 
         /** Reprocess the data stored during a previous 'Process()' call.
@@ -34,8 +33,7 @@ namespace pod
         * \warning The minimum number of cycles allowed is "1". In fact, if
         * you introduce a smaller number, 'cycles' will be set to "1".
         */
-        virtual void ReProcess(int cycles)
-            throw(ProcessingException);
+        virtual void ReProcess(int cycles);
 
 
         /** Reprocess the data stored during a previous 'Process()' call.
@@ -44,8 +42,7 @@ namespace pod
         * residual is bigger than the limits indicated by limitsCodeList and
         * limitsPhaseList.
         */
-        virtual void ReProcess(void)
-            throw(ProcessingException);
+        virtual void ReProcess(void);
 
 
 
@@ -57,8 +54,7 @@ namespace pod
         *
         * @return FALSE when all data is processed, TRUE otherwise.
         */
-        virtual bool LastProcess(IRinex& gData)
-            throw(ProcessingException);
+        virtual bool LastProcess(gnsstk::IRinex& gData);
 
 
         /// Gets the list storing the limits for postfit residuals in code.
@@ -181,7 +177,7 @@ namespace pod
 
 
         /// Set storing the TypeID's that we want to keep.
-        TypeIDSet keepTypeSet;
+        gnsstk::TypeIDSet keepTypeSet;
 
 
         /// Number of processed measurements.
@@ -201,27 +197,26 @@ namespace pod
 
 
         /// This method checks the limits and modifies 'gData' accordingly.
-        void checkLimits(IRinex& gData, double codeLimit, double phaseLimit);
+        void checkLimits(gnsstk::IRinex& gData, double codeLimit, double phaseLimit);
 
 
         // Some methods that we want to hide
-        virtual int Compute(const Vector<double>& prefitResiduals,
-                            const Matrix<double>& designMatrix)
-            throw(InvalidSolver)
+        virtual int Compute(const gnsstk::Vector<double>& prefitResiduals,
+                            const gnsstk::Matrix<double>& designMatrix)
         {
             return 0;
         };
 
 
         virtual PPPSolverLEOFwBw& setDefaultEqDefinition(
-            const gnssEquationDefinition& eqDef)
+            const gnsstk::gnssEquationDefinition& eqDef)
         {
             return (*this);
         };
 
 
-        virtual PPPSolverLEOFwBw& Reset(const Vector<double>& newState,
-                                        const Matrix<double>& newErrorCov)
+        virtual PPPSolverLEOFwBw& Reset(const gnsstk::Vector<double>& newState,
+                                        const gnsstk::Matrix<double>& newErrorCov)
         {
             return (*this);
         };

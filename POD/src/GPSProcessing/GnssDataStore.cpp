@@ -1,10 +1,11 @@
 #include"GnssDataStore.hpp"
 #include"FsUtils.h"
 #include"Rinex3NavStream.hpp"
+#include"SP3NavDataFactory.hpp"
 
 #include"CodeProcSvData.h"
 
-using namespace gpstk;
+using namespace gnsstk;
 
 namespace pod
 {
@@ -92,18 +93,18 @@ namespace pod
             std::string subdir = confReader->getValue("GenericFilesDir");
             opts.genericFilesDirectory = opts.workingDir + "\\" + subdir + "\\";
 
-            for (auto it : confReader->getListValueAsInt("carrierBands"))
+            for (auto it : confReader->getValueListAsInt("carrierBands"))
                 opts.carrierBands.insert(static_cast<CarrierBand>(it));
 
             std::cout << "Used Carrier bands: ";
             for_each(opts.carrierBands.begin(), opts.carrierBands.end(), [](auto && it) { std::cout << carrierBand2Str[it] << " "; });
             std::cout << std::endl;
 
-            for (auto it : confReader->getListValueAsInt("satSystems"))
-                opts.systems.insert(static_cast<SatID::SatelliteSystem>(it));
+            for (auto it : confReader->getValueListAsInt("satSystems"))
+                opts.systems.insert(static_cast<SatelliteSystem>(it));
 
             std::cout << "Used Sat. Systems: ";
-            for_each(opts.systems.begin(), opts.systems.end(), [](auto && ss) { std::cout << SatID::convertSatelliteSystemToString(ss) << " "; });
+            for_each(opts.systems.begin(), opts.systems.end(), [](auto && ss) { std::cout << convertSatelliteSystemToString(ss) << " "; });
             std::cout << std::endl;
 
             std::cout << "Ephemeris Loading... ";
@@ -151,17 +152,7 @@ namespace pod
     //
     bool GnssDataStore::loadEphemeris()
     {
-        // Set flags to reject satellites with bad or absent positional values or clocks
-        SP3EphList.clear();
-        SP3EphList.rejectBadPositions(true);
-        SP3EphList.rejectBadClocks(true);
-
-        // Set flags to reject satellites with absence position and clock data
-        SP3EphList.setClockGapInterval(8101);
-        SP3EphList.setPosGapInterval(8101);
-        SP3EphList.setPosMaxInterval(10000);
-        SP3EphList.setClockMaxInterval(10000);
-
+		
         std::list<std::string> files;
         std::string subdir = confReader->getValue("EphemerisDir");
         FsUtils::getAllFilesInDir(opts.workingDir + "\\" + subdir, files);
@@ -171,7 +162,7 @@ namespace pod
             // Try to load each ephemeris file
             try
             {
-                SP3EphList.loadFile(file);
+                sp3NavFactory_->addDataSource(file);
             }
             catch (FileMissingException& e)
             {
@@ -196,7 +187,7 @@ namespace pod
             // Try to load each ephemeris file
             try
             {
-                SP3EphList.loadRinexClockFile(file);
+                sp3NavFactory_->addDataSource(file);
             }
             catch (FileMissingException& e)
             {
@@ -303,12 +294,9 @@ namespace pod
                 }
                 else
                 {
-                    long week = rNavHeader.mapTimeCorr["GPUT"].refWeek;
-                    if (week > 0)
-                    {
-                        GPSWeekSecond gpsws = GPSWeekSecond(week, 0);
-                        refTime = gpsws.convertToCommonTime();
-                    }
+                    const auto& time_rnx = rNavHeader.mapTimeCorr["GPUT"].refTime;
+                    if (time_rnx != CommonTime::BEGINNING_OF_TIME)
+						refTime = time_rnx;
                 }
 #pragma endregion
 
@@ -424,6 +412,13 @@ namespace pod
         return eopStore.size() > 0;
     }
 
+    inline GnssDataStore::GnssDataStore(gnsstk::ConfDataReader& confReader)
+        :confReader(&confReader)
+    {
+        sp3NavFactory_ = std::make_shared<SP3NavDataFactory>();
+        navLibrary_.addFactory(sp3NavFactory_);
+    }
+
     void GnssDataStore::checkObservable()
     {
 		std::ofstream os(opts.workingDir + "\\ObsStatisic.out");
@@ -453,9 +448,9 @@ namespace pod
                     for (auto &it : rod.obs)
                     {
                         if (opts.systems.find(it.first.system) == opts.systems.end()) continue;
-                        if (it.first.system == SatID::SatelliteSystem::systemGPS)
+                        if (it.first.system == SatelliteSystem::GPS)
                             nGPS++;
-                        if (it.first.system == SatID::SatelliteSystem::systemGlonass)
+                        if (it.first.system == SatelliteSystem::Glonass)
                             nGLN++;
 
                         auto &ids = CodeProcSvData::obsTypes[it.first.system];
@@ -487,10 +482,10 @@ namespace pod
 			apprPos = std::make_unique<ApprPosSimple>(getPosition(opts.SiteRover));
 			return true;
 		case IApprPosProvider::ComputeForEachEpoch:
-			apprPos = std::make_unique<ComputeOnePos>(SP3EphList);
+			apprPos = std::make_unique<ComputeOnePos>(navLibrary_);
 			return true;
 		case IApprPosProvider::ComputeForFirstEpoch:
-			apprPos = std::make_unique<ComputeOnePos>(SP3EphList);
+			apprPos = std::make_unique<ComputeOnePos>(navLibrary_);
 			return true;
 		case IApprPosProvider::LoadFromFile:
 			apprPos = std::make_unique<PositionFromFile>(opts.workingDir + "\\" + confReader->getValue("ApprPosFile"));
@@ -504,7 +499,7 @@ namespace pod
 	{
 		Position pos;
 		int i = 0;
-		for (auto& it : confReader->getListValueAsDouble("nominalPosition", opts.SiteRover))
+		for (auto& it : confReader->getValueListAsDouble("nominalPosition", opts.SiteRover))
 			pos[i++] = it;
 		return pos;
 	}

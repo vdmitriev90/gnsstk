@@ -13,7 +13,7 @@
 #include <algorithm>
 
 using namespace std;
-using namespace gpstk;
+using namespace gnsstk;
 
 namespace pod
 {
@@ -277,7 +277,8 @@ namespace pod
 		auto phaseRes = equations->getResiduals(PostfitResiduals(), types);
 		Matrix<double> res(phaseRes.size(), 1, 0.0);
 
-		res = res.assignFrom(phaseRes);
+		for (size_t i = 0; i < phaseRes.size(); ++i)
+			res(i, 0) = phaseRes[i];
 
 		//compute v'v
 		auto vpv = transpose(res)*res;

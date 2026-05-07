@@ -1,7 +1,7 @@
 #include "ComputeStatistic.h"
 #include"WinUtils.h"
 
-using namespace gpstk;
+using namespace gnsstk;
 
 namespace pod
 {

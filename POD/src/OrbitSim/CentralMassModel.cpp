@@ -1,5 +1,6 @@
 #include"CentralMassModel.h"
 
+using namespace gnsstk;
 
 namespace pod
 {

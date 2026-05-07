@@ -4,48 +4,44 @@
 
 
 namespace pod
-{
-    typedef std::unique_ptr<gnsstk::ProcessingClass> process_uptr;
+{ 
+    using process_uptr = std::unique_ptr<gnsstk::ProcessingClass>;
+    using code_smoother_ptr = std::unique_ptr<gnsstk::CodeSmoother>;
    
 	//aggregator for 'scMarker' and 'CodeSmoother' objects
     class CodeSmoother2 : public gnsstk::ProcessingClass
     {
     public:
 
-        CodeSmoother2();
+        CodeSmoother2() = default;
 
-        CodeSmoother2(std::list<gnsstk::CodeSmoother>& smoothers, std::list<process_uptr>& markers, int interval = 600);
+        
+        CodeSmoother2(std::vector<code_smoother_ptr>&& codeSmoothers,
+            std::vector<process_uptr>&& csMarkers,
+            int interval = 600);
 
         virtual ~CodeSmoother2();
 
-        virtual CodeSmoother2& addScMarker(gnsstk::ProcessingClass& scMarker);
+        CodeSmoother2& addScMarker(process_uptr scMarker);
 
-        virtual CodeSmoother2& addScMarker(process_uptr scMarker);
-
-        virtual CodeSmoother2& addSmoother(gnsstk::CodeSmoother& smoother);
+        CodeSmoother2& addSmoother(code_smoother_ptr smoother);
 
         virtual gnsstk::IRinex& Process(gnsstk::IRinex& gData) override;
  
-        virtual std::string getClassName(void) const override
-        {
-            return "CodeSmoother2";
-        }
+        virtual std::string getClassName() const override;
 
-        virtual int getInterval() const
-        {
-            return window;
-        }
+        int getInterval() const;
 
-        virtual CodeSmoother2& setInterval(int interval);
+        CodeSmoother2& setInterval(int interval);
         
-
     private:
-        //
-        std::list<gnsstk::CodeSmoother> smoothers;
-        std::list<process_uptr> scMarkers;
+        //Code smoothers
+        std::vector<code_smoother_ptr> smoothers_;
+        //Cycle slip markers
+        std::vector<process_uptr> scMarkers_;
 
         // smoothing window in samples
-        int window ;
+        int interval_ ;
     };
 }
 

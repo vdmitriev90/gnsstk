@@ -38,27 +38,27 @@ namespace pod
 			return *this;
 		}
 
-		void setEpochReceivedCallback(void(*func)(gpstk::IRinex&))
+		void setEpochReceivedCallback(void(*func)(gnsstk::IRinex&))
 		{
 			onEpochReceived =func;
 		}
 		
-		const gpstk::IRinex& currEpoch() const
+		const gnsstk::IRinex& currEpoch() const
 		{
 			return currEp;
 		}
 		
-		gpstk::IRinex& currEpoch()
+		gnsstk::IRinex& currEpoch()
 		{
 			return currEp;
 		}
 
 	private:
 
-		void(*onEpochReceived)(gpstk::IRinex&);
+		void(*onEpochReceived)(gnsstk::IRinex&);
 		data_source_uptr source;
 		std::set<rtcm3_msg_uptr> msgsToParse;
-		gpstk::RinexEpoch currEp;
+		gnsstk::RinexEpoch currEp;
 	};
 
 }

@@ -6,7 +6,6 @@
 #include"CodeProcSvData.h"
 #include"NeillTropModel.hpp"
 
-using namespace gpstk;
 
 namespace pod
 {
@@ -22,14 +21,14 @@ namespace pod
             return "CodeSolverLEO";
         };
 
-        virtual NeillTropModel initTropoModel(const Position &nominalPos, int DoY) override
+        virtual gnsstk::NeillTropModel initTropoModel(const gnsstk::Position &nominalPos, int DoY) override
         {
             return NULL;
         };
-        virtual double CodeSolverLEO::getTropoCorrection(
-            const Position &rxPos,
-            const Position &svPos,
-            const CommonTime &t
+        virtual double getTropoCorrection(
+            const gnsstk::Position &rxPos,
+            const gnsstk::Position &svPos,
+            const gnsstk::CommonTime &t
         ) const override
         {
             return  0;

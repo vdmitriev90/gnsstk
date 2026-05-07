@@ -12,16 +12,22 @@
 
 namespace fs = std::filesystem;
 
-typedef std::map<TypeID, int> band_stat ;
-typedef std::map<SatID, std::map<TypeID, int>> sv_stat;
-typedef std::pair<TypeID, int> band_stat_pair;
+using namespace gnsstk;
+
+typedef std::map<gnsstk::TypeID, int> band_stat ;
+typedef std::map<gnsstk::SatID, std::map<gnsstk::TypeID, int>> sv_stat;
+typedef std::pair<gnsstk::TypeID, int> band_stat_pair;
 namespace pod
 {
-    PrSmoother::PrSmoother() : window(100), codes(std::list<TypeID>(TypeID::C1))
+    PrSmoother::PrSmoother() 
+        : window(100)
+        , codes(std::list<gnsstk::TypeID>(gnsstk::TypeID::C1))
     {
     }
 
-    PrSmoother::PrSmoother(const std::list<TypeID>& tList, int l) : window(l), codes(tList)
+    PrSmoother::PrSmoother(const std::list<gnsstk::TypeID>& tList, int l)
+        : window(l)
+        , codes(tList)
     {
     }
 

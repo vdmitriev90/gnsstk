@@ -49,8 +49,7 @@ namespace pod
         */
         virtual int Compute(const gnsstk::Vector<double>& prefitResiduals,
                             const gnsstk::Matrix<double>& designMatrix,
-                            const gnsstk::Matrix<double>& weightMatrix)
-            throw(gnsstk::InvalidSolver);
+                            const gnsstk::Matrix<double>& weightMatrix);
 
 
         /** Compute the PPP Solution of the given equations set.
@@ -70,8 +69,7 @@ namespace pod
         */
         virtual int Compute(const gnsstk::Vector<double>& prefitResiduals,
                             const gnsstk::Matrix<double>& designMatrix,
-                            const gnsstk::Vector<double>& weightVector)
-            throw(gnsstk::InvalidSolver);
+                            const gnsstk::Vector<double>& weightVector);
 
 
         /** Returns a reference to a gnnsRinex object after solving
@@ -79,8 +77,7 @@ namespace pod
         *
         * @param gData    Data object holding the data.
         */
-        virtual gnsstk::IRinex& Process(gnsstk::IRinex& gData)
-            throw(gnsstk::ProcessingException);
+        virtual gnsstk::IRinex& Process(gnsstk::IRinex& gData);
 
 
         /** Resets the PPP internal Kalman filter.
@@ -425,7 +422,6 @@ namespace pod
 
         virtual int Compute(const gnsstk::Vector<double>& prefitResiduals,
                             const gnsstk::Matrix<double>& designMatrix)
-            throw(gnsstk::InvalidSolver)
         {
             return 0;
         };

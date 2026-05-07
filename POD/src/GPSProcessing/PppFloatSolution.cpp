@@ -47,7 +47,7 @@
 #include"WinUtils.h"
 #include"StringUtils.h"
 
-using namespace gpstk;
+using namespace gnsstk;
 
 namespace pod
 {
@@ -63,8 +63,7 @@ namespace pod
     {
         updateRequaredObs();
 
-        BasicModel model;
-        model.setDefaultEphemeris(data->SP3EphList);
+        BasicModel model(data->navLibrary_);
         model.setDefaultObservable(codeL1);
         model.setMinElev(.0);
 		
@@ -80,7 +79,7 @@ namespace pod
         //Object to decimate data
         Decimate decimateData(confReader().getValueAsDouble("decimationInterval"),
             confReader().getValueAsDouble("decimationTolerance"),
-            data->SP3EphList.getInitialTime());
+            data->navLibrary_.getInitialTime());
 
 		// Object to compute gravitational delay effects
 		GravitationalDelay grDelayRover;
@@ -125,12 +124,12 @@ namespace pod
 
 #pragma region correct observable
 
-        CorrectObservables corrRover(data->SP3EphList);
+        CorrectObservables corrRover(data->navLibrary_);
 
         // Vector from monument to antenna ARP [UEN], in meters
         Triple offsetARP;
         int i = 0;
-        for (auto &it : confReader().getListValueAsDouble("offsetARP", opts().SiteRover))
+        for (auto &it : confReader().getValueListAsDouble("offsetARP", opts().SiteRover))
             offsetARP[i++] = it;
         corrRover.setMonument(offsetARP);
 
@@ -149,7 +148,7 @@ namespace pod
         OceanLoading ocean;
         ocean.setFilename(opts().genericFilesDirectory + confReader().getValue("oceanLoadingFile"));
 
-        ComputeWindUp windupRover(data->SP3EphList, opts().genericFilesDirectory + confReader().getValue("satDataFile"));
+        ComputeWindUp windupRover(data->navLibrary_, opts().genericFilesDirectory + confReader().getValue("satDataFile"));
 
         ComputeSatPCenter svPcenterRover;
         svPcenterRover.setAntexReader(antexReader);
@@ -165,7 +164,7 @@ namespace pod
         if (forwardBackwardCycles > 0)
         {
             solverFb.setCyclesNumber(forwardBackwardCycles);
-            solverFb.setLimits(confReader().getListValueAsDouble("codeLimList"), confReader().getListValueAsDouble("phaseLimList"));
+            solverFb.setLimits(confReader().getValueListAsDouble("codeLimList"), confReader().getValueListAsDouble("phaseLimList"));
 			solverFb.setCSDetRef(markCSLI2Rover, markCSMW2Rover);
 
 			solverFb.ReProcList().push_back(markCSLI2Rover);
@@ -195,7 +194,7 @@ namespace pod
             //read all epochs
             while (rin >> gRin)
             {
-				//gRin.removeSatID(18, SatID::SatelliteSystem::systemGPS);
+				//gRin.removeSatID(18, SatelliteSystem::GPS);
 				if (decimateData.check(gRin))
 					continue;
 
@@ -230,7 +229,7 @@ namespace pod
                 corrRover.setNominalPosition(nominalPos);
                 windupRover.setNominalPosition(nominalPos);
                 svPcenterRover.setNominalPosition(nominalPos);
-                model.rxPos = nominalPos;
+                model.setRxPosition(nominalPos);
 
                 gRin >> requireObs;
                 gRin >> CodeFilter;

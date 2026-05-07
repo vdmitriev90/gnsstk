@@ -29,8 +29,7 @@ namespace pod
 		virtual ~KalmanSolver();
 
 
-		virtual gnsstk::IRinex& Process(gnsstk::IRinex& gData)
-			throw(gnsstk::ProcessingException);
+		virtual gnsstk::IRinex& Process(gnsstk::IRinex& gData);
 
 		// Returns a string identifying this object.
 		virtual std::string getClassName(void) const

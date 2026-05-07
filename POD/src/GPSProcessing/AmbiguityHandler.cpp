@@ -1,7 +1,7 @@
 #include "AmbiguityHandler.h"
 #include"WinUtils.h"
 
-using namespace gpstk;
+using namespace gnsstk;
 
 namespace pod
 {
@@ -13,9 +13,9 @@ namespace pod
         :pAmbs(&ambiguites), pSdFloatSolution(&state), pSdCov(&cov), coreNum(n_core),
         pAR(std::make_unique<gnsstk::ARMLambda>())
     {
-        assert(coreNum + pAmbs->size() == pSdFloatSolution->size());
-        assert(pSdCov->rows() == pSdCov->cols());
-        assert(pSdFloatSolution->size() == pSdCov->rows());
+        GNSSTK_ASSERT(coreNum + pAmbs->size() == pSdFloatSolution->size());
+        GNSSTK_ASSERT(pSdCov->rows() == pSdCov->cols());
+        GNSSTK_ASSERT(pSdFloatSolution->size() == pSdCov->rows());
     };
 
     void  AmbiguityHandler::fixL1L2(gnsstk::IRinex& gData)
@@ -152,7 +152,7 @@ namespace pod
         int i(0);
         for (const auto & amb : *pAmbs)
         {
-            auto  &it = gData.getBody().find(amb.sv);
+            auto it = gData.getBody().find(amb.sv);
             if (it != gData.getBody().end())
             {
                 if (refSVs.find(amb.sv) == refSVs.end())

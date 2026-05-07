@@ -1,7 +1,7 @@
 #include"CodeProcSvData.h"
 #include"GeneralConstraint.hpp"
 
-using namespace gpstk;
+using namespace gnsstk;
 
 namespace pod
 {
@@ -10,43 +10,43 @@ namespace pod
 
      CodeProcSvData::_init::_init()
     {      
-        RinexObsID idC1G(ObsID::ObservationType::otRange, ObsID::CarrierBand::cbL1, ObsID::TrackingCode::tcCA);
+        RinexObsID idC1G(ObservationType::Range, CarrierBand::L1, TrackingCode::CA);
         std::pair<TypeID, RinexObsID> pC1G (TypeID::C1, idC1G);
 
-        RinexObsID idP1G(ObsID::ObservationType::otRange, ObsID::CarrierBand::cbL1, ObsID::TrackingCode::tcW);
+        RinexObsID idP1G(ObservationType::Range, CarrierBand::L1, TrackingCode::CW);
         std::pair<TypeID, RinexObsID> pP1G(TypeID::P1, idP1G);
 
-        RinexObsID idP2G(ObsID::ObservationType::otRange, ObsID::CarrierBand::cbL2, ObsID::TrackingCode::tcW);
+        RinexObsID idP2G(ObservationType::Range, CarrierBand::L2, TrackingCode::CW);
         std::pair<TypeID, RinexObsID> pP2G(TypeID::P2, idP2G);
        
-        RinexObsID idS1G(ObsID::ObservationType::otSNR, ObsID::CarrierBand::cbL1, ObsID::TrackingCode::tcCA);
+        RinexObsID idS1G(ObservationType::SNR, CarrierBand::L1, TrackingCode::CA);
         std::pair<TypeID, RinexObsID> pS1(TypeID::S1, idS1G);
 
-        RinexObsID idS2G(ObsID::ObservationType::otSNR, ObsID::CarrierBand::cbL2, ObsID::TrackingCode::tcW);
+        RinexObsID idS2G(ObservationType::SNR, CarrierBand::L2, TrackingCode::CW);
         std::pair<TypeID, RinexObsID> pS2(TypeID::S2, idS2G);
 
 		std::map<TypeID, RinexObsID> mG = { pC1G, pP1G, pP2G, pS1, pS2 };
 
-        RinexObsID idC1R(ObsID::ObservationType::otRange, ObsID::CarrierBand::cbG1, ObsID::TrackingCode::tcGCA);
+        RinexObsID idC1R(ObservationType::Range, CarrierBand::G1, TrackingCode::Standard);
         std::pair<TypeID, RinexObsID> pC1R(TypeID::C1, idC1R);
 
-        RinexObsID idP1R(ObsID::ObservationType::otRange, ObsID::CarrierBand::cbG1, ObsID::TrackingCode::tcGP);
+        RinexObsID idP1R(ObservationType::Range, CarrierBand::G1, TrackingCode::Precise);
         std::pair<TypeID, RinexObsID> pP1R(TypeID::P1, idP1R);
 
-        RinexObsID idP2R(ObsID::ObservationType::otRange, ObsID::CarrierBand::cbG2, ObsID::TrackingCode::tcGP);
+        RinexObsID idP2R(ObservationType::Range, CarrierBand::G2, TrackingCode::Precise);
         std::pair<TypeID, RinexObsID> pP2R(TypeID::P2, idP2R);
 
-        RinexObsID idS1R(ObsID::ObservationType::otSNR, ObsID::CarrierBand::cbG1, ObsID::TrackingCode::tcGCA);
+        RinexObsID idS1R(ObservationType::SNR, CarrierBand::G1, TrackingCode::Standard);
         std::pair<TypeID, RinexObsID> pS1R(TypeID::S1, idS1R);
 
-        RinexObsID idS2R(ObsID::ObservationType::otSNR, ObsID::CarrierBand::cbG2, ObsID::TrackingCode::tcGP);
+        RinexObsID idS2R(ObservationType::SNR, CarrierBand::G2, TrackingCode::Precise);
         std::pair<TypeID, RinexObsID> pS2R(TypeID::S2, idS1R);
 
 		std::map<TypeID, RinexObsID> mR = { pC1R, pP1R, pP2R, pS1R, pS2R };
 
         //
-        std::pair<SatID::SatelliteSystem, std::map<TypeID, RinexObsID>> p1(SatID::SatelliteSystem::systemGPS, mG);
-        std::pair<SatID::SatelliteSystem, std::map<TypeID, RinexObsID>> p2(SatID::SatelliteSystem::systemGlonass, mR);
+        std::pair<SatelliteSystem, std::map<TypeID, RinexObsID>> p1(SatelliteSystem::GPS, mG);
+        std::pair<SatelliteSystem, std::map<TypeID, RinexObsID>> p2(SatelliteSystem::Glonass, mR);
 
         obsTypes = { p1, p2 };
     }
@@ -87,7 +87,7 @@ namespace pod
         
         return n;
     }
-    size_t CodeProcSvData::getNumUsedSv(SatID::SatelliteSystem sys) const
+    size_t CodeProcSvData::getNumUsedSv(SatelliteSystem sys) const
     {
         int n = 0;
         for (auto & it : data)
@@ -98,7 +98,7 @@ namespace pod
     }
     size_t CodeProcSvData::getParamNum() const
     {
-        std::set<SatID::SatelliteSystem> ss;
+        std::set<SatelliteSystem> ss;
         for (auto & it : data)
             if (it.second.use)
                 ss.insert(it.first.system);
@@ -118,9 +118,9 @@ namespace pod
         }
     }
 
-    double CodeProcSvData::appendResid(Vector<double> & sol, SatID::SatelliteSystem sys) const
+    double CodeProcSvData::appendResid(Vector<double> & sol, SatelliteSystem sys) const
     {
-        if (getParamNum() > 4 && sys == SatID::SatelliteSystem::systemGlonass)
+        if (getParamNum() > 4 && sys == SatelliteSystem::Glonass)
             return sol(4);
         else
             return 0.0;
@@ -130,13 +130,13 @@ namespace pod
     {
 
         /// find the number of good GLN satellites
-        int numGLN = getNumUsedSv(SatID::SatelliteSystem::systemGlonass);
+        int numGLN = getNumUsedSv(SatelliteSystem::Glonass);
         //if number of GLN SV is lesss than 2 
         if (numGLN < 2)
         {
             // we will not use glonass satellites
             for (auto &it : data)
-                if (it.first.system == SatID::SatelliteSystem::systemGlonass)
+                if (it.first.system == SatelliteSystem::Glonass)
                     it.second.use = false;
         }
 
@@ -172,7 +172,7 @@ namespace pod
 
             if (K > 4)
             {
-                if (it.first.system == SatID::SatelliteSystem::systemGlonass)
+                if (it.first.system == SatelliteSystem::Glonass)
                 {
                     A(i_eq, 4) = 1.0;
                     W(i_eq, i_eq) /= glnSigmaFactor;
@@ -206,7 +206,7 @@ namespace pod
     // stream output for CodeSolverBase
     std::ostream& operator<<(std::ostream& os, const CodeProcSvData& svData)
     {
-        os << svData.data.size() << " " << svData.getNumUsedSv(SatID::SatelliteSystem::systemGPS) << " " << svData.getNumUsedSv(SatID::SatelliteSystem::systemGlonass);
+        os << svData.data.size() << " " << svData.getNumUsedSv(SatelliteSystem::GPS) << " " << svData.getNumUsedSv(SatelliteSystem::Glonass);
         return os;
     }
 }

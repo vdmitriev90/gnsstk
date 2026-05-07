@@ -1,7 +1,7 @@
 #include "IonoEstimator.h"
 #include"WinUtils.h"
 
-using namespace gpstk;
+using namespace gnsstk;
 namespace pod
 {
     Matrix<double> IonoEstimator::H;
@@ -29,7 +29,6 @@ namespace pod
        {}
 
 	IRinex& IonoEstimator::Process(IRinex& gData)
-        throw(ProcessingException)
     {
 
         try

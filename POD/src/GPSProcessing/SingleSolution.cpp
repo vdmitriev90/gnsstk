@@ -21,7 +21,7 @@
 
 #include<memory>
 
-using namespace gpstk;
+using namespace gnsstk;
 
 namespace pod
 {
@@ -50,11 +50,10 @@ namespace pod
         Decimate decimateData(
             confReader().getValueAsDouble("decimationInterval"),
             confReader().getValueAsDouble("decimationTolerance"),
-            data->SP3EphList.getInitialTime());
+            data->navLibrary_.getInitialTime());
 
         // basic model object
-        BasicModel model;
-        model.setDefaultEphemeris(data->SP3EphList);
+        BasicModel model(data->navLibrary_);
         model.setDefaultObservable(codeL1);
         model.setMinElev(confReader().getValueAsInt("ElMask"));
 
@@ -71,7 +70,7 @@ namespace pod
         if (forwardBackwardCycles > 0)
         {
             solverFb.setCyclesNumber(forwardBackwardCycles);
-            solverFb.setLimits(confReader().getListValueAsDouble("codeLimList"), confReader().getListValueAsDouble("phaseLimList"));
+            solverFb.setLimits(confReader().getValueListAsDouble("codeLimList"), confReader().getValueListAsDouble("phaseLimList"));
         }
 
         bool firstTime = true;
@@ -129,7 +128,7 @@ namespace pod
                 //update approximate position 
                 data->ionoCorrector.setNominalPosition(nominalPos);
                 uptrTropModel->setAllParameters(t, nominalPos);
-                model.rxPos = nominalPos;
+                model.setRxPosition(nominalPos);
 
                 //filter out satellites with incomplete observables set 
                 gRin >> requireObs;
@@ -279,8 +278,8 @@ namespace pod
 
         if (opts().isSmoothCode)
         {
-            codeSmoother.addSmoother(CodeSmoother(codeL1));
-            codeSmoother.addSmoother(CodeSmoother(TypeID::P2));
+            codeSmoother.addSmoother(std::make_unique<CodeSmoother>(codeL1));
+            codeSmoother.addSmoother(std::make_unique<CodeSmoother>(TypeID::P2));
 
             // add linear combinations, requared  for CS detections 
             computeLinear.add(std::make_unique<LICombimnation>());

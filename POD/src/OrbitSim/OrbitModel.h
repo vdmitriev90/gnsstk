@@ -7,7 +7,7 @@
 #include"EquationOfMotion.hpp"
 
 
-using namespace gpstk;
+
 namespace pod
 {
     class OrbitModel : public EquationOfMotion
@@ -25,7 +25,7 @@ namespace pod
             forceList.clear();
         }
 
-        virtual Vector<double> getDerivatives(const double&t, const Vector<double>& y);
+        virtual gnsstk::Vector<double> getDerivatives(const double&t, const gnsstk::Vector<double>& y);
 
         /// Restore the default setting
         OrbitModel& reset(const ForceModelData& fmc);
