@@ -84,37 +84,15 @@ namespace gnsstk
    IonoCorr ::
    IonoCorr()
          : type(Unknown),
-           param{ FormattedDouble(0, StringUtils::FFLead::Decimal, 4, 2, 12,
-                                  'D', StringUtils::FFSign::NegOnly,
-                                  StringUtils::FFAlign::Right),
-         FormattedDouble(0, StringUtils::FFLead::Decimal, 4, 2, 12,
-                         'D', StringUtils::FFSign::NegOnly,
-                         StringUtils::FFAlign::Right),
-         FormattedDouble(0, StringUtils::FFLead::Decimal, 4, 2, 12,
-                         'D', StringUtils::FFSign::NegOnly,
-                         StringUtils::FFAlign::Right),
-         FormattedDouble(0, StringUtils::FFLead::Decimal, 4, 2, 12,
-                         'D', StringUtils::FFSign::NegOnly,
-                         StringUtils::FFAlign::Right) }
+           param{0.0, 0.0, 0.0, 0.0}
    {
    }
 
 
    IonoCorr ::
    IonoCorr(std::string str)
-         : type(Unknown), // just in case someone breaks fromString
-           param{ FormattedDouble(0, StringUtils::FFLead::Decimal, 4, 2, 12,
-                                  'D', StringUtils::FFSign::NegOnly,
-                                  StringUtils::FFAlign::Right),
-         FormattedDouble(0, StringUtils::FFLead::Decimal, 4, 2, 12,
-                         'D', StringUtils::FFSign::NegOnly,
-                         StringUtils::FFAlign::Right),
-         FormattedDouble(0, StringUtils::FFLead::Decimal, 4, 2, 12,
-                         'D', StringUtils::FFSign::NegOnly,
-                         StringUtils::FFAlign::Right),
-         FormattedDouble(0, StringUtils::FFLead::Decimal, 4, 2, 12,
-                         'D', StringUtils::FFSign::NegOnly,
-                         StringUtils::FFAlign::Right) }
+         : type(Unknown),
+           param{0.0, 0.0, 0.0, 0.0}
    {
       this->fromString(str);
    }
@@ -267,7 +245,7 @@ namespace gnsstk
                // GPS alpha "ION ALPHA"  R2.11
             IonoCorr ic("GPSA");
             for(i=0; i < 4; i++)
-               ic.param[i] = line.substr(2 + 12*i, 12);
+               ic.param[i] = asDouble(line.substr(2 + 12*i, 12));
             mapIonoCorr[ic.asString()] = ic;
             if(mapIonoCorr.find("GPSB") != mapIonoCorr.end())
                valid |= validIonoCorrGPS;
@@ -277,7 +255,7 @@ namespace gnsstk
                // GPS beta "ION BETA"  R2.11
             IonoCorr ic("GPSB");
             for(i=0; i < 4; i++)
-               ic.param[i] = line.substr(2 + 12*i, 12);
+               ic.param[i] = asDouble(line.substr(2 + 12*i, 12));
             mapIonoCorr[ic.asString()] = ic;
             if(mapIonoCorr.find("GPSA") != mapIonoCorr.end())
                valid |= validIonoCorrGPS;
@@ -296,7 +274,7 @@ namespace gnsstk
                GNSSTK_THROW(e);
             }
             for(i=0; i < 4; i++)
-               ic.param[i] = line.substr(5 + 12*i, 12);
+               ic.param[i] = asDouble(line.substr(5 + 12*i, 12));
 
             if(ic.type == IonoCorr::GAL)
             {
@@ -523,7 +501,10 @@ namespace gnsstk
                   strm << "GAL  ";
                   for(j=0; j<3; j++)
                   {
-                     strm << it->second.param[j];
+                     strm << FormattedDouble(it->second.param[j],
+                                             StringUtils::FFLead::Decimal, 4, 2, 12,
+                                             'D', StringUtils::FFSign::NegOnly,
+                                             StringUtils::FFAlign::Right);
                   }
                   strm << "            " << setw(7) << ' ' << stringIonoCorr;
                   break;
@@ -533,7 +514,10 @@ namespace gnsstk
                      strm << "GPSA ";
                      for(j=0; j<4; j++)
                      {
-                        strm << it->second.param[j];
+                        strm << FormattedDouble(it->second.param[j],
+                                                StringUtils::FFLead::Decimal, 4, 2, 12,
+                                                'D', StringUtils::FFSign::NegOnly,
+                                                StringUtils::FFAlign::Right);
                      }
                      strm << setw(7) << ' ' << stringIonoCorr;
                   }
@@ -543,7 +527,10 @@ namespace gnsstk
                      strm << "  ";
                      for(j=0; j<4; j++)
                      {
-                        strm << it->second.param[j];
+                        strm << FormattedDouble(it->second.param[j],
+                                                StringUtils::FFLead::Decimal, 4, 2, 12,
+                                                'D', StringUtils::FFSign::NegOnly,
+                                                StringUtils::FFAlign::Right);
                      }
                      strm << setw(10) << ' ' << stringIonAlpha;
                   }
@@ -553,7 +540,10 @@ namespace gnsstk
                   {
                      strm << "GPSB ";
                      for(j=0; j<4; j++)
-                        strm << it->second.param[j];
+                        strm << FormattedDouble(it->second.param[j],
+                                                StringUtils::FFLead::Decimal, 4, 2, 12,
+                                                'D', StringUtils::FFSign::NegOnly,
+                                                StringUtils::FFAlign::Right);
                      strm << setw(7) << ' ' << stringIonoCorr;
                   }
                   else
@@ -561,7 +551,10 @@ namespace gnsstk
                         // "ION BETA" // R2.11
                      strm << "  ";
                      for(j=0; j<4; j++)
-                        strm << it->second.param[j];
+                        strm << FormattedDouble(it->second.param[j],
+                                                StringUtils::FFLead::Decimal, 4, 2, 12,
+                                                'D', StringUtils::FFSign::NegOnly,
+                                                StringUtils::FFAlign::Right);
                      strm << setw(10) << ' ' << stringIonBeta;
                   }
                   break;

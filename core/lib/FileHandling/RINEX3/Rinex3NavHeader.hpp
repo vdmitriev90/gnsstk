@@ -99,7 +99,7 @@ namespace gnsstk
 
          // Member data
       CorrType type;   ///< type of correction - enum CorrType
-      FormattedDouble param[4]; ///< parameters ai0-ai2,0(GAL), alpha0-3 or beta0-3(GPS)
+      double param[4]; ///< parameters ai0-ai2,0(GAL), alpha0-3 or beta0-3(GPS)
    }; // End of class 'IonoCorr'
 
       /// This class models the RINEX 3 Nav header for a RINEX 3 Nav file.
