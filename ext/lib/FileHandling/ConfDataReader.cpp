@@ -545,6 +545,115 @@ namespace gnsstk
 
 
 
+      /* Method to get an iterator for a variable list.
+       *
+       * @param variableList   Variable list name.
+       * @param section        Section the variable list belongs to.
+       */
+   ConfDataReader::ListIterator ConfDataReader::getListIterator( 
+                                                   string variableList,
+                                                   string section )
+   {
+      return ListIterator(getValueList(variableList, section));
+   }
+
+
+      /* Method to get all values from a variable list as a vector.
+       *
+       * @param variableList   Variable list name.
+       * @param section        Section the variable list belongs to.
+       */
+   std::vector<std::string> ConfDataReader::getValueList( string variableList,
+                                                          string section )
+   {
+      try
+      {
+            // Let's make sure that section and variable names are uppercase
+         section      = StringUtils::upperCase(section);
+         variableList = StringUtils::upperCase(variableList);
+
+            // Get the full value string
+         string fullValue = getValue(variableList, section);
+
+            // Split into words
+         std::vector<std::string> result;
+         
+         while (!fullValue.empty())
+         {
+            string word = StringUtils::stripFirstWord(fullValue);
+            word = StringUtils::strip(word);
+            
+            if (!word.empty())
+            {
+               result.push_back(word);
+            }
+            
+            fullValue = StringUtils::strip(fullValue);
+         }
+
+         return result;
+      }
+      catch (ConfigurationException& e)
+      {
+         GNSSTK_RETHROW(e);
+      }
+   }
+
+
+      /* Method to get all values from a variable list as doubles.
+       *
+       * @param variableList   Variable list name.
+       * @param section        Section the variable list belongs to.
+       */
+   std::vector<double> ConfDataReader::getValueListAsDouble( string variableList,
+                                                             string section )
+   {
+      try
+      {
+         std::vector<std::string> stringList = getValueList(variableList, section);
+         std::vector<double> result;
+         
+         for (const auto& str : stringList)
+         {
+            result.push_back(StringUtils::asDouble(str));
+         }
+         
+         return result;
+      }
+      catch (ConfigurationException& e)
+      {
+         GNSSTK_RETHROW(e);
+      }
+   }
+
+
+      /* Method to get all values from a variable list as integers.
+       *
+       * @param variableList   Variable list name.
+       * @param section        Section the variable list belongs to.
+       */
+   std::vector<int> ConfDataReader::getValueListAsInt( string variableList,
+                                                       string section )
+   {
+      try
+      {
+         std::vector<std::string> stringList = getValueList(variableList, section);
+         std::vector<int> result;
+         
+         for (const auto& str : stringList)
+         {
+            result.push_back(StringUtils::asInt(str));
+         }
+         
+         return result;
+      }
+      catch (ConfigurationException& e)
+      {
+         GNSSTK_RETHROW(e);
+      }
+   }
+
+
       /* Method to get the description of a given variable
        *
        * @param variable   Variable name.

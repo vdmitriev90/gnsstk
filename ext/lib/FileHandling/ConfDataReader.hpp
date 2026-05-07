@@ -46,6 +46,7 @@
 
 #include <string>
 #include <map>
+#include <vector>
 #include "FFTextStream.hpp"
 #include "StringUtils.hpp"
 #include "Matrix.hpp"
@@ -83,6 +84,14 @@ namespace gnsstk
        *
        *      // Read if receiver "BELL" will be treated as a reference rx
        *   bool bellRef( confRead.getValueAsBoolean("reference", "BELL") );
+       *
+       *      // Iterate over a variable list
+       *   for(auto it = confRead.getListIterator("stations", "NETWORK");
+       *       it.hasNext(); ++it)
+       *   {
+       *      std::string station = *it;
+       *      // process station...
+       *   }
        *
        * @endcode
        *
@@ -167,6 +176,85 @@ namespace gnsstk
    class ConfDataReader : public FFTextStream
    {
    public:
+
+         /** Iterator class for traversing variable lists without modifying
+          *  the original configuration data.
+          */
+      class ListIterator
+      {
+      public:
+            /// Constructor
+         ListIterator(const std::vector<std::string>& items)
+            : items_(items), currentIndex_(0) {}
+
+            /// Check if there are more items
+         bool hasNext() const
+         { return currentIndex_ < items_.size(); }
+
+            /// Get current item and move to next
+         std::string next()
+         {
+            if (!hasNext())
+               return "";
+            return items_[currentIndex_++];
+         }
+
+            /// Get current item without advancing
+         std::string current() const
+         {
+            if (currentIndex_ >= items_.size())
+               return "";
+            return items_[currentIndex_];
+         }
+
+            /// Dereference operator
+         std::string operator*() const
+         { return current(); }
+
+            /// Pre-increment operator
+         ListIterator& operator++()
+         {
+            if (hasNext())
+               ++currentIndex_;
+            return *this;
+         }
+
+            /// Post-increment operator
+         ListIterator operator++(int)
+         {
+            ListIterator tmp = *this;
+            ++(*this);
+            return tmp;
+         }
+
+            /// Reset iterator to beginning
+         void reset()
+         { currentIndex_ = 0; }
+
+            /// Get total number of items
+         size_t size() const
+         { return items_.size(); }
+
+            /// Check if list is empty
+         bool empty() const
+         { return items_.empty(); }
+
+            /// Get item at specific index
+         std::string at(size_t index) const
+         {
+            if (index >= items_.size())
+               return "";
+            return items_[index];
+         }
+
+            /// Get all items as vector
+         const std::vector<std::string>& getItems() const
+         { return items_; }
+
+      private:
+         std::vector<std::string> items_;
+         size_t currentIndex_;
+      };
 
          /// Default constructor
       ConfDataReader()
@@ -257,6 +345,53 @@ namespace gnsstk
       virtual bool getValueAsBoolean( std::string variable,
                                       std::string section = "DEFAULT",
                                       bool   defaultVal = false );
+
+
+         /** Method to get an iterator for a variable list.
+          *
+          * In this context, a variable list is the same as a variable but
+          * it is composed of several parts (words), separated by spaces.
+          *
+          * @param variableList   Variable list name.
+          * @param section        Section the variable list belongs to.
+          * @return               ListIterator for traversing the list
+          * @throw ConfigurationException
+          */
+      virtual ListIterator getListIterator( std::string variableList,
+                                            std::string section = "DEFAULT" );
+
+
+         /** Method to get all values from a variable list as a vector.
+          *
+          * @param variableList   Variable list name.
+          * @param section        Section the variable list belongs to.
+          * @return               Vector containing all values
+          * @throw ConfigurationException
+          */
+      virtual std::vector<std::string> getValueList( std::string variableList,
+                                                     std::string section = "DEFAULT" );
+
+
+         /** Method to get all values from a variable list as doubles.
+          *
+          * @param variableList   Variable list name.
+          * @param section        Section the variable list belongs to.
+          * @return               Vector containing all values as doubles
+          * @throw ConfigurationException
+          */
+      virtual std::vector<double> getValueListAsDouble( std::string variableList,
+                                                        std::string section = "DEFAULT" );
+
+
+         /** Method to get all values from a variable list as integers.
+          *
+          * @param variableList   Variable list name.
+          * @param section        Section the variable list belongs to.
+          * @return               Vector containing all values as integers
+          * @throw ConfigurationException
+          */
+      virtual std::vector<int> getValueListAsInt( std::string variableList,
+                                                  std::string section = "DEFAULT" );
 
 
          /** Method to fetch (as string) the first value of a given
