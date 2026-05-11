@@ -1,6 +1,6 @@
 #include"Rtcm3Decoder.hpp"
 #include"RtcmUtils.hpp"
-#include"BitSetProxy.hpp"
+#include"BitReader.hpp"
 
 using namespace gnsstk;
 
@@ -23,9 +23,9 @@ namespace pod
 				std::cout << c <<  std::endl;
 				uchar  lenchars[2];
 				source->readBytes(lenchars, 2);
-				BitSetProxy len_bsp(lenchars, 0, 2);
+				BitReader len_bsp(lenchars, 0, 2);
 				std::cout << len_bsp << std::endl;
-				ushort len = len_bsp.getUint32(6, 10);
+				ushort len = len_bsp.u32(6, 10);
 				//std::memcpy(&len, lenchars, 2);
 				
 				//std::cout << (int)(lenchars[0]) <<' '<< (int)lenchars[1] << std::endl;
@@ -42,8 +42,8 @@ namespace pod
 					//std::cout << check << ": " << len << std::endl;
 					if (check)
 					{
-						BitSetProxy msg_bsp(buff, 3, len);
-						int msgId = msg_bsp.getUint32(0, 12);
+						BitReader msg_bsp(buff, 3, len);
+						int msgId = msg_bsp.u32(0, 12);
 						auto msg = parsers.find(msgId);
 						if (msg != parsers.end())
 							msg->second->parse(msg_bsp, *this);

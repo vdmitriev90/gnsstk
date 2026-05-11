@@ -5,30 +5,30 @@
 
 namespace pod
 {
-	class IApprPosProvider
-	{
-	public:
-		
-		enum PositionSource
+		enum ApprPositionSource
 		{
 			FromConfig= 1,
 			ComputeForEachEpoch,
 			ComputeForFirstEpoch,
 			LoadFromFile,
 		};
+		
+	inline std::string getPosSourceString(ApprPositionSource source);
 
-		static std::map<PositionSource, std::string> posSource2Str;
-
-		static int ComputeApprSol(const gnsstk::IRinex & gRin, const gnsstk::NavLibrary& Eph, gnsstk::Vector<double> & pos);
+	class IApprPosProvider
+	{
+	public:		
 
 		IApprPosProvider() = default;
 		virtual ~IApprPosProvider() = default;
 
 		virtual int getPosition(const gnsstk::IRinex & gRin, gnsstk::Position& pos) = 0;
+		virtual ApprPositionSource getSource() const = 0;
 
-		virtual PositionSource getSource() const = 0;
-
+	protected:
+		static int ComputeApprSol(const gnsstk::IRinex & gRin, gnsstk::NavLibrary& ephem, gnsstk::Vector<double> & pos);
 	};
+
 	typedef std::unique_ptr<IApprPosProvider> posProvider_uptr;
 
 	class ComputeApprPos : public  IApprPosProvider
@@ -56,9 +56,9 @@ namespace pod
 
 		virtual int getPosition(const gnsstk::IRinex & gRin, gnsstk::Position & pos) override;
 
-		virtual PositionSource getSource() const override
+		virtual ApprPositionSource getSource() const override
 		{
-			return PositionSource::ComputeForEachEpoch;
+			return ApprPositionSource::ComputeForEachEpoch;
 		}
 
 	private:
@@ -81,9 +81,9 @@ namespace pod
 		// Inherited via IApprPosProvider
 		virtual int getPosition(const gnsstk::IRinex & gRin, gnsstk::Position & pos) override;
 
-		virtual PositionSource getSource() const override
+		virtual ApprPositionSource getSource() const override
 		{
-			return PositionSource::ComputeForFirstEpoch;
+			return ApprPositionSource::ComputeForFirstEpoch;
 		}
 
 	private:
@@ -111,9 +111,9 @@ namespace pod
 		{
 			return pvtStore.size();
 		}
-		virtual PositionSource getSource() const override
+		virtual ApprPositionSource getSource() const override
 		{
-			return PositionSource::LoadFromFile;
+			return ApprPositionSource::LoadFromFile;
 		}
 	private:
 		bool loadApprPos(const std::string & path);
@@ -134,9 +134,9 @@ namespace pod
 			return 0;
 		}
 
-		virtual PositionSource getSource() const override
+		virtual ApprPositionSource getSource() const override
 		{
-			return PositionSource::FromConfig;
+			return ApprPositionSource::FromConfig;
 		}
 
 	private :

@@ -134,7 +134,7 @@ namespace pod
 
 			std::cout << "Appr. position  source: ";
 			if (createPosProvider())
-				std::cout << IApprPosProvider::posSource2Str[apprPos->getSource()] << std::endl;
+				std::cout << getPosSourceString(apprPos->getSource()) << std::endl;
         }
         catch (const Exception& e)
         {
@@ -475,19 +475,20 @@ namespace pod
 
 	bool GnssDataStore::createPosProvider()
 	{
-		auto apprPosProvider = (IApprPosProvider::PositionSource)confReader->getValueAsInt("ApprPosProvider");
+		auto apprPosProvider = static_cast<ApprPositionSource>(confReader->getValueAsInt("ApprPosProvider"));
+
 		switch (apprPosProvider)
 		{
-		case IApprPosProvider::FromConfig:
+		case ApprPositionSource::FromConfig:
 			apprPos = std::make_unique<ApprPosSimple>(getPosition(opts.SiteRover));
 			return true;
-		case IApprPosProvider::ComputeForEachEpoch:
+		case ApprPositionSource::ComputeForEachEpoch:
 			apprPos = std::make_unique<ComputeOnePos>(navLibrary_);
 			return true;
-		case IApprPosProvider::ComputeForFirstEpoch:
+		case ApprPositionSource::ComputeForFirstEpoch:
 			apprPos = std::make_unique<ComputeOnePos>(navLibrary_);
 			return true;
-		case IApprPosProvider::LoadFromFile:
+		case ApprPositionSource::LoadFromFile:
 			apprPos = std::make_unique<PositionFromFile>(opts.workingDir + "\\" + confReader->getValue("ApprPosFile"));
 			return true;
 		default:

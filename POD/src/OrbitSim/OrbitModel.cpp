@@ -5,6 +5,8 @@
 #include"SphericalHarmonicsModel.h"
 #include"ForceList.h"
 
+using namespace gnsstk;
+
 namespace pod
 {
     OrbitModel:: OrbitModel()

@@ -40,8 +40,8 @@
  * Class of Finite Impulsive Response (FIR) Differentiator filters of 5th order.
  */
 
-#ifndef GPSTK_FIRDIFFERENTIATOR5THORDER_HPP
-#define GPSTK_FIRDIFFERENTIATOR5THORDER_HPP
+#ifndef GNSSTK_FIRDIFFERENTIATOR5THORDER_HPP
+#define GNSSTK_FIRDIFFERENTIATOR5THORDER_HPP
 
 #include <cmath>
 #include <deque>
@@ -187,4 +187,4 @@ namespace gnsstk
 
 }  // End of namespace gnsstk
 
-#endif   // GPSTK_FIRDIFFERENTIATOR5THORDER_HPP
+#endif   // GNSSTK_FIRDIFFERENTIATOR5THORDER_HPP

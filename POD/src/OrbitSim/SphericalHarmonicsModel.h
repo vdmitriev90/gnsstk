@@ -1,13 +1,11 @@
 #ifndef POD_SHERICAL_HARMONICS_MODEL_H
 #define POD_SHERICAL_HARMONICS_MODEL_H
 
-#include "ForceModel.hpp"
 #include "GravityModel.h"
-#include "EarthSolidTide.hpp"
-#include "EarthOceanTide.hpp"
+#include "ForceModel.hpp"
 #include "EarthPoleTide.hpp"
-
-
+#include "EarthOceanTide.hpp"
+#include "EarthSolidTide.hpp"
 
 namespace pod
 {
@@ -52,7 +50,7 @@ namespace pod
         /// return the force model index
         virtual int forceIndex() const
         {
-            return ForceModel::FMI_GEOEARTH;
+            return gnsstk::ForceModel::FMI_GEOEARTH;
         }
 
     protected:
@@ -65,7 +63,7 @@ namespace pod
         void computeNormVW(gnsstk::Vector<double> r_bf);
 
         /// Add tides to coefficients 
-        void correctCSTides(Epoch t, bool solidFlag = false, bool oceanFlag = false, bool poleFlag = false);
+        void correctCSTides(gnsstk::Epoch t, bool solidFlag = false, bool oceanFlag = false, bool poleFlag = false);
 
         /// normalized coefficient
         double normFactor(int n, int m);
@@ -78,9 +76,9 @@ namespace pod
         gnsstk::Matrix<double> V, W;
 
         /// Objects to do earth tides correction
-        EarthSolidTide  solidTide;
-        EarthPoleTide   poleTide;
-        EarthOceanTide  oceanTide;
+        gnsstk::EarthSolidTide  solidTide;
+        gnsstk::EarthPoleTide   poleTide;
+        gnsstk::EarthOceanTide  oceanTide;
     private :
 
         double delta(int n) 

@@ -40,8 +40,8 @@
  * Abstract base class for filter algorithms.
  */
 
-#ifndef GPSTK_FILTERBASE_HPP
-#define GPSTK_FILTERBASE_HPP
+#ifndef GNSSTK_FILTERBASE_HPP
+#define GNSSTK_FILTERBASE_HPP
 
 #include "Exception.hpp"
 #include "Matrix.hpp"
@@ -99,4 +99,4 @@ namespace gnsstk
 
 }  // End of namespace gnsstk
 
-#endif   // GPSTK_FILTERBASE_HPP
+#endif   // GNSSTK_FILTERBASE_HPP

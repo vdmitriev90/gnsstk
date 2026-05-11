@@ -277,7 +277,7 @@ namespace pod
                 PoleTides pole;
                 pole.setXY(eop.xp, eop.yp);
 
-                basic.rxPos = nominalPos;
+                basic.setRxPosition(nominalPos);
                 grDelay.setNominalPosition(nominalPos);
                 svPcenter.setNominalPosition(nominalPos);
                 windup.setNominalPosition(nominalPos);

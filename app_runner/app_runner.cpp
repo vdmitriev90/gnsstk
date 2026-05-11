@@ -2,12 +2,10 @@
 #include<filesystem>
 #include <boost/dynamic_bitset.hpp>
 
-#include "Rinex3EphemerisStore.hpp"
 #include"Solution.h"
 #include"Action.h"
 #include"Rtcm3Decoder.hpp"
 #include"SerialDataSource.hpp"
-#include"BitSetProxy.hpp"
 
 
 using namespace std;
@@ -26,19 +24,6 @@ void testRtcm()
 	system("pause");
 }
 
-void testRinNav(char* path)
-{
-    Rinex3EphemerisStore nrin;
-    cout<< nrin.loadFile(path) << endl;
-    const SatID sid = SatID(1, SatelliteSystem::GPS);
-    CommonTime t0 = nrin.getInitialTime(sid);
-    CommonTime te = nrin.getFinalTime(sid);
-    nrin.SearchNear();
-    auto t = t0 + (te - t0) / 2;
-    nrin.dump(cout);
-   
-   // nrin.getXvt(sid, t);
-}
 
 void testRinParse(char* path1)
 {

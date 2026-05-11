@@ -97,7 +97,7 @@ namespace pod
 
     void SQLiteAdapter::addNewFile(const pod::GnssEpochMap & eMap)
     {
-        char* sql = "INSERT INTO `GnssObsFile`(`FullName`,`Title`) VALUES( @Name, @Title);";
+        const char* sql = "INSERT INTO `GnssObsFile`(`FullName`,`Title`) VALUES( @Name, @Title);";
         sqlite3_stmt *comm;
         sqlite3_prepare_v2(db, sql, -1, &comm, NULL);
         sqlite3_bind_text(comm, 1, eMap.title.c_str(), -1, 0);
@@ -119,7 +119,7 @@ namespace pod
         tryExecuteNonQuery("BEGIN TRANSACTION;");
         for (const auto it : eMap.types)
         {
-            char* sql = "INSERT INTO `TypeIDsByFiles`(`FileId`,`TypeId`) VALUES( @FileId, @TypeId);";
+            const char* sql = "INSERT INTO `TypeIDsByFiles`(`FileId`,`TypeId`) VALUES( @FileId, @TypeId);";
             sqlite3_stmt *comm;
             sqlite3_prepare_v2(db, sql, -1, &comm, NULL);
             sqlite3_bind_int(comm, 1, lastFileID);
@@ -136,7 +136,7 @@ namespace pod
 
     void SQLiteAdapter::addObsData(const std::pair<TypeID, double> & typeValuePair)
     {
-        char* sql = "INSERT INTO `RinexTypePairs`(`Type`,`Value`) VALUES (@Type, @Value);";
+        const char* sql = "INSERT INTO `RinexTypePairs`(`Type`,`Value`) VALUES (@Type, @Value);";
         sqlite3_stmt *comm;
         sqlite3_prepare_v2(db, sql, -1, &comm, NULL);
         sqlite3_bind_int(comm, 1, typeValuePair.first.type);
@@ -152,7 +152,7 @@ namespace pod
         for(auto& it : slnData)
         {
             addObsData(it);
-            char* sql = "INSERT INTO `SlnDataItems`(`EpochID`,`DataID`) VALUES (@EpochID, @DataID);";
+            const char* sql = "INSERT INTO `SlnDataItems`(`EpochID`,`DataID`) VALUES (@EpochID, @DataID);";
             sqlite3_stmt *comm;
             int rc =  sqlite3_prepare_v2(db, sql, -1, &comm, NULL);
             
@@ -171,11 +171,11 @@ namespace pod
             {
                 addObsData(it);
             
-                char* sql = "INSERT INTO `SvDataItems`(`SV`,`DataID`, `EpochID`) VALUES ((SELECT ID FROM SVS WHERE SVID = @SVID AND SSID = @SSID), @DataID, @EpochID);";
+                const char* sql = "INSERT INTO `SvDataItems`(`SV`,`DataID`, `EpochID`) VALUES ((SELECT ID FROM SVS WHERE SVID = @SVID AND SSID = @SSID), @DataID, @EpochID);";
                 sqlite3_stmt *comm;
                 int rc  =  sqlite3_prepare_v2(db, sql, -1, &comm, NULL);
                 sqlite3_bind_int(comm, 1, satId.id);
-                sqlite3_bind_int(comm, 2, satId.system);
+                sqlite3_bind_int(comm, 2, static_cast<int>(satId.system));
                 sqlite3_bind_int64(comm, 3, lastTypeValuePairID);
                 sqlite3_bind_int(comm, 4, lastEpochID);
 
@@ -187,7 +187,7 @@ namespace pod
     void SQLiteAdapter::addNewEpoch(const  std::pair<CommonTime, pod::GnssEpoch>& epoch)
     {
         updateTransaction();
-        char* sql = "INSERT INTO `Epochs`(`Time`,`FileID`,'OccupationID') VALUES(@time, @FileID, @OccupationID);";
+        const char* sql = "INSERT INTO `Epochs`(`Time`,`FileID`,'OccupationID') VALUES(@time, @FileID, @OccupationID);";
         sqlite3_stmt *comm;
         sqlite3_prepare_v2(db, sql, -1, &comm, NULL);
         
@@ -207,7 +207,7 @@ namespace pod
 
     int SQLiteAdapter::addSV(const gnsstk::SatID & sv)
     {
-        char* sql = "INSERT OR IGNORE INTO `SVS`(`SVID`,`SSID`) VALUES (@SVID, @SSID);";
+        const char* sql = "INSERT OR IGNORE INTO `SVS`(`SVID`,`SSID`) VALUES (@SVID, @SSID);";
         sqlite3_stmt *comm;
         sqlite3_prepare_v2(db, sql, -1, &comm, NULL);
         sqlite3_bind_int(comm, 1, sv.id);
@@ -281,7 +281,7 @@ namespace pod
         return tryExecuteNonQueryAndGetRowId(comm);
     }
 
-    void SQLiteAdapter::errorHandler(int errorCode, char *error)
+    void SQLiteAdapter::errorHandler(int errorCode, const char *error)
     {
         DBOUT("An Error has occured.\r\nEroor code:");
         DBOUT(errorCode);

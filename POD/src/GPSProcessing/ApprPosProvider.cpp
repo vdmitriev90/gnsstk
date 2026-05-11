@@ -11,23 +11,32 @@ namespace fs = std::experimental::filesystem;
 
 namespace pod
 {
-	std::map<IApprPosProvider::PositionSource, std::string> IApprPosProvider::posSource2Str
+	std::string getPosSourceString(ApprPositionSource source)
 	{
-		{FromConfig,            "ini file"               },
-		{ComputeForEachEpoch,   "Statndalone for each epoch"  },
-		{ComputeForFirstEpoch,  "Statndalone for first epoch" },
-		{LoadFromFile,          "*.pos file"              },
-	};
+		static const std::map<ApprPositionSource, std::string> posSource2Str
+		{
+			{ApprPositionSource::FromConfig,            "ini file" },
+			{ApprPositionSource::ComputeForEachEpoch,   "Statndalone for each epoch" },
+			{ApprPositionSource::ComputeForFirstEpoch,  "Statndalone for first epoch" },
+			{ApprPositionSource::LoadFromFile,          "*.pos file" },
+		};
+		const auto it = posSource2Str.find(source);
+		if (it != posSource2Str.end())
+			return it->second;
+
+		GNSSTK_ASSERT(false);
+		return "Unknown";
+	}
 
 	int IApprPosProvider::ComputeApprSol(const gnsstk::IRinex & gRin, 
-		const NavLibrary& eph,
+		NavLibrary& ephem,
 		gnsstk::Vector<double> & solution)
 	{
 		auto svs = gRin.getBody().getVectorOfSatID().toStdVector();
 		auto meas = gRin.getBody().getVectorOfTypeID(TypeID::C1).toStdVector();
 
 		Matrix<double> svp;
-		if (PRSolution2::PrepareAutonomousSolution(gRin.getHeader().epoch, svs, meas, eph, svp))
+		if (PRSolution2::PrepareAutonomousSolution(gRin.getHeader().epoch, svs, meas, ephem, svp))
 			return -1;
 
 		Bancroft ban;
@@ -50,7 +59,7 @@ namespace pod
 			{
 				pos = Position(vect[0], vect[1], vect[2]);
 				Xvt xvt;
-				xvt.frame = ReferenceFrame::WGS84;
+				xvt.frame = RefFrame(RefFrameSys::WGS84, t);
 				xvt.x = pos;
 				xvt.clkbias = vect[3];
 				pvtStore[t] = xvt;

@@ -353,7 +353,7 @@ namespace pod
     {
 
         //Matrix<double> C2T = ReferenceFrames::J2kToECEFMatrix(time);
-        Matrix<double> C2T = EarthRotation::eopStore.getJ2k2Ecef00(time);
+        Matrix<double> C2T = EarthRotation::eopStore().getJ2k2Ecef00(time);
 
         /*
         // debuging

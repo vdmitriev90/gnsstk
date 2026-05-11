@@ -212,6 +212,15 @@ install( TARGETS gnsstk DESTINATION "${CMAKE_INSTALL_LIBDIR}" EXPORT "${EXPORT_T
 install( FILES ${GNSSTK_INC_FILES} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} )
 
 if( BUILD_POD )
+
+  set( BOOST_ROOT "$ENV{Boost_ROOT}" CACHE PATH "Boost root directory" )
+  
+  if( EXISTS "${BOOST_ROOT}/boost/version.hpp" )
+    message( STATUS "Boost found at: ${BOOST_ROOT}" )
+    include_directories( "${BOOST_ROOT}" )
+  else()
+    message( FATAL_ERROR "Boost not found. Set Boost_ROOT environment variable to Boost source directory." )
+  endif()
   include_directories(third_party/SOFA)
   add_subdirectory(third_party/SOFA )
   

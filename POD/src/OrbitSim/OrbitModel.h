@@ -10,7 +10,7 @@
 
 namespace pod
 {
-    class OrbitModel : public EquationOfMotion
+    class OrbitModel : public gnsstk::EquationOfMotion
     {
     public:
 
@@ -31,14 +31,14 @@ namespace pod
         OrbitModel& reset(const ForceModelData& fmc);
 
         /// set reference epoch
-        OrbitModel& setRefEpoch(const Epoch & t)
+        OrbitModel& setRefEpoch(const gnsstk::Epoch & t)
         {
             t0 = t; 
             return (*this);
         }
 
         /// get reference epoch
-        Epoch getRefEpoch() const
+        gnsstk::Epoch getRefEpoch() const
         {
             return t0;
         }
@@ -46,10 +46,10 @@ namespace pod
     protected:
 
         /// Reference epoch
-        Epoch t0;
+        gnsstk::Epoch t0;
 
         /// Spacecraft object
-        Spacecraft sc;
+        gnsstk::Spacecraft sc;
 
         /// Force Model List
         ForceList forceList;

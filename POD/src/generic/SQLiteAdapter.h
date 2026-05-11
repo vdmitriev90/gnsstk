@@ -61,7 +61,7 @@ namespace pod
     private: int tryExecuteNonQueryAndGetRowId(const char * sql);
     private: int tryExecuteNonQueryAndGetRowId(sqlite3_stmt * stmt);
 
-    private: inline void errorHandler(int errorCode, char *error);
+    private: inline void errorHandler(int errorCode, const char *error);
 
     private: void updateTransaction();
     private: void finalizeTransactionsSequence();
