@@ -1,11 +1,12 @@
 #include "RefSatHandler.h"
-#include"WinUtils.h"
+
+#include "WinUtils.h"
 
 using namespace gnsstk;
 
 namespace pod
 {
-    SatIDSet RefSatHandler::getRefSats(gnsstk::IRinex & gData)
+    SatIDSet RefSatHandler::getRefSats(gnsstk::IRinex& gData)
     {
         SatIDSet results;
         SatSystSet satSystems;
@@ -35,28 +36,30 @@ namespace pod
     }
 
     //
-    Matrix<double> RefSatHandler::getSD2DDMatrix(
-        gnsstk::IRinex & gData, 
-        const SatIDSet& svs,
-        const SatSystSet& ss,
-        gnsstk::SatIDSet &refSvSet)
+    Matrix<double> RefSatHandler::getSD2DDMatrix(gnsstk::IRinex& gData,
+                                                 const SatIDSet& svs,
+                                                 const SatSystSet& ss,
+                                                 gnsstk::SatIDSet& refSvSet)
     {
-        //get reference satellites for each satellite systems
+        // get reference satellites for each satellite systems
         refSvSet = getRefSats(gData);
 
         auto currRefSv = refSvSet.begin();
         std::map<SatelliteSystem, SatIDSet> svs_by_ss;
 
-        for_each(svs.begin(), svs.end(), [&svs_by_ss](const SatID & sv) {svs_by_ss[sv.system].insert(sv); });
+        for_each(svs.begin(), svs.end(), [&svs_by_ss](const SatID& sv) {
+            svs_by_ss[sv.system].insert(sv);
+        });
 
-        //prepare single to double differences transition matrix
+        // prepare single to double differences transition matrix
         Matrix<double> SD2DD(svs.size() - svs_by_ss.size(), svs.size(), .0);
 
         size_t n(0);
         size_t k(0);
         for (const auto& sv : svs_by_ss)
         {
-            if (currRefSv == refSvSet.end()) break;
+            if (currRefSv == refSvSet.end())
+                break;
             int ref_sv_index = std::distance(sv.second.begin(), sv.second.find(*currRefSv++));
             int num_svs = sv.second.size();
 
@@ -65,7 +68,7 @@ namespace pod
                 SD2DD(j, ref_sv_index + n + k) = -1.0;
                 if (j + k < ref_sv_index + n + k)
                     SD2DD(j, j + k) = 1.0;
-                else 
+                else
                     SD2DD(j, j + 1 + k) = 1.0;
             }
 
@@ -75,4 +78,4 @@ namespace pod
         return SD2DD;
     }
 
-}
+} // namespace pod

@@ -1,12 +1,11 @@
 #ifndef POD_ORBIT_SIM_H
 #define POD_ORBIT_SIM_H
-#include<memory>
+#include "EarthRotation.h"
+#include "Integrator.hpp"
+#include "OrbitModel.h"
+#include "RungeKuttaFehlberg.hpp"
 
-#include"RungeKuttaFehlberg.hpp"
-#include"Integrator.hpp"
-#include"EarthRotation.h"
-#include"OrbitModel.h"
-
+#include <memory>
 
 typedef std::unique_ptr<gnsstk::Integrator> IntegratorUniquePtr;
 typedef std::unique_ptr<pod::OrbitModel> OrbitModelUniquePtr;
@@ -15,14 +14,12 @@ namespace pod
     class OrbitSim
     {
 
-    public:
-        
+      public:
         /// Default constructor
         OrbitSim();
 
         /// Default destructor
         virtual ~OrbitSim();
-
 
         /// set integrator, default is Rungge-Kutta 78
         OrbitSim& setIntegrator(gnsstk::Integrator* pIntg)
@@ -43,7 +40,7 @@ namespace pod
             return (*this);
         }
         /// set equation of motion of the orbit
-        OrbitSim& setOrbit(OrbitModel *  orbit)
+        OrbitSim& setOrbit(OrbitModel* orbit)
         {
             pOrbit.reset(orbit);
             return (*this);
@@ -57,24 +54,22 @@ namespace pod
         /// set step size of the integrator
         OrbitSim& setStepSize(double step_size = 10.0)
         {
-            pIntegrator->setStepSize(step_size); 
+            pIntegrator->setStepSize(step_size);
             return (*this);
         }
 
         /**set init state
-        * @param utc0   init epoch
-        * @param rv0    init state
-        * @return
-        */
+         * @param utc0   init epoch
+         * @param rv0    init state
+         * @return
+         */
         OrbitSim& setInitState(gnsstk::CommonTime utc0, gnsstk::Vector<double> rv0);
 
-
         /** Take a single integration step.
-        * @param tf    next time
-        * @return      state of integration
-        */
+         * @param tf    next time
+         * @return      state of integration
+         */
         virtual bool integrateTo(double tf);
-
 
         /// return the position and velocity , the dimension is 6
         gnsstk::Vector<double> rvState(bool bJ2k = true);
@@ -95,7 +90,7 @@ namespace pod
         gnsstk::CommonTime getCurTime()
         {
             gnsstk::CommonTime utc = pOrbit->getRefEpoch();
-            utc += curT; 
+            utc += curT;
             return utc;
         }
 
@@ -120,33 +115,30 @@ namespace pod
         /// write curT curState to a file
         void writeToFile(std::ostream& s) const;
 
-
-        ///tests methods
+        /// tests methods
         void test();
         static void runTest();
 
-
-    protected:
-
+      protected:
         /** Take a single integration step.
-        *
-        * @param x     time or independent variable
-        * @param y     containing needed inputs (usually the state)
-        * @param tf    next time
-        * @return      containing the new state
-        */
+         *
+         * @param x     time or independent variable
+         * @param y     containing needed inputs (usually the state)
+         * @param tf    next time
+         * @return      containing the new state
+         */
         virtual gnsstk::Vector<double> integrateTo(double t, gnsstk::Vector<double> y, double tf);
 
         /* set initial state of the the integrator
-        *
-        *  v      3
-        * dr_dr0    3*3
-        * dr_dv0   3*3
-        * dr_dp0   3*np
-        * dv_dr0   3*3
-        * dv_dv0   3*3
-        * dv_dp0   3*np
-        */
+         *
+         *  v      3
+         * dr_dr0    3*3
+         * dr_dv0   3*3
+         * dr_dp0   3*np
+         * dv_dr0   3*3
+         * dv_dv0   3*3
+         * dv_dp0   3*np
+         */
         void setState(gnsstk::Vector<double> state);
 
         /// set reference epoch
@@ -158,21 +150,19 @@ namespace pod
         /// update phiMatrix sMatrix and rvState from curState
         void updateMatrix();
 
-
         /// Pointer to an ode solver default is RungeKutta78
-        IntegratorUniquePtr   pIntegrator;
+        IntegratorUniquePtr pIntegrator;
 
         /// Pointer to the Equation Of Motion of a satellite
-        OrbitModelUniquePtr  pOrbit;
-       
+        OrbitModelUniquePtr pOrbit;
+
         /// Default integrator
         RungeKuttaFehlberg defIntehrator;
-        
-        ///Default force model
-        OrbitModel  defOrbit;
 
-    private:
+        /// Default force model
+        OrbitModel defOrbit;
 
+      private:
         static void testKepler();
         static void testFwBw();
 
@@ -188,19 +178,17 @@ namespace pod
         // dv_dr0   3*3
         // dv_dv0   3*3
         // dv_dp0   3*np
-        gnsstk::Vector<double> curState;         // 42+6*np
+        gnsstk::Vector<double> curState; // 42+6*np
 
         /// the position and velocity
-        gnsstk::Vector<double>   rvVector;      // 6
+        gnsstk::Vector<double> rvVector; // 6
 
         /// state transition matrix
-        Matrix<double> phiMatrix;      // 6*6
+        Matrix<double> phiMatrix; // 6*6
 
-        /// the sensitivity matrix 
-        Matrix<double> sMatrix;         // 6*np
-
+        /// the sensitivity matrix
+        Matrix<double> sMatrix; // 6*np
     };
-}
+} // namespace pod
 
 #endif // !POD_ORBIT_SIM_H
-

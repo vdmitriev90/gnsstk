@@ -1,33 +1,37 @@
 #pragma once
 #include "EquationBase.h"
-#include"StochasticModel.hpp"
-#include"IonoStochasticModel.h"
+#include "IonoStochasticModel.h"
+#include "StochasticModel.hpp"
+
+#include <memory>
 #include <type_traits>
-#include<memory>
 
 namespace pod
 {
 
-    class IonoEquations :
-        public EquationBase
+    class IonoEquations : public EquationBase
     {
-        typedef gnsstk::StochasticModel_uptr (IonoEquations::*StochModelInitialazer)(double qprime) ;
+        typedef gnsstk::StochasticModel_uptr (IonoEquations::*StochModelInitialazer)(double qprime);
         static const double SQR_L1_WL_GPS;
-    public:
+
+      public:
         IonoEquations();
         IonoEquations(double qPrime);
-        ~IonoEquations(){};
+        ~IonoEquations() {};
 
         /* update state of equations with new observational data */
-        virtual  void Prepare(gnsstk::IRinex& gData) override;
+        virtual void Prepare(gnsstk::IRinex& gData) override;
 
         /*Check, if unknown parameters currently observable, if so,
         put the corresponding TypeID into 'TypeIDSet'
         */
-        virtual void updateH(const gnsstk::IRinex& gData,  const gnsstk::TypeIDSet& types, gnsstk::Matrix<double>& H, int& col_0) override;
+        virtual void updateH(const gnsstk::IRinex& gData,
+                             const gnsstk::TypeIDSet& types,
+                             gnsstk::Matrix<double>& H,
+                             int& col_0) override;
 
         /* return set of TypeID, corresponding unknown parameters  for given equations */
-        virtual  ParametersSet getParameters() const override
+        virtual ParametersSet getParameters() const override
         {
             return currParameters;
         }
@@ -45,18 +49,21 @@ namespace pod
         /* Put default values of state vector and it's covariance into corresponding matrices,
         starting with specific index, index will be incremented inside this method
         */
-        virtual void defStateAndCovariance(gnsstk::Vector<double>& x, gnsstk::Matrix<double>& P, int& index) const override;
+        virtual void defStateAndCovariance(gnsstk::Vector<double>& x,
+                                           gnsstk::Matrix<double>& P,
+                                           int& index) const override;
 
         /* return number of unknowns
-        */
+         */
         virtual int getNumUnknowns() const override;
 
-        template<class T , typename = std::enable_if_t<std::is_base_of<gnsstk::IStochasticModel, T>::value> >
+        template <class T,
+                  typename = std::enable_if_t<std::is_base_of<gnsstk::IStochasticModel, T>::value>>
         IonoEquations& setStocModel()
         {
             if (std::is_same<T, gnsstk::ConstantModel>::value)
                 stModelInitializer = &IonoEquations::constantModel;
-            else if(std::is_same<T, gnsstk::RandomWalkModel>::value)
+            else if (std::is_same<T, gnsstk::RandomWalkModel>::value)
                 stModelInitializer = &IonoEquations::rWalkModel;
             else if (std::is_same<T, gnsstk::WhiteNoiseModel>::value)
                 stModelInitializer = &IonoEquations::whiteNoiseModel;
@@ -71,8 +78,7 @@ namespace pod
             return *this;
         }
 
-    private:
-
+      private:
         gnsstk::StochasticModel_uptr constantModel(double sigma);
         gnsstk::StochasticModel_uptr rWalkModel(double qPrime);
         gnsstk::StochasticModel_uptr whiteNoiseModel(double sigma);
@@ -81,8 +87,8 @@ namespace pod
 #pragma region Fields
 
         gnsstk::TypeID eqType;
-        
-        //current parameters - iono delay along lines of sight for each satellites
+
+        // current parameters - iono delay along lines of sight for each satellites
         ParametersSet currParameters;
 
         StochModelInitialazer stModelInitializer;
@@ -96,5 +102,4 @@ namespace pod
 
 #pragma endregion
     };
-}
-
+} // namespace pod

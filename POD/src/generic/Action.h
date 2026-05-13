@@ -1,22 +1,20 @@
 #ifndef POD_ACTION_H
 #define POD_ACTION_H
-#include"DataStructures.hpp"
-
-#include"GnssEpochMap.h"
+#include "DataStructures.hpp"
+#include "GnssEpochMap.h"
 
 namespace pod
 {
     class Action
     {
-    public :
-        Action(std::string pathToConfig):path(pathToConfig) {}
+      public:
+        Action(std::string pathToConfig) : path(pathToConfig) {}
         pod::GnssEpochMap process();
 
-        //std::vector<gnsstk::gnssRinex> getData();
-    protected:
+        // std::vector<gnsstk::gnssRinex> getData();
+      protected:
         std::string path;
-
     };
-}
+} // namespace pod
 
 #endif // !POD_ACTION_H

@@ -4,7 +4,9 @@ using namespace gnsstk;
 
 namespace pod
 {
-    CodeSmoother2::CodeSmoother2(std::vector<code_smoother_ptr>&& codeSmoothers, std::vector<process_uptr>&& csMarkers, int interval)
+    CodeSmoother2::CodeSmoother2(std::vector<code_smoother_ptr>&& codeSmoothers,
+                                 std::vector<process_uptr>&& csMarkers,
+                                 int interval)
         : smoothers_(std::move(codeSmoothers))
         , scMarkers_(std::move(csMarkers))
         , interval_(interval)
@@ -12,9 +14,7 @@ namespace pod
     {
     }
 
-    CodeSmoother2::~CodeSmoother2()
-    {
-    }
+    CodeSmoother2::~CodeSmoother2() {}
 
     CodeSmoother2& CodeSmoother2::addScMarker(process_uptr scMarker)
     {
@@ -30,11 +30,11 @@ namespace pod
 
     gnsstk::IRinex& CodeSmoother2::Process(gnsstk::IRinex& gData)
     {
-         //first, mark cycle slips
+        // first, mark cycle slips
         for (auto& it : scMarkers_)
             gData >> *it;
 
-         //then, smooth pseudoranges
+        // then, smooth pseudoranges
         for (auto& it : smoothers_)
             gData >> *it;
 
@@ -58,4 +58,4 @@ namespace pod
             it->setMaxWindowSize(interval_);
         return (*this);
     }
-}
+} // namespace pod

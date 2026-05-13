@@ -1,9 +1,10 @@
-#include"SQLiteAdapter.h"
-#include"boost\format.hpp"
+#include "SQLiteAdapter.h"
 
-#include<regex>
-#include"WinUtils.h"
-#include"StringUtils.h"
+#include "StringUtils.h"
+#include "WinUtils.h"
+#include "boost\format.hpp"
+
+#include <regex>
 
 using namespace gnsstk;
 using boost::format;
@@ -26,15 +27,15 @@ namespace pod
         eMap.title = ss.str();
 
         Rinex3ObsHeader header;
-        
-		// Read the RINEX header
+
+        // Read the RINEX header
         rin >> header;
-        
-		// Read the RINEX data epoch by epoch
+
+        // Read the RINEX data epoch by epoch
         while (rin >> gRin)
         {
             auto ge = GnssEpoch(gRin);
-            ge.slnData[TypeID::recSlnType] =0;
+            ge.slnData[TypeID::recSlnType] = 0;
             eMap.data.insert(std::make_pair(gRin.header.epoch, ge));
         }
 
@@ -42,8 +43,8 @@ namespace pod
         fs::path dbPath(path2obs);
         dbPath.replace_extension("db");
 
-		std::string  str = dbPath.string();
-        char * cstr = new char[str.length() + 1];
+        std::string str = dbPath.string();
+        char* cstr = new char[str.length() + 1];
 
         std::strcpy(cstr, str.c_str());
         SQLiteAdapter dbAdapter(cstr);
@@ -57,10 +58,12 @@ namespace pod
     {
         sqlite3_initialize();
 
-        int rc = sqlite3_open_v2(fileName.c_str(), &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
+        int rc = sqlite3_open_v2(
+            fileName.c_str(), &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
         if (rc)
         {
-            auto excStr = (boost::format("Error opening SQLite3 database:%1%") % sqlite3_errmsg(db)).str();
+            auto excStr =
+                (boost::format("Error opening SQLite3 database:%1%") % sqlite3_errmsg(db)).str();
             errorHandler(rc, const_cast<char*>(excStr.c_str()));
         }
 
@@ -70,48 +73,47 @@ namespace pod
 
     void SQLiteAdapter::setPragmas()
     {
-		std::list<std::string> pragmas;
+        std::list<std::string> pragmas;
         pragmas.push_back("PRAGMA temp_store = \"2\";");
 
         pragmas.push_back("PRAGMA journal_mode = \"OFF\";");
-        pragmas.push_back((boost::format("PRAGMA schema_version = \"%1%\";") % SCHEMA_VERSION).str());
-        
-        //tryExecuteNonQuery("BEGIN TRANSACTION;");
-        for (auto & it : pragmas)
+        pragmas.push_back(
+            (boost::format("PRAGMA schema_version = \"%1%\";") % SCHEMA_VERSION).str());
+
+        // tryExecuteNonQuery("BEGIN TRANSACTION;");
+        for (auto& it : pragmas)
             tryExecuteNonQuery(it);
 
-        //tryExecuteNonQuery("COMMIT;");
-
+        // tryExecuteNonQuery("COMMIT;");
     }
 
     void SQLiteAdapter::create()
     {
         setPragmas();
         sqlite3_exec(db, createSchemaCommand.c_str(), NULL, NULL, NULL);
-       // tryExecuteNonQuery(createSchemaCommand.c_str());
+        // tryExecuteNonQuery(createSchemaCommand.c_str());
     }
 
 #pragma endregion
 
 #pragma region insert methods
 
-    void SQLiteAdapter::addNewFile(const pod::GnssEpochMap & eMap)
+    void SQLiteAdapter::addNewFile(const pod::GnssEpochMap& eMap)
     {
         const char* sql = "INSERT INTO `GnssObsFile`(`FullName`,`Title`) VALUES( @Name, @Title);";
-        sqlite3_stmt *comm;
+        sqlite3_stmt* comm;
         sqlite3_prepare_v2(db, sql, -1, &comm, NULL);
         sqlite3_bind_text(comm, 1, eMap.title.c_str(), -1, 0);
         sqlite3_bind_text(comm, 2, eMap.title.c_str(), -1, 0);
 
-        lastFileID =  tryExecuteNonQueryAndGetRowId(comm);
+        lastFileID = tryExecuteNonQueryAndGetRowId(comm);
 
         // fill the  SV metadata
         tryExecuteNonQuery("BEGIN TRANSACTION;");
         for (const auto& it : eMap.svs)
         {
-            //add sv to table of all SV
-           int svid  = addSV(it);
-
+            // add sv to table of all SV
+            int svid = addSV(it);
         }
         tryExecuteNonQuery("COMMIT;");
 
@@ -119,8 +121,9 @@ namespace pod
         tryExecuteNonQuery("BEGIN TRANSACTION;");
         for (const auto it : eMap.types)
         {
-            const char* sql = "INSERT INTO `TypeIDsByFiles`(`FileId`,`TypeId`) VALUES( @FileId, @TypeId);";
-            sqlite3_stmt *comm;
+            const char* sql =
+                "INSERT INTO `TypeIDsByFiles`(`FileId`,`TypeId`) VALUES( @FileId, @TypeId);";
+            sqlite3_stmt* comm;
             sqlite3_prepare_v2(db, sql, -1, &comm, NULL);
             sqlite3_bind_int(comm, 1, lastFileID);
             sqlite3_bind_int(comm, 2, it.type);
@@ -134,10 +137,10 @@ namespace pod
         finalizeTransactionsSequence();
     }
 
-    void SQLiteAdapter::addObsData(const std::pair<TypeID, double> & typeValuePair)
+    void SQLiteAdapter::addObsData(const std::pair<TypeID, double>& typeValuePair)
     {
         const char* sql = "INSERT INTO `RinexTypePairs`(`Type`,`Value`) VALUES (@Type, @Value);";
-        sqlite3_stmt *comm;
+        sqlite3_stmt* comm;
         sqlite3_prepare_v2(db, sql, -1, &comm, NULL);
         sqlite3_bind_int(comm, 1, typeValuePair.first.type);
         sqlite3_bind_double(comm, 2, typeValuePair.second);
@@ -147,15 +150,16 @@ namespace pod
         ++obsItemCounter;
     }
 
-    void SQLiteAdapter::addSlnData(const gnsstk::typeValueMap&  slnData)
+    void SQLiteAdapter::addSlnData(const gnsstk::typeValueMap& slnData)
     {
-        for(auto& it : slnData)
+        for (auto& it : slnData)
         {
             addObsData(it);
-            const char* sql = "INSERT INTO `SlnDataItems`(`EpochID`,`DataID`) VALUES (@EpochID, @DataID);";
-            sqlite3_stmt *comm;
-            int rc =  sqlite3_prepare_v2(db, sql, -1, &comm, NULL);
-            
+            const char* sql =
+                "INSERT INTO `SlnDataItems`(`EpochID`,`DataID`) VALUES (@EpochID, @DataID);";
+            sqlite3_stmt* comm;
+            int rc = sqlite3_prepare_v2(db, sql, -1, &comm, NULL);
+
             sqlite3_bind_int(comm, 1, lastEpochID);
             sqlite3_bind_int64(comm, 2, lastTypeValuePairID);
             tryExecuteNonQuery(comm);
@@ -170,10 +174,12 @@ namespace pod
             for (auto& it : svIt.second)
             {
                 addObsData(it);
-            
-                const char* sql = "INSERT INTO `SvDataItems`(`SV`,`DataID`, `EpochID`) VALUES ((SELECT ID FROM SVS WHERE SVID = @SVID AND SSID = @SSID), @DataID, @EpochID);";
-                sqlite3_stmt *comm;
-                int rc  =  sqlite3_prepare_v2(db, sql, -1, &comm, NULL);
+
+                const char* sql =
+                    "INSERT INTO `SvDataItems`(`SV`,`DataID`, `EpochID`) VALUES ((SELECT ID FROM "
+                    "SVS WHERE SVID = @SVID AND SSID = @SSID), @DataID, @EpochID);";
+                sqlite3_stmt* comm;
+                int rc = sqlite3_prepare_v2(db, sql, -1, &comm, NULL);
                 sqlite3_bind_int(comm, 1, satId.id);
                 sqlite3_bind_int(comm, 2, static_cast<int>(satId.system));
                 sqlite3_bind_int64(comm, 3, lastTypeValuePairID);
@@ -184,31 +190,32 @@ namespace pod
         }
     }
 
-    void SQLiteAdapter::addNewEpoch(const  std::pair<CommonTime, pod::GnssEpoch>& epoch)
+    void SQLiteAdapter::addNewEpoch(const std::pair<CommonTime, pod::GnssEpoch>& epoch)
     {
         updateTransaction();
-        const char* sql = "INSERT INTO `Epochs`(`Time`,`FileID`,'OccupationID') VALUES(@time, @FileID, @OccupationID);";
-        sqlite3_stmt *comm;
+        const char* sql = "INSERT INTO `Epochs`(`Time`,`FileID`,'OccupationID') VALUES(@time, "
+                          "@FileID, @OccupationID);";
+        sqlite3_stmt* comm;
         sqlite3_prepare_v2(db, sql, -1, &comm, NULL);
-        
-		std::string occId = StringUtils::formatTime(epoch.first);
+
+        std::string occId = StringUtils::formatTime(epoch.first);
         sqlite3_bind_text(comm, 1, occId.c_str(), -1, 0);
-        sqlite3_bind_int(comm,  2, lastFileID);
-        sqlite3_bind_text(comm, 3, "", - 1, 0);
+        sqlite3_bind_int(comm, 2, lastFileID);
+        sqlite3_bind_text(comm, 3, "", -1, 0);
 
         lastEpochID = tryExecuteNonQueryAndGetRowId(comm);
 
         addSlnData(epoch.second.slnData);
-        //TypeIDSet typeSet;// { TypeID::postfitC };
-        //typeSet.insert(TypeID::postfitC);
-        
-       addSvData(epoch.second.satData.extractTypeID(requaredTypes));
+        // TypeIDSet typeSet;// { TypeID::postfitC };
+        // typeSet.insert(TypeID::postfitC);
+
+        addSvData(epoch.second.satData.extractTypeID(requaredTypes));
     }
 
-    int SQLiteAdapter::addSV(const gnsstk::SatID & sv)
+    int SQLiteAdapter::addSV(const gnsstk::SatID& sv)
     {
         const char* sql = "INSERT OR IGNORE INTO `SVS`(`SVID`,`SSID`) VALUES (@SVID, @SSID);";
-        sqlite3_stmt *comm;
+        sqlite3_stmt* comm;
         sqlite3_prepare_v2(db, sql, -1, &comm, NULL);
         sqlite3_bind_int(comm, 1, sv.id);
         sqlite3_bind_int(comm, 2, (int)sv.system);
@@ -220,9 +227,9 @@ namespace pod
 
 #pragma region service methods
 
-    void SQLiteAdapter::tryExecuteNonQuery(sqlite3_stmt * comm)
+    void SQLiteAdapter::tryExecuteNonQuery(sqlite3_stmt* comm)
     {
-        char * zErrMsg;
+        char* zErrMsg;
         int OK_DONE = SQLITE_DONE | SQLITE_OK;
         int rc;
         while (rc = sqlite3_step(comm) == SQLITE_ROW)
@@ -231,7 +238,7 @@ namespace pod
             DBOUT(sqlite3_column_text(comm, 0));
             DBOUT("---\r\n")
         }
-        if ((rc | OK_DONE)  != OK_DONE)
+        if ((rc | OK_DONE) != OK_DONE)
         {
             sqlite3_finalize(comm);
             errorHandler(rc, "Can't execute SQL command.");
@@ -239,38 +246,38 @@ namespace pod
         sqlite3_finalize(comm);
     }
 
-    int SQLiteAdapter::tryExecuteNonQueryAndGetRowId(sqlite3_stmt * stmt)
+    int SQLiteAdapter::tryExecuteNonQueryAndGetRowId(sqlite3_stmt* stmt)
     {
         tryExecuteNonQuery(stmt);
-   
+
         return sqlite3_last_insert_rowid(db);
     }
 
-    void SQLiteAdapter::tryExecuteNonQuery(const std::string & sql)
+    void SQLiteAdapter::tryExecuteNonQuery(const std::string& sql)
     {
         tryExecuteNonQuery(sql.c_str());
     }
 
-    void SQLiteAdapter::tryExecuteNonQuery(const char * sql)
+    void SQLiteAdapter::tryExecuteNonQuery(const char* sql)
     {
-       sqlite3_stmt *comm;
-       int rc = sqlite3_prepare_v2(db, sql, -1, &comm, NULL);
-       if (rc != SQLITE_OK)
-       {
-           sqlite3_finalize(comm);
-           errorHandler(rc, "Can't compile SQL command.");
-       }
+        sqlite3_stmt* comm;
+        int rc = sqlite3_prepare_v2(db, sql, -1, &comm, NULL);
+        if (rc != SQLITE_OK)
+        {
+            sqlite3_finalize(comm);
+            errorHandler(rc, "Can't compile SQL command.");
+        }
         tryExecuteNonQuery(comm);
     }
 
-    int SQLiteAdapter::tryExecuteNonQueryAndGetRowId(const std::string & sql)
+    int SQLiteAdapter::tryExecuteNonQueryAndGetRowId(const std::string& sql)
     {
         return tryExecuteNonQueryAndGetRowId(sql.c_str());
     }
 
-    int SQLiteAdapter::tryExecuteNonQueryAndGetRowId(const char * sql)
+    int SQLiteAdapter::tryExecuteNonQueryAndGetRowId(const char* sql)
     {
-        sqlite3_stmt *comm;
+        sqlite3_stmt* comm;
         int rc = sqlite3_prepare_v2(db, sql, -1, &comm, NULL);
         if (rc != SQLITE_OK)
         {
@@ -281,7 +288,7 @@ namespace pod
         return tryExecuteNonQueryAndGetRowId(comm);
     }
 
-    void SQLiteAdapter::errorHandler(int errorCode, const char *error)
+    void SQLiteAdapter::errorHandler(int errorCode, const char* error)
     {
         DBOUT("An Error has occured.\r\nEroor code:");
         DBOUT(errorCode);
@@ -289,197 +296,196 @@ namespace pod
         DBOUT(error);
         std::exception ex(error);
 
-        //sqlite3_free(error);
+        // sqlite3_free(error);
         throw ex;
     }
 
-     void SQLiteAdapter::updateTransaction()
-     {
-         if (firstTime)
-             tryExecuteNonQuery("BEGIN TRANSACTION;");
+    void SQLiteAdapter::updateTransaction()
+    {
+        if (firstTime)
+            tryExecuteNonQuery("BEGIN TRANSACTION;");
 
-         firstTime = false;
+        firstTime = false;
 
-         if (obsItemCounter > maxObsItemsPerTransaction)
-         {
-             tryExecuteNonQuery("COMMIT;");
-             tryExecuteNonQuery("BEGIN TRANSACTION;");
-             obsItemCounter = 0;
-         }
-     }
-     
-     void SQLiteAdapter::finalizeTransactionsSequence()
-     {
-         if (!firstTime)
-             tryExecuteNonQuery("COMMIT;");
-         firstTime = true;
-     }
-    
+        if (obsItemCounter > maxObsItemsPerTransaction)
+        {
+            tryExecuteNonQuery("COMMIT;");
+            tryExecuteNonQuery("BEGIN TRANSACTION;");
+            obsItemCounter = 0;
+        }
+    }
+
+    void SQLiteAdapter::finalizeTransactionsSequence()
+    {
+        if (!firstTime)
+            tryExecuteNonQuery("COMMIT;");
+        firstTime = true;
+    }
 
 #pragma endregion
-    const  gnsstk::TypeIDSet SQLiteAdapter::requaredTypes{
-         TypeID::C1 ,
-         TypeID::P1 ,
-         TypeID::P2 ,
-         TypeID::L1 ,
-         TypeID::L2 ,
-         TypeID::S1 ,
-         TypeID::LI          ,
-         TypeID::MWubbena         ,
-         TypeID::ionoL1           ,
-         //TypeID::rho            ,
-         //TypeID::dtSat          ,
-         TypeID::elevation        ,
-         TypeID::azimuth          ,
-         //TypeID::CSL1           ,
-         //TypeID::CSL2           ,
-         TypeID::satArc           ,
-         TypeID::satStatus        ,
-         /* 
-         TypeID::prefitC          ,
-         TypeID::prefitL          ,
-         TypeID::prefitL1         ,
-  
-         */
-         TypeID::postfitC         ,
-         TypeID::postfitP2        ,
-         TypeID::postfitPC        ,
-         TypeID::postfitL1        ,
-         TypeID::postfitL2        ,
-         TypeID::postfitLC       ,
+    const gnsstk::TypeIDSet SQLiteAdapter::requaredTypes{
+        TypeID::C1,
+        TypeID::P1,
+        TypeID::P2,
+        TypeID::L1,
+        TypeID::L2,
+        TypeID::S1,
+        TypeID::LI,
+        TypeID::MWubbena,
+        TypeID::ionoL1,
+        // TypeID::rho            ,
+        // TypeID::dtSat          ,
+        TypeID::elevation,
+        TypeID::azimuth,
+        // TypeID::CSL1           ,
+        // TypeID::CSL2           ,
+        TypeID::satArc,
+        TypeID::satStatus,
+        /*
+        TypeID::prefitC          ,
+        TypeID::prefitL          ,
+        TypeID::prefitL1         ,
 
-         TypeID::BL1              ,
-         TypeID::BL2              ,
-         TypeID::BLC              ,
-     };
+        */
+        TypeID::postfitC,
+        TypeID::postfitP2,
+        TypeID::postfitPC,
+        TypeID::postfitL1,
+        TypeID::postfitL2,
+        TypeID::postfitLC,
 
-     const unsigned SQLiteAdapter:: SCHEMA_VERSION = 1;
+        TypeID::BL1,
+        TypeID::BL2,
+        TypeID::BLC,
+    };
 
-      const std::string SQLiteAdapter:: createSchemaCommand =
-         "BEGIN TRANSACTION;"
-         "CREATE TABLE IF NOT EXISTS `SvDataItems` ("
-         "	`SV`	INTEGER NOT NULL,"
-         "	`DataID`	INTEGER NOT NULL,"
-         "	`EpochID`	INTEGER NOT NULL,"
-         "	FOREIGN KEY(`SV`) REFERENCES `SVS`(`ID`),"
-         "    FOREIGN KEY(`DataID`) REFERENCES `RinexTypePairs`(`ID`),"
-         "	FOREIGN KEY(`EpochID`) REFERENCES `Epochs`(`ID`)"
-         ");"
-         "CREATE TABLE IF NOT EXISTS `SlnDataItems` ("
-         "	`EpochID`	INTEGER,"
-         "	`DataID`	INTEGER UNIQUE,"
-         "	FOREIGN KEY(`EpochID`) REFERENCES `Epochs`(`ID`),"
-         "	FOREIGN KEY(`DataID`) REFERENCES `RinexTypePairs`(`ID`)"
-         ");"
-         "CREATE TABLE IF NOT EXISTS `SatSystems` ("
-         "	`ID`	INTEGER NOT NULL,"
-         "	`Name`	TEXT NOT NULL UNIQUE,"
-         "	PRIMARY KEY(`ID`)"
-         ");"
-         "CREATE TABLE IF NOT EXISTS `SVS` ("
-         "	`ID`	INTEGER NOT NULL,"
-         "	`SVID`	INTEGER NOT NULL,"
-         "	`SSID`	INTEGER NOT NULL,"
-          "	PRIMARY KEY(`ID`)"
-         ");"
-         "CREATE TABLE IF NOT EXISTS `Sites` ("
-         "	`Name`	TEXT NOT NULL,"
-         "	PRIMARY KEY(`Name`)"
-         ");"
-         "CREATE TABLE IF NOT EXISTS `RinexTypePairs` ("
-         "	`ID`	INTEGER NOT NULL,"
-         "	`Type`	TEXT NOT NULL,"
-         "	`Value`	REAL NOT NULL,"
-         "	PRIMARY KEY(`ID`)"
-         ");"
-         "CREATE TABLE IF NOT EXISTS `SkySectors` ("
-         "	`ID`	INTEGER NOT NULL,"
-         "	`A0`	REAL NOT NULL,"
-         "	`A1`	REAL NOT NULL,"
-         "	`E0`	REAL NOT NULL,"
-         "	`E1`	REAL NOT NULL,"
-         "	PRIMARY KEY(`ID`)"
-         ");"
-         "CREATE TABLE IF NOT EXISTS `MpProcResults` ("
-         "	`ArcID`	INTEGER NOT NULL,"
-         "	`SV`	INTEGER NOT NULL,"
-         "	`Sector`INTEGER NOT NULL,"
-         "	`Site`	TEXT NOT NULL,"
-         "    FOREIGN KEY(`ArcID`) REFERENCES `MpArcs`(`ID`),"
-      //   "	FOREIGN KEY(`SV`) REFERENCES `SVS`(`USI`),"
-         "    FOREIGN KEY(`Sector`) REFERENCES `SkySectors`(`ID`),"
-         "    FOREIGN KEY(`Site`) REFERENCES `Sites`(`Name`)"
-         ");"
-         "CREATE TABLE IF NOT EXISTS `MpArcs` ("
-         "	`ID`	INTEGER NOT NULL,"
-         "	`T1`	TEXT NOT NULL,"
-         "	`T2`	TEXT NOT NULL,"
-         "	`minEl`	REAL NOT NULL,"
-         "	`maxEl`	REAL NOT NULL,"
-         "	`H`	REAL NOT NULL,"
-         "	`Count`	INTEGER NOT NULL,"
-         "	PRIMARY KEY(`ID`)"
-         ");"
-         "CREATE TABLE IF NOT EXISTS `GnssObsFile` ("
-         "	`ID`	INTEGER NOT NULL,"
-         "	`FullName`	TEXT,"
-         "	`Title`	TEXT,"
-         "	PRIMARY KEY(`ID`)"
-         ");"
-         ""
-         "CREATE TABLE IF NOT EXISTS `Epochs` ("
-         "	`ID`	INTEGER NOT NULL,"
-         "	`Time`	TEXT NOT NULL,"
-         "	`FileID`	INTEGER NOT NULL,"
-         "    `OccupationID`	TEXT,"
-         "	FOREIGN KEY(`FileID`) REFERENCES `GnssObsFile`(`ID`),"
-         "	PRIMARY KEY(`ID`)"
-         ");"
-         ""
-         "CREATE TABLE IF NOT EXISTS `ColorsSt` ("
-         "	`SolType`	INTEGER NOT NULL,"
-         "	`FileID`	INTEGER NOT NULL,"
-         "	`Color`	TEXT NOT NULL,"
-         "	FOREIGN KEY(`FileID`) REFERENCES `GnssObsFile`(`ID`)"
-         ");"
-         "CREATE TABLE IF NOT EXISTS `ColorGen` ("
-         "	`FileID`	INTEGER NOT NULL UNIQUE,"
-         "	`Color`	INTEGER NOT NULL,"
-         "	FOREIGN KEY(`FileID`) REFERENCES `GnssObsFile`(`ID`)"
-         ");"
-          "CREATE TABLE IF NOT EXISTS `ColorSv` ("
-          "   `SVID`	INTEGER NOT NULL, "
-          "   `SSID`	INTEGER NOT NULL, "
-          "	`FileID`	INTEGER NOT NULL,"
-          "	`Color`	INTEGER NOT NULL,"
-          "	FOREIGN KEY(`SVID`) REFERENCES `SVS`(`SVID`),"
-          "	FOREIGN KEY(`SSID`) REFERENCES `SVS`(`SSID`),"
-          "	FOREIGN KEY(`FileID`) REFERENCES `GnssObsFile`(`ID`)"
-          ");"
-             "CREATE TABLE IF NOT EXISTS `TypeIDsByFiles` ("
-             "	`FileId`	INTEGER NOT NULL,"
-             "	`TypeId`	INTEGER NOT NULL,"
-             "	FOREIGN KEY(`FileId`) REFERENCES `GnssObsFile`(`ID`)"
-             ");"
-         "CREATE UNIQUE INDEX IF NOT EXISTS `SlnTypesColors_Type_File_Unique` ON `ColorsSt` ("
-         "	`SolType`,"
-         "	`FileID`"
-         ");"
-         "CREATE UNIQUE INDEX IF NOT EXISTS `SatColor_SV_File_Unuque` ON `ColorSv` ("
-         "	`FileID`,"
-         "	`SVID`,"
-         "	`SSID`"
-         ");"
-         "CREATE UNIQUE INDEX IF NOT EXISTS `SkySector_Unique` ON `SkySectors` ("
-         "	`A0`	ASC,"
-         "	`A1`,"
-         "	`E0`,"
-         "	`E1`"
-         ");"
-         "CREATE UNIQUE INDEX IF NOT EXISTS `SV_Unique` ON `SVS` ("
-         "	`SVID`,"
-         "	`SSID`"
-         ");"
-         "COMMIT;";
+    const unsigned SQLiteAdapter::SCHEMA_VERSION = 1;
 
-}
+    const std::string SQLiteAdapter::createSchemaCommand =
+        "BEGIN TRANSACTION;"
+        "CREATE TABLE IF NOT EXISTS `SvDataItems` ("
+        "	`SV`	INTEGER NOT NULL,"
+        "	`DataID`	INTEGER NOT NULL,"
+        "	`EpochID`	INTEGER NOT NULL,"
+        "	FOREIGN KEY(`SV`) REFERENCES `SVS`(`ID`),"
+        "    FOREIGN KEY(`DataID`) REFERENCES `RinexTypePairs`(`ID`),"
+        "	FOREIGN KEY(`EpochID`) REFERENCES `Epochs`(`ID`)"
+        ");"
+        "CREATE TABLE IF NOT EXISTS `SlnDataItems` ("
+        "	`EpochID`	INTEGER,"
+        "	`DataID`	INTEGER UNIQUE,"
+        "	FOREIGN KEY(`EpochID`) REFERENCES `Epochs`(`ID`),"
+        "	FOREIGN KEY(`DataID`) REFERENCES `RinexTypePairs`(`ID`)"
+        ");"
+        "CREATE TABLE IF NOT EXISTS `SatSystems` ("
+        "	`ID`	INTEGER NOT NULL,"
+        "	`Name`	TEXT NOT NULL UNIQUE,"
+        "	PRIMARY KEY(`ID`)"
+        ");"
+        "CREATE TABLE IF NOT EXISTS `SVS` ("
+        "	`ID`	INTEGER NOT NULL,"
+        "	`SVID`	INTEGER NOT NULL,"
+        "	`SSID`	INTEGER NOT NULL,"
+        "	PRIMARY KEY(`ID`)"
+        ");"
+        "CREATE TABLE IF NOT EXISTS `Sites` ("
+        "	`Name`	TEXT NOT NULL,"
+        "	PRIMARY KEY(`Name`)"
+        ");"
+        "CREATE TABLE IF NOT EXISTS `RinexTypePairs` ("
+        "	`ID`	INTEGER NOT NULL,"
+        "	`Type`	TEXT NOT NULL,"
+        "	`Value`	REAL NOT NULL,"
+        "	PRIMARY KEY(`ID`)"
+        ");"
+        "CREATE TABLE IF NOT EXISTS `SkySectors` ("
+        "	`ID`	INTEGER NOT NULL,"
+        "	`A0`	REAL NOT NULL,"
+        "	`A1`	REAL NOT NULL,"
+        "	`E0`	REAL NOT NULL,"
+        "	`E1`	REAL NOT NULL,"
+        "	PRIMARY KEY(`ID`)"
+        ");"
+        "CREATE TABLE IF NOT EXISTS `MpProcResults` ("
+        "	`ArcID`	INTEGER NOT NULL,"
+        "	`SV`	INTEGER NOT NULL,"
+        "	`Sector`INTEGER NOT NULL,"
+        "	`Site`	TEXT NOT NULL,"
+        "    FOREIGN KEY(`ArcID`) REFERENCES `MpArcs`(`ID`),"
+        //   "	FOREIGN KEY(`SV`) REFERENCES `SVS`(`USI`),"
+        "    FOREIGN KEY(`Sector`) REFERENCES `SkySectors`(`ID`),"
+        "    FOREIGN KEY(`Site`) REFERENCES `Sites`(`Name`)"
+        ");"
+        "CREATE TABLE IF NOT EXISTS `MpArcs` ("
+        "	`ID`	INTEGER NOT NULL,"
+        "	`T1`	TEXT NOT NULL,"
+        "	`T2`	TEXT NOT NULL,"
+        "	`minEl`	REAL NOT NULL,"
+        "	`maxEl`	REAL NOT NULL,"
+        "	`H`	REAL NOT NULL,"
+        "	`Count`	INTEGER NOT NULL,"
+        "	PRIMARY KEY(`ID`)"
+        ");"
+        "CREATE TABLE IF NOT EXISTS `GnssObsFile` ("
+        "	`ID`	INTEGER NOT NULL,"
+        "	`FullName`	TEXT,"
+        "	`Title`	TEXT,"
+        "	PRIMARY KEY(`ID`)"
+        ");"
+        ""
+        "CREATE TABLE IF NOT EXISTS `Epochs` ("
+        "	`ID`	INTEGER NOT NULL,"
+        "	`Time`	TEXT NOT NULL,"
+        "	`FileID`	INTEGER NOT NULL,"
+        "    `OccupationID`	TEXT,"
+        "	FOREIGN KEY(`FileID`) REFERENCES `GnssObsFile`(`ID`),"
+        "	PRIMARY KEY(`ID`)"
+        ");"
+        ""
+        "CREATE TABLE IF NOT EXISTS `ColorsSt` ("
+        "	`SolType`	INTEGER NOT NULL,"
+        "	`FileID`	INTEGER NOT NULL,"
+        "	`Color`	TEXT NOT NULL,"
+        "	FOREIGN KEY(`FileID`) REFERENCES `GnssObsFile`(`ID`)"
+        ");"
+        "CREATE TABLE IF NOT EXISTS `ColorGen` ("
+        "	`FileID`	INTEGER NOT NULL UNIQUE,"
+        "	`Color`	INTEGER NOT NULL,"
+        "	FOREIGN KEY(`FileID`) REFERENCES `GnssObsFile`(`ID`)"
+        ");"
+        "CREATE TABLE IF NOT EXISTS `ColorSv` ("
+        "   `SVID`	INTEGER NOT NULL, "
+        "   `SSID`	INTEGER NOT NULL, "
+        "	`FileID`	INTEGER NOT NULL,"
+        "	`Color`	INTEGER NOT NULL,"
+        "	FOREIGN KEY(`SVID`) REFERENCES `SVS`(`SVID`),"
+        "	FOREIGN KEY(`SSID`) REFERENCES `SVS`(`SSID`),"
+        "	FOREIGN KEY(`FileID`) REFERENCES `GnssObsFile`(`ID`)"
+        ");"
+        "CREATE TABLE IF NOT EXISTS `TypeIDsByFiles` ("
+        "	`FileId`	INTEGER NOT NULL,"
+        "	`TypeId`	INTEGER NOT NULL,"
+        "	FOREIGN KEY(`FileId`) REFERENCES `GnssObsFile`(`ID`)"
+        ");"
+        "CREATE UNIQUE INDEX IF NOT EXISTS `SlnTypesColors_Type_File_Unique` ON `ColorsSt` ("
+        "	`SolType`,"
+        "	`FileID`"
+        ");"
+        "CREATE UNIQUE INDEX IF NOT EXISTS `SatColor_SV_File_Unuque` ON `ColorSv` ("
+        "	`FileID`,"
+        "	`SVID`,"
+        "	`SSID`"
+        ");"
+        "CREATE UNIQUE INDEX IF NOT EXISTS `SkySector_Unique` ON `SkySectors` ("
+        "	`A0`	ASC,"
+        "	`A1`,"
+        "	`E0`,"
+        "	`E1`"
+        ");"
+        "CREATE UNIQUE INDEX IF NOT EXISTS `SV_Unique` ON `SVS` ("
+        "	`SVID`,"
+        "	`SSID`"
+        ");"
+        "COMMIT;";
+
+} // namespace pod

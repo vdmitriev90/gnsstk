@@ -1,5 +1,6 @@
-#include"CodeProcSvData.h"
-#include"GeneralConstraint.hpp"
+#include "CodeProcSvData.h"
+
+#include "GeneralConstraint.hpp"
 
 using namespace gnsstk;
 
@@ -8,24 +9,24 @@ namespace pod
     ObsTypes CodeProcSvData ::obsTypes;
     CodeProcSvData::_init CodeProcSvData::_initializer;
 
-     CodeProcSvData::_init::_init()
-    {      
+    CodeProcSvData::_init::_init()
+    {
         RinexObsID idC1G(ObservationType::Range, CarrierBand::L1, TrackingCode::CA);
-        std::pair<TypeID, RinexObsID> pC1G (TypeID::C1, idC1G);
+        std::pair<TypeID, RinexObsID> pC1G(TypeID::C1, idC1G);
 
         RinexObsID idP1G(ObservationType::Range, CarrierBand::L1, TrackingCode::CW);
         std::pair<TypeID, RinexObsID> pP1G(TypeID::P1, idP1G);
 
         RinexObsID idP2G(ObservationType::Range, CarrierBand::L2, TrackingCode::CW);
         std::pair<TypeID, RinexObsID> pP2G(TypeID::P2, idP2G);
-       
+
         RinexObsID idS1G(ObservationType::SNR, CarrierBand::L1, TrackingCode::CA);
         std::pair<TypeID, RinexObsID> pS1(TypeID::S1, idS1G);
 
         RinexObsID idS2G(ObservationType::SNR, CarrierBand::L2, TrackingCode::CW);
         std::pair<TypeID, RinexObsID> pS2(TypeID::S2, idS2G);
 
-		std::map<TypeID, RinexObsID> mG = { pC1G, pP1G, pP2G, pS1, pS2 };
+        std::map<TypeID, RinexObsID> mG = {pC1G, pP1G, pP2G, pS1, pS2};
 
         RinexObsID idC1R(ObservationType::Range, CarrierBand::G1, TrackingCode::Standard);
         std::pair<TypeID, RinexObsID> pC1R(TypeID::C1, idC1R);
@@ -42,17 +43,16 @@ namespace pod
         RinexObsID idS2R(ObservationType::SNR, CarrierBand::G2, TrackingCode::Precise);
         std::pair<TypeID, RinexObsID> pS2R(TypeID::S2, idS1R);
 
-		std::map<TypeID, RinexObsID> mR = { pC1R, pP1R, pP2R, pS1R, pS2R };
+        std::map<TypeID, RinexObsID> mR = {pC1R, pP1R, pP2R, pS1R, pS2R};
 
         //
         std::pair<SatelliteSystem, std::map<TypeID, RinexObsID>> p1(SatelliteSystem::GPS, mG);
         std::pair<SatelliteSystem, std::map<TypeID, RinexObsID>> p2(SatelliteSystem::Glonass, mR);
 
-        obsTypes = { p1, p2 };
+        obsTypes = {p1, p2};
     }
 
-
-    bool CodeProcSvData::tryAdd(const SatID & id,const SvDataItem & item)
+    bool CodeProcSvData::tryAdd(const SatID& id, const SvDataItem& item)
     {
         if (data.find(id) == data.end())
             data.insert(std::pair<SatID, SvDataItem>(id, item));
@@ -62,7 +62,7 @@ namespace pod
         satSyst.insert(id.system);
         return true;
     }
-    bool CodeProcSvData::tryRemove(const SatID & id)
+    bool CodeProcSvData::tryRemove(const SatID& id)
     {
         auto it = data.find(id);
         if (it != data.end())
@@ -72,7 +72,7 @@ namespace pod
 
         satSyst.clear();
 
-        for (auto & it : data)
+        for (auto& it : data)
             satSyst.insert(it.first.system);
 
         return true;
@@ -81,16 +81,16 @@ namespace pod
     size_t CodeProcSvData::getNumUsedSv() const
     {
         int n = 0;
-        for(auto & it :data)
+        for (auto& it : data)
             if (it.second.use)
                 n++;
-        
+
         return n;
     }
     size_t CodeProcSvData::getNumUsedSv(SatelliteSystem sys) const
     {
         int n = 0;
-        for (auto & it : data)
+        for (auto& it : data)
             if (it.first.system == sys && it.second.use)
                 n++;
 
@@ -99,15 +99,15 @@ namespace pod
     size_t CodeProcSvData::getParamNum() const
     {
         std::set<SatelliteSystem> ss;
-        for (auto & it : data)
+        for (auto& it : data)
             if (it.second.use)
                 ss.insert(it.first.system);
         return 3 + ss.size();
     }
 
-    void CodeProcSvData::updateSolutionLength(Vector<double> & sol) const
+    void CodeProcSvData::updateSolutionLength(Vector<double>& sol) const
     {
-        if(sol.size() < getParamNum())
+        if (sol.size() < getParamNum())
         {
             Vector<double> temp(5);
             if (sol.size() == 5)
@@ -118,37 +118,38 @@ namespace pod
         }
     }
 
-    double CodeProcSvData::appendResid(Vector<double> & sol, SatelliteSystem sys) const
+    double CodeProcSvData::appendResid(Vector<double>& sol, SatelliteSystem sys) const
     {
         if (getParamNum() > 4 && sys == SatelliteSystem::Glonass)
             return sol(4);
         else
             return 0.0;
     }
- 
+
     int CodeProcSvData::getEquations(Matrix<double>& A, Matrix<double>& W, Vector<double>& resid)
     {
 
         /// find the number of good GLN satellites
         int numGLN = getNumUsedSv(SatelliteSystem::Glonass);
-        //if number of GLN SV is lesss than 2 
+        // if number of GLN SV is lesss than 2
         if (numGLN < 2)
         {
             // we will not use glonass satellites
-            for (auto &it : data)
+            for (auto& it : data)
                 if (it.first.system == SatelliteSystem::Glonass)
                     it.second.use = false;
         }
 
         // find the number of good satellites
         int N = getNumUsedSv();
-        if (N < 4) return -1;
+        if (N < 4)
+            return -1;
         // define for computation
         int K = getParamNum();
         A = Matrix<double>(N, K);
         resid = Vector<double>(N);
-        
-        //weight matrix
+
+        // weight matrix
         W = Matrix<double>(N, N);
         ident(W);
         static const double elev0(30.0);
@@ -156,19 +157,20 @@ namespace pod
         static const double glnSigmaFactor = 1;
 
         int i_eq = 0;
-        for (auto &it :data)
+        for (auto& it : data)
         {
-            if (!it.second.use) continue;
+            if (!it.second.use)
+                continue;
 
             for (size_t j = 0; j < 3; j++)
                 A(i_eq, j) = it.second.alph[j];
             A(i_eq, 3) = 1.0;
 
             double invsig = 1.0;
-            if (it.second.el >0 && it.second.el < elev0)
-                 invsig = (::sin(it.second.el * DEG_TO_RAD) / sin0);
+            if (it.second.el > 0 && it.second.el < elev0)
+                invsig = (::sin(it.second.el * DEG_TO_RAD) / sin0);
 
-            W(i_eq, i_eq) = invsig*invsig;
+            W(i_eq, i_eq) = invsig * invsig;
 
             if (K > 4)
             {
@@ -180,7 +182,7 @@ namespace pod
                 else
                     A(i_eq, 4) = 0;
             }
-            
+
             resid(i_eq) = it.second.resid;
             i_eq++;
         }
@@ -189,13 +191,13 @@ namespace pod
 
     void CodeProcSvData::resetUseFlags(bool newValue)
     {
-        for (auto & it : data)
+        for (auto& it : data)
             it.second.use = newValue;
     }
 
     void CodeProcSvData::applyCNoMask(double CNoMask)
     {
-        for (auto & it : data)
+        for (auto& it : data)
             it.second.use = (it.second.snr >= CNoMask) ? true : false;
     }
     void CodeProcSvData::clear()
@@ -206,7 +208,8 @@ namespace pod
     // stream output for CodeSolverBase
     std::ostream& operator<<(std::ostream& os, const CodeProcSvData& svData)
     {
-        os << svData.data.size() << " " << svData.getNumUsedSv(SatelliteSystem::GPS) << " " << svData.getNumUsedSv(SatelliteSystem::Glonass);
+        os << svData.data.size() << " " << svData.getNumUsedSv(SatelliteSystem::GPS) << " "
+           << svData.getNumUsedSv(SatelliteSystem::Glonass);
         return os;
     }
-}
+} // namespace pod

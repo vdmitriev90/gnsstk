@@ -16,7 +16,7 @@
 //  You should have received a copy of the GNU Lesser General Public
 //  License along with GPSTk; if not, write to the Free Software Foundation,
 //  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
-//  
+//
 //  Copyright 2004, The University of Texas at Austin
 //  Dagoberto Salazar - gAGE ( http://www.gage.es ). 2008, 2009, 2011
 //
@@ -24,22 +24,22 @@
 
 //============================================================================
 //
-//This software developed by Applied Research Laboratories at the University of
-//Texas at Austin, under contract to an agency or agencies within the U.S. 
-//Department of Defense. The U.S. Government retains all rights to use,
-//duplicate, distribute, disclose, or release this software. 
+// This software developed by Applied Research Laboratories at the University of
+// Texas at Austin, under contract to an agency or agencies within the U.S.
+// Department of Defense. The U.S. Government retains all rights to use,
+// duplicate, distribute, disclose, or release this software.
 //
-//Pursuant to DoD Directive 523024 
+// Pursuant to DoD Directive 523024
 //
-// DISTRIBUTION STATEMENT A: This software has been approved for public 
+// DISTRIBUTION STATEMENT A: This software has been approved for public
 //                           release, distribution is unlimited.
 //
 //=============================================================================
 
 /**
-* @file SolverPPP.cpp
-* Class to compute the PPP Solution.
-*/
+ * @file SolverPPP.cpp
+ * Class to compute the PPP Solution.
+ */
 
 #include "PPPSolverLEO.h"
 using namespace gnsstk;
@@ -52,14 +52,12 @@ namespace pod
         return "PPPSolverLEO";
     }
 
-
     /* Common constructor.
-    *
-    * @param useNEU   If true, will compute dLat, dLon, dH coordinates;
-    *                 if false (the default), will compute dx, dy, dz.
-    */
-    PPPSolverLEO::PPPSolverLEO(bool useNEU)
-        : firstTime(true)
+     *
+     * @param useNEU   If true, will compute dLat, dLon, dH coordinates;
+     *                 if false (the default), will compute dx, dy, dz.
+     */
+    PPPSolverLEO::PPPSolverLEO(bool useNEU) : firstTime(true)
     {
 
         // Set the equation system structure
@@ -68,9 +66,9 @@ namespace pod
         // Call initializing method
         Init();
 
-    }  // End of 'PPPSolverLEO::SolverPPP()'
+    } // End of 'PPPSolverLEO::SolverPPP()'
 
-       // Initializing method.
+    // Initializing method.
     void PPPSolverLEO::Init(void)
     {
         // Set default coordinates stochastic model (constant)
@@ -88,25 +86,23 @@ namespace pod
 
         weightFactor = 100000.0;
 
-    }  // End of method 'PPPSolverLEO::Init()'
+    } // End of method 'PPPSolverLEO::Init()'
 
-
-
-       /* Compute the solution of the given equations set.
-       *
-       * @param prefitResiduals   Vector of prefit residuals
-       * @param designMatrix      Design matrix for the equation system
-       * @param weightVector      Vector of weights assigned to each
-       *                          satellite.
-       *
-       * \warning A typical Kalman filter works with the measurements noise
-       * covariance matrix, instead of the vector of weights. Beware of this
-       * detail, because this method uses the later.
-       *
-       * @return
-       *  0 if OK
-       *  -1 if problems arose
-       */
+    /* Compute the solution of the given equations set.
+     *
+     * @param prefitResiduals   Vector of prefit residuals
+     * @param designMatrix      Design matrix for the equation system
+     * @param weightVector      Vector of weights assigned to each
+     *                          satellite.
+     *
+     * \warning A typical Kalman filter works with the measurements noise
+     * covariance matrix, instead of the vector of weights. Beware of this
+     * detail, because this method uses the later.
+     *
+     * @return
+     *  0 if OK
+     *  -1 if problems arose
+     */
     int PPPSolverLEO::Compute(const gnsstk::Vector<double>& prefitResiduals,
                               const gnsstk::Matrix<double>& designMatrix,
                               const gnsstk::Vector<double>& weightVector)
@@ -125,41 +121,37 @@ of weightVector");
             GNSSTK_THROW(e);
         }
 
-       gnsstk:: Matrix<double> wMatrix(wSize, wSize, 0.0);  // Declare a weight matrix
+        gnsstk::Matrix<double> wMatrix(wSize, wSize, 0.0); // Declare a weight matrix
 
-                                                    // Fill the weight matrix diagonal with the content of
-                                                    // the weights vector
+        // Fill the weight matrix diagonal with the content of
+        // the weights vector
         for (int i = 0; i < wSize; i++)
         {
             wMatrix(i, i) = weightVector(i);
         }
 
         // Call the more general PPPSolverLEO::Compute() method
-        return PPPSolverLEO::Compute(prefitResiduals,
-                                     designMatrix,
-                                     wMatrix);
+        return PPPSolverLEO::Compute(prefitResiduals, designMatrix, wMatrix);
 
-    }  // End of method 'PPPSolverLEO::Compute()'
+    } // End of method 'PPPSolverLEO::Compute()'
 
-
-
-       // Compute the solution of the given equations set.
-       //
-       // @param prefitResiduals   Vector of prefit residuals
-       // @param designMatrix      Design matrix for equation system
-       // @param weightMatrix      Matrix of weights
-       //
-       // \warning A typical Kalman filter works with the measurements noise
-       // covariance matrix, instead of the matrix of weights. Beware of this
-       // detail, because this method uses the later.
-       //
-       // @return
-       //  0 if OK
-       //  -1 if problems arose
-       //
-    int PPPSolverLEO::Compute(const gnsstk:: Vector<double>& prefitResiduals,
-                              const gnsstk:: Matrix<double>& designMatrix,
-                              const gnsstk:: Matrix<double>& weightMatrix)
+    // Compute the solution of the given equations set.
+    //
+    // @param prefitResiduals   Vector of prefit residuals
+    // @param designMatrix      Design matrix for equation system
+    // @param weightMatrix      Matrix of weights
+    //
+    // \warning A typical Kalman filter works with the measurements noise
+    // covariance matrix, instead of the matrix of weights. Beware of this
+    // detail, because this method uses the later.
+    //
+    // @return
+    //  0 if OK
+    //  -1 if problems arose
+    //
+    int PPPSolverLEO::Compute(const gnsstk::Vector<double>& prefitResiduals,
+                              const gnsstk::Matrix<double>& designMatrix,
+                              const gnsstk::Matrix<double>& weightMatrix)
     {
 
         // By default, results are invalid
@@ -219,7 +211,7 @@ of qMatrix");
         // After checking sizes, let's invert the matrix of weights in order
         // to get the measurements noise covariance matrix, which is what we
         // use in the "SimpleKalmanFilter" class
-       gnsstk:: Matrix<double> measNoiseMatrix;
+        gnsstk::Matrix<double> measNoiseMatrix;
 
         try
         {
@@ -232,17 +224,11 @@ covariance matrix.");
             GNSSTK_THROW(e);
         }
 
-
         try
         {
 
             // Call the Kalman filter object.
-            kFilter.Compute(phiMatrix,
-                            qMatrix,
-                            prefitResiduals,
-                            designMatrix,
-                            measNoiseMatrix);
-
+            kFilter.Compute(phiMatrix, qMatrix, prefitResiduals, designMatrix, measNoiseMatrix);
         }
         catch (InvalidSolver& e)
         {
@@ -263,15 +249,14 @@ covariance matrix.");
 
         return 0;
 
-    }  // End of method 'PPPSolverLEO::Compute()'
+    } // End of method 'PPPSolverLEO::Compute()'
 
-
-       /* Returns a reference to a gnnsRinex object after solving
-       * the previously defined equation system.
-       *
-       * @param gData     Data object holding the data.
-       */
-	IRinex& PPPSolverLEO::Process(IRinex& gData)
+    /* Returns a reference to a gnnsRinex object after solving
+     * the previously defined equation system.
+     *
+     * @param gData     Data object holding the data.
+     */
+    IRinex& PPPSolverLEO::Process(IRinex& gData)
     {
         try
         {
@@ -284,7 +269,6 @@ covariance matrix.");
             // - "satSet" stores satellites being processed; this set is
             //   related with the number of unknowns.
             //
-
 
             // Get a set with all satellites present in this GDS
             SatIDSet currSatSet(gData.getBody().getSatID());
@@ -313,18 +297,16 @@ covariance matrix.");
             // Noise covariance matrix (QMatrix)
             qMatrix.resize(numUnknowns, numUnknowns, 0.0);
 
-
             // Build the vector of measurements (Prefit-residuals): Code + phase
             measVector.resize(numMeas, 0.0);
 
-           gnsstk:: Vector<double> prefitC(gData.getBody().getVectorOfTypeID(defaultEqDef.header));
-           gnsstk:: Vector<double> prefitL(gData.getBody().getVectorOfTypeID(TypeID::prefitL));
+            gnsstk::Vector<double> prefitC(gData.getBody().getVectorOfTypeID(defaultEqDef.header));
+            gnsstk::Vector<double> prefitL(gData.getBody().getVectorOfTypeID(TypeID::prefitL));
             for (size_t i = 0; i < numCurrentSV; i++)
             {
                 measVector(i) = prefitC(i);
                 measVector(numCurrentSV + i) = prefitL(i);
             }
-
 
             // Weights matrix
             rMatrix.resize(numMeas, numMeas, 0.0);
@@ -338,18 +320,16 @@ covariance matrix.");
             {
 
                 // If we have weights information, let's load it
-               gnsstk:: Vector<double>
-                    weightsVector(gData.getBody().getVectorOfTypeID(TypeID::weight));
+                gnsstk::Vector<double> weightsVector(
+                    gData.getBody().getVectorOfTypeID(TypeID::weight));
 
                 for (size_t i = 0; i < numCurrentSV; i++)
                 {
 
                     rMatrix(i, i) = weightsVector(i);
-                    rMatrix(i + numCurrentSV, i + numCurrentSV)
-                        = weightsVector(i) * weightFactor;
+                    rMatrix(i + numCurrentSV, i + numCurrentSV) = weightsVector(i) * weightFactor;
 
-                }  // End of 'for( int i=0; i<numCurrentSV; i++ )'
-
+                } // End of 'for( int i=0; i<numCurrentSV; i++ )'
             }
             else
             {
@@ -360,20 +340,17 @@ covariance matrix.");
                     rMatrix(i, i) = 1.0;
 
                     // Phases weights are bigger
-                    rMatrix(i + numCurrentSV, i + numCurrentSV)
-                        = 1.0 * weightFactor;
+                    rMatrix(i + numCurrentSV, i + numCurrentSV) = 1.0 * weightFactor;
 
-                }  // End of 'for( int i=0; i<numCurrentSV; i++ )'
+                } // End of 'for( int i=0; i<numCurrentSV; i++ )'
 
-            }  // End of 'if ( dummy.numSats() == numCurrentSV )'
+            } // End of 'if ( dummy.numSats() == numCurrentSV )'
 
-
-
-               // Generate the corresponding geometry/design matrix
+            // Generate the corresponding geometry/design matrix
             hMatrix.resize(numMeas, numUnknowns, 0.0);
 
             // Get the values corresponding to 'core' variables
-           gnsstk:: Matrix<double> dMatrix(gData.getBody().getMatrixOfTypes(defaultEqDef.body));
+            gnsstk::Matrix<double> dMatrix(gData.getBody().getMatrixOfTypes(defaultEqDef.body));
 
             // Let's fill 'hMatrix'
             for (size_t i = 0; i < numCurrentSV; i++)
@@ -385,18 +362,15 @@ covariance matrix.");
 
                     hMatrix(i, j) = dMatrix(i, j);
                     hMatrix(i + numCurrentSV, j) = dMatrix(i, j);
-
                 }
 
-            }  // End of 'for( int i=0; i<numCurrentSV; i++ )'
+            } // End of 'for( int i=0; i<numCurrentSV; i++ )'
 
-
-               // Now, fill the coefficients related to phase biases
-               // We must be careful because not all processed satellites
-               // are currently visible
+            // Now, fill the coefficients related to phase biases
+            // We must be careful because not all processed satellites
+            // are currently visible
             int count1(0);
-            for (SatIDSet::const_iterator itSat = currSatSet.begin();
-                 itSat != currSatSet.end();
+            for (SatIDSet::const_iterator itSat = currSatSet.begin(); itSat != currSatSet.end();
                  ++itSat)
             {
 
@@ -410,18 +384,15 @@ covariance matrix.");
                     ++itSat2;
                 }
 
-
                 // Put coefficient in the right place
                 hMatrix(count1 + numCurrentSV, j + numVar) = 1.0;
 
                 ++count1;
 
-            }  // End of 'for( itSat = satSet.begin(); ... )'
+            } // End of 'for( itSat = satSet.begin(); ... )'
 
-
-
-               // Now, let's fill the Phi and Q matrices
-            SatID  dummySat;
+            // Now, let's fill the Phi and Q matrices
+            SatID dummySat;
 
             // Second, the coordinates
             pCoordXStoModel->Prepare(dummySat, gData);
@@ -436,24 +407,18 @@ covariance matrix.");
             phiMatrix(2, 2) = pCoordZStoModel->getPhi();
             qMatrix(2, 2) = pCoordZStoModel->getQ();
 
-
             // Third, the receiver clock
-            pClockStoModel->Prepare(dummySat,
-                                    gData);
+            pClockStoModel->Prepare(dummySat, gData);
             phiMatrix(3, 3) = pClockStoModel->getPhi();
             qMatrix(3, 3) = pClockStoModel->getQ();
 
-
             // Finally, the phase biases
-            int count2(numVar);     // Note that for PPP, 'numVar' is always 5!!!
-            for (SatIDSet::const_iterator itSat = satSet.begin();
-                 itSat != satSet.end();
-                 ++itSat)
+            int count2(numVar); // Note that for PPP, 'numVar' is always 5!!!
+            for (SatIDSet::const_iterator itSat = satSet.begin(); itSat != satSet.end(); ++itSat)
             {
 
                 // Prepare stochastic model
-                pBiasStoModel->Prepare(*itSat,
-                                       gData);
+                pBiasStoModel->Prepare(*itSat, gData);
 
                 // Get values into phi and q matrices
                 phiMatrix(count2, count2) = pBiasStoModel->getPhi();
@@ -462,53 +427,45 @@ covariance matrix.");
                 ++count2;
             }
 
-
-
             // Feed the filter with the correct state and covariance matrix
             if (firstTime)
             {
 
-               gnsstk:: Vector<double> initialState(numUnknowns, 0.0);
-               gnsstk:: Matrix<double> initialErrorCovariance(numUnknowns,
-                                                      numUnknowns,
-                                                      0.0);
-
+                gnsstk::Vector<double> initialState(numUnknowns, 0.0);
+                gnsstk::Matrix<double> initialErrorCovariance(numUnknowns, numUnknowns, 0.0);
 
                 // Fill the initialErrorCovariance matrix
 
                 // First, the zenital wet tropospheric delay
-                initialErrorCovariance(0, 0) = 0.25;          // (0.5 m)**2
+                initialErrorCovariance(0, 0) = 0.25; // (0.5 m)**2
 
-                                                              // Second, the coordinates
+                // Second, the coordinates
                 for (int i = 1; i < 4; i++)
                 {
-                    initialErrorCovariance(i, i) = 10000.0;    // (100 m)**2
+                    initialErrorCovariance(i, i) = 10000.0; // (100 m)**2
                 }
 
                 // Third, the receiver clock
-                initialErrorCovariance(4, 4) = 9.0e10;        // (300 km)**2
+                initialErrorCovariance(4, 4) = 9.0e10; // (300 km)**2
 
-                                                              // Finally, the phase biases
+                // Finally, the phase biases
                 for (int i = 5; i < numUnknowns; i++)
                 {
-                    initialErrorCovariance(i, i) = 4.0e14;     // (20000 km)**2
+                    initialErrorCovariance(i, i) = 4.0e14; // (20000 km)**2
                 }
-
 
                 // Reset Kalman filter
                 kFilter.Reset(initialState, initialErrorCovariance);
 
                 // No longer first time
                 firstTime = false;
-
             }
             else
             {
 
                 // Adapt the size to the current number of unknowns
-               gnsstk:: Vector<double> currentState(numUnknowns, 0.0);
-               gnsstk:: Matrix<double> currentErrorCov(numUnknowns, numUnknowns, 0.0);
-
+                gnsstk::Vector<double> currentState(numUnknowns, 0.0);
+                gnsstk::Matrix<double> currentErrorCov(numUnknowns, numUnknowns, 0.0);
 
                 // Set first part of current state vector and covariance matrix
                 for (int i = 0; i < numVar; i++)
@@ -522,12 +479,10 @@ covariance matrix.");
                     }
                 }
 
-
                 // Fill in the rest of state vector and covariance matrix
                 // These are values that depend on satellites being processed
                 int c1(numVar);
-                for (SatIDSet::const_iterator itSat = satSet.begin();
-                     itSat != satSet.end();
+                for (SatIDSet::const_iterator itSat = satSet.begin(); itSat != satSet.end();
                      ++itSat)
                 {
 
@@ -552,8 +507,7 @@ covariance matrix.");
                     // right quadrants of covariance matrix
                     int c3(0);
                     TypeIDSet::const_iterator itType;
-                    for (itType = defaultEqDef.body.begin();
-                         itType != defaultEqDef.body.end();
+                    for (itType = defaultEqDef.body.begin(); itType != defaultEqDef.body.end();
                          ++itType)
                     {
 
@@ -566,30 +520,21 @@ covariance matrix.");
                     ++c1;
                 }
 
-
                 // Reset Kalman filter to current state and covariance matrix
                 kFilter.Reset(currentState, currentErrorCov);
 
-            }  // End of 'if(firstTime)'
+            } // End of 'if(firstTime)'
 
-
-
-               // Call the Compute() method with the defined equation model.
-               // This equation model MUST HAS BEEN previously set, usually when
-               // creating the SolverPPP object with the appropriate
-               // constructor.
-            Compute(measVector,
-                    hMatrix,
-                    rMatrix);
-
-
+            // Call the Compute() method with the defined equation model.
+            // This equation model MUST HAS BEEN previously set, usually when
+            // creating the SolverPPP object with the appropriate
+            // constructor.
+            Compute(measVector, hMatrix, rMatrix);
 
             // Store those values of current state and covariance matrix
             // that depend on satellites currently in view
             int c1(numVar);
-            for (SatIDSet::const_iterator itSat = satSet.begin();
-                 itSat != satSet.end();
-                 ++itSat)
+            for (SatIDSet::const_iterator itSat = satSet.begin(); itSat != satSet.end(); ++itSat)
             {
 
                 // Store ambiguities
@@ -609,8 +554,7 @@ covariance matrix.");
                 // Store variables X ambiguities covariances
                 int c3(0);
                 TypeIDSet::const_iterator itType;
-                for (itType = defaultEqDef.body.begin();
-                     itType != defaultEqDef.body.end();
+                for (itType = defaultEqDef.body.begin(); itType != defaultEqDef.body.end();
                      ++itType)
                 {
 
@@ -621,12 +565,11 @@ covariance matrix.");
 
                 ++c1;
 
-            }  // End of 'for( itSat = satSet.begin(); ...'
+            } // End of 'for( itSat = satSet.begin(); ...'
 
-
-               // Now we have to add the new values to the data structure
-           gnsstk:: Vector<double> postfitCode(numCurrentSV, 0.0);
-           gnsstk:: Vector<double> postfitPhase(numCurrentSV, 0.0);
+            // Now we have to add the new values to the data structure
+            gnsstk::Vector<double> postfitCode(numCurrentSV, 0.0);
+            gnsstk::Vector<double> postfitPhase(numCurrentSV, 0.0);
             for (size_t i = 0; i < numCurrentSV; i++)
             {
                 postfitCode(i) = postfitResiduals(i);
@@ -640,28 +583,23 @@ covariance matrix.");
             satSet = currSatSet;
 
             return gData;
-
         }
         catch (Exception& u)
         {
             // Throw an exception if something unexpected happens
-            ProcessingException e(getClassName() + ":"
-                                  + u.what());
+            ProcessingException e(getClassName() + ":" + u.what());
 
             GNSSTK_THROW(e);
-
         }
 
-    }  // End of method 'PPPSolverLEO::Process()'
+    } // End of method 'PPPSolverLEO::Process()'
 
-
-
-       /* Sets if a NEU system will be used.
-       *
-       * @param useNEU  Boolean value indicating if a NEU system will
-       *                be used
-       *
-       */
+    /* Sets if a NEU system will be used.
+     *
+     * @param useNEU  Boolean value indicating if a NEU system will
+     *                be used
+     *
+     */
     PPPSolverLEO& PPPSolverLEO::setNEU(bool useNEU)
     {
 
@@ -678,11 +616,11 @@ covariance matrix.");
         }
         else
         {
-            tempSet.insert(TypeID::dx);   // #2
-            tempSet.insert(TypeID::dy);   // #3
-            tempSet.insert(TypeID::dz);   // #4
+            tempSet.insert(TypeID::dx); // #2
+            tempSet.insert(TypeID::dy); // #3
+            tempSet.insert(TypeID::dz); // #4
         }
-        tempSet.insert(TypeID::cdt);     // #5
+        tempSet.insert(TypeID::cdt); // #5
 
         // Now, we build the basic equation definition
         defaultEqDef.header = TypeID::prefitC;
@@ -690,20 +628,19 @@ covariance matrix.");
 
         return (*this);
 
-    }  // End of method 'PPPSolverLEO::setNEU()'
+    } // End of method 'PPPSolverLEO::setNEU()'
 
-
-       /* Set a single coordinates stochastic model to ALL coordinates.
-       *
-       * @param pModel      Pointer to StochasticModel associated with
-       *                    coordinates.
-       *
-       * @warning Do NOT use this method to set the SAME state-aware
-       * stochastic model (like RandomWalkModel, for instance) to ALL
-       * coordinates, because the results will certainly be erroneous. Use
-       * this method only with non-state-aware stochastic models like
-       * 'StochasticModel' (constant coordinates) or 'WhiteNoiseModel'.
-       */
+    /* Set a single coordinates stochastic model to ALL coordinates.
+     *
+     * @param pModel      Pointer to StochasticModel associated with
+     *                    coordinates.
+     *
+     * @warning Do NOT use this method to set the SAME state-aware
+     * stochastic model (like RandomWalkModel, for instance) to ALL
+     * coordinates, because the results will certainly be erroneous. Use
+     * this method only with non-state-aware stochastic models like
+     * 'StochasticModel' (constant coordinates) or 'WhiteNoiseModel'.
+     */
     PPPSolverLEO& PPPSolverLEO::setCoordinatesModel(IStochasticModel* pModel)
     {
 
@@ -714,11 +651,10 @@ covariance matrix.");
 
         return (*this);
 
-    }  // End of method 'PPPSolverLEO::setCoordinatesModel()'
+    } // End of method 'PPPSolverLEO::setCoordinatesModel()'
 
-
-       /** Set the positioning mode, kinematic or static.
-       */
+    /** Set the positioning mode, kinematic or static.
+     */
     PPPSolverLEO& PPPSolverLEO::setKinematic(bool kinematicMode,
                                              double sigmaX,
                                              double sigmaY,
@@ -742,26 +678,27 @@ covariance matrix.");
         return (*this);
 
     } // End of method 'PPPSolverLEO::setKinematic()'
-    void  PPPSolverLEO::printSolution(std::ofstream& outfile,
-                                      const CommonTime& time0,
-                                      const CommonTime& time,
-                                      const ComputeDOP& cDOP,
-                                            GnssEpoch &  gEpoch,
-                                       double PCO,
-                                      std::vector<PowerSum> &stats,
-                                      const Position &nomXYZ)
+    void PPPSolverLEO::printSolution(std::ofstream& outfile,
+                                     const CommonTime& time0,
+                                     const CommonTime& time,
+                                     const ComputeDOP& cDOP,
+                                     GnssEpoch& gEpoch,
+                                     double PCO,
+                                     std::vector<PowerSum>& stats,
+                                     const Position& nomXYZ)
     {
         outfile << std::fixed << std::setprecision(4);
         // Print results
-        outfile << static_cast<YDSTime>(time).year << "-";   // Year           - #1
-        outfile << static_cast<YDSTime>(time).doy << "-";    // DayOfYear      - #2
-        outfile << static_cast<YDSTime>(time).sod << "  ";   // SecondsOfDay   - #3
-        outfile << std::setprecision(6) << (static_cast<YDSTime>(time).doy + static_cast<YDSTime>(time).sod / 86400.0) << "  " << std::setprecision(4);
+        outfile << static_cast<YDSTime>(time).year << "-"; // Year           - #1
+        outfile << static_cast<YDSTime>(time).doy << "-";  // DayOfYear      - #2
+        outfile << static_cast<YDSTime>(time).sod << "  "; // SecondsOfDay   - #3
+        outfile << std::setprecision(6)
+                << (static_cast<YDSTime>(time).doy + static_cast<YDSTime>(time).sod / 86400.0)
+                << "  " << std::setprecision(4);
 
-
-        double x = nomXYZ.X() + getSolution(TypeID::dx);    // dx    - #4
-        double y = nomXYZ.Y() + getSolution(TypeID::dy);    // dy    - #5
-        double z = nomXYZ.Z() + getSolution(TypeID::dz);    // dz    - #6
+        double x = nomXYZ.X() + getSolution(TypeID::dx); // dx    - #4
+        double y = nomXYZ.Y() + getSolution(TypeID::dy); // dy    - #5
+        double z = nomXYZ.Z() + getSolution(TypeID::dz); // dz    - #6
 
         gEpoch.slnData.insert(std::pair<TypeID, double>(TypeID::recX, x));
         gEpoch.slnData.insert(std::pair<TypeID, double>(TypeID::recY, y));
@@ -770,11 +707,10 @@ covariance matrix.");
         double cdt = getSolution(TypeID::cdt);
         gEpoch.slnData.insert(std::pair<TypeID, double>(TypeID::recCdt, cdt));
 
-        double varX = getVariance(TypeID::dx);     // Cov dx    - #8
-        double varY = getVariance(TypeID::dy);     // Cov dy    - #9
-        double varZ = getVariance(TypeID::dz);     // Cov dz    - #10
+        double varX = getVariance(TypeID::dx); // Cov dx    - #8
+        double varY = getVariance(TypeID::dy); // Cov dy    - #9
+        double varZ = getVariance(TypeID::dz); // Cov dz    - #10
 
-       
         double sigma = sqrt(varX + varY + varZ);
         gEpoch.slnData.insert(std::pair<TypeID, double>(TypeID::sigma, sigma));
         outfile << x << "  " << y << "  " << z << "  " << "  " << sigma << "  ";
@@ -782,7 +718,7 @@ covariance matrix.");
         gEpoch.slnData.insert(std::pair<TypeID, double>(TypeID::recSlnType, 16));
 
         outfile << gEpoch.satData.size() << std::endl;
-        //time of convergence,  seconds;
+        // time of convergence,  seconds;
         double tConv(5400.0);
 
         double dt = time - time0;
@@ -794,4 +730,4 @@ covariance matrix.");
         }
     }
 
-}
+} // namespace pod

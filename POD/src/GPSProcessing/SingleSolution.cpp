@@ -1,25 +1,23 @@
 #include "SingleSolution.h"
 
-#include"SimpleFilter.hpp"
-#include"WinUtils.h"
-#include"ComputeWeightSimple.h"
+#include "BasicModel.hpp"
+#include "ClockBiasEquations.h"
+#include "ComputeMOPSWeights.hpp"
+#include "ComputeTropModel.hpp"
+#include "ComputeWeightSimple.h"
+#include "Decimate.hpp"
+#include "InterSystemBias.h"
+#include "LICSDetector.hpp"
+#include "LinearCombinations.hpp"
+#include "MWCSDetector.hpp"
+#include "NeillTropModel.hpp"
+#include "OneFreqCSDetector.hpp"
+#include "PositionEquations.h"
+#include "PowerSum.hpp"
+#include "SimpleFilter.hpp"
+#include "WinUtils.h"
 
-#include"PositionEquations.h"
-#include"InterSystemBias.h"
-#include"ClockBiasEquations.h"
-
-#include"LICSDetector.hpp"
-#include"OneFreqCSDetector.hpp"
-#include"Decimate.hpp"
-#include"BasicModel.hpp"
-#include"NeillTropModel.hpp"
-#include"PowerSum.hpp"
-#include"ComputeMOPSWeights.hpp"
-#include"ComputeTropModel.hpp"
-#include"LinearCombinations.hpp"
-#include"MWCSDetector.hpp"
-
-#include<memory>
+#include <memory>
 
 using namespace gnsstk;
 
@@ -27,8 +25,10 @@ namespace pod
 {
 
     SingleSolution::SingleSolution(GnssDataStore_sptr data_ptr)
-        : GnssSolution(data_ptr,50.0), codeSmWindowSize(600)      
-    { }
+        : GnssSolution(data_ptr, 50.0)
+        , codeSmWindowSize(600)
+    {
+    }
 
     //
     void SingleSolution::process()
@@ -40,25 +40,24 @@ namespace pod
             PRFilter.addFilteredType(TypeID::P2);
 
         SimpleFilter SNRFilter(TypeID::S1, 30, DBL_MAX);
-		std::list<Position> nomPos;
-        //nominalPos.asECEF();
-        //int i = 0;
-        //for (auto& it : confReader().getListValueAsDouble("nominalPosition"))
-        //    nominalPos[i++] = it;
+        std::list<Position> nomPos;
+        // nominalPos.asECEF();
+        // int i = 0;
+        // for (auto& it : confReader().getListValueAsDouble("nominalPosition"))
+        //     nominalPos[i++] = it;
 
         // Object to decimate data
-        Decimate decimateData(
-            confReader().getValueAsDouble("decimationInterval"),
-            confReader().getValueAsDouble("decimationTolerance"),
-            data->navLibrary_.getInitialTime());
+        Decimate decimateData(confReader().getValueAsDouble("decimationInterval"),
+                              confReader().getValueAsDouble("decimationTolerance"),
+                              data->navLibrary_.getInitialTime());
 
         // basic model object
         BasicModel model(data->navLibrary_);
         model.setDefaultObservable(codeL1);
         model.setMinElev(confReader().getValueAsInt("ElMask"));
 
-        //troposhere modeling object
-		std::unique_ptr<NeillTropModel> uptrTropModel = std::make_unique<NeillTropModel>();
+        // troposhere modeling object
+        std::unique_ptr<NeillTropModel> uptrTropModel = std::make_unique<NeillTropModel>();
         ComputeTropModel computeTropo(*uptrTropModel);
 
         //
@@ -70,37 +69,38 @@ namespace pod
         if (forwardBackwardCycles > 0)
         {
             solverFb.setCyclesNumber(forwardBackwardCycles);
-            solverFb.setLimits(confReader().getValueListAsDouble("codeLimList"), confReader().getValueListAsDouble("phaseLimList"));
+            solverFb.setLimits(confReader().getValueListAsDouble("codeLimList"),
+                               confReader().getValueListAsDouble("phaseLimList"));
         }
 
         bool firstTime = true;
 
         RinexEpoch gRin;
 
-        for (auto &obsFile : data->getObsFiles(opts().SiteRover))
+        for (auto& obsFile : data->getObsFiles(opts().SiteRover))
         {
-			std::cout << obsFile << std::endl;
+            std::cout << obsFile << std::endl;
 
-            //Input observation file stream
+            // Input observation file stream
             Rinex3ObsStream rin;
 
-            //Open Rinex observations file in read-only mode
+            // Open Rinex observations file in read-only mode
             rin.open(obsFile, std::ios::in);
 
             rin.exceptions(std::ios::failbit);
             Rinex3ObsHeader roh;
 
-            //read the header
+            // read the header
             rin >> roh;
             gMap.header = roh;
 
-            //update code smoothers sampling rate, according to current rinex file sampling rate
+            // update code smoothers sampling rate, according to current rinex file sampling rate
             codeSmoother.setInterval(codeSmWindowSize / roh.interval);
 
-            //read all epochs
+            // read all epochs
             while (rin >> gRin)
             {
-                //work around for post header comments 
+                // work around for post header comments
                 if (gRin.getBody().size() == 0)
                 {
                     printMsg(gRin.getHeader().epoch, "Empty epoch record in Rinex file");
@@ -109,28 +109,28 @@ namespace pod
 
                 auto& t = gRin.getHeader().epoch;
 
-                //keep only satellites from satellites systems selected for processing
+                // keep only satellites from satellites systems selected for processing
                 gRin.keepOnlySatSystems(opts().systems);
 
-                //keep only types used for processing
+                // keep only types used for processing
                 gRin.keepOnlyTypeID(requireObs.getRequiredType());
 
-                //compute approximate position
+                // compute approximate position
 
-				if (apprPos().getPosition(gRin, nominalPos))
-					continue;
-				if (firstTime)
-				{
-					std::cout << std::setprecision(10) << nominalPos << std::endl;
-					firstTime = false;
-				}
+                if (apprPos().getPosition(gRin, nominalPos))
+                    continue;
+                if (firstTime)
+                {
+                    std::cout << std::setprecision(10) << nominalPos << std::endl;
+                    firstTime = false;
+                }
 
-                //update approximate position 
+                // update approximate position
                 data->ionoCorrector.setNominalPosition(nominalPos);
                 uptrTropModel->setAllParameters(t, nominalPos);
                 model.setRxPosition(nominalPos);
 
-                //filter out satellites with incomplete observables set 
+                // filter out satellites with incomplete observables set
                 gRin >> requireObs;
                 gRin >> PRFilter;
                 gRin >> SNRFilter;
@@ -154,19 +154,19 @@ namespace pod
                 gRin >> data->ionoCorrector;
                 gRin >> oMinusC;
                 gRin >> w;
-				int minSvNum = gRin.getBody().getSatSystems().size() + 3;
+                int minSvNum = gRin.getBody().getSatSystems().size() + 3;
                 if (forwardBackwardCycles > 0)
                 {
-					solverFb.setMinSatNumber(minSvNum);
+                    solverFb.setMinSatNumber(minSvNum);
                     gRin >> solverFb;
                 }
                 else
                 {
-					solver.setMinSatNumber(minSvNum);
+                    solver.setMinSatNumber(minSvNum);
                     gRin >> solver;
                     auto ep = opts().fullOutput ? GnssEpoch(gRin.getBody()) : GnssEpoch();
                     // updateNomPos(solverFB);
-                    printSolution( solver, t, ep);
+                    printSolution(solver, t, ep);
                     gMap.data.insert(std::make_pair(t, ep));
                 }
             }
@@ -174,22 +174,22 @@ namespace pod
 
         if (forwardBackwardCycles > 0)
         {
-			std::cout << "Fw-Bw part started" << std::endl;
+            std::cout << "Fw-Bw part started" << std::endl;
             solverFb.reProcess();
             RinexEpoch gRin;
-			std::cout << "Last process part started" << std::endl;
+            std::cout << "Last process part started" << std::endl;
             while (solverFb.lastProcess(gRin))
             {
                 auto ep = opts().fullOutput ? GnssEpoch(gRin.getBody()) : GnssEpoch();
-                //updateNomPos(solverFB);
-                printSolution( solverFb, gRin.getHeader().epoch, ep);
+                // updateNomPos(solverFB);
+                printSolution(solverFb, gRin.getHeader().epoch, ep);
                 gMap.data.insert(std::make_pair(gRin.getHeader().epoch, ep));
             }
-			std::cout << "measurments rejected: " << solverFb.rejectedMeasurements << std::endl;
+            std::cout << "measurments rejected: " << solverFb.rejectedMeasurements << std::endl;
         }
     }
 
-    void SingleSolution::updateNomPos(KalmanSolver &solver)
+    void SingleSolution::updateNomPos(KalmanSolver& solver)
     {
         PowerSum psum;
         for (auto it : solver.PostfitResiduals())
@@ -200,9 +200,12 @@ namespace pod
         Position newPos;
         if (numSats >= 4 && sigma < getMaxSigma())
         {
-            newPos[0] = nominalPos.X() + solver.getSolution(FilterParameter( TypeID::dx));   // dx    - #4
-            newPos[1] = nominalPos.Y() + solver.getSolution(FilterParameter(TypeID::dy));    // dy    - #5
-            newPos[2] = nominalPos.Z() + solver.getSolution(FilterParameter(TypeID::dz));    // dz    - #6
+            newPos[0] =
+                nominalPos.X() + solver.getSolution(FilterParameter(TypeID::dx)); // dx    - #4
+            newPos[1] =
+                nominalPos.Y() + solver.getSolution(FilterParameter(TypeID::dy)); // dy    - #5
+            newPos[2] =
+                nominalPos.Z() + solver.getSolution(FilterParameter(TypeID::dz)); // dz    - #6
 
             nominalPos = newPos;
         }
@@ -212,35 +215,35 @@ namespace pod
     {
         Equations->clearEquations();
         // White noise stochastic models
-        auto  coord = std::make_unique<PositionEquations>();
+        auto coord = std::make_unique<PositionEquations>();
 
         double sigma = confReader().getValueAsDouble("posSigma");
         if (opts().dynamics == GnssDataStore::Dynamics::Static)
         {
             coord->setStochasicModel(std::make_shared<ConstantModel>());
         }
-        else  if (opts().dynamics == GnssDataStore::Dynamics::Kinematic)
+        else if (opts().dynamics == GnssDataStore::Dynamics::Kinematic)
         {
             coord->setStochasicModel(std::make_shared<WhiteNoiseModel>(sigma));
         }
         else if (opts().dynamics == GnssDataStore::Dynamics::RandomWalk)
         {
-            
+
             for (const auto& it : coord->getParameters())
             {
                 coord->setStochasicModel(it, std::make_shared<RandomWalkModel>(sigma));
             }
         }
 
-        //add position equations
+        // add position equations
         Equations->addEquation(std::move(coord));
 
         Equations->addEquation(std::make_unique<ClockBiasEquations>());
 
         if (opts().systems.size() > 1)
-            Equations->addEquation(/*std::move(bias)*/std::make_unique<InterSystemBias>());
+            Equations->addEquation(/*std::move(bias)*/ std::make_unique<InterSystemBias>());
 
-        Equations->residTypes() = TypeIDSet{ TypeID::postfitC };
+        Equations->residTypes() = TypeIDSet{TypeID::postfitC};
         forwardBackwardCycles = confReader().getValueAsInt("forwardBackwardCycles");
     }
 
@@ -249,19 +252,19 @@ namespace pod
         LinearCombinations comm;
         bool useC1 = confReader().getValueAsBoolean("useC1");
         computeLinear.setUseC1(useC1);
-        
+
         configureSolver();
 
         if (useC1)
         {
             codeL1 = TypeID::C1;
             oMinusC.add(std::make_unique<PrefitC1>(false));
-            Equations->measTypes() = TypeIDSet{ TypeID::prefitC };
+            Equations->measTypes() = TypeIDSet{TypeID::prefitC};
         }
         else
         {
             codeL1 = TypeID::P1;
-            Equations->measTypes() = TypeIDSet{ TypeID::prefitP1 };
+            Equations->measTypes() = TypeIDSet{TypeID::prefitP1};
             oMinusC.add(std::make_unique<PrefitP1>(false));
         }
 
@@ -281,17 +284,14 @@ namespace pod
             codeSmoother.addSmoother(std::make_unique<CodeSmoother>(codeL1));
             codeSmoother.addSmoother(std::make_unique<CodeSmoother>(TypeID::P2));
 
-            // add linear combinations, requared  for CS detections 
+            // add linear combinations, requared  for CS detections
             computeLinear.add(std::make_unique<LICombimnation>());
             computeLinear.add(std::make_unique<MWoubenna>());
 
-            //define and add  CS markers
+            // define and add  CS markers
             codeSmoother.addScMarker(std::make_unique<LICSDetector>());
             codeSmoother.addScMarker(std::make_unique<MWCSDetector>());
         }
     }
 
-
-
-
-}
+} // namespace pod

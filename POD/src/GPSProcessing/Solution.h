@@ -1,41 +1,34 @@
 #ifndef POD_SOLUTION_H
 #define POD_SOLUTION_H
 
-#include"BasicFramework.hpp"
-#include"ConfDataReader.hpp"
-
-#include"GnssEpochMap.h"
-#include"CustomSolution.h"
-
+#include "BasicFramework.hpp"
+#include "ConfDataReader.hpp"
+#include "CustomSolution.h"
+#include "GnssEpochMap.h"
 
 namespace pod
 {
-    class Solution 
-        : public gnsstk::BasicFramework
+    class Solution : public gnsstk::BasicFramework
     {
-       
-    public:
+
+      public:
         Solution(const char* path);
-       virtual ~Solution()
-        {
-           
-        }
+        virtual ~Solution() {}
         virtual void process();
         void chekObs();
         void saveToDb();
         void saveStatistic();
-        GnssEpochMap  getData()
+        GnssEpochMap getData()
         {
             return solver.getData();
         };
 
-		CustomSolution&  getSolver()
-		{
-			return solver;
-		};
+        CustomSolution& getSolver()
+        {
+            return solver;
+        };
 
-    protected:
-        
+      protected:
         GnssDataStore_sptr data;
 
         gnsstk::CommandOptionWithArg confFile;
@@ -44,8 +37,7 @@ namespace pod
         gnsstk::ConfDataReader confReader;
 
         CustomSolution solver;
-
     };
-}
+} // namespace pod
 
 #endif // !POD_SOLUTION_H

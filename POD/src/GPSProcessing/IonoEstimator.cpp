@@ -1,5 +1,6 @@
 #include "IonoEstimator.h"
-#include"WinUtils.h"
+
+#include "WinUtils.h"
 
 using namespace gnsstk;
 namespace pod
@@ -12,12 +13,12 @@ namespace pod
 
     IonoEstimator::Initializer::Initializer()
     {
-        //initialize weigth matrix
+        // initialize weigth matrix
         IonoEstimator::W = Matrix<double>(2, 2, .0);
         W(0, 0) = 1.0;
         W(1, 1) = 1e4;
 
-        //initialize design matrix
+        // initialize design matrix
         IonoEstimator::H = Matrix<double>(2, 2, .0);
         H(0, 0) = 1.0;
         H(1, 0) = -1.0;
@@ -25,10 +26,9 @@ namespace pod
         H(1, 1) = 1;
     }
 
-    IonoEstimator::IonoEstimator()
-       {}
+    IonoEstimator::IonoEstimator() {}
 
-	IRinex& IonoEstimator::Process(IRinex& gData)
+    IRinex& IonoEstimator::Process(IRinex& gData)
     {
 
         try
@@ -40,20 +40,18 @@ namespace pod
                 try
                 {
                     bool b = feed(it.first, gData);
-                    if(!b)
+                    if (!b)
                         satRejectedSet.insert(it.first);
                 }
-                catch (gnsstk::Exception &e)
+                catch (gnsstk::Exception& e)
                 {
                     DBOUT_LINE(e)
                     satRejectedSet.insert(it.first);
-              
                 }
-                catch (std::exception &e)
+                catch (std::exception& e)
                 {
                     DBOUT_LINE(e.what());
                     satRejectedSet.insert(it.first);
-
                 }
                 catch (...)
                 {
@@ -69,27 +67,26 @@ namespace pod
         catch (Exception& u)
         {
             // Throw an exception if something unexpected happens
-            ProcessingException e(getClassName() + ":"
-                + u.what());
+            ProcessingException e(getClassName() + ":" + u.what());
 
             GNSSTK_THROW(e);
-
         }
 
-    }  // End of method 'IonoEstimator::Process()'
+    } // End of method 'IonoEstimator::Process()'
 
-
-       ///
-    bool IonoEstimator::feed(const gnsstk::SatID & sv, IRinex &gRin)
+    ///
+    bool IonoEstimator::feed(const gnsstk::SatID& sv, IRinex& gRin)
     {
         double ionoCode(.0);
-        if (!lcIonoCode.getCombination(sv, gRin.getBody()[sv]->get_value(), ionoCode)) return false;
+        if (!lcIonoCode.getCombination(sv, gRin.getBody()[sv]->get_value(), ionoCode))
+            return false;
 
         double ionoPhase(.0);
-        if (!lcIonoPhase.getCombination(sv, gRin.getBody()[sv]->get_value(), ionoPhase)) return false;
+        if (!lcIonoPhase.getCombination(sv, gRin.getBody()[sv]->get_value(), ionoPhase))
+            return false;
 
-        //get reference to current sv data
-        auto & data = filterData[sv];
+        // get reference to current sv data
+        auto& data = filterData[sv];
 
         double dt = abs(data.rWalkModel.getCurrentTime() - data.rWalkModel.getPreviousTime());
         if (dt > maxGap)
@@ -98,7 +95,7 @@ namespace pod
             std::cout << "reset for " << sv << std::endl;
         }
 
-        //update stochastic models
+        // update stochastic models
         data.rWalkModel.Prepare(sv, gRin);
         biasStochModel.Prepare(sv, gRin);
 
@@ -122,18 +119,18 @@ namespace pod
 
         auto hMatrixTr = transpose(H);
         auto PhiTr = transpose(Phi);
-        auto hTrTimesW = hMatrixTr*W;
+        auto hTrTimesW = hMatrixTr * W;
 
-        //predict
-        auto Pminus = Phi*Cov*PhiTr + Q;
-        auto xminus = Phi*state;
+        // predict
+        auto Pminus = Phi * Cov * PhiTr + Q;
+        auto xminus = Phi * state;
 
-        //correct
+        // correct
         auto invPminus = inverseChol(Pminus);
-        Cov = inverseChol(hTrTimesW*H + invPminus);
-        state = Cov*(hTrTimesW*meas + (invPminus*xminus));
+        Cov = inverseChol(hTrTimesW * H + invPminus);
+        state = Cov * (hTrTimesW * meas + (invPminus * xminus));
 
-        //auto postfitResiduals = meas - H * state;
+        // auto postfitResiduals = meas - H * state;
 
         data.state.q11 = Cov(0, 0);
         data.state.q22 = Cov(1, 1);
@@ -143,11 +140,11 @@ namespace pod
         data.state.bias = state(1);
 
         gRin.getBody()[sv]->get_value()[TypeID::ionoL1] = data.state.delay;
-        
+
         return true;
     }
 
-       // Returns a string identifying this object.
+    // Returns a string identifying this object.
     std::string IonoEstimator::getClassName() const
     {
         return "IonoEstimator";
@@ -164,4 +161,4 @@ namespace pod
         filterData[sv].state = KalmanData();
         return *this;
     };
-}
+} // namespace pod

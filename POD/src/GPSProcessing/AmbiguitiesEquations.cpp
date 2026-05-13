@@ -1,14 +1,15 @@
 #include "AmbiguitiesEquations.h"
-#include"GNSSconstants.hpp"
-#include"LinearCombination.h"
+
+#include "GNSSconstants.hpp"
+#include "LinearCombination.h"
 
 using namespace gnsstk;
 
 namespace pod
 {
-    const double AmbiguitiesEquations::sigma =  2e7;
+    const double AmbiguitiesEquations::sigma = 2e7;
 
-    std::map< gnsstk::TypeID, gnsstk::TypeID> AmbiguitiesEquations::typeMap;
+    std::map<gnsstk::TypeID, gnsstk::TypeID> AmbiguitiesEquations::typeMap;
 
     AmbiguitiesEquations::Initializer AmbiguitiesEquations::initializer;
 
@@ -27,13 +28,13 @@ namespace pod
         return ambSet;
     }
 
-    void AmbiguitiesEquations::Prepare(gnsstk::IRinex & gData)
+    void AmbiguitiesEquations::Prepare(gnsstk::IRinex& gData)
     {
         svsInView = gData.getBody().getSatID();
-        
-        //update satellites set
+
+        // update satellites set
         satSet.insert(svsInView.begin(), svsInView.end());
-        
+
         csFlags.clear();
 
         for (const auto& it : satSet)
@@ -44,29 +45,31 @@ namespace pod
         satSet = svsInView;
     }
 
-    void AmbiguitiesEquations::updatePhi(gnsstk::Matrix<double>& Phi, int & index) const
+    void AmbiguitiesEquations::updatePhi(gnsstk::Matrix<double>& Phi, int& index) const
     {
-        for (auto &it : csFlags)
+        for (auto& it : csFlags)
         {
             stochModel.setCS(it.second);
             Phi(index, index) = stochModel.getPhi();
             ++index;
         }
     }
-    
-    void AmbiguitiesEquations::updateQ(gnsstk::Matrix<double>& Q, int & index) const
+
+    void AmbiguitiesEquations::updateQ(gnsstk::Matrix<double>& Q, int& index) const
     {
-        for (auto &it : csFlags)
+        for (auto& it : csFlags)
         {
             stochModel.setCS(it.second);
             Q(index, index) = stochModel.getQ();
             ++index;
         }
     }
-    
-    void AmbiguitiesEquations::defStateAndCovariance(gnsstk::Vector<double>& x, gnsstk::Matrix<double>& P, int & index) const
+
+    void AmbiguitiesEquations::defStateAndCovariance(gnsstk::Vector<double>& x,
+                                                     gnsstk::Matrix<double>& P,
+                                                     int& index) const
     {
-        for (auto &it : csFlags)
+        for (auto& it : csFlags)
         {
             x(index) = 0;
             P(index, index) = 4e10;
@@ -74,15 +77,18 @@ namespace pod
         }
     }
 
-    void AmbiguitiesEquations::updateH(const gnsstk::IRinex& gData, const gnsstk::TypeIDSet& types, gnsstk::Matrix<double>& H, int& col_0)
+    void AmbiguitiesEquations::updateH(const gnsstk::IRinex& gData,
+                                       const gnsstk::TypeIDSet& types,
+                                       gnsstk::Matrix<double>& H,
+                                       int& col_0)
     {
-        //total number of  ambiguities
+        // total number of  ambiguities
         int numAmbs(csFlags.size());
 
-        //sv in view
+        // sv in view
         auto currentSatSet = gData.getBody().getSatID();
 
-        //total number of sv in view
+        // total number of sv in view
         int numSv(currentSatSet.size());
 
         int row(0);
@@ -93,7 +99,7 @@ namespace pod
                 row += numSv;
                 continue;
             }
-            
+
             // Now, fill the coefficients related to phase biases
             // We must be careful because not all processed satellites
             // are currently visible
@@ -120,7 +126,7 @@ namespace pod
                     wavelength = getWavelength(itSat.system, 2, fcn);
                     break;
                 case TypeID::BLC:
-                    wavelength = 1.0;// LinearCombination::getIonoFreeWaveLength(itSat, 1, 2);
+                    wavelength = 1.0; // LinearCombination::getIonoFreeWaveLength(itSat, 1, 2);
                     break;
                 default:
                     break;
@@ -141,4 +147,4 @@ namespace pod
     {
         return csFlags.size();
     }
-}
+} // namespace pod

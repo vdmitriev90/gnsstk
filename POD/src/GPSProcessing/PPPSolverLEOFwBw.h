@@ -7,55 +7,46 @@ namespace pod
 {
     class PPPSolverLEOFwBw : public PPPSolverLEO
     {
-    public:
-
+      public:
         /** Common constructor.
-        *
-        * @param useNEU   If true, will compute dLat, dLon, dH coordinates;
-        *                 if false (the default), will compute dx, dy, dz.
-        */
+         *
+         * @param useNEU   If true, will compute dLat, dLon, dH coordinates;
+         *                 if false (the default), will compute dx, dy, dz.
+         */
         PPPSolverLEOFwBw(bool useNEU = false);
 
-
-
         /** Returns a reference to a gnnsRinex object after solving
-        *  the previously defined equation system.
-        *
-        * @param gData    Data object holding the data.
-        */
+         *  the previously defined equation system.
+         *
+         * @param gData    Data object holding the data.
+         */
         virtual gnsstk::IRinex& Process(gnsstk::IRinex& gData);
 
-
         /** Reprocess the data stored during a previous 'Process()' call.
-        *
-        * @param cycles     Number of forward-backward cycles (1 by default).
-        *
-        * \warning The minimum number of cycles allowed is "1". In fact, if
-        * you introduce a smaller number, 'cycles' will be set to "1".
-        */
+         *
+         * @param cycles     Number of forward-backward cycles (1 by default).
+         *
+         * \warning The minimum number of cycles allowed is "1". In fact, if
+         * you introduce a smaller number, 'cycles' will be set to "1".
+         */
         virtual void ReProcess(int cycles);
 
-
         /** Reprocess the data stored during a previous 'Process()' call.
-        *
-        * This method will reprocess data trimming satellites whose postfit
-        * residual is bigger than the limits indicated by limitsCodeList and
-        * limitsPhaseList.
-        */
+         *
+         * This method will reprocess data trimming satellites whose postfit
+         * residual is bigger than the limits indicated by limitsCodeList and
+         * limitsPhaseList.
+         */
         virtual void ReProcess(void);
 
-
-
-
         /** Process the data stored during a previous 'ReProcess()' call, one
-        *  item at a time, and always in forward mode.
-        *
-        * @param gData      Data object that will hold the resulting data.
-        *
-        * @return FALSE when all data is processed, TRUE otherwise.
-        */
+         *  item at a time, and always in forward mode.
+         *
+         * @param gData      Data object that will hold the resulting data.
+         *
+         * @return FALSE when all data is processed, TRUE otherwise.
+         */
         virtual bool LastProcess(gnsstk::IRinex& gData);
-
 
         /// Gets the list storing the limits for postfit residuals in code.
         virtual std::list<double> getCodeList(void) const
@@ -63,37 +54,36 @@ namespace pod
             return limitsCodeList;
         };
 
-
         /** Sets a list storing the limits for postfit residuals in code.
-        *
-        * @param codeList   List with limits for postfit residuals in code.
-        *
-        * \warning Limits will be applied in the same order they were added.
-        */
+         *
+         * @param codeList   List with limits for postfit residuals in code.
+         *
+         * \warning Limits will be applied in the same order they were added.
+         */
         virtual PPPSolverLEOFwBw& setCodeList(std::list<double> codeList)
         {
-            limitsCodeList = codeList; return (*this);
+            limitsCodeList = codeList;
+            return (*this);
         };
-
 
         /** Adds a postfit residuals limit to list storing limits for code.
-        *
-        * @param codeLimit   New limit for postfit residuals in code.
-        *
-        * \warning Limits will be applied in the same order they were added.
-        */
+         *
+         * @param codeLimit   New limit for postfit residuals in code.
+         *
+         * \warning Limits will be applied in the same order they were added.
+         */
         virtual PPPSolverLEOFwBw& addCodeLimit(double codeLimit)
         {
-            limitsCodeList.push_back(codeLimit); return (*this);
+            limitsCodeList.push_back(codeLimit);
+            return (*this);
         };
-
 
         /// Clears the list storing the limits for postfit residuals in code.
         virtual PPPSolverLEOFwBw& clearCodeList(void)
         {
-            limitsCodeList.clear(); return (*this);
+            limitsCodeList.clear();
+            return (*this);
         };
-
 
         /// Gets the list storing the limits for postfit residuals in phase.
         virtual std::list<double> getPhaseList(void) const
@@ -101,44 +91,42 @@ namespace pod
             return limitsPhaseList;
         };
 
-
         /** Sets a list storing the limits for postfit residuals in phase.
-        *
-        * @param phaseList   List with limits for postfit residuals in phase.
-        *
-        * \warning Limits will be applied in the same order they were added.
-        */
+         *
+         * @param phaseList   List with limits for postfit residuals in phase.
+         *
+         * \warning Limits will be applied in the same order they were added.
+         */
         virtual PPPSolverLEOFwBw& setPhaseList(std::list<double> phaseList)
         {
-            limitsPhaseList = phaseList; return (*this);
+            limitsPhaseList = phaseList;
+            return (*this);
         };
-
 
         /** Adds a postfit residuals limit to list storing limits for phase.
-        *
-        * @param phaseLimit   New limit for postfit residuals in phase.
-        *
-        * \warning Limits will be applied in the same order they were added.
-        */
+         *
+         * @param phaseLimit   New limit for postfit residuals in phase.
+         *
+         * \warning Limits will be applied in the same order they were added.
+         */
         virtual PPPSolverLEOFwBw& addPhaseLimit(double phaseLimit)
         {
-            limitsPhaseList.push_back(phaseLimit); return (*this);
+            limitsPhaseList.push_back(phaseLimit);
+            return (*this);
         };
-
 
         /// Clears the list storing the limits for postfit residuals in phase.
         virtual PPPSolverLEOFwBw& clearPhaseList(void)
         {
-            limitsPhaseList.clear(); return (*this);
+            limitsPhaseList.clear();
+            return (*this);
         };
-
 
         /// Returns the number of processed measurements.
         virtual int getProcessedMeasurements(void) const
         {
             return processedMeasurements;
         };
-
 
         /// Returns the number of measurements rejected because they were
         /// off limits.
@@ -147,58 +135,44 @@ namespace pod
             return rejectedMeasurements;
         };
 
-
         /** Sets if a NEU system will be used.
-        *
-        * @param useNEU  Boolean value indicating if a NEU system will
-        *                be used
-        *
-        */
+         *
+         * @param useNEU  Boolean value indicating if a NEU system will
+         *                be used
+         *
+         */
         virtual PPPSolverLEOFwBw& setNEU(bool useNEU);
-
 
         /// Returns a string identifying this object.
         virtual std::string getClassName(void) const;
 
-
         /// Destructor.
         virtual ~PPPSolverLEOFwBw() {};
 
-
-    private:
-
-
+      private:
         /// Boolean indicating if this is the first iteration of this filter.
         bool firstIteration;
-
 
         /// List holding the information regarding every observation.
         std::list<gnsstk::irinex_uptr> ObsData;
 
-
         /// Set storing the TypeID's that we want to keep.
         gnsstk::TypeIDSet keepTypeSet;
-
 
         /// Number of processed measurements.
         int processedMeasurements;
 
-
         /// Number of measurements rejected because they were off limits.
         int rejectedMeasurements;
-
 
         /// List storing the limits for postfit residuals in code.
         std::list<double> limitsCodeList;
 
-
         /// List storing the limits for postfit residuals in phase.
         std::list<double> limitsPhaseList;
 
-
         /// This method checks the limits and modifies 'gData' accordingly.
         void checkLimits(gnsstk::IRinex& gData, double codeLimit, double phaseLimit);
-
 
         // Some methods that we want to hide
         virtual int Compute(const gnsstk::Vector<double>& prefitResiduals,
@@ -207,13 +181,11 @@ namespace pod
             return 0;
         };
 
-
         virtual PPPSolverLEOFwBw& setDefaultEqDefinition(
             const gnsstk::gnssEquationDefinition& eqDef)
         {
             return (*this);
         };
-
 
         virtual PPPSolverLEOFwBw& Reset(const gnsstk::Vector<double>& newState,
                                         const gnsstk::Matrix<double>& newErrorCov)
@@ -221,9 +193,8 @@ namespace pod
             return (*this);
         };
 
-
     }; // End of class 'PPPSolverLEOFwBw'
-}
-   //@}
+} // namespace pod
+  //@}
 
-#endif //!POD_PPP_SOLVER_LEOFWBW_H
+#endif //! POD_PPP_SOLVER_LEOFWBW_H

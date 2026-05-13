@@ -1,56 +1,67 @@
 #ifndef POD_PPP_SOLUTION_BASE_H
 #define POD_PPP_SOLUTION_BASE_H
 
-#include<memory>
+#include "CodeSolverLEO.h"
+#include "ComputeDOP.hpp"
+#include "ConfDataReader.hpp"
+#include "CorrectCodeBiases.hpp"
+#include "EOPStore.hpp"
+#include "GnssDataStore.hpp"
+#include "GnssEpochMap.h"
+#include "GnssSolution.h"
+#include "SolverPPP.hpp"
 
-#include"SolverPPP.hpp"
-#include"CodeSolverLEO.h"
-#include"ComputeDOP.hpp"
-#include"ConfDataReader.hpp"
-#include"GnssEpochMap.h"
-#include"EOPStore.hpp"
-#include"CorrectCodeBiases.hpp"
-#include"GnssDataStore.hpp"
-#include"GnssSolution.h"
-
+#include <memory>
 
 namespace pod
 {
     class PPPSolutionBase : public GnssSolution
     {
 
-    public: PPPSolutionBase(GnssDataStore_sptr data);
+      public:
+        PPPSolutionBase(GnssDataStore_sptr data);
 
-    public: virtual ~PPPSolutionBase();
+      public:
+        virtual ~PPPSolutionBase();
 
 #pragma region methods
 
-    public: virtual SlnType desiredSlnType() const override
-    {
-        return SlnType::PPP_Float;
-    }
-	public: virtual std::string  fileName() const override
-    {
-        return opts().SiteRover + "_ppp_float.txt";
-    }
+      public:
+        virtual SlnType desiredSlnType() const override
+        {
+            return SlnType::PPP_Float;
+        }
 
-    protected: virtual void PRProcess();
+      public:
+        virtual std::string fileName() const override
+        {
+            return opts().SiteRover + "_ppp_float.txt";
+        }
 
-    protected: virtual bool processCore() = 0;
+      protected:
+        virtual void PRProcess();
 
-    protected: virtual void mapSNR(gnsstk::IRinex& value);
+      protected:
+        virtual bool processCore() = 0;
 
-    protected: virtual double mapSNR(double value) { return value; };
+      protected:
+        virtual void mapSNR(gnsstk::IRinex& value);
+
+      protected:
+        virtual double mapSNR(double value)
+        {
+            return value;
+        };
 
 #pragma endregion
 
 #pragma region Fields
 
-               //pointer to object for code solution 
-	protected: std::unique_ptr<CodeSolverBase> solverPR;
+        // pointer to object for code solution
+      protected:
+        std::unique_ptr<CodeSolverBase> solverPR;
 
 #pragma endregion
-
     };
-}
+} // namespace pod
 #endif // !POD_PPP_SOLUTION_BASE_H

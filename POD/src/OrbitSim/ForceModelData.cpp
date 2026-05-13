@@ -1,5 +1,6 @@
-#include"ForceModelData.h"
-#include<iostream>
+#include "ForceModelData.h"
+
+#include <iostream>
 
 using namespace std;
 
@@ -16,11 +17,9 @@ namespace pod
         gData = GravityModelData();
     }
 
-    ForceModelData::~ForceModelData()
-    {
-    }
+    ForceModelData::~ForceModelData() {}
 
-    void GravityModelData:: loadModel(const std::string &path)
+    void GravityModelData::loadModel(const std::string& path)
     {
         isValid = false;
         ifstream inpStream(path);
@@ -47,11 +46,13 @@ namespace pod
 
         if (maxOrder < desiredOrder || maxDegree < desiredDegree)
         {
-            gnsstk::Exception e("desired gravity field degree(order) is lover than maximum degree(order) avalable in " + path + " gravity model file.");
+            gnsstk::Exception e("desired gravity field degree(order) is lover than maximum "
+                                "degree(order) avalable in "
+                                + path + " gravity model file.");
             GNSSTK_THROW(e);
         }
 
-        gnsstk::Matrix<double>  &CS = (isNormalize) ? normalizedCS : unnormalizedCS;
+        gnsstk::Matrix<double>& CS = (isNormalize) ? normalizedCS : unnormalizedCS;
 
         CS.resize(desiredOrder + 1, desiredDegree + 1);
 
@@ -64,18 +65,18 @@ namespace pod
 
             if (n > desiredDegree && m > desiredOrder)
             {
-                gnsstk:: Exception e("Unexpected gravity field degree(order) in: " + path);
+                gnsstk::Exception e("Unexpected gravity field degree(order) in: " + path);
                 GNSSTK_THROW(e);
             }
-            //CS[n][m] = C[n][m], CS[m-1][n] = S[n][m].
+            // CS[n][m] = C[n][m], CS[m-1][n] = S[n][m].
             CS[n][m] = cnm;
             if (m != 0)
                 CS[m - 1][n] = snm;
 
-            if (n == desiredDegree && m == desiredOrder) break;
-
+            if (n == desiredDegree && m == desiredOrder)
+                break;
         }
         isValid = true;
     }
 
-}
+} // namespace pod

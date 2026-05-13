@@ -1,17 +1,15 @@
-#include"OrbitModel.h"
+#include "OrbitModel.h"
 
-#include"GravityModel.h"
-#include"CentralMassModel.h"
-#include"SphericalHarmonicsModel.h"
-#include"ForceList.h"
+#include "CentralMassModel.h"
+#include "ForceList.h"
+#include "GravityModel.h"
+#include "SphericalHarmonicsModel.h"
 
 using namespace gnsstk;
 
 namespace pod
 {
-    OrbitModel:: OrbitModel()
-    {
-    }
+    OrbitModel::OrbitModel() {}
 
     OrbitModel::OrbitModel(const ForceModelData& fmc)
     {
@@ -27,7 +25,7 @@ namespace pod
         tf += t;
         return forceList.getDerivatives(tf, sc);
     }
-    
+
     OrbitModel& OrbitModel::reset(const ForceModelData& fmc)
     {
         this->forceList.clear();
@@ -39,24 +37,24 @@ namespace pod
         }
 
         // GeoEarth
-        if (fmc.gData.desiredDegree<2)
+        if (fmc.gData.desiredDegree < 2)
             this->forceList.addForce(std::make_unique<Force>(CentralMassModel(fmc.gData)));
         else
             this->forceList.addForce(std::make_unique<Force>(SphericalHarmonicsModel(fmc.gData)));
 
         ////sun gravity
-        //if (fmc.useGravSun)
-        //    this->forceList.addForce(new SunForce());
+        // if (fmc.useGravSun)
+        //     this->forceList.addForce(new SunForce());
 
         ////moon gravity
-        //if (fmc.useGravSun)
-        //    this->forceList.addForce(new MoonForce());
+        // if (fmc.useGravSun)
+        //     this->forceList.addForce(new MoonForce());
 
         ////relativity effects
-        //if (fmc.useRelEffect)
-        //    this->forceList.addForce(new RelativityEffect());
+        // if (fmc.useRelEffect)
+        //     this->forceList.addForce(new RelativityEffect());
 
-        return(*this);
+        return (*this);
 
-    }  // End of method 'OrbitModel::reset(const ForceModelData& fmc)'
-}
+    } // End of method 'OrbitModel::reset(const ForceModelData& fmc)'
+} // namespace pod

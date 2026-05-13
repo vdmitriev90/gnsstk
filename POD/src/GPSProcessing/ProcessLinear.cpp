@@ -1,6 +1,8 @@
-#include"ProcessLinear.h"
-#include"LinearCombination.h"
-#include<map>
+#include "ProcessLinear.h"
+
+#include "LinearCombination.h"
+
+#include <map>
 
 using namespace std;
 namespace pod
@@ -19,8 +21,8 @@ namespace pod
             for (const auto& lc : this->combs)
             {
                 double value;
-				if (lc->getCombination(sv.first, sv.second->get_value(), value))
-					sv.second->get_value().emplace(lc->getType(), value);
+                if (lc->getCombination(sv.first, sv.second->get_value(), value))
+                    sv.second->get_value().emplace(lc->getType(), value);
             }
         }
         return gData;
@@ -31,4 +33,4 @@ namespace pod
         Process(gData.getBody());
         return gData;
     }
-}
+} // namespace pod

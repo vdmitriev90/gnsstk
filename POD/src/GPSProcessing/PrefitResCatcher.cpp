@@ -1,5 +1,6 @@
 #include "PrefitResCatcher.h"
-#include"WinUtils.h"
+
+#include "WinUtils.h"
 
 using namespace gnsstk;
 namespace pod
@@ -23,15 +24,14 @@ namespace pod
 
         ratio = resExcl / resAvg;
 
-        return(ratio > maxRatio);
+        return (ratio > maxRatio);
     }
 
-
-	IRinex & PrefitResCatcher::Process(IRinex & gData)
+    IRinex& PrefitResCatcher::Process(IRinex& gData)
     {
-        auto & rejSatItem = rejectedSatsTable[gData.getHeader().epoch];
+        auto& rejSatItem = rejectedSatsTable[gData.getHeader().epoch];
 
-        for (auto && tid:resTypes)
+        for (auto&& tid : resTypes)
         {
             int s = gData.getBody().size();
             auto svs = gData.getBody().getVectorOfSatID();
@@ -41,7 +41,7 @@ namespace pod
             {
                 if (getDetection(values, i, 100, ratio))
                 {
-                    DBOUT_LINE(getClassName()<<" "<<svs[i]<<" "<<tid<<" "<<ratio)
+                    DBOUT_LINE(getClassName() << " " << svs[i] << " " << tid << " " << ratio)
                     gData.getBody().removeSatID(svs[i]);
                     rejSatItem.insert(svs[i]);
                     break;
@@ -55,4 +55,4 @@ namespace pod
     {
         return "pod::PrefitResCatcher";
     }
-}
+} // namespace pod

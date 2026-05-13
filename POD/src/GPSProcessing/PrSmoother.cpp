@@ -1,41 +1,34 @@
 #include "PrSmoother.h"
-#include<filesystem>
 
-#include"CommonTime.hpp"
-#include"Rinex3ObsStream.hpp"
-#include"Rinex3ObsData.hpp"
-#include"Exception.hpp"
-#include"DataStructures.hpp"
-#include"CodeSmoother.hpp"
-#include"OneFreqCSDetector.hpp"
-#include"LICSDetector2.hpp"
+#include "CodeSmoother.hpp"
+#include "CommonTime.hpp"
+#include "DataStructures.hpp"
+#include "Exception.hpp"
+#include "LICSDetector2.hpp"
+#include "OneFreqCSDetector.hpp"
+#include "Rinex3ObsData.hpp"
+#include "Rinex3ObsStream.hpp"
+
+#include <filesystem>
 
 namespace fs = std::filesystem;
 
 using namespace gnsstk;
 
-typedef std::map<gnsstk::TypeID, int> band_stat ;
+typedef std::map<gnsstk::TypeID, int> band_stat;
 typedef std::map<gnsstk::SatID, std::map<gnsstk::TypeID, int>> sv_stat;
 typedef std::pair<gnsstk::TypeID, int> band_stat_pair;
 namespace pod
 {
-    PrSmoother::PrSmoother() 
-        : window(100)
-        , codes(std::list<gnsstk::TypeID>(gnsstk::TypeID::C1))
+    PrSmoother::PrSmoother() : window(100), codes(std::list<gnsstk::TypeID>(gnsstk::TypeID::C1)) {}
+
+    PrSmoother::PrSmoother(const std::list<gnsstk::TypeID>& tList, int l) : window(l), codes(tList)
     {
     }
 
-    PrSmoother::PrSmoother(const std::list<gnsstk::TypeID>& tList, int l)
-        : window(l)
-        , codes(tList)
-    {
-    }
+    PrSmoother::~PrSmoother() {}
 
-    PrSmoother::~PrSmoother()
-    {
-    }
-
-    void PrSmoother::smooth(const char * path)
+    void PrSmoother::smooth(const char* path)
     {
 
         fs::path iPath(path);
@@ -56,33 +49,31 @@ namespace pod
         // We MUST mark cycle slips
         std::list<OneFreqCSDetector> csList;
 
-		std::cout << "Obs. currParameters for smoothing: " << std::endl;
-        for (auto &it : codes)
+        std::cout << "Obs. currParameters for smoothing: " << std::endl;
+        for (auto& it : codes)
         {
-			std::cout << TypeID::tStrings[it.type] << std::endl;
+            std::cout << TypeID::tStrings[it.type] << std::endl;
             smList.push_back(CodeSmoother(it, window));
             csList.push_back(OneFreqCSDetector(it));
         }
 
-
         RinexObsStream rin(iPath.string());
         RinexObsStream rout(oPath.string(), std::ios::out);
-		std::ofstream fStat(sPath, std::ios::out);
+        std::ofstream fStat(sPath, std::ios::out);
 
         RinexObsHeader head;
         RinexEpoch gRin;
-
 
         rin >> head;
         rout << head;
         sv_stat stat;
         while (rin >> gRin)
         {
-            for (auto &it : csList)
+            for (auto& it : csList)
                 gRin >> it;
 
             bool isEpochFirstTime = true;
-            for (auto &it : gRin.getBody())
+            for (auto& it : gRin.getBody())
             {
                 bool isSVFirstTime = true;
                 for (auto& it1 : csList)
@@ -105,7 +96,7 @@ namespace pod
 
                         auto s_it = stat.find(it.first);
                         if (s_it == stat.end())
-                            stat.emplace(it.first, band_stat({ band_stat_pair(csType, 1) }));
+                            stat.emplace(it.first, band_stat({band_stat_pair(csType, 1)}));
                         else
                         {
                             auto b_it = (*s_it).second.find(csType);
@@ -122,21 +113,19 @@ namespace pod
             }
             if (!isEpochFirstTime)
                 fStat << std::endl;
-            for (auto &it : smList)
+            for (auto& it : smList)
                 gRin >> it;
 
             rout << gRin;
         }
 
+        std::cout << "Rinex file whith smoothed PR: " << oPath << std::endl;
+        std::cout << "File for CS statistic PR: " << sPath << std::endl;
 
-		std::cout << "Rinex file whith smoothed PR: " << oPath << std::endl;
-		std::cout << "File for CS statistic PR: " << sPath << std::endl;
-
-
-        for (auto &it : stat)
+        for (auto& it : stat)
         {
             fStat << it.first << " ";
-            for (auto &it1 : it.second)
+            for (auto& it1 : it.second)
             {
                 fStat << it1.first << " " << it1.second << " ";
             }
@@ -147,4 +136,4 @@ namespace pod
         rout.close();
         fStat.close();
     }
-}
+} // namespace pod

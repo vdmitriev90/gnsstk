@@ -8,15 +8,15 @@ namespace pod
 {
     class CdDiffSolution : public SingleSolution
     {
-    public:
+      public:
         CdDiffSolution(GnssDataStore_sptr prt);
 
         virtual ~CdDiffSolution();
 
-        virtual std::string  fileName() const
+        virtual std::string fileName() const
         {
-            return opts().SiteBase + "-" + opts().SiteRover +
-                "_" + slnType2Str.at(desiredSlnType());
+            return opts().SiteBase + "-" + opts().SiteRover + "_"
+                   + slnType2Str.at(desiredSlnType());
         }
 
         virtual SlnType desiredSlnType() const override
@@ -26,14 +26,13 @@ namespace pod
 
         virtual void process() override;
 
-    protected:
+      protected:
         virtual void updateRequaredObs() override;
 
         void configureSolver() override;
 
-        //code smoothers for Ref. receiver obseravtions
+        // code smoothers for Ref. receiver obseravtions
         CodeSmoother2 codeSmootherRef;
-
     };
-}
+} // namespace pod
 #endif // !POD_CDDIFFSOLUTION_H

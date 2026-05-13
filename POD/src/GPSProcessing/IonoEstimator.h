@@ -1,19 +1,15 @@
 #pragma once
+#include "LinearCombination.h"
+#include "PhaseAmbiguityModel.hpp"
 #include "ProcessingClass.hpp"
-#include"LinearCombination.h"
-#include"PhaseAmbiguityModel.hpp"
 
 namespace pod
 {
-    class IonoEstimator :
-        public gnsstk::ProcessingClass
+    class IonoEstimator : public gnsstk::ProcessingClass
     {
-    public:
-        
-
+      public:
         IonoEstimator();
         virtual ~IonoEstimator() {};
-
 
         virtual gnsstk::IRinex& Process(gnsstk::IRinex& gData);
 
@@ -24,33 +20,27 @@ namespace pod
 
         IonoEstimator& reset(const gnsstk::SatID& sv);
 
-
-    private:
-        
-        bool feed(const gnsstk::SatID & sv, gnsstk::IRinex& gData);
+      private:
+        bool feed(const gnsstk::SatID& sv, gnsstk::IRinex& gData);
         struct KalmanData
         {
-            KalmanData()
-                :delay(.0), bias(.0),
-                q11(1e4), q12(.0), q22(1e9)
-            {};
+            KalmanData() : delay(.0), bias(.0), q11(1e4), q12(.0), q22(1e9) {};
 
-            //state
+            // state
             double delay;
             double bias;
 
-            //variance-covariance
+            // variance-covariance
             double q11, q12, q22;
         };
 
         struct FilterData
         {
-            FilterData()
-            {};
+            FilterData() {};
 
-            //state
+            // state
             KalmanData state;
-            //delay stochastic model - random walk model
+            // delay stochastic model - random walk model
             RandomWalkModel rWalkModel;
         };
 
@@ -64,16 +54,16 @@ namespace pod
 
         class Initializer
         {
-        public:
+          public:
             Initializer();
             ~Initializer() {};
-		};
+        };
 
         static Initializer initializer;
         static Matrix<double> W;
         static Matrix<double> H;
-    public:
+
+      public:
         static double maxGap;
     };
-}
-
+} // namespace pod

@@ -1,19 +1,15 @@
 #ifndef POD_ORBIT_MODEL_H
 #define POD_ORBIT_MODEL_H
 
-#include"ForceModelData.h"
-
-#include"ForceList.h"
-#include"EquationOfMotion.hpp"
-
-
+#include "EquationOfMotion.hpp"
+#include "ForceList.h"
+#include "ForceModelData.h"
 
 namespace pod
 {
     class OrbitModel : public gnsstk::EquationOfMotion
     {
-    public:
-
+      public:
         /// Default constructor
         OrbitModel();
 
@@ -25,15 +21,16 @@ namespace pod
             forceList.clear();
         }
 
-        virtual gnsstk::Vector<double> getDerivatives(const double&t, const gnsstk::Vector<double>& y);
+        virtual gnsstk::Vector<double> getDerivatives(const double& t,
+                                                      const gnsstk::Vector<double>& y);
 
         /// Restore the default setting
         OrbitModel& reset(const ForceModelData& fmc);
 
         /// set reference epoch
-        OrbitModel& setRefEpoch(const gnsstk::Epoch & t)
+        OrbitModel& setRefEpoch(const gnsstk::Epoch& t)
         {
-            t0 = t; 
+            t0 = t;
             return (*this);
         }
 
@@ -43,8 +40,7 @@ namespace pod
             return t0;
         }
 
-    protected:
-
+      protected:
         /// Reference epoch
         gnsstk::Epoch t0;
 
@@ -53,7 +49,6 @@ namespace pod
 
         /// Force Model List
         ForceList forceList;
-
     };
-}
+} // namespace pod
 #endif // !POD_ORBIT_MODEL_H

@@ -1,143 +1,143 @@
-#include"ApprPosProvider.hpp"
-#include"PRSolution2.hpp"
-#include"Bancroft.hpp"
-#include"sqlite3.h"
-#include"StringUtils.h"
+#include "ApprPosProvider.hpp"
 
-#include<filesystem>
+#include "Bancroft.hpp"
+#include "PRSolution2.hpp"
+#include "StringUtils.h"
+#include "sqlite3.h"
+
+#include <filesystem>
 
 using namespace gnsstk;
 namespace fs = std::experimental::filesystem;
 
 namespace pod
 {
-	std::string getPosSourceString(ApprPositionSource source)
-	{
-		static const std::map<ApprPositionSource, std::string> posSource2Str
-		{
-			{ApprPositionSource::FromConfig,            "ini file" },
-			{ApprPositionSource::ComputeForEachEpoch,   "Statndalone for each epoch" },
-			{ApprPositionSource::ComputeForFirstEpoch,  "Statndalone for first epoch" },
-			{ApprPositionSource::LoadFromFile,          "*.pos file" },
-		};
-		const auto it = posSource2Str.find(source);
-		if (it != posSource2Str.end())
-			return it->second;
+    std::string getPosSourceString(ApprPositionSource source)
+    {
+        static const std::map<ApprPositionSource, std::string> posSource2Str{
+            {ApprPositionSource::FromConfig, "ini file"},
+            {ApprPositionSource::ComputeForEachEpoch, "Statndalone for each epoch"},
+            {ApprPositionSource::ComputeForFirstEpoch, "Statndalone for first epoch"},
+            {ApprPositionSource::LoadFromFile, "*.pos file"},
+        };
+        const auto it = posSource2Str.find(source);
+        if (it != posSource2Str.end())
+            return it->second;
 
-		GNSSTK_ASSERT(false);
-		return "Unknown";
-	}
+        GNSSTK_ASSERT(false);
+        return "Unknown";
+    }
 
-	int IApprPosProvider::ComputeApprSol(const gnsstk::IRinex & gRin, 
-		NavLibrary& ephem,
-		gnsstk::Vector<double> & solution)
-	{
-		auto svs = gRin.getBody().getVectorOfSatID().toStdVector();
-		auto meas = gRin.getBody().getVectorOfTypeID(TypeID::C1).toStdVector();
+    int IApprPosProvider::ComputeApprSol(const gnsstk::IRinex& gRin,
+                                         NavLibrary& ephem,
+                                         gnsstk::Vector<double>& solution)
+    {
+        auto svs = gRin.getBody().getVectorOfSatID().toStdVector();
+        auto meas = gRin.getBody().getVectorOfTypeID(TypeID::C1).toStdVector();
 
-		Matrix<double> svp;
-		if (PRSolution2::PrepareAutonomousSolution(gRin.getHeader().epoch, svs, meas, ephem, svp))
-			return -1;
+        Matrix<double> svp;
+        if (PRSolution2::PrepareAutonomousSolution(gRin.getHeader().epoch, svs, meas, ephem, svp))
+            return -1;
 
-		Bancroft ban;
+        Bancroft ban;
 
-		if (ban.Compute(svp, solution))
-			return -2;
+        if (ban.Compute(svp, solution))
+            return -2;
 
-		return 0;
-	}
+        return 0;
+    }
 
-	int ComputeApprPos::getPosition(const gnsstk::IRinex & gRin, gnsstk::Position& pos)
-	{
-		auto t = gRin.getHeader().epoch;
-		auto it = pvtStore.find(t);
-		if (it == pvtStore.end())
-		{
-			Vector<double> vect;
-			int rc = IApprPosProvider::ComputeApprSol(gRin, ephStore, vect);
-			if (!rc)
-			{
-				pos = Position(vect[0], vect[1], vect[2]);
-				Xvt xvt;
-				xvt.frame = RefFrame(RefFrameSys::WGS84, t);
-				xvt.x = pos;
-				xvt.clkbias = vect[3];
-				pvtStore[t] = xvt;
-			}
-			else
-				return rc;
-		}
-		else
-			pos = Position(it->second.x[0], it->second.x[1], it->second.x[2]);
+    int ComputeApprPos::getPosition(const gnsstk::IRinex& gRin, gnsstk::Position& pos)
+    {
+        auto t = gRin.getHeader().epoch;
+        auto it = pvtStore.find(t);
+        if (it == pvtStore.end())
+        {
+            Vector<double> vect;
+            int rc = IApprPosProvider::ComputeApprSol(gRin, ephStore, vect);
+            if (!rc)
+            {
+                pos = Position(vect[0], vect[1], vect[2]);
+                Xvt xvt;
+                xvt.frame = RefFrame(RefFrameSys::WGS84, t);
+                xvt.x = pos;
+                xvt.clkbias = vect[3];
+                pvtStore[t] = xvt;
+            }
+            else
+                return rc;
+        }
+        else
+            pos = Position(it->second.x[0], it->second.x[1], it->second.x[2]);
 
-		return 0;
-	}
+        return 0;
+    }
 
-	int ComputeOnePos::getPosition(const gnsstk::IRinex & gRin, gnsstk::Position & pos)
-	{
-		if (isFirstTime)
-		{
-			Vector<double> vect;
-			int rc = IApprPosProvider::ComputeApprSol(gRin, ephStore, vect);
-			if (!rc)
-			{
-				apprPos = Position(vect[0], vect[1], vect[2]);
-				isFirstTime = false;
-			}
-			else
-				return rc;
-		}
-		pos = apprPos;
-		return 0;
-	}
+    int ComputeOnePos::getPosition(const gnsstk::IRinex& gRin, gnsstk::Position& pos)
+    {
+        if (isFirstTime)
+        {
+            Vector<double> vect;
+            int rc = IApprPosProvider::ComputeApprSol(gRin, ephStore, vect);
+            if (!rc)
+            {
+                apprPos = Position(vect[0], vect[1], vect[2]);
+                isFirstTime = false;
+            }
+            else
+                return rc;
+        }
+        pos = apprPos;
+        return 0;
+    }
 
-	bool PositionFromFile::loadApprPos(const std::string & path)
-	{
-		pvtStore.clear();
-		try
-		{
-			std::ifstream file(path);
-			if (file.is_open())
-			{
-				std::string line;
-				while (std::getline(file, line))
-				{
-					auto  words = StringUtils::split(line,";");
-					if (words.size() > 5)
-					{
-						int sType = stoi(words[5]);
-						CommonTime ct;
-						if (sType && StringUtils::tryParseTime(words[0], ct))
-						{
-     						Xvt xvt;
-							xvt.x = Triple(stod(words[1]), stod(words[2]), stod(words[3]));
-							xvt.clkbias = stod(words[4]);
-							pvtStore.insert(std::make_pair(ct, xvt));
-						}
-					}
-				}
-			}
-			else
-			{
-				auto mess = "Can't load data from file: " + path;
-				std::exception e(mess.c_str());
-				throw e;
-			}
-		}
-		catch (const std::exception& e)
-		{
-			std::cout << e.what() << std::endl;
-			throw e;
-		}
-		return true;
-	}
+    bool PositionFromFile::loadApprPos(const std::string& path)
+    {
+        pvtStore.clear();
+        try
+        {
+            std::ifstream file(path);
+            if (file.is_open())
+            {
+                std::string line;
+                while (std::getline(file, line))
+                {
+                    auto words = StringUtils::split(line, ";");
+                    if (words.size() > 5)
+                    {
+                        int sType = stoi(words[5]);
+                        CommonTime ct;
+                        if (sType && StringUtils::tryParseTime(words[0], ct))
+                        {
+                            Xvt xvt;
+                            xvt.x = Triple(stod(words[1]), stod(words[2]), stod(words[3]));
+                            xvt.clkbias = stod(words[4]);
+                            pvtStore.insert(std::make_pair(ct, xvt));
+                        }
+                    }
+                }
+            }
+            else
+            {
+                auto mess = "Can't load data from file: " + path;
+                std::exception e(mess.c_str());
+                throw e;
+            }
+        }
+        catch (const std::exception& e)
+        {
+            std::cout << e.what() << std::endl;
+            throw e;
+        }
+        return true;
+    }
 
-	int PositionFromFile::getPosition(const gnsstk::IRinex & gRin, gnsstk::Position & pos)
-	{
-		auto it = pvtStore.find(gRin.getHeader().epoch);
-		if (it == pvtStore.end())
-			return -1;
-		pos = Position(it->second.x[0], it->second.x[1], it->second.x[2]);
-		return 0;
-	}
-}
+    int PositionFromFile::getPosition(const gnsstk::IRinex& gRin, gnsstk::Position& pos)
+    {
+        auto it = pvtStore.find(gRin.getHeader().epoch);
+        if (it == pvtStore.end())
+            return -1;
+        pos = Position(it->second.x[0], it->second.x[1], it->second.x[2]);
+        return 0;
+    }
+} // namespace pod

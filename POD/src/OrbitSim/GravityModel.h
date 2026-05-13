@@ -1,46 +1,44 @@
 /**
-* @file GravityModel.hpp
-* 
-*/
+ * @file GravityModel.hpp
+ *
+ */
 
 #ifndef POD_GRAVITY_MODEL_H
 #define POD_GRAVITY_MODEL_H
 #include "Force.h"
-#include"ForceModelData.h"
+#include "ForceModelData.h"
 
 namespace pod
 {
 
-      /// @ingroup GeoDynamics 
-      //@{
+    /// @ingroup GeoDynamics
+    //@{
 
+    /** This class computes the body fixed acceleration due to the harmonic
+     *  gravity field of the central body
+     */
+    class GravityModel : public Force
+    {
+      public:
+        /// default constructor.
+        GravityModel(const GravityModelData& gData);
 
-      /** This class computes the body fixed acceleration due to the harmonic 
-       *  gravity field of the central body
-       */
-   class GravityModel : public Force
-   {
-   public:
+        /// Default destructor
+        virtual ~GravityModel() {};
 
-        ///default constructor.
-       GravityModel(const GravityModelData &gData);
+        /// return the force model index
+        virtual int forceIndex() const
+        {
+            return FMI_GEOEARTH;
+        }
 
-         /// Default destructor
-      virtual ~GravityModel() {};
+      protected:
+        GravityModelData gmData_;
 
-         /// return the force model index
-      virtual int forceIndex() const
-      { return FMI_GEOEARTH; }
+    }; // End of namespace 'gpstk'
 
+    // @}
 
-   protected:
+} // namespace pod
 
-       GravityModelData  gmData_;
-
-   }; // End of namespace 'gpstk'
-
-      // @}
-
-}  // End of namespace 'gpstk'
-
-#endif   // POD_GRAVITY_MODEL_H
+#endif // POD_GRAVITY_MODEL_H

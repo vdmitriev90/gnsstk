@@ -1,24 +1,22 @@
 #pragma once
 #include "CodeSmoother.hpp"
-#include<memory>
 
+#include <memory>
 
 namespace pod
-{ 
+{
     using process_uptr = std::unique_ptr<gnsstk::ProcessingClass>;
     using code_smoother_ptr = std::unique_ptr<gnsstk::CodeSmoother>;
-   
-	//aggregator for 'scMarker' and 'CodeSmoother' objects
+
+    // aggregator for 'scMarker' and 'CodeSmoother' objects
     class CodeSmoother2 : public gnsstk::ProcessingClass
     {
-    public:
-
+      public:
         CodeSmoother2() = default;
 
-        
         CodeSmoother2(std::vector<code_smoother_ptr>&& codeSmoothers,
-            std::vector<process_uptr>&& csMarkers,
-            int interval = 600);
+                      std::vector<process_uptr>&& csMarkers,
+                      int interval = 600);
 
         virtual ~CodeSmoother2();
 
@@ -27,21 +25,20 @@ namespace pod
         CodeSmoother2& addSmoother(code_smoother_ptr smoother);
 
         virtual gnsstk::IRinex& Process(gnsstk::IRinex& gData) override;
- 
+
         virtual std::string getClassName() const override;
 
         int getInterval() const;
 
         CodeSmoother2& setInterval(int interval);
-        
-    private:
-        //Code smoothers
+
+      private:
+        // Code smoothers
         std::vector<code_smoother_ptr> smoothers_;
-        //Cycle slip markers
+        // Cycle slip markers
         std::vector<process_uptr> scMarkers_;
 
         // smoothing window in samples
-        int interval_ ;
+        int interval_;
     };
-}
-
+} // namespace pod

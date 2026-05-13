@@ -15,7 +15,7 @@ namespace pod
 
         return svs_by_ss;
     }
-    
+
     SatIDSet FilterParameter::get_all_sv(const std::set<FilterParameter>& parameters)
     {
         SatIDSet svs;
@@ -42,10 +42,10 @@ namespace pod
 
         return types;
     }
-	std::string FilterParameter::toString() const
-	{
-		std::ostringstream ss;
-		ss << *this;
-		return ss.str();
-	}
-}
+    std::string FilterParameter::toString() const
+    {
+        std::ostringstream ss;
+        ss << *this;
+        return ss.str();
+    }
+} // namespace pod

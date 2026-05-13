@@ -1,39 +1,37 @@
-#include"OrbitSim.h"
+#include "OrbitSim.h"
 
-#include"KeplerOrbit.hpp"
+#include "KeplerOrbit.hpp"
 using namespace gnsstk;
 
 namespace pod
 {
 
     // Constructor
-    OrbitSim::OrbitSim():
-        //: pIntegrator(&defIntehrator),
-        //pOrbit(&defOrbit),
+    OrbitSim::OrbitSim()
+        : //: pIntegrator(&defIntehrator),
+          // pOrbit(&defOrbit),
         curT(0.0)
     {
         setDefaultIntegrator();
         setDefaultOrbit();
         setStepSize(3.0);
 
-    }  // End of constructor 'OrbitSim::OrbitSim()'
+    } // End of constructor 'OrbitSim::OrbitSim()'
 
-
-       // Default destructor
+    // Default destructor
     OrbitSim::~OrbitSim()
     {
         pIntegrator.reset();
         pOrbit.reset();
-
     }
 
     /* Take a single integration step.
-    *
-    * @param x     time or independent variable
-    * @param y     containing needed inputs (usually the state)
-    * @param tf    next time
-    * @return      containing the new state
-    */
+     *
+     * @param x     time or independent variable
+     * @param y     containing needed inputs (usually the state)
+     * @param tf    next time
+     * @return      containing the new state
+     */
     Vector<double> OrbitSim::integrateTo(double t, Vector<double> y, double tf)
     {
         try
@@ -52,8 +50,7 @@ namespace pod
             GNSSTK_THROW(e);
         }
 
-    }  // End of method 'OrbitSim::integrateTo()'
-
+    } // End of method 'OrbitSim::integrateTo()'
 
     bool OrbitSim::integrateTo(double tf)
     {
@@ -63,7 +60,7 @@ namespace pod
             Vector<double> y = curState;
 
             curT = tf;
-          
+
             curState = pIntegrator->integrateTo(t, y, pOrbit.get(), tf);
 
             updateMatrix();
@@ -83,13 +80,13 @@ namespace pod
 
         return false;
 
-    }  // End of method 'OrbitSim::integrateTo()'
+    } // End of method 'OrbitSim::integrateTo()'
 
-       /*
-       * set init state
-       * utc0   init epoch
-       * rv0    init state
-       */
+    /*
+     * set init state
+     * utc0   init epoch
+     * rv0    init state
+     */
     OrbitSim& OrbitSim::setInitState(CommonTime t0, Vector<double> rv0)
     {
         const int np = 0; //= setFMT.size();
@@ -105,7 +102,7 @@ namespace pod
         curState(4) = rv0(4);
         curState(5) = rv0(5);
 
-        double I[9] = { 1.0, 0.0 ,0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0 };
+        double I[9] = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
 
         for (int i = 0; i < 9; i++)
         {
@@ -120,10 +117,9 @@ namespace pod
 
         return (*this);
 
-    }  // End of method 'OrbitSim::setInitState()'
+    } // End of method 'OrbitSim::setInitState()'
 
-
-       /// update phiMatrix sMatrix and rvState from curState
+    /// update phiMatrix sMatrix and rvState from curState
     void OrbitSim::updateMatrix()
     {
         const int np = getNP();
@@ -195,7 +191,7 @@ namespace pod
 
         // update sMatrix 6*np
         sMatrix.resize(6, np, 0.0);
-        for (int i = 0; i<np; i++)
+        for (int i = 0; i < np; i++)
         {
             sMatrix(0, i) = dr_dp0(0 * np + i);
             sMatrix(1, i) = dr_dp0(1 * np + i);
@@ -213,38 +209,36 @@ namespace pod
             rvVector(i) = curState(i);
         }
 
-    }  // End of method 'OrbitSim::updateMatrix()'
+    } // End of method 'OrbitSim::updateMatrix()'
 
-
-       /* set initial state of the the integrator
-       *
-       *  v      3
-       * dr_dr0    3*3
-       * dr_dv0   3*3
-       * dr_dp0   3*np
-       * dv_dr0   3*3
-       * dv_dv0   3*3
-       * dv_dp0   3*np
-       */
+    /* set initial state of the the integrator
+     *
+     *  v      3
+     * dr_dr0    3*3
+     * dr_dv0   3*3
+     * dr_dp0   3*np
+     * dv_dr0   3*3
+     * dv_dv0   3*3
+     * dv_dp0   3*np
+     */
     void OrbitSim::setState(Vector<double> state)
     {
         int np = (state.size() - 42) / 6;
-        if (np<0)
+        if (np < 0)
         {
             Exception e("The size of the imput state is not valid");
             GNSSTK_THROW(e);
         }
         curT = 0;
         curState.resize(state.size(), 0.0);
-        for (size_t i = 0; i<state.size(); i++)
+        for (size_t i = 0; i < state.size(); i++)
         {
             curState(i) = state(i);
         }
 
         updateMatrix();
 
-    }  // End of method 'OrbitSim::setState()'
-
+    } // End of method 'OrbitSim::setState()'
 
     Vector<double> OrbitSim::rvState(bool isJ2k)
     {
@@ -252,10 +246,9 @@ namespace pod
             return rvVector;
         else
             return EarthRotation::eopStore().convertJ2k2Ecef(getCurTime(), rvVector);
-    }  // End of method 'OrbitSim::rvState()'
+    } // End of method 'OrbitSim::rvState()'
 
-
-       /// write curT curState to a file
+    /// write curT curState to a file
     void OrbitSim::writeToFile(std::ostream& s) const
     {
         Epoch utcRef = pOrbit->getRefEpoch();
@@ -264,23 +257,22 @@ namespace pod
         const int np = getNP();
 
         s << std::fixed;
-        s << "#" << utcRef << " "
-            << std::setprecision(12) << utcRef << std::endl;
+        s << "#" << utcRef << " " << std::setprecision(12) << utcRef << std::endl;
 
-        for (int i = 0; i<6; i++)
+        for (int i = 0; i < 6; i++)
         {
             s << std::setw(20) << std::setprecision(12) << rvVector(i) << " ";
         }
         s << std::endl;
 
         // [phi s]
-        for (int i = 0; i<6; i++)
+        for (int i = 0; i < 6; i++)
         {
-            for (int j = 0; j<6; j++)
+            for (int j = 0; j < 6; j++)
             {
                 s << std::setw(20) << std::setprecision(12) << phiMatrix(i, j) << " ";
             }
-            for (int j = 0; j<np; j++)
+            for (int j = 0; j < np; j++)
             {
                 s << std::setw(20) << std::setprecision(12) << sMatrix(i, j) << " ";
             }
@@ -288,7 +280,6 @@ namespace pod
             s << std::endl;
         }
     }
-
 
     /*
     void OrbitPropagator::setForceModel(ForceModelSetting& fms)
@@ -300,33 +291,62 @@ namespace pod
     }*/
 
     /* For Testing and Debuging...
-    */
+     */
     void OrbitSim::test()
     {
         std::cout << "testing OrbitPropagator[KeplerOrbit]" << std::endl;
         std::cout << std::fixed << std::setprecision(6);
 
         // load global data
-      //  IERS::loadSTKFile("ERP\\COD17252.ERP");
-        //ReferenceFrames::setJPLEphFile("InputData\\DE405\\jplde405");
+        //  IERS::loadSTKFile("ERP\\COD17252.ERP");
+        // ReferenceFrames::setJPLEphFile("InputData\\DE405\\jplde405");
 
         std::ofstream fout("outorbit.txt");
 
-        CommonTime t0 = (CommonTime)CivilTime(2013, 1, 30, 0, 0, 0.0,TimeSystem::GPS);
+        CommonTime t0 = (CommonTime)CivilTime(2013, 1, 30, 0, 0, 0.0, TimeSystem::GPS);
 
-        double state[42] = { 2682920.8943,4652720.5672,4244260.0400,2215.5999,4183.3573,-5989.0576,
-            1,0,0,
-            0,1,0,
-            0,0,1,
-            0,0,0,
-            0,0,0,
-            0,0,0,
-            0,0,0,
-            0,0,0,
-            0,0,0,
-            1,0,0,
-            0,1,0,
-            0,0,1 };
+        double state[42] = {2682920.8943,
+                            4652720.5672,
+                            4244260.0400,
+                            2215.5999,
+                            4183.3573,
+                            -5989.0576,
+                            1,
+                            0,
+                            0,
+                            0,
+                            1,
+                            0,
+                            0,
+                            0,
+                            1,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            1,
+                            0,
+                            0,
+                            0,
+                            1,
+                            0,
+                            0,
+                            0,
+                            1};
 
         Vector<double> y0(42, 0.0);
         y0 = state;
@@ -339,10 +359,8 @@ namespace pod
         yy0(4) = y0(4);
         yy0(5) = y0(5);
 
-
         Vector<double> kep(6, 0.0);
-      //  kep = KeplerOrbit::Elements(ASConstant::GM_Earth, yy0);
-
+        //  kep = KeplerOrbit::Elements(ASConstant::GM_Earth, yy0);
 
         OrbitSim op;
 
@@ -364,7 +382,7 @@ namespace pod
 
             Vector<double> yy_prev(6, 0.0);
             Vector<double> yy_out(6, 0.0);
-            for (int i = 0; i<6; i++)
+            for (int i = 0; i < 6; i++)
             {
                 yy_prev(i) = y0(i);
                 yy_out(i) = yy(i);
@@ -372,15 +390,15 @@ namespace pod
 
             Vector<double> yy_ref(6, 0.0);
             Matrix<double> phi_ref(6, 6, 0.0);
-         //   KeplerOrbit::TwoBody(ASConstant::GM_Earth, yy0, t + step, yy_ref, phi_ref);
-         //   Vector<double> checky0 = KeplerOrbit::State(ASConstant::GM_Earth, kep, t + step);
+            //   KeplerOrbit::TwoBody(ASConstant::GM_Earth, yy0, t + step, yy_ref, phi_ref);
+            //   Vector<double> checky0 = KeplerOrbit::State(ASConstant::GM_Earth, kep, t + step);
 
             Matrix<double> phi = op.transitionMatrix();
 
             Vector<double> diff = yy_out - yy_ref;
 
-           // UTCTime utc = op.getCurTime();
-           // std::cout << utc << " " << diff << std::endl;
+            // UTCTime utc = op.getCurTime();
+            // std::cout << utc << " " << diff << std::endl;
             std::cout << phi - phi_ref << std::endl;
 
             t += step;
@@ -388,15 +406,13 @@ namespace pod
         }
 
         fout.close();
-
     }
 
-    void OrbitSim:: runTest()
+    void OrbitSim::runTest()
     {
-      /*  cout << EarthRotation::eopStore.loadEOP("finals2000A.data") << endl;
-        cout << "ERP loading..."<<endl;*/
+        /*  cout << EarthRotation::eopStore.loadEOP("finals2000A.data") << endl;
+          cout << "ERP loading..."<<endl;*/
         testFwBw();
-
     }
     void OrbitSim::testKepler()
     {
@@ -414,22 +430,22 @@ namespace pod
         Vector<double> elts(6, 0.0);
         double step(5200.0), tt(86400.0 * 10);
 
-        elts(0) = 6487264.0502067700; //A, m
-        elts(1) = 0.001;              //ecc
-        elts(2) = M_PI_2;                //i, rad
-        elts(3) = 2.0;                //OMG, rad
-        elts(4) = 3.0;                //omg, rad
-        elts(5) = 0.0;                //M, rad
+        elts(0) = 6487264.0502067700; // A, m
+        elts(1) = 0.001;              // ecc
+        elts(2) = M_PI_2;             // i, rad
+        elts(3) = 2.0;                // OMG, rad
+        elts(4) = 3.0;                // omg, rad
+        elts(5) = 0.0;                // M, rad
 
         CommonTime t0 = (CommonTime)(CivilTime(2013, 01, 30, 0, 0, 0.0, TimeSystem::TT));
         double mu = 3.98600441500e+14;
         Vector<double> sv = KeplerOrbit::State(mu, elts, 0);
 
         op.setInitState(t0, sv);
-      
+
         auto sv0 = op.getCurState();
         os << std::fixed << std::setw(12) << std::setprecision(6);
-        os << op.getCurTime() << " " << op.getCurState() << std::   endl;
+        os << op.getCurTime() << " " << op.getCurState() << std::endl;
 
         //
         double t = 0, dMax = 0;
@@ -447,7 +463,7 @@ namespace pod
 
             auto svi = op.getCurState();
             auto dsv = svi - sv0;
-            
+
             double d = 0;
             for (size_t i = 0; i < 3; i++)
                 d += dsv[i] * dsv[i];
@@ -455,7 +471,7 @@ namespace pod
             dMax = (d > dMax) ? d : dMax;
             os << op.getCurTime() << " " << d << std::endl;
         }
-        os << "max Err"<< " " << dMax << std::endl;
+        os << "max Err" << " " << dMax << std::endl;
         os.close();
     }
     void OrbitSim::testFwBw()
@@ -471,14 +487,14 @@ namespace pod
         op.setStepSize(5);
 
         Vector<double> elts(6, 0.0);
-        double step(5200.0), tt(10*86400);
+        double step(5200.0), tt(10 * 86400);
 
-        elts(0) = 10000000; //6487264.0502067700; //A, m
-        elts(1) = 0.000;              //ecc
-        elts(2) = 0;                  //i, rad
-        elts(3) = 0.0;                //OMG, rad
-        elts(4) = 0.0;                //omg, rad
-        elts(5) = 0.0;                //M, rad
+        elts(0) = 10000000; // 6487264.0502067700; //A, m
+        elts(1) = 0.000;    // ecc
+        elts(2) = 0;        // i, rad
+        elts(3) = 0.0;      // OMG, rad
+        elts(4) = 0.0;      // omg, rad
+        elts(5) = 0.0;      // M, rad
 
         CommonTime t0 = (CommonTime)(CivilTime(2013, 01, 30, 0, 0, 0.0, TimeSystem::TT));
         double mu = 3.98600441500e+14;
@@ -493,7 +509,7 @@ namespace pod
         //
         double t = 0, dMax = 0;
 
-        if (!op.integrateTo( tt))
+        if (!op.integrateTo(tt))
         {
             std::cout << "failed to  fwd integrate\n";
         }
@@ -514,10 +530,10 @@ namespace pod
             d += dsv[i] * dsv[i];
         d = sqrt(d) * 1000;
         dMax = (d > dMax) ? d : dMax;
-       
+
         os << op.getCurTime() << " " << d << std::endl;
 
         //  os << "max Err" << " " << dMax << endl;
         os.close();
     }
-}
+} // namespace pod

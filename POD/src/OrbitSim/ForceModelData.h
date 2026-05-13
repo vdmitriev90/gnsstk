@@ -1,46 +1,46 @@
 #ifndef POD_FORCE_MODEL_DATA_H
 #define POD_FORCE_MODEL_DATA_H
 
-#include<string>
-#include"Matrix.hpp"
+#include "Matrix.hpp"
+
+#include <string>
 
 namespace pod
 {
-	struct GravityModelData
-	{
-		std::string modelName;
+    struct GravityModelData
+    {
+        std::string modelName;
 
-		double GM = 3.98600441500e+14;
-		double refDistance;
+        double GM = 3.98600441500e+14;
+        double refDistance;
 
-		bool includesPermTide;
+        bool includesPermTide;
 
-		double refMJD;
+        double refMJD;
 
-		double dotC20;
-		double dotC21;
-		double dotS21;
+        double dotC20;
+        double dotC21;
+        double dotS21;
 
-		int desiredDegree = 0;
-		int desiredOrder = 0;
+        int desiredDegree = 0;
+        int desiredOrder = 0;
 
         int maxDegree = 0;
-		int maxOrder = 0;
+        int maxOrder = 0;
 
-		bool solidTide = false;
-		bool oceanTide = false;
-		bool poleTide = false;
+        bool solidTide = false;
+        bool oceanTide = false;
+        bool poleTide = false;
 
-		//for debug purposes only
-		gnsstk:: Matrix<double> unnormalizedCS;
+        // for debug purposes only
+        gnsstk::Matrix<double> unnormalizedCS;
 
-        gnsstk:: Matrix<double> normalizedCS;
+        gnsstk::Matrix<double> normalizedCS;
 
-		bool isValid = true;
+        bool isValid = true;
 
-		void loadModel(const std::string &path);
-
-	};
+        void loadModel(const std::string& path);
+    };
 
     struct ForceModelData
     {
@@ -56,6 +56,6 @@ namespace pod
 
         GravityModelData gData;
     };
-}
+} // namespace pod
 
 #endif // !POD_FORCE_MODEL_DATA_H

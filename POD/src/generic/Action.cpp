@@ -1,10 +1,11 @@
-#include"Action.h"
-#include"Solution.h"
+#include "Action.h"
+
+#include "Solution.h"
 
 namespace pod
 {
     ///
-    GnssEpochMap Action:: process()
+    GnssEpochMap Action::process()
     {
         Solution sol(path.c_str());
 
@@ -12,4 +13,4 @@ namespace pod
 
         return sol.getData();
     }
-}
+} // namespace pod

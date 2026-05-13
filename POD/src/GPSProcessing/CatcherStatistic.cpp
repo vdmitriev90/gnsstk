@@ -1,11 +1,12 @@
 #include "CatcherStatistic.h"
-#include<iostream>
+
+#include <iostream>
 
 using namespace gnsstk;
 
 namespace pod
 {
-    void CatcherStatistic::logStatistic(const std::list<gnsstk::ProcessingClass*> & pList) const
+    void CatcherStatistic::logStatistic(const std::list<gnsstk::ProcessingClass*>& pList) const
     {
         dataTable table;
 
@@ -18,7 +19,7 @@ namespace pod
                 table[epoch.first].push_back(dataRecord(cName, epoch.second));
             }
 
-			std::ofstream f;
+            std::ofstream f;
             f.open(file);
 
             for (auto&& it : table)
@@ -33,4 +34,4 @@ namespace pod
             f.close();
         }
     }
-}
+} // namespace pod

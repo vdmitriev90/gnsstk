@@ -122,7 +122,7 @@ namespace pod
 
             //store of  approximate position and code clock bias 
     //public: std::map<gnsstk::CommonTime, gnsstk::Xvt, std::less<gnsstk::CommonTime>> apprPos;
-	public: posProvider_uptr apprPos;
+	public: PosProviderUPtr apprPos;
 
             //class to corrects observables from differential code biases
     public: gnsstk::CorrectCodeBiases DCBData;

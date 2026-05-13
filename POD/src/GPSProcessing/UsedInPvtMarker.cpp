@@ -1,78 +1,70 @@
-#include"UsedInPvtMarker.hpp"
+#include "UsedInPvtMarker.hpp"
 
 using namespace gnsstk;
 namespace pod
 {
-	
-	gnsstk::IRinex& UsedInPvtMarker::
-		Process(gnsstk::IRinex& gRin)
-	{
-		markAsUsed(gRin.getBody());
-		return gRin;
-	}
 
-	// mark all SV in SatTypePtrMap as useable in PVT  
-	gnsstk::SatTypePtrMap& UsedInPvtMarker::
-		markAsUsed(gnsstk::SatTypePtrMap& satData) const
-	{
-		for (auto &&it : satData)
-			it.second->get_value()[type] = SatUsedStatus::UsedInPVT;
+    gnsstk::IRinex& UsedInPvtMarker::Process(gnsstk::IRinex& gRin)
+    {
+        markAsUsed(gRin.getBody());
+        return gRin;
+    }
 
-		return satData;
-	}
+    // mark all SV in SatTypePtrMap as useable in PVT
+    gnsstk::SatTypePtrMap& UsedInPvtMarker::markAsUsed(gnsstk::SatTypePtrMap& satData) const
+    {
+        for (auto&& it : satData)
+            it.second->get_value()[type] = SatUsedStatus::UsedInPVT;
 
+        return satData;
+    }
 
-	gnsstk::SatTypePtrMap& UsedInPvtMarker::
-		keepOnlyUsed(gnsstk::SatTypePtrMap& satData) const
-	{
-		SatIDSet rejectedSats;
-		for (auto &&it : satData)
-		{
-			auto it2 = it.second->get_value().find(type);
-			if (it2 == it.second->get_value().end() || it2->second == SatUsedStatus::NotUsedInPVT)
-				rejectedSats.insert(it.first);
-			
-		}
+    gnsstk::SatTypePtrMap& UsedInPvtMarker::keepOnlyUsed(gnsstk::SatTypePtrMap& satData) const
+    {
+        SatIDSet rejectedSats;
+        for (auto&& it : satData)
+        {
+            auto it2 = it.second->get_value().find(type);
+            if (it2 == it.second->get_value().end() || it2->second == SatUsedStatus::NotUsedInPVT)
+                rejectedSats.insert(it.first);
+        }
 
-		satData.removeSatID(rejectedSats);
-		return satData;
-	}
+        satData.removeSatID(rejectedSats);
+        return satData;
+    }
 
-	gnsstk::SatTypePtrMap& UsedInPvtMarker::
-		CleanScFlags(gnsstk::SatTypePtrMap& satData) const
-	{
-		for (auto it = satData.begin(); it != satData.end(); ++it)
-		{
-			auto status = it->second->get_value().find(TypeID::satStatus);
-			//if (preEpochSats.find(it->first) == preEpochSats.end())
-			//	it->second->get_value()[TypeID::CSL1] = it->second->get_value()[TypeID::CSL2] = 1;
-			
-			//reset CS flag, if this sv - epoch already has been rejected by CS catcher
-			 if (status != it->second->get_value().end()
-				&& status->second == SatUsedStatus::NotEnoughData)
-			{
-				it->second->get_value()[TypeID::CSL1] = it->second->get_value()[TypeID::CSL2] = 0;
-				//status->second = UsedInPVT;
-			}
-		}
-		return satData;
-	}
+    gnsstk::SatTypePtrMap& UsedInPvtMarker::CleanScFlags(gnsstk::SatTypePtrMap& satData) const
+    {
+        for (auto it = satData.begin(); it != satData.end(); ++it)
+        {
+            auto status = it->second->get_value().find(TypeID::satStatus);
+            // if (preEpochSats.find(it->first) == preEpochSats.end())
+            //	it->second->get_value()[TypeID::CSL1] = it->second->get_value()[TypeID::CSL2] = 1;
 
-	gnsstk::SatTypePtrMap& UsedInPvtMarker::
-		CleanSatArcFlags(gnsstk::SatTypePtrMap& satData) const
-	{
-		for (auto&& it : satData)
-			it.second->get_value()[TypeID::satArc] = 0;
-		
-		return satData;
-	}
+            // reset CS flag, if this sv - epoch already has been rejected by CS catcher
+            if (status != it->second->get_value().end()
+                && status->second == SatUsedStatus::NotEnoughData)
+            {
+                it->second->get_value()[TypeID::CSL1] = it->second->get_value()[TypeID::CSL2] = 0;
+                // status->second = UsedInPVT;
+            }
+        }
+        return satData;
+    }
 
-	UsedInPvtMarker& UsedInPvtMarker::
-		updateLastEpoch(const gnsstk::IRinex& gRin)
-	{
-		preEpoch = gRin.getHeader().epoch;
-		preEpochSats = gRin.getBody().getSatID();
+    gnsstk::SatTypePtrMap& UsedInPvtMarker::CleanSatArcFlags(gnsstk::SatTypePtrMap& satData) const
+    {
+        for (auto&& it : satData)
+            it.second->get_value()[TypeID::satArc] = 0;
 
-		return *this;
-	}
-}
+        return satData;
+    }
+
+    UsedInPvtMarker& UsedInPvtMarker::updateLastEpoch(const gnsstk::IRinex& gRin)
+    {
+        preEpoch = gRin.getHeader().epoch;
+        preEpochSats = gRin.getBody().getSatID();
+
+        return *this;
+    }
+} // namespace pod

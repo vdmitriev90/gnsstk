@@ -1,73 +1,67 @@
 #include "PdFloatSolution.h"
 
-#include"SimpleFilter.hpp"
-#include"WinUtils.h"
-#include"ComputeWeightSimple.h"
-#include"SyncObs.h"
-#include"KalmanSolver.h"
-#include"KalmanSolverFB.h"
+#include "AmbiguitiesEquations.h"
+#include "AntexReader.hpp"
+#include "BasicModel.hpp"
+#include "CatcherStatistic.h"
+#include "ClockBiasEquations.h"
+#include "ComputeSatPCenter.hpp"
+#include "ComputeTropModel.hpp"
+#include "ComputeWeightSimple.h"
+#include "ComputeWindUp.hpp"
+#include "CorrectObservables.hpp"
+#include "Decimate.hpp"
+#include "DeltaOp.hpp"
+#include "EclipsedSatFilter.hpp"
+#include "GravitationalDelay.hpp"
+#include "InterFrequencyBiases.h"
+#include "InterSystemBias.h"
+#include "IonexModel.hpp"
+#include "IonoEquations.h"
+#include "IonoStochasticModel.h"
+#include "KalmanSolver.h"
+#include "KalmanSolverFB.h"
+#include "LICSDetector.hpp"
+#include "LICSDetector2.hpp"
+#include "LinearCombinations.hpp"
+#include "MJD.hpp"
+#include "MWCSDetector.hpp"
+#include "NeillTropModel.hpp"
+#include "NumSatFilter.h"
+#include "OceanLoading.hpp"
+#include "PoleTides.hpp"
+#include "PositionEquations.h"
+#include "PowerSum.hpp"
+#include "PrefitResCatcher.h"
+#include "SNRCatcher.h"
+#include "SatArcMarker.hpp"
+#include "SimpleFilter.hpp"
+#include "SolidTides.hpp"
+#include "SyncObs.h"
+#include "TropoEquations.h"
+#include "UsedInPvtMarker.hpp"
+#include "WinUtils.h"
 
-#include"TropoEquations.h"
-#include"ClockBiasEquations.h"
-#include"PositionEquations.h"
-#include"InterSystemBias.h"
-#include"InterFrequencyBiases.h"
-#include"AmbiguitiesEquations.h"
-#include"SNRCatcher.h"
-#include"IonoEquations.h"
-#include"IonoStochasticModel.h"
-#include"PrefitResCatcher.h"
-#include"NumSatFilter.h"
-#include"CatcherStatistic.h"
-
-#include"LinearCombinations.hpp"
-#include"LICSDetector.hpp"
-#include"MWCSDetector.hpp"
-#include"Decimate.hpp"
-#include"BasicModel.hpp"
-#include"NeillTropModel.hpp"
-#include"PowerSum.hpp"
-#include"ComputeTropModel.hpp"
-#include"LinearCombinations.hpp"
-#include"DeltaOp.hpp"
-#include"EclipsedSatFilter.hpp"
-#include"GravitationalDelay.hpp"
-#include"LICSDetector2.hpp"
-#include"MWCSDetector.hpp"
-#include"SatArcMarker.hpp"
-#include"AntexReader.hpp"
-#include"ComputeSatPCenter.hpp"
-#include"CorrectObservables.hpp"
-#include"ComputeWindUp.hpp"
-#include"SolidTides.hpp"
-#include"OceanLoading.hpp"
-#include"PoleTides.hpp"
-#include"MJD.hpp"
-#include"IonexModel.hpp"
-#include"UsedInPvtMarker.hpp"
-
-#include<memory>
+#include <memory>
 
 using namespace gnsstk;
 
 namespace pod
 {
 
-    PdFloatSolution::PdFloatSolution(GnssDataStore_sptr data_ptr)
-        :GnssSolution(data_ptr,50.0)
-    { }
+    PdFloatSolution::PdFloatSolution(GnssDataStore_sptr data_ptr) : GnssSolution(data_ptr, 50.0) {}
     PdFloatSolution::PdFloatSolution(GnssDataStore_sptr data_ptr, double max_sigma)
         : GnssSolution(data_ptr, max_sigma)
-    { }
-    PdFloatSolution::~PdFloatSolution()
-    { }
+    {
+    }
+    PdFloatSolution::~PdFloatSolution() {}
 
-    void  PdFloatSolution::process()
+    void PdFloatSolution::process()
     {
         std::list<ProcessingClass*> reProcList;
         updateRequaredObs();
 
-        SimpleFilter CodePhaseFilterBase(TypeIDSet{ codeL1,TypeID::P2,TypeID::L1,TypeID::L2 });
+        SimpleFilter CodePhaseFilterBase(TypeIDSet{codeL1, TypeID::P2, TypeID::L1, TypeID::L2});
         SimpleFilter CodePhaseFilterRover(CodePhaseFilterBase);
 
         SimpleFilter SNRFilterBase(TypeID::S1, confReader().getValueAsInt("SNRmask"), DBL_MAX);
@@ -75,7 +69,7 @@ namespace pod
 
         // Object to remove eclipsed satellites
         EclipsedSatFilter eclipsedSV;
-		ComputeWeightSimple computeWeightSimple(1);
+        ComputeWeightSimple computeWeightSimple(1);
 
         Triple pos;
         int i = 0;
@@ -93,18 +87,18 @@ namespace pod
         RinexEpoch gRin, gRef;
         SyncObs sync(data->getObsFiles(opts().SiteBase), gRin);
 
-        //Object to decimate data
+        // Object to decimate data
         Decimate decimateData(confReader().getValueAsDouble("decimationInterval"),
-            confReader().getValueAsDouble("decimationTolerance"),
-            data->navLibrary_.getInitialTime());
+                              confReader().getValueAsDouble("decimationTolerance"),
+                              data->navLibrary_.getInitialTime());
 
 #pragma region troposhere modeling objects
 
-        //for base 
+        // for base
         NeillTropModel tropoBasePtr;
         ComputeTropModel computeTropoBase(tropoBasePtr);
 
-        //for rover
+        // for rover
         NeillTropModel tropoRovPtr;
         ComputeTropModel computeTropoRover(tropoRovPtr);
 
@@ -116,20 +110,20 @@ namespace pod
         GravitationalDelay grDelayBase(refPos);
         GravitationalDelay grDelayRover;
 
-#pragma region Catcher objects 
+#pragma region Catcher objects
 
         // Objects to mark cycle slips
         // Checks LI cycle slips
-        LICSDetector2 markCSLI2Base, markCSLI2Rover; 
+        LICSDetector2 markCSLI2Base, markCSLI2Rover;
         markCSLI2Base.setSatThreshold(confReader().getValueAsDouble("LISatThreshold"));
         markCSLI2Rover.setSatThreshold(confReader().getValueAsDouble("LISatThreshold"));
 
         // Checks Merbourne-Wubbena cycle slips
-        MWCSDetector  markCSMW2Base, markCSMW2Rover;        
+        MWCSDetector markCSMW2Base, markCSMW2Rover;
         markCSMW2Base.setMaxNumLambdas(confReader().getValueAsDouble("MWNLambdas"));
         markCSMW2Rover.setMaxNumLambdas(confReader().getValueAsDouble("MWNLambdas"));
 
-        // check sharp SNR drops 
+        // check sharp SNR drops
         SNRCatcher snrCatcherL1Base(TypeID::S1, TypeID::CSL1, 901.0, 5, 30);
         SNRCatcher snrCatcherL1Rover(TypeID::S1, TypeID::CSL1, 901.0, 5, 30);
         PrefitResCatcher resCatcher(Equations->measTypes());
@@ -159,27 +153,29 @@ namespace pod
         CorrectObservables corrRover(data->navLibrary_);
 
         // Vector from monument to antenna ARP [UEN], in meters
-        //for base
+        // for base
         Triple offsetARP;
         i = 0;
-        for (auto &it : confReader().getValueListAsDouble("offsetARP", opts().SiteBase))
+        for (auto& it : confReader().getValueListAsDouble("offsetARP", opts().SiteBase))
             offsetARP[i++] = it;
         corrBase.setMonument(offsetARP);
 
-        //for rover
+        // for rover
         i = 0;
-        for (auto &it : confReader().getValueListAsDouble("offsetARP", opts().SiteRover))
+        for (auto& it : confReader().getValueListAsDouble("offsetARP", opts().SiteRover))
             offsetARP[i++] = it;
         corrRover.setMonument(offsetARP);
 
-        Antenna baseAnt(antexReader.getAntenna(confReader().getValue("antennaModel", opts().SiteBase)));
+        Antenna baseAnt(
+            antexReader.getAntenna(confReader().getValue("antennaModel", opts().SiteBase)));
         corrBase.setAntenna(baseAnt);
-		corrBase.setUsePcv(confReader().getValueAsBoolean("usePCPatterns", opts().SiteBase));
+        corrBase.setUsePcv(confReader().getValueAsBoolean("usePCPatterns", opts().SiteBase));
         corrBase.setUseAzimuth(confReader().getValueAsBoolean("useAzim", opts().SiteBase));
 
-        Antenna roverAnt(antexReader.getAntenna(confReader().getValue("antennaModel", opts().SiteRover)));
+        Antenna roverAnt(
+            antexReader.getAntenna(confReader().getValue("antennaModel", opts().SiteRover)));
         corrRover.setAntenna(roverAnt);
-		corrRover.setUsePcv(confReader().getValueAsBoolean("usePCPatterns", opts().SiteRover));
+        corrRover.setUsePcv(confReader().getValueAsBoolean("usePCPatterns", opts().SiteRover));
         corrRover.setUseAzimuth(confReader().getValueAsBoolean("useAzim", opts().SiteRover));
 
 #pragma endregion
@@ -191,8 +187,14 @@ namespace pod
         OceanLoading ocean;
         ocean.setFilename(opts().genericFilesDirectory + confReader().getValue("oceanLoadingFile"));
 
-        ComputeWindUp windupBase(data->navLibrary_, refPos, opts().genericFilesDirectory + confReader().getValue("satDataFile"));
-        ComputeWindUp windupRover(data->navLibrary_, refPos, opts().genericFilesDirectory + confReader().getValue("satDataFile"));
+        ComputeWindUp windupBase(data->navLibrary_,
+                                 refPos,
+                                 opts().genericFilesDirectory
+                                     + confReader().getValue("satDataFile"));
+        ComputeWindUp windupRover(data->navLibrary_,
+                                  refPos,
+                                  opts().genericFilesDirectory
+                                      + confReader().getValue("satDataFile"));
 
         ComputeSatPCenter svPcenterBase(refPos);
         svPcenterBase.setAntexReader(antexReader);
@@ -204,11 +206,11 @@ namespace pod
         linearIonoFree.add(std::make_unique<PCCombimnation>());
         linearIonoFree.add(std::make_unique<LCCombimnation>());
 
-        //Compute single differences opreator
+        // Compute single differences opreator
         DeltaOp delta;
-		UsedInPvtMarker useMarker;
+        UsedInPvtMarker useMarker;
 
-        //configure single differences operator with appropriate measurements types
+        // configure single differences operator with appropriate measurements types
         TypeIDSet diffTypeSet;
         for (auto&& it : Equations->measTypes())
             diffTypeSet.insert(it);
@@ -221,69 +223,72 @@ namespace pod
         if (forwardBackwardCycles > 0)
         {
             solverFb.setCyclesNumber(forwardBackwardCycles);
-            solverFb.setLimits(confReader().getValueListAsDouble("codeLimList"), confReader().getValueListAsDouble("phaseLimList"));
+            solverFb.setLimits(confReader().getValueListAsDouble("codeLimList"),
+                               confReader().getValueListAsDouble("phaseLimList"));
         }
- 
+
         bool firstTime = true;
         //
-        for (auto &obsFile : data->getObsFiles(opts().SiteRover))
+        for (auto& obsFile : data->getObsFiles(opts().SiteRover))
         {
-			std::cout << obsFile << std::endl;
-            //Input observation file stream
+            std::cout << obsFile << std::endl;
+            // Input observation file stream
             Rinex3ObsStream rin;
 
-            //Open Rinex observations file in read-only mode
+            // Open Rinex observations file in read-only mode
             rin.open(obsFile, std::ios::in);
 
             rin.exceptions(std::ios::failbit);
             Rinex3ObsHeader roh;
 
-            //read the header
+            // read the header
             rin >> roh;
             gMap.header = roh;
-            
+
             Antenna ant_rov(antexReader.getAntenna(roh.antType));
             corrRover.setAntenna(ant_rov);
 
-            //read all epochs
+            // read all epochs
             while (rin >> gRin)
             {
-               
+
                 if (gRin.getBody().size() == 0)
                 {
                     printMsg(gRin.getHeader().epoch, "Empty epoch record in Rinex file");
                     continue;
                 }
-                
+
                 const auto& t = gRin.getHeader().epoch;
                 bool b;
 #if _DEBUG
-                CATCH_TIME(t,2014,12,19,0,14,15,b)
-                if(b)
+                CATCH_TIME(t, 2014, 12, 19, 0, 14, 15, b)
+                if (b)
                     DBOUT_LINE("catched")
 #endif
-                //keep only satellites from satellites systems selecyted for processing
+                // keep only satellites from satellites systems selecyted for processing
                 gRin.keepOnlySatSystems(opts().systems);
-               
-                //keep only types used for processing
-                // gRin.keepOnlyTypeID(requireObs.getRequiredType());
 
-                //compute approximate position
+                // keep only types used for processing
+                //  gRin.keepOnlyTypeID(requireObs.getRequiredType());
+
+                // compute approximate position
                 if (firstTime)
                 {
-                   /* if (computeApprPos(gRin, data->SP3EphList, nominalPos))
-                        continue;*/
+                    /* if (computeApprPos(gRin, data->SP3EphList, nominalPos))
+                         continue;*/
                     i = 0;
-                    for (auto& it : confReader().getValueListAsDouble("nominalPosition", opts().SiteRover))
+                    for (auto& it :
+                         confReader().getValueListAsDouble("nominalPosition", opts().SiteRover))
                         pos[i++] = it;
                     nominalPos = Position(pos);
 
-					std::cout << "Baseline: " << std::setprecision(4) << (nominalPos - refPos).mag() / 1000 << " km" << std::endl;
+                    std::cout << "Baseline: " << std::setprecision(4)
+                              << (nominalPos - refPos).mag() / 1000 << " km" << std::endl;
                     firstTime = false;
                 }
 
                 grDelayRover.setNominalPosition(nominalPos);
-                
+
                 tropoRovPtr.setAllParameters(t, nominalPos);
                 tropoBasePtr.setAllParameters(t, refPos);
                 ionoModel.setInitialRxPosition(nominalPos);
@@ -292,7 +297,6 @@ namespace pod
                 corrRover.setNominalPosition(nominalPos);
                 windupRover.setNominalPosition(nominalPos);
                 svPcenterRover.setNominalPosition(nominalPos);
-
 
                 gRin >> requireObs;
                 gRin >> CodePhaseFilterRover;
@@ -316,14 +320,14 @@ namespace pod
                 try
                 {
                     gRef >> sync;
-                    
+
                     Antenna ant_ref(antexReader.getAntenna(sync.getRefHeader().antType));
                     corrBase.setAntenna(ant_ref);
-                   
-                    //keep only satellites from satellites systems selecyted for processing
+
+                    // keep only satellites from satellites systems selecyted for processing
                     gRef.keepOnlySatSystems(opts().systems);
 
-                    //keep only types used for processing
+                    // keep only types used for processing
                     gRef.keepOnlyTypeID(requireObs.getRequiredType());
 
                     gRef >> requireObs;
@@ -340,54 +344,57 @@ namespace pod
                         continue;
 
                     gRef >> modelRef;
-                    //gRef >> eclipsedSV;
+                    // gRef >> eclipsedSV;
                     gRef >> grDelayBase;
                     gRef >> svPcenterBase;
 
-                    Triple tides(solid.getSolidTide(t, refPos) + ocean.getOceanLoading(opts().SiteBase, t) + pole.getPoleTide(t, refPos));
+                    Triple tides(solid.getSolidTide(t, refPos)
+                                 + ocean.getOceanLoading(opts().SiteBase, t)
+                                 + pole.getPoleTide(t, refPos));
                     corrBase.setExtraBiases(tides);
-                    
+
                     gRef >> corrBase;
                     gRef >> windupBase;
                     data->ionoCorrector.setNominalPosition(refPos);
-                    
 
                     gRef >> computeTropoBase;
-                   // gRef >> ionoFilterBase;
+                    // gRef >> ionoFilterBase;
                     gRef >> linearIonoFree;
                     gRef >> oMinusC;
 
                     delta.setRefData(gRef.getBody());
                 }
-                catch (SyncNextRoverEpoch &e)
+                catch (SyncNextRoverEpoch& e)
                 {
                     continue;
                 }
-                catch (SynchronizeException &e)
+                catch (SynchronizeException& e)
                 {
                     break;
                 }
 
                 gRin >> modelRover;
-                //gRin >> eclipsedSV;
+                // gRin >> eclipsedSV;
                 gRin >> grDelayRover;
                 gRin >> svPcenterRover;
 
-                Triple tides(solid.getSolidTide(t, nominalPos) + ocean.getOceanLoading(opts().SiteRover, t) + pole.getPoleTide(t, nominalPos));
+                Triple tides(solid.getSolidTide(t, nominalPos)
+                             + ocean.getOceanLoading(opts().SiteRover, t)
+                             + pole.getPoleTide(t, nominalPos));
                 corrRover.setExtraBiases(tides);
                 gRin >> corrRover;
-                
+
                 gRin >> windupRover;
                 gRin >> computeTropoRover;
-                //gRin >> ionoFilterRover;
+                // gRin >> ionoFilterRover;
                 gRin >> linearIonoFree;
                 gRin >> oMinusC;
                 gRin >> delta;
                 gRin >> resCatcher;
-				gRin >> computeWeightSimple;
+                gRin >> computeWeightSimple;
 
                 gRin >> minSatFilter;
-				gRin >> useMarker;
+                gRin >> useMarker;
 
                 DBOUT_LINE(">>" << CivilTime(gRin.getHeader().epoch).asString());
                 if (forwardBackwardCycles > 0)
@@ -399,7 +406,7 @@ namespace pod
                     gRin >> solver;
                     auto ep = opts().fullOutput ? GnssEpoch(gRin.getBody()) : GnssEpoch();
                     // updateNomPos(solverFB);
-                    printSolution( solver, t, ep);
+                    printSolution(solver, t, ep);
                     gMap.data.insert(std::make_pair(t, ep));
                 }
             }
@@ -409,22 +416,21 @@ namespace pod
             std::cout << "Fw-Bw part started" << std::endl;
             solverFb.reProcess();
             RinexEpoch gRin;
-			std::cout << "Last process part started" << std::endl;
+            std::cout << "Last process part started" << std::endl;
             while (solverFb.lastProcess(gRin))
             {
                 auto ep = opts().fullOutput ? GnssEpoch(gRin.getBody()) : GnssEpoch();
-                //updateNomPos(solverFB);
-                printSolution( solverFb, gRin.getHeader().epoch, ep);
+                // updateNomPos(solverFB);
+                printSolution(solverFb, gRin.getHeader().epoch, ep);
                 gMap.data.insert(std::make_pair(gRin.getHeader().epoch, ep));
             }
-			std::cout << "Measurments rejected: " << solverFb.rejectedMeasurements << std::endl;
+            std::cout << "Measurments rejected: " << solverFb.rejectedMeasurements << std::endl;
         }
 
-        //CatcherStatistic statB(opts().workingDir+"\\"+opts().SiteBase+".cst");
-        //statB.logStatistic(plBase);
-        //CatcherStatistic statR(opts().workingDir+"\\"+opts().SiteRover+".cst");
-        //statR.logStatistic(plRov);
-
+        // CatcherStatistic statB(opts().workingDir+"\\"+opts().SiteBase+".cst");
+        // statB.logStatistic(plBase);
+        // CatcherStatistic statR(opts().workingDir+"\\"+opts().SiteRover+".cst");
+        // statR.logStatistic(plRov);
     }
 
     void PdFloatSolution::updateRequaredObs()
@@ -459,13 +465,12 @@ namespace pod
                 oMinusC.add(std::make_unique<PrefitP1>(true));
 
             oMinusC.add(std::make_unique<PrefitL1>());
-            
+
             Equations->measTypes().insert(TypeID::prefitC);
             Equations->measTypes().insert(TypeID::prefitL1);
 
             Equations->residTypes().insert(TypeID::postfitC);
             Equations->residTypes().insert(TypeID::postfitL1);
-
         }
         if (opts().carrierBands.find(CarrierBand::L2) != opts().carrierBands.end())
         {
@@ -483,7 +488,7 @@ namespace pod
     {
         Equations->clearEquations();
 
-        //tropo
+        // tropo
         if (opts().computeTropo)
         {
             double qPrimeVert = confReader().getValueAsDouble("tropoQVertical");
@@ -492,14 +497,14 @@ namespace pod
 
         //  Equations->addEquation(std::make_unique<IonoEquations>(confReader().getValueAsDouble("ionoQ")));
         // White noise stochastic models
-        auto  coord = std::make_unique<PositionEquations>();
+        auto coord = std::make_unique<PositionEquations>();
 
         double posSigma = confReader().getValueAsDouble("posSigma");
         if (opts().dynamics == GnssDataStore::Dynamics::Static)
         {
             coord->setStochasicModel(std::make_shared<ConstantModel>());
         }
-        else  if (opts().dynamics == GnssDataStore::Dynamics::Kinematic)
+        else if (opts().dynamics == GnssDataStore::Dynamics::Kinematic)
         {
             coord->setStochasicModel(std::make_shared<WhiteNoiseModel>(posSigma));
         }
@@ -509,10 +514,11 @@ namespace pod
                 coord->setStochasicModel(it, std::make_shared<RandomWalkModel>(posSigma));
         }
 
-        //add position equations
+        // add position equations
         Equations->addEquation(std::move(coord));
 
-        Equations->addEquation(std::make_unique<ClockBiasEquations>(confReader().getValueAsDouble("clkSigma")));
+        Equations->addEquation(
+            std::make_unique<ClockBiasEquations>(confReader().getValueAsDouble("clkSigma")));
 
         if (opts().systems.size() > 1)
             Equations->addEquation(std::make_unique<InterSystemBias>());
@@ -522,15 +528,15 @@ namespace pod
 
         if (confReader().getValueAsBoolean("computeIono"))
         {
-            auto  ionoEq = std::make_unique<IonoEquations>();
+            auto ionoEq = std::make_unique<IonoEquations>();
 
-            int ionoModelType= confReader().getValueAsInt("ionoModelType");
+            int ionoModelType = confReader().getValueAsInt("ionoModelType");
 
             if (ionoModelType == 0)
                 ionoEq->setStocModel<WhiteNoiseModel>();
             else if (ionoModelType == 1)
                 ionoEq->setStocModel<IonoStochasticModel>();
-            
+
             double ionoSigma = confReader().getValueAsDouble("ionoSigma");
             ionoEq->setSigma(ionoSigma);
             Equations->addEquation(std::move(ionoEq));
@@ -544,4 +550,4 @@ namespace pod
 
         forwardBackwardCycles = confReader().getValueAsInt("forwardBackwardCycles");
     }
-}
+} // namespace pod

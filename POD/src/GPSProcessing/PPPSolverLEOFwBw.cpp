@@ -10,14 +10,12 @@ namespace pod
         return "PPPSolverLEOFwBw";
     }
 
-
     /* Common constructor.
-    *
-    * @param useNEU   If true, will compute dLat, dLon, dH coordinates;
-    *                 if false (the default), will compute dx, dy, dz.
-    */
-    PPPSolverLEOFwBw::PPPSolverLEOFwBw(bool useNEU)
-        : firstIteration(true)
+     *
+     * @param useNEU   If true, will compute dLat, dLon, dH coordinates;
+     *                 if false (the default), will compute dx, dy, dz.
+     */
+    PPPSolverLEOFwBw::PPPSolverLEOFwBw(bool useNEU) : firstIteration(true)
     {
 
         // Initialize the counter of processed measurements
@@ -52,17 +50,14 @@ namespace pod
         keepTypeSet.insert(TypeID::CSL1);
         keepTypeSet.insert(TypeID::satArc);
 
+    } // End of 'PPPSolverLEOFwBw::PPPSolverLEOFwBw()'
 
-    }  // End of 'PPPSolverLEOFwBw::PPPSolverLEOFwBw()'
-
-
-
-       /* Returns a reference to a gnnsRinex object after solving
-       * the previously defined equation system.
-       *
-       * @param gData     Data object holding the data.
-       */
-	IRinex& PPPSolverLEOFwBw::Process(IRinex& gData)
+    /* Returns a reference to a gnnsRinex object after solving
+     * the previously defined equation system.
+     *
+     * @param gData     Data object holding the data.
+     */
+    IRinex& PPPSolverLEOFwBw::Process(IRinex& gData)
     {
 
         try
@@ -70,46 +65,39 @@ namespace pod
 
             PPPSolverLEO::Process(gData);
 
-
             // Before returning, store the results for a future iteration
             if (firstIteration)
             {
 
                 // Create a new gnssRinex structure with just the data we need
-                //gnssRinex gBak(gData.extractTypeID(keepTypeSet));
+                // gnssRinex gBak(gData.extractTypeID(keepTypeSet));
 
                 // Store observation data
                 ObsData.push_back(gData.clone());
 
                 // Update the number of processed measurements
                 processedMeasurements += gData.getBody().numSats();
-
             }
 
             return gData;
-
         }
         catch (Exception& u)
         {
             // Throw an exception if something unexpected happens
-            ProcessingException e(getClassName() + ":"
-                                  + u.what());
+            ProcessingException e(getClassName() + ":" + u.what());
 
             GNSSTK_THROW(e);
-
         }
 
-    }  // End of method 'PPPSolverLEOFwBw::Process()'
+    } // End of method 'PPPSolverLEOFwBw::Process()'
 
-
-
-       /* Reprocess the data stored during a previous 'Process()' call.
-       *
-       * @param cycles     Number of forward-backward cycles, 1 by default.
-       *
-       * \warning The minimum number of cycles allowed is "1". In fact, if
-       * you introduce a smaller number, 'cycles' will be set to "1".
-       */
+    /* Reprocess the data stored during a previous 'Process()' call.
+     *
+     * @param cycles     Number of forward-backward cycles, 1 by default.
+     *
+     * \warning The minimum number of cycles allowed is "1". In fact, if
+     * you introduce a smaller number, 'cycles' will be set to "1".
+     */
     void PPPSolverLEOFwBw::ReProcess(int cycles)
     {
 
@@ -130,7 +118,6 @@ namespace pod
             {
 
                 PPPSolverLEO::Process(**rpos);
-
             }
 
             // If 'cycles > 1', let's do the other iterations
@@ -149,31 +136,26 @@ namespace pod
                     PPPSolverLEO::Process(**rpos);
                 }
 
-            }  // End of 'for (int i=0; i<(cycles-1), i++)'
+            } // End of 'for (int i=0; i<(cycles-1), i++)'
 
             return;
-
         }
         catch (Exception& u)
         {
             // Throw an exception if something unexpected happens
-            ProcessingException e(getClassName() + ":"
-                                  + u.what());
+            ProcessingException e(getClassName() + ":" + u.what());
 
             GNSSTK_THROW(e);
-
         }
 
-    }  // End of method 'PPPSolverLEOFwBw::ReProcess()'
+    } // End of method 'PPPSolverLEOFwBw::ReProcess()'
 
-
-
-       /* Reprocess the data stored during a previous 'Process()' call.
-       *
-       * This method will reprocess data trimming satellites whose postfit
-       * residual is bigger than the limits indicated by limitsCodeList and
-       * limitsPhaseList.
-       */
+    /* Reprocess the data stored during a previous 'Process()' call.
+     *
+     * This method will reprocess data trimming satellites whose postfit
+     * residual is bigger than the limits indicated by limitsCodeList and
+     * limitsPhaseList.
+     */
     void PPPSolverLEOFwBw::ReProcess(void)
     {
 
@@ -183,7 +165,8 @@ namespace pod
 
         // Get maximum size
         size_t maxSize(codeList.size());
-        if (maxSize < phaseList.size()) maxSize = phaseList.size();
+        if (maxSize < phaseList.size())
+            maxSize = phaseList.size();
 
         // This will prevent further storage of input data when calling
         // method 'Process()'
@@ -192,13 +175,11 @@ namespace pod
         try
         {
 
-
             // Backwards iteration. We must do this at least once
             for (auto rpos = ObsData.rbegin(); rpos != ObsData.rend(); ++rpos)
             {
 
                 PPPSolverLEO::Process(**rpos);
-
             }
 
             // If both sizes are '0', let's return
@@ -234,53 +215,47 @@ namespace pod
                     phaseList.pop_front();
                 }
 
-
                 // Forwards iteration
                 for (auto pos = ObsData.begin(); pos != ObsData.end(); ++pos)
                 {
                     // Let's check limits
-					checkLimits(**pos, codeLimit, phaseLimit);
+                    checkLimits(**pos, codeLimit, phaseLimit);
 
                     // Process data
-                    PPPSolverLEO::Process( **pos );
+                    PPPSolverLEO::Process(**pos);
                 }
 
                 // Backwards iteration.
                 for (auto rpos = ObsData.rbegin(); rpos != ObsData.rend(); ++rpos)
                 {
                     // Let's check limits
-					checkLimits(**rpos, codeLimit, phaseLimit);
+                    checkLimits(**rpos, codeLimit, phaseLimit);
 
                     // Process data
-					PPPSolverLEO::Process(**rpos);
+                    PPPSolverLEO::Process(**rpos);
                 }
 
-            }  // End of 'for (int i=0; i<(cycles-1), i++)'
+            } // End of 'for (int i=0; i<(cycles-1), i++)'
 
             return;
-
         }
         catch (Exception& u)
         {
             // Throw an exception if something unexpected happens
-            ProcessingException e(getClassName() + ":"
-                                  + u.what());
+            ProcessingException e(getClassName() + ":" + u.what());
 
             GNSSTK_THROW(e);
-
         }
 
-    }  // End of method 'PPPSolverLEOFwBw::ReProcess()'
+    } // End of method 'PPPSolverLEOFwBw::ReProcess()'
 
-
-
-       /* Process the data stored during a previous 'ReProcess()' call, one
-       * item at a time, and always in forward mode.
-       *
-       * @param gData      Data object that will hold the resulting data.
-       *
-       * @return FALSE when all data is processed, TRUE otherwise.
-       */
+    /* Process the data stored during a previous 'ReProcess()' call, one
+     * item at a time, and always in forward mode.
+     *
+     * @param gData      Data object that will hold the resulting data.
+     *
+     * @return FALSE when all data is processed, TRUE otherwise.
+     */
     bool PPPSolverLEOFwBw::LastProcess(IRinex& gData)
     {
 
@@ -298,7 +273,6 @@ namespace pod
                 // memory and preparing for next epoch
                 ObsData.pop_front();
 
-
                 // Update some inherited fields
                 solution = PPPSolverLEO::solution;
                 covMatrix = PPPSolverLEO::covMatrix;
@@ -308,7 +282,6 @@ namespace pod
                 valid = true;
 
                 return true;
-
             }
             else
             {
@@ -316,48 +289,39 @@ namespace pod
                 // There are no more data
                 return false;
 
-            }  // End of 'if( !(ObsData.empty()) )'
-
+            } // End of 'if( !(ObsData.empty()) )'
         }
         catch (Exception& u)
         {
             // Throw an exception if something unexpected happens
-            ProcessingException e(getClassName() + ":"
-                                  + u.what());
+            ProcessingException e(getClassName() + ":" + u.what());
 
             GNSSTK_THROW(e);
-
         }
 
-    }  // End of method 'PPPSolverLEOFwBw::LastProcess()'
+    } // End of method 'PPPSolverLEOFwBw::LastProcess()'
 
-
-
-       // This method checks the limits and modifies 'gData' accordingly.
-    void PPPSolverLEOFwBw::checkLimits(IRinex& gData,
-                                       double codeLimit,
-                                       double phaseLimit)
+    // This method checks the limits and modifies 'gData' accordingly.
+    void PPPSolverLEOFwBw::checkLimits(IRinex& gData, double codeLimit, double phaseLimit)
     {
 
         // Set to store rejected satellites
         SatIDSet satRejectedSet;
 
         // Let's check limits
-        for (auto && it: gData.getBody())
+        for (auto&& it : gData.getBody())
         {
 
             // Check postfit values and mark satellites as rejected
             if (std::abs(it.second->get_value()(TypeID::postfitC)) > codeLimit)
                 satRejectedSet.insert(it.first);
-            
 
             if (std::abs(it.second->get_value()(TypeID::postfitL)) > phaseLimit)
                 satRejectedSet.insert(it.first);
 
-        }  // End of 'for( satTypeValueMap::iterator it = gds.body.begin();...'
+        } // End of 'for( satTypeValueMap::iterator it = gds.body.begin();...'
 
-
-           // Update the number of rejected measurements
+        // Update the number of rejected measurements
         rejectedMeasurements += satRejectedSet.size();
 
         // Remove satellites with missing data
@@ -365,22 +329,19 @@ namespace pod
 
         return;
 
-    }  // End of method 'PPPSolverLEOFwBw::checkLimits()'
+    } // End of method 'PPPSolverLEOFwBw::checkLimits()'
 
-
-
-       /* Sets if a NEU system will be used.
-       *
-       * @param useNEU  Boolean value indicating if a NEU system will
-       *                be used
-       *
-       */
+    /* Sets if a NEU system will be used.
+     *
+     * @param useNEU  Boolean value indicating if a NEU system will
+     *                be used
+     *
+     */
     PPPSolverLEOFwBw& PPPSolverLEOFwBw::setNEU(bool useNEU)
     {
 
         // Set the PPPSolverLEO filter
         PPPSolverLEO::setNEU(useNEU);
-
 
         // Clear current 'keepTypeSet' and indicate the TypeID's that
         // we want to keep
@@ -408,9 +369,8 @@ namespace pod
         keepTypeSet.insert(TypeID::CSL1);
         keepTypeSet.insert(TypeID::satArc);
 
-
         // Return this object
         return (*this);
 
-    }  // End of method 'PPPSolverLEOFwBw::setNEU()'
-}
+    } // End of method 'PPPSolverLEOFwBw::setNEU()'
+} // namespace pod

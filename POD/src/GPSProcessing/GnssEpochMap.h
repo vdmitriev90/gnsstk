@@ -1,9 +1,9 @@
 #ifndef POD_GNSS_EPOCH_H
 #define POD_GNSS_EPOCH_H
 
-#include"DataStructures.hpp"
-#include"CommonTime.hpp"
-#include"Position.hpp"
+#include "CommonTime.hpp"
+#include "DataStructures.hpp"
+#include "Position.hpp"
 
 namespace pod
 {
@@ -12,8 +12,8 @@ namespace pod
 
         GnssEpoch();
 
-        GnssEpoch(const gnsstk::satTypeValueMap&  sData);
-        GnssEpoch(const gnsstk::SatTypePtrMap&  stpMap);
+        GnssEpoch(const gnsstk::satTypeValueMap& sData);
+        GnssEpoch(const gnsstk::SatTypePtrMap& stpMap);
         GnssEpoch(const gnsstk::gnssRinex& gRin);
         ~GnssEpoch();
 
@@ -22,7 +22,6 @@ namespace pod
         gnsstk::typeValueMap slnData;
 
         std::ostream& dump(std::ostream& s, int precision = 4);
-  
     };
 
     struct GnssEpochMap
@@ -31,27 +30,27 @@ namespace pod
 
         ~GnssEpochMap();
 
-        //dump object to a stream
+        // dump object to a stream
         std::ostream& dump(std::ostream& s, int precision = 4);
-        
+
         void updateMetadata();
 
         std::string title;
 
-        //all sv in data 
+        // all sv in data
         std::set<gnsstk::SatID> svs;
 
-        //all solution types
+        // all solution types
         std::set<int> slnTypes;
 
-        //all typeIDs 
+        // all typeIDs
         gnsstk::TypeIDSet types;
 
         gnsstk::Rinex3ObsHeader header;
 
         std::map<gnsstk::CommonTime, GnssEpoch> data;
 
-        std::map<gnsstk::CommonTime, GnssEpoch>::iterator begin() 
+        std::map<gnsstk::CommonTime, GnssEpoch>::iterator begin()
         {
             return data.begin();
         };
@@ -70,8 +69,8 @@ namespace pod
         {
             return data.end();
         };
-        
-        std::map<gnsstk::CommonTime, GnssEpoch>::reverse_iterator rbegin() 
+
+        std::map<gnsstk::CommonTime, GnssEpoch>::reverse_iterator rbegin()
         {
             return data.rbegin();
         };
@@ -112,11 +111,10 @@ namespace pod
             return data.size();
         }
 
-    protected: void updateTypes(const gnsstk::TypeIDSet & types);
+      protected:
+        void updateTypes(const gnsstk::TypeIDSet& types);
     };
 
-} 
-
-
+} // namespace pod
 
 #endif // !POD_GNSS_EPOCH_H

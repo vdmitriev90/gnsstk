@@ -15,7 +15,7 @@
 //  You should have received a copy of the GNU Lesser General Public
 //  License along with GPSTk; if not, write to the Free Software Foundation,
 //  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
-//  
+//
 //  Copyright 2004, The University of Texas at Austin
 //  Dagoberto Salazar - gAGE ( http://www.gage.es ). 2008, 2009, 2011
 //
@@ -23,14 +23,14 @@
 
 //============================================================================
 //
-//This software developed by Applied Research Laboratories at the University of
-//Texas at Austin, under contract to an agency or agencies within the U.S. 
-//Department of Defense. The U.S. Government retains all rights to use,
-//duplicate, distribute, disclose, or release this software. 
+// This software developed by Applied Research Laboratories at the University of
+// Texas at Austin, under contract to an agency or agencies within the U.S.
+// Department of Defense. The U.S. Government retains all rights to use,
+// duplicate, distribute, disclose, or release this software.
 //
-//Pursuant to DoD Directive 523024 
+// Pursuant to DoD Directive 523024
 //
-// DISTRIBUTION STATEMENT A: This software has been approved for public 
+// DISTRIBUTION STATEMENT A: This software has been approved for public
 //                           release, distribution is unlimited.
 //
 //=============================================================================
@@ -40,12 +40,12 @@
  * Class to compute the PPP Solution.
  */
 
-#include<iostream>
-
-#include"FsUtils.h"
-#include"WinUtils.h"
-
 #include "SolverPPP.hpp"
+
+#include "FsUtils.h"
+#include "WinUtils.h"
+
+#include <iostream>
 
 namespace pod
 {
@@ -71,45 +71,42 @@ namespace pod
      *                 if false (the default), will compute dx, dy, dz.
      */
 
-    SolverPPP::SolverPPP(
-        bool isUseAdvClkModel,
-        double  tropoQ,
-        double posSigma,
-        double clkSigma,
-        double weightFactor
-    ) : firstTime(true)
+    SolverPPP::SolverPPP(bool isUseAdvClkModel,
+                         double tropoQ,
+                         double posSigma,
+                         double clkSigma,
+                         double weightFactor)
+        : firstTime(true)
     {
         // Call initializing method
         Init(isUseAdvClkModel, tropoQ, posSigma, clkSigma, weightFactor);
 
-    }  // End of 'SolverPPP::SolverPPP()'
+    } // End of 'SolverPPP::SolverPPP()'
 
-       // Initializing method.
-    void SolverPPP::Init(
-        bool isUseAdvClkModel,
-        double  tropoQ,
-        double posSigma,
-        double clkSigma,
-        double weightFactor
-    )
+    // Initializing method.
+    void SolverPPP::Init(bool isUseAdvClkModel,
+                         double tropoQ,
+                         double posSigma,
+                         double clkSigma,
+                         double weightFactor)
     {
         useAdvClkModel = isUseAdvClkModel;
         // First, let's define a set with the typical code-based unknowns
         gnsstk::TypeIDSet tempSet;
         // Watch out here: 'tempSet' is a 'std::set', and all sets order their
         // elements. According to 'gnsstk::TypeID' class, this is the proper order:
-        tempSet.insert(gnsstk::TypeID::wetMap);  // BEWARE: The first is wetMap!!!
+        tempSet.insert(gnsstk::TypeID::wetMap); // BEWARE: The first is wetMap!!!
 
-        tempSet.insert(gnsstk::TypeID::dx);   // #2
-        tempSet.insert(gnsstk::TypeID::dy);   // #3
-        tempSet.insert(gnsstk::TypeID::dz);   // #4
+        tempSet.insert(gnsstk::TypeID::dx); // #2
+        tempSet.insert(gnsstk::TypeID::dy); // #3
+        tempSet.insert(gnsstk::TypeID::dz); // #4
 
-        tempSet.insert(gnsstk::TypeID::cdt);     // #5
+        tempSet.insert(gnsstk::TypeID::cdt); // #5
 
         if (useAdvClkModel)
-            tempSet.insert(gnsstk::TypeID::recCdtdot);     // #6
+            tempSet.insert(gnsstk::TypeID::recCdtdot); // #6
 
-      //  tempSet.insert(gnsstk::TypeID::recCdtGLO);  // #7
+        //  tempSet.insert(gnsstk::TypeID::recCdtGLO);  // #7
 
         // Now, we build the basic equation definition
         defaultEqDef.header = gnsstk::TypeID::prefitC;
@@ -130,7 +127,7 @@ namespace pod
         whitenoiseModel.setSigma(clkSigma);
         // Pointer to default receiver clock stochastic model (white noise)
         pClockStoModel = &whitenoiseModel;
-        //  
+        //
         pInterSysBiasStoModel = &constantModel;
 
         // Pointer to stochastic model for phase biases
@@ -138,30 +135,28 @@ namespace pod
 
         // Set default factor that multiplies phase weights
         // If code sigma is 1 m and phase sigma is 1 cm, the ratio is 100:1
-        this->weightFactor = weightFactor;       // 100^2
+        this->weightFactor = weightFactor; // 100^2
 
-    }  // End of method 'SolverPPP::Init()'
+    } // End of method 'SolverPPP::Init()'
 
-
-
-       /* Compute the solution of the given equations set.
-        *
-        * @param prefitResiduals   Vector of prefit residuals
-        * @param designMatrix      Design matrix for the equation system
-        * @param weightVector      Vector of weights assigned to each
-        *                          satellite.
-        *
-        * \warning A typical Kalman filter works with the measurements noise
-        * covariance matrix, instead of the vector of weights. Beware of this
-        * detail, because this method uses the later.
-        *
-        * @return
-        *  0 if OK
-        *  -1 if problems arose
-        */
+    /* Compute the solution of the given equations set.
+     *
+     * @param prefitResiduals   Vector of prefit residuals
+     * @param designMatrix      Design matrix for the equation system
+     * @param weightVector      Vector of weights assigned to each
+     *                          satellite.
+     *
+     * \warning A typical Kalman filter works with the measurements noise
+     * covariance matrix, instead of the vector of weights. Beware of this
+     * detail, because this method uses the later.
+     *
+     * @return
+     *  0 if OK
+     *  -1 if problems arose
+     */
     int SolverPPP::Compute(const gnsstk::Vector<double>& prefitResiduals,
-        const gnsstk::Matrix<double>& designMatrix,
-        const gnsstk::Vector<double>& weightVector)
+                           const gnsstk::Matrix<double>& designMatrix,
+                           const gnsstk::Vector<double>& weightVector)
     {
 
         // By default, results are invalid
@@ -172,45 +167,42 @@ namespace pod
         int pSize = static_cast<int>(prefitResiduals.size());
         if (!(wSize == pSize))
         {
-            gnsstk::InvalidSolver e("prefitResiduals size does not match dimension of weightVector");
+            gnsstk::InvalidSolver e(
+                "prefitResiduals size does not match dimension of weightVector");
             GNSSTK_THROW(e);
         }
 
-        gnsstk::Matrix<double> wMatrix(wSize, wSize, 0.0);  // Declare a weight matrix
+        gnsstk::Matrix<double> wMatrix(wSize, wSize, 0.0); // Declare a weight matrix
 
-           // Fill the weight matrix diagonal with the content of
-           // the weights vector
+        // Fill the weight matrix diagonal with the content of
+        // the weights vector
         for (int i = 0; i < wSize; i++)
         {
             wMatrix(i, i) = weightVector(i);
         }
 
         // Call the more general SolverPPP::Compute() method
-        return SolverPPP::Compute(prefitResiduals,
-            designMatrix,
-            wMatrix);
+        return SolverPPP::Compute(prefitResiduals, designMatrix, wMatrix);
 
-    }  // End of method 'SolverPPP::Compute()'
+    } // End of method 'SolverPPP::Compute()'
 
-
-
-       // Compute the solution of the given equations set.
-       //
-       // @param prefitResiduals   Vector of prefit residuals
-       // @param designMatrix      Design matrix for equation system
-       // @param weightMatrix      Matrix of weights
-       //
-       // \warning A typical Kalman filter works with the measurements noise
-       // covariance matrix, instead of the matrix of weights. Beware of this
-       // detail, because this method uses the later.
-       //
-       // @return
-       //  0 if OK
-       //  -1 if problems arose
-       //
+    // Compute the solution of the given equations set.
+    //
+    // @param prefitResiduals   Vector of prefit residuals
+    // @param designMatrix      Design matrix for equation system
+    // @param weightMatrix      Matrix of weights
+    //
+    // \warning A typical Kalman filter works with the measurements noise
+    // covariance matrix, instead of the matrix of weights. Beware of this
+    // detail, because this method uses the later.
+    //
+    // @return
+    //  0 if OK
+    //  -1 if problems arose
+    //
     int SolverPPP::Compute(const gnsstk::Vector<double>& prefitResiduals,
-        const gnsstk::Matrix<double>& designMatrix,
-        const gnsstk::Matrix<double>& weightMatrix)
+                           const gnsstk::Matrix<double>& designMatrix,
+                           const gnsstk::Matrix<double>& weightMatrix)
     {
 
         // By default, results are invalid
@@ -226,14 +218,16 @@ namespace pod
         int pRow = static_cast<int>(prefitResiduals.size());
         if (!(wRow == pRow))
         {
-            gnsstk::InvalidSolver e("prefitResiduals size does not match dimension of weightMatrix");
+            gnsstk::InvalidSolver e(
+                "prefitResiduals size does not match dimension of weightMatrix");
             GNSSTK_THROW(e);
         }
 
         int gRow = static_cast<int>(designMatrix.rows());
         if (!(gRow == pRow))
         {
-            gnsstk::InvalidSolver e("prefitResiduals size does not match dimension of designMatrix");
+            gnsstk::InvalidSolver e(
+                "prefitResiduals size does not match dimension of designMatrix");
             GNSSTK_THROW(e);
         }
 
@@ -274,18 +268,15 @@ namespace pod
         }
         catch (...)
         {
-            gnsstk::InvalidSolver e("Correct(): Unable to compute measurements noise covariance matrix.");
+            gnsstk::InvalidSolver e(
+                "Correct(): Unable to compute measurements noise covariance matrix.");
             GNSSTK_THROW(e);
         }
 
         try
         {
             // Call the Kalman filter object.
-            kFilter.Compute(phiMatrix,
-                qMatrix,
-                prefitResiduals,
-                designMatrix,
-                measNoiseMatrix);
+            kFilter.Compute(phiMatrix, qMatrix, prefitResiduals, designMatrix, measNoiseMatrix);
         }
         catch (gnsstk::InvalidSolver& e)
         {
@@ -306,61 +297,64 @@ namespace pod
 
         return 0;
 
-    }  // End of method 'SolverPPP::Compute()'
+    } // End of method 'SolverPPP::Compute()'
 
-  
     /// update transition (Phi) and process noise (Q) matrices
-	void SolverPPP::updateMatrices(gnsstk::Matrix<double> & phiMatrix, gnsstk::Matrix<double> & qMatrix, gnsstk::IRinex& gData)
-	{
-		// Now, let's fill the Phi and Q matrices
-        gnsstk::SatID  dummySat;
+    void SolverPPP::updateMatrices(gnsstk::Matrix<double>& phiMatrix,
+                                   gnsstk::Matrix<double>& qMatrix,
+                                   gnsstk::IRinex& gData)
+    {
+        // Now, let's fill the Phi and Q matrices
+        gnsstk::SatID dummySat;
 
-		// First, the troposphere
-		pTropoStoModel->Prepare(dummySat, gData);
-		phiMatrix(0, 0) = pTropoStoModel->getPhi();
-		qMatrix(0, 0) = pTropoStoModel->getQ();
+        // First, the troposphere
+        pTropoStoModel->Prepare(dummySat, gData);
+        phiMatrix(0, 0) = pTropoStoModel->getPhi();
+        qMatrix(0, 0) = pTropoStoModel->getQ();
 
-		// Second, the coordinates
-		pCoordXStoModel->Prepare(dummySat, gData);
-		phiMatrix(1, 1) = pCoordXStoModel->getPhi();
-		qMatrix(1, 1) = pCoordXStoModel->getQ();
+        // Second, the coordinates
+        pCoordXStoModel->Prepare(dummySat, gData);
+        phiMatrix(1, 1) = pCoordXStoModel->getPhi();
+        qMatrix(1, 1) = pCoordXStoModel->getQ();
 
-		pCoordYStoModel->Prepare(dummySat, gData);
-		phiMatrix(2, 2) = pCoordYStoModel->getPhi();
-		qMatrix(2, 2) = pCoordYStoModel->getQ();
+        pCoordYStoModel->Prepare(dummySat, gData);
+        phiMatrix(2, 2) = pCoordYStoModel->getPhi();
+        qMatrix(2, 2) = pCoordYStoModel->getQ();
 
-		pCoordZStoModel->Prepare(dummySat, gData);
-		phiMatrix(3, 3) = pCoordZStoModel->getPhi();
-		qMatrix(3, 3) = pCoordZStoModel->getQ();
+        pCoordZStoModel->Prepare(dummySat, gData);
+        phiMatrix(3, 3) = pCoordZStoModel->getPhi();
+        qMatrix(3, 3) = pCoordZStoModel->getQ();
 
-		// Third, the receiver clock
-		pClockStoModel->Prepare(dummySat, gData);
-		phiMatrix(4, 4) = pClockStoModel->getPhi();
-		qMatrix(4, 4) = pClockStoModel->getQ();
+        // Third, the receiver clock
+        pClockStoModel->Prepare(dummySat, gData);
+        phiMatrix(4, 4) = pClockStoModel->getPhi();
+        qMatrix(4, 4) = pClockStoModel->getQ();
 
-		if (defaultEqDef.body.find(gnsstk::TypeID::recISB_GLN) != defaultEqDef.body.end())
-		{
-			pInterSysBiasStoModel->Prepare(dummySat, gData);
-			phiMatrix(numVar - 1, numVar - 1) = pInterSysBiasStoModel->getPhi();
-			qMatrix(numVar - 1, numVar - 1) = pInterSysBiasStoModel->getQ();
-		}
+        if (defaultEqDef.body.find(gnsstk::TypeID::recISB_GLN) != defaultEqDef.body.end())
+        {
+            pInterSysBiasStoModel->Prepare(dummySat, gData);
+            phiMatrix(numVar - 1, numVar - 1) = pInterSysBiasStoModel->getPhi();
+            qMatrix(numVar - 1, numVar - 1) = pInterSysBiasStoModel->getQ();
+        }
 
-		// Finally, the phase biases
-		int count2(numVar);
-		for (auto && itSat: satSet)
-		{
-			// Prepare stochastic model
-			pBiasStoModel->Prepare(itSat, gData);
+        // Finally, the phase biases
+        int count2(numVar);
+        for (auto&& itSat : satSet)
+        {
+            // Prepare stochastic model
+            pBiasStoModel->Prepare(itSat, gData);
 
-			// Get values into phi and q matrices
-			phiMatrix(count2, count2) = pBiasStoModel->getPhi();
-			qMatrix(count2, count2) = pBiasStoModel->getQ();
+            // Get values into phi and q matrices
+            phiMatrix(count2, count2) = pBiasStoModel->getPhi();
+            qMatrix(count2, count2) = pBiasStoModel->getQ();
 
-			++count2;
-		}
-	}
+            ++count2;
+        }
+    }
 
-    void SolverPPP::updateWeightMatrix(gnsstk::Matrix<double> & rMatrix, gnsstk::IRinex& gData, int numCurrentSV)
+    void SolverPPP::updateWeightMatrix(gnsstk::Matrix<double>& rMatrix,
+                                       gnsstk::IRinex& gData,
+                                       int numCurrentSV)
     {
         // Weights matrix
         rMatrix.resize(numMeas, numMeas, 0.0);
@@ -373,16 +367,15 @@ namespace pod
         if (dummy.numSats() == (size_t)numCurrentSV)
         {
             // If we have weights information, let's load it
-            gnsstk::Vector<double> weightsVector(gData.getBody().getVectorOfTypeID(gnsstk::TypeID::weight));
-			 
+            gnsstk::Vector<double> weightsVector(
+                gData.getBody().getVectorOfTypeID(gnsstk::TypeID::weight));
+
             for (int i = 0; i < numCurrentSV; i++)
             {
                 rMatrix(i, i) = weightsVector(i);
-                rMatrix(i + numCurrentSV, i + numCurrentSV)
-                    = weightsVector(i) * weightFactor;
+                rMatrix(i + numCurrentSV, i + numCurrentSV) = weightsVector(i) * weightFactor;
 
-            }  // End of 'for( int i=0; i<numCurrentSV; i++ )'
-
+            } // End of 'for( int i=0; i<numCurrentSV; i++ )'
         }
         else
         {
@@ -393,13 +386,11 @@ namespace pod
                 rMatrix(i, i) = 1.0;
 
                 // Phases weights are bigger
-                rMatrix(i + numCurrentSV, i + numCurrentSV)
-                    = 1.0 * weightFactor;
+                rMatrix(i + numCurrentSV, i + numCurrentSV) = 1.0 * weightFactor;
 
-            }  // End of 'for( int i=0; i<numCurrentSV; i++ )'
+            } // End of 'for( int i=0; i<numCurrentSV; i++ )'
 
-        }  // End of 'if ( dummy.numSats() == numCurrentSV )'
-
+        } // End of 'if ( dummy.numSats() == numCurrentSV )'
     }
 
     /* Returns a reference to a gnnsRinex object after solving
@@ -412,7 +403,7 @@ namespace pod
         try
         {
             // refresh the number of core parameters: add  gnsstk::TypeID::recCdtGLO
-            //if GLONASS satellites > 1 remove gnsstk::TypeID::recCdtGLO otherwise
+            // if GLONASS satellites > 1 remove gnsstk::TypeID::recCdtGLO otherwise
             updateCurPar(gData);
 
             // Please note that there are two different sets being defined:
@@ -451,12 +442,12 @@ namespace pod
             // Noise covariance matrix (QMatrix)
             qMatrix.resize(numUnknowns, numUnknowns, 0.0);
 
-
             // Build the vector of measurements (Prefit-residuals): Code + phase
             measVector.resize(numMeas, 0.0);
 
             gnsstk::Vector<double> prefitC(gData.getBody().getVectorOfTypeID(defaultEqDef.header));
-            gnsstk::Vector<double> prefitL(gData.getBody().getVectorOfTypeID(gnsstk::TypeID::prefitL));
+            gnsstk::Vector<double> prefitL(
+                gData.getBody().getVectorOfTypeID(gnsstk::TypeID::prefitL));
             for (size_t i = 0; i < numCurrentSV; i++)
             {
                 measVector(i) = prefitC(i);
@@ -485,12 +476,11 @@ namespace pod
                     hMatrix(i + numCurrentSV, j) = dMatrix(i, j);
                 }
 
-            }  // End of 'for( int i=0; i<numCurrentSV; i++ )'
+            } // End of 'for( int i=0; i<numCurrentSV; i++ )'
 
-
-               // Now, fill the coefficients related to phase biases
-               // We must be careful because not all processed satellites
-               // are currently visible
+            // Now, fill the coefficients related to phase biases
+            // We must be careful because not all processed satellites
+            // are currently visible
             int count1(0);
             for (const auto& itSat : currSatSet)
             {
@@ -509,26 +499,26 @@ namespace pod
 
                 ++count1;
 
-            }  // End of 'for( itSat = satSet.begin(); ... )'
+            } // End of 'for( itSat = satSet.begin(); ... )'
 
             gnsstk::Matrix<double> currentCovariance;
             gnsstk::Vector<double> currState;
             // Feed the filter with the correct state and covariance matrix
             if (firstTime)
             {
-				std::cout << "first time!" << std::endl;
+                std::cout << "first time!" << std::endl;
                 currState.resize(numUnknowns, 0.0);
                 currentCovariance.resize(numUnknowns, numUnknowns, 0.0);
 
                 // Fill the initialErrorCovariance matrix
 
                 // First, the zenital wet tropospheric delay
-                currentCovariance(0, 0) = 0.25;          // (0.5 m)**2
+                currentCovariance(0, 0) = 0.25; // (0.5 m)**2
 
-                   // Second, the coordinates
+                // Second, the coordinates
                 for (int i = 1; i < 4; i++)
                 {
-                    currentCovariance(i, i) = 10000.0;    // (100 m)**2
+                    currentCovariance(i, i) = 10000.0; // (100 m)**2
                 }
 
                 if (useAdvClkModel)
@@ -539,7 +529,7 @@ namespace pod
                 else
                 {
                     // Third, the receiver clock
-                    currentCovariance(4, 4) = 9.0e10;        // (300 km)**2
+                    currentCovariance(4, 4) = 9.0e10; // (300 km)**2
                 }
                 if (defaultEqDef.body.find(gnsstk::TypeID::recISB_GLN) != defaultEqDef.body.end())
                 {
@@ -549,7 +539,7 @@ namespace pod
                 // Finally, the phase biases
                 for (int i = numVar; i < numUnknowns; i++)
                 {
-                    currentCovariance(i, i) = 4.0e14;     // (20000 km)**2
+                    currentCovariance(i, i) = 4.0e14; // (20000 km)**2
                 }
                 // No longer first time
                 firstTime = false;
@@ -607,23 +597,24 @@ namespace pod
                     ++c1;
                 }
 
-            }  // End of 'if(firstTime)'
+            } // End of 'if(firstTime)'
 
             kFilter.Reset(currState, currentCovariance);
-            DBOUT_LINE("----------------------------------------------------------------------------------------");
+            DBOUT_LINE("---------------------------------------------------------------------------"
+                       "-------------");
             DBOUT_LINE(gnsstk::CivilTime(gData.getHeader().epoch));
             auto svset = gData.getBody().getSatID();
             for (auto& it : svset)
                 DBOUT(it << " ");
             DBOUT_LINE("\ncovPre\n" << currentCovariance);
-            //DBOUT_LINE("H\n" << hMatrix);
+            // DBOUT_LINE("H\n" << hMatrix);
             DBOUT_LINE("Fi\n" << phiMatrix.diagCopy());
-            
+
             Compute(measVector, hMatrix, rMatrix);
 
-            //DBOUT_LINE("Solution\n" << solution);
-            //DBOUT_LINE("postfitResiduals\n" << postfitResiduals);
-            //DBOUT_LINE("CovPost\n" << covMatrix);
+            // DBOUT_LINE("Solution\n" << solution);
+            // DBOUT_LINE("postfitResiduals\n" << postfitResiduals);
+            // DBOUT_LINE("CovPost\n" << covMatrix);
 
             // Store those values of current state and covariance matrix
             // that depend on satellites currently in view
@@ -650,10 +641,9 @@ namespace pod
                 }
                 ++c1;
 
-            }  // End of 'for( itSat = satSet.begin(); ...'
+            } // End of 'for( itSat = satSet.begin(); ...'
 
-
-               // Now we have to add the new values to the data structure
+            // Now we have to add the new values to the data structure
             gnsstk::Vector<double> postfitCode(numCurrentSV, 0.0);
             gnsstk::Vector<double> postfitPhase(numCurrentSV, 0.0);
             for (int i = 0; i < numCurrentSV; i++)
@@ -677,20 +667,19 @@ namespace pod
         }
 
     } // End of method 'SolverPPP::Process()'
-      
 
-       // End of method 'SolverPPP::setCoordinatesModel()'
-       /* Set a single coordinates stochastic model to ALL coordinates.
-        *
-        * @param pModel      Pointer to StochasticModel associated with
-        *                    coordinates.
-        *
-        * @warning Do NOT use this method to set the SAME state-aware
-        * stochastic model (like RandomWalkModel, for instance) to ALL
-        * coordinates, because the results will certainly be erroneous. Use
-        * this method only with non-state-aware stochastic models like
-        * 'StochasticModel' (constant coordinates) or 'WhiteNoiseModel'.
-        */
+    // End of method 'SolverPPP::setCoordinatesModel()'
+    /* Set a single coordinates stochastic model to ALL coordinates.
+     *
+     * @param pModel      Pointer to StochasticModel associated with
+     *                    coordinates.
+     *
+     * @warning Do NOT use this method to set the SAME state-aware
+     * stochastic model (like RandomWalkModel, for instance) to ALL
+     * coordinates, because the results will certainly be erroneous. Use
+     * this method only with non-state-aware stochastic models like
+     * 'StochasticModel' (constant coordinates) or 'WhiteNoiseModel'.
+     */
     SolverPPP& SolverPPP::setCoordinatesModel(gnsstk::IStochasticModel* pModel)
     {
 
@@ -701,15 +690,14 @@ namespace pod
 
         return (*this);
 
-    }  // End of method 'SolverPPP::setCoordinatesModel()'
+    } // End of method 'SolverPPP::setCoordinatesModel()'
 
-
-        /** Set the positioning mode, kinematic or static.
-         */
+    /** Set the positioning mode, kinematic or static.
+     */
     SolverPPP& SolverPPP::setKinematic(bool kinematicMode,
-        double sigmaX,
-        double sigmaY,
-        double sigmaZ)
+                                       double sigmaX,
+                                       double sigmaY,
+                                       double sigmaZ)
     {
         if (kinematicMode)
         {
@@ -728,7 +716,6 @@ namespace pod
 
         return (*this);
 
-    }  // End of method 'SolverPPP::setKinematic()'
+    } // End of method 'SolverPPP::setKinematic()'
 
-
-}  // End of namespace gnsstk
+} // namespace pod

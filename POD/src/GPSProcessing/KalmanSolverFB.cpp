@@ -1,38 +1,42 @@
 #include "KalmanSolverFB.h"
-#include"PowerSum.hpp"
-#include"WinUtils.h"
-#include"StringUtils.h"
-#include"GnssSolution.h"
+
+#include "GnssSolution.h"
+#include "PowerSum.hpp"
+#include "StringUtils.h"
+#include "WinUtils.h"
 using namespace gnsstk;
 
 namespace pod
 {
 
     KalmanSolverFB::KalmanSolverFB()
-        :currCycle(0), processedMeasurements(0), rejectedMeasurements(0)
-    {}
+        : currCycle(0)
+        , processedMeasurements(0)
+        , rejectedMeasurements(0)
+    {
+    }
 
     KalmanSolverFB::KalmanSolverFB(eqComposer_sptr eqs)
-        : currCycle(0), processedMeasurements(0), rejectedMeasurements(0)
+        : currCycle(0)
+        , processedMeasurements(0)
+        , rejectedMeasurements(0)
     {
         solver = KalmanSolver(eqs);
     }
 
-    KalmanSolverFB::~KalmanSolverFB()
-    {}
+    KalmanSolverFB::~KalmanSolverFB() {}
 
-    gnsstk::IRinex & KalmanSolverFB::Process(gnsstk::IRinex & gRin)
+    gnsstk::IRinex& KalmanSolverFB::Process(gnsstk::IRinex& gRin)
     {
         solver.Process(gRin);
-		if (solver.getResetState())
-		{
-			LIDetMap[gRin.getHeader().epoch] = *LIDet;
-			MWDetMap[gRin.getHeader().epoch] = *MWDet;
-		}
-
+        if (solver.getResetState())
+        {
+            LIDetMap[gRin.getHeader().epoch] = *LIDet;
+            MWDetMap[gRin.getHeader().epoch] = *MWDet;
+        }
 
         // Before returning, store the results for a future iteration
-        if (currCycle==0)
+        if (currCycle == 0)
         {
             // Store observation data
             ObsData.push_back(gRin.clone());
@@ -44,15 +48,15 @@ namespace pod
         return gRin;
     }
 
-    bool KalmanSolverFB::lastProcess(gnsstk::IRinex & gRin)
+    bool KalmanSolverFB::lastProcess(gnsstk::IRinex& gRin)
     {
 
         // Keep processing while 'ObsData' is not empty
         if (!ObsData.empty())
         {
-            // Get the first data epoch in 'ObsData' and process it. 
+            // Get the first data epoch in 'ObsData' and process it.
             // The result will be stored in 'gData'
-			gRin = ReProcessOneEpoch(*ObsData.front());
+            gRin = ReProcessOneEpoch(*ObsData.front());
 
             // gData = ObsData.front();
             // Remove the first data epoch in 'ObsData', freeing some
@@ -66,59 +70,60 @@ namespace pod
         }
     }
 
-	void KalmanSolverFB::reProcess()
-	{
-		// Backwards iteration. We must do this at least once
-		for (auto rpos = ObsData.rbegin(); rpos != ObsData.rend(); ++rpos)
-			ReProcessOneEpoch(**rpos);
+    void KalmanSolverFB::reProcess()
+    {
+        // Backwards iteration. We must do this at least once
+        for (auto rpos = ObsData.rbegin(); rpos != ObsData.rend(); ++rpos)
+            ReProcessOneEpoch(**rpos);
 
-		for ( currCycle = 0; currCycle < cyclesNumber - 1; ++currCycle)
-		{
-			for (auto &it : ObsData)
-			{
-				ReProcessOneEpoch(*it);
-			}
+        for (currCycle = 0; currCycle < cyclesNumber - 1; ++currCycle)
+        {
+            for (auto& it : ObsData)
+            {
+                ReProcessOneEpoch(*it);
+            }
 
-			for (auto rpos = ObsData.rbegin(); rpos != ObsData.rend(); ++rpos)
-				ReProcessOneEpoch(**rpos);
-		}
-	}
+            for (auto rpos = ObsData.rbegin(); rpos != ObsData.rend(); ++rpos)
+                ReProcessOneEpoch(**rpos);
+        }
+    }
 
-	gnsstk::IRinex & KalmanSolverFB::ReProcessOneEpoch(gnsstk::IRinex & gRin)
-	{
+    gnsstk::IRinex& KalmanSolverFB::ReProcessOneEpoch(gnsstk::IRinex& gRin)
+    {
 
-		if (solver.ResetIfRequared(gRin.getHeader().epoch, solver.FilterData))
-		{
-			*LIDet = LIDetMap[gRin.getHeader().epoch];
-			*MWDet = MWDetMap[gRin.getHeader().epoch];
-			DBOUT_LINE("state update")
-			//*satArcMarker = SatArcMap[gRin.getHeader().epoch];
-		}
+        if (solver.ResetIfRequared(gRin.getHeader().epoch, solver.FilterData))
+        {
+            *LIDet = LIDetMap[gRin.getHeader().epoch];
+            *MWDet = MWDetMap[gRin.getHeader().epoch];
+            DBOUT_LINE("state update")
+            //*satArcMarker = SatArcMap[gRin.getHeader().epoch];
+        }
 
-		gRin.resetCurrData();
+        gRin.resetCurrData();
 
-		usedSvMarker.keepOnlyUsed(gRin.getBody());
-		usedSvMarker.CleanSatArcFlags(gRin.getBody());
-		usedSvMarker.CleanScFlags(gRin.getBody());
-		checkLimits(gRin, currCycle);
+        usedSvMarker.keepOnlyUsed(gRin.getBody());
+        usedSvMarker.CleanSatArcFlags(gRin.getBody());
+        usedSvMarker.CleanScFlags(gRin.getBody());
+        checkLimits(gRin, currCycle);
 
-		gRin >> reProcList;
-		
-		solver.Process(gRin);
+        gRin >> reProcList;
 
-		if (LIDetMap.find(gRin.getHeader().epoch)!= LIDetMap.end())
-		{
-			solver.FilterData[gRin.getHeader().epoch] = solver.getState();
-			LIDetMap[gRin.getHeader().epoch] = *LIDet;
-			MWDetMap[gRin.getHeader().epoch] = *MWDet;
-			DBOUT_LINE("state stored")
-		}
-		//SatArcMap[gRin.getHeader().epoch] = *satArcMarker;
+        solver.Process(gRin);
 
-		return gRin;
-	}
+        if (LIDetMap.find(gRin.getHeader().epoch) != LIDetMap.end())
+        {
+            solver.FilterData[gRin.getHeader().epoch] = solver.getState();
+            LIDetMap[gRin.getHeader().epoch] = *LIDet;
+            MWDetMap[gRin.getHeader().epoch] = *MWDet;
+            DBOUT_LINE("state stored")
+        }
+        // SatArcMap[gRin.getHeader().epoch] = *satArcMarker;
 
-    KalmanSolverFB& KalmanSolverFB::setLimits(const std::vector<double>& codeLims, const std::vector<double>& phaseLims)
+        return gRin;
+    }
+
+    KalmanSolverFB& KalmanSolverFB::setLimits(const std::vector<double>& codeLims,
+                                              const std::vector<double>& phaseLims)
     {
         tresholds.codeLimits = codeLims;
         tresholds.phaseLimits = phaseLims;
@@ -135,14 +140,12 @@ namespace pod
             if (cycleNumber < tresholds.phaseLimits.size())
                 return tresholds.phaseLimits[cycleNumber];
 
-		std::string msg = "Can't get observables treshold for type: '"
-            + TypeID::tStrings[type.type] +
-            "' with reprocess cycle number: '"
-            + gnsstk::StringUtils::asString(cycleNumber) + "'.";
+        std::string msg = "Can't get observables treshold for type: '" + TypeID::tStrings[type.type]
+                          + "' with reprocess cycle number: '"
+                          + gnsstk::StringUtils::asString(cycleNumber) + "'.";
 
         InvalidRequest e(msg);
         GNSSTK_THROW(e);
-
     }
 
     void KalmanSolverFB::checkLimits(IRinex& gData, size_t cycleNumber)
@@ -154,16 +157,16 @@ namespace pod
         for (auto&& type : solver.eqComposer().residTypes())
         {
             double limit = getLimit(type, cycleNumber);
-			for (auto&& it : gData.getBody())
-			{
-				// Check postfit values and mark satellites as rejected
-				auto itRes = it.second->get_value().find(type);
-				if (itRes != it.second->get_value().end() && std::abs(itRes->second) > limit)
-				{
-					it.second->get_value().erase(type);
-					satRejectedSet.insert(it.first);
-				}
-			}
+            for (auto&& it : gData.getBody())
+            {
+                // Check postfit values and mark satellites as rejected
+                auto itRes = it.second->get_value().find(type);
+                if (itRes != it.second->get_value().end() && std::abs(itRes->second) > limit)
+                {
+                    it.second->get_value().erase(type);
+                    satRejectedSet.insert(it.first);
+                }
+            }
         }
 
         // Update the number of rejected measurements
@@ -171,6 +174,5 @@ namespace pod
 
         // Remove satellites with missing data
         gData.getBody().removeSatID(satRejectedSet);
-		
     }
-}
+} // namespace pod

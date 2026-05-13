@@ -1,19 +1,20 @@
 #pragma once
 
-#include"TypeID.hpp"
+#include "TypeID.hpp"
 
 namespace pod
 {
     class PrSmoother
     {
-    public:
+      public:
         PrSmoother();
         PrSmoother(const std::list<gnsstk::TypeID>& tList, int l);
         ~PrSmoother();
 
-        void smooth(const char * path);
-    private:
-        std::list<gnsstk::TypeID>  codes;
+        void smooth(const char* path);
+
+      private:
+        std::list<gnsstk::TypeID> codes;
         int window;
     };
-}
+} // namespace pod

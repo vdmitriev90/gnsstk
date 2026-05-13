@@ -1,11 +1,11 @@
-#include"PODSolution.h"
-#include"PPPSolverLEO.h"
-#include"PPPSolverLEOFwBw.h"
+#include "PODSolution.h"
 
-#include"XYZ2NEU.hpp"
-#include"RequireObservables.hpp"
+#include "PPPSolverLEO.h"
+#include "PPPSolverLEOFwBw.h"
+#include "RequireObservables.hpp"
+#include "XYZ2NEU.hpp"
 //
-#include"SimpleFilter.hpp"
+#include "SimpleFilter.hpp"
 // Class to detect cycle slips using LI combination
 #include "LICSDetector2.hpp"
 
@@ -60,18 +60,16 @@
 // Used to decimate data. This is important because RINEX observation
 // data is provided with a 30 s sample rate, whereas SP3 files provide
 // satellite clock information with a 900 s sample rate.
-#include "Decimate.hpp"
-
+#include "BasicModel.hpp"
 #include "ConfDataReader.hpp"
-#include"BasicModel.hpp"
+#include "Decimate.hpp"
 
 using namespace gnsstk;
 namespace pod
 {
-    PODSolution::PODSolution(GnssDataStore_sptr confData):
-        PPPSolutionBase (confData)
+    PODSolution::PODSolution(GnssDataStore_sptr confData) : PPPSolutionBase(confData)
     {
-       solverPR  = std::unique_ptr<CodeSolverBase>( new CodeSolverLEO(data));
+        solverPR = std::unique_ptr<CodeSolverBase>(new CodeSolverLEO(data));
     }
 
     bool PODSolution::processCore()
@@ -101,10 +99,10 @@ namespace pod
         linear1.addLinear(comb.liCombination);
 
         // Objects to mark cycle slips
-        LICSDetector2 markCSLI2;         // Checks LI cycle slips
-                                         // markCSLI2.setSatThreshold(1);
-       // Checks Merbourne-Wubbena cycle slips
-        MWCSDetector  markCSMW(confReader().getValueAsDouble("MWNumLambdas"));          
+        LICSDetector2 markCSLI2; // Checks LI cycle slips
+                                 // markCSLI2.setSatThreshold(1);
+                                 // Checks Merbourne-Wubbena cycle slips
+        MWCSDetector markCSMW(confReader().getValueAsDouble("MWNumLambdas"));
 
         // Object to keep track of satellite arcs
         SatArcMarker markArc;
@@ -114,13 +112,12 @@ namespace pod
         // Object to decimate data
         double newSampling(confReader().getValueAsDouble("decimationInterval"));
 
-        Decimate decimateData(
-            newSampling,
-            confReader().getValueAsDouble("decimationTolerance"),
-            data->navLibrary_.getInitialTime());
+        Decimate decimateData(newSampling,
+                              confReader().getValueAsDouble("decimationTolerance"),
+                              data->navLibrary_.getInitialTime());
 
         // Declare a basic modeler
-        //BasicModel basic(Position(0.0, 0.0, 0.0), SP3EphList);
+        // BasicModel basic(Position(0.0, 0.0, 0.0), SP3EphList);
         BasicModel basic(nominalPos, data->navLibrary_);
         // Set the minimum elevation
         basic.setMinElev(opts().maskEl);
@@ -136,7 +133,7 @@ namespace pod
         // Vector from monument to antenna ARP [UEN], in meters
         Triple offsetARP;
         int i = 0;
-        for (auto &it : confReader().getValueListAsDouble("offsetARP"))
+        for (auto& it : confReader().getValueListAsDouble("offsetARP"))
             offsetARP[i++] = it;
 
         // Declare an object to correct observables to monument
@@ -175,9 +172,9 @@ namespace pod
         }
         else
         {
-            Triple ofstL1(0.0, 0.0, 0.0), ofstL2(0.0, 0.0, 0.0); 
+            Triple ofstL1(0.0, 0.0, 0.0), ofstL2(0.0, 0.0, 0.0);
             int i = 0;
-            for (auto& it: confReader().getValueListAsDouble("offsetL1"))
+            for (auto& it : confReader().getValueListAsDouble("offsetL1"))
                 ofstL1[i++] = it;
             i = 0;
             for (auto& it : confReader().getValueListAsDouble("offsetL2"))
@@ -190,7 +187,9 @@ namespace pod
 #pragma endregion
 
         // Object to compute wind-up effect
-        ComputeWindUp windup(data->navLibrary_, nominalPos, opts().genericFilesDirectory + confReader().getValue("satDataFile"));
+        ComputeWindUp windup(data->navLibrary_,
+                             nominalPos,
+                             opts().genericFilesDirectory + confReader().getValue("satDataFile"));
 
         // Object to compute ionosphere-free combinations to be used
         // as observables in the PPP processing
@@ -219,9 +218,9 @@ namespace pod
         ComputeDOP cDOP;
 
         // White noise stochastic model
-        WhiteNoiseModel wnM(1000.0);      // 100 m of sigma
-                                          // Declare solver objects
-        PPPSolverLEO   pppSolver(false);
+        WhiteNoiseModel wnM(1000.0); // 100 m of sigma
+                                     // Declare solver objects
+        PPPSolverLEO pppSolver(false);
         pppSolver.setCoordinatesModel(&wnM);
         PPPSolverLEOFwBw fbpppSolver(false);
         fbpppSolver.setCoordinatesModel(&wnM);
@@ -230,11 +229,13 @@ namespace pod
         int cycles(confReader().getValueAsInt("forwardBackwardCycles"));
 
         std::list<double> phaseLimits, codeLimits;
-        for (double val: confReader().getValueListAsDouble("codeLimits"))
-        if(val != 0.0) codeLimits.push_back(val);
+        for (double val : confReader().getValueListAsDouble("codeLimits"))
+            if (val != 0.0)
+                codeLimits.push_back(val);
 
         for (double val : confReader().getValueListAsDouble("phaseLimits"))
-        if (val != 0.0) phaseLimits.push_back(val);
+            if (val != 0.0)
+                phaseLimits.push_back(val);
 
         fbpppSolver.setPhaseList(phaseLimits);
         fbpppSolver.setCodeList(codeLimits);
@@ -249,11 +250,11 @@ namespace pod
         int precision(4);
 
         std::ofstream outfile;
-        outfile.open(opts().workingDir +"\\"+fileName(), std::ios::out);
+        outfile.open(opts().workingDir + "\\" + fileName(), std::ios::out);
 
 #pragma endregion
 
-        //statistics for coorinates and tropo delay
+        // statistics for coorinates and tropo delay
         std::vector<PowerSum> stats(4);
         CommonTime time0;
         bool b = true;
@@ -263,7 +264,7 @@ namespace pod
         {
 
             std::cout << obsFile << std::endl;
-            //Input observation file stream
+            // Input observation file stream
             Rinex3ObsStream rin;
             // Open Rinex observations file in read-only mode
             rin.open(obsFile, std::ios::in);
@@ -272,8 +273,7 @@ namespace pod
             Rinex3ObsHeader roh;
             Rinex3ObsData rod;
 
-          
-            //read the header
+            // read the header
             rin >> roh;
             gMap.header = roh;
 
@@ -287,10 +287,10 @@ namespace pod
 
                 // Store current epoch
                 CommonTime time(gRin.getHeader().epoch);
-				if (apprPos().getPosition(gRin, nominalPos))
-					continue;
+                if (apprPos().getPosition(gRin, nominalPos))
+                    continue;
 
-                ///update the nominal position in processing objects
+                /// update the nominal position in processing objects
                 XYZ2NEU baseChange(nominalPos);
                 basic.setRxPosition(nominalPos);
                 grDelay.setNominalPosition(nominalPos);
@@ -302,38 +302,24 @@ namespace pod
                 try
                 {
                     //  std::cout <<(YDSTime)time<< " "<< gRin.numSats();
-                    gRin >> requireObs
-                        >> PRFilter
-                        >> SNRFilter
-                        >> linear1;
+                    gRin >> requireObs >> PRFilter >> SNRFilter >> linear1;
                     //  gRin >> markCSLI2;
 
                     gRin >> markCSMW;
-                    //csnum = getNumCS(gRin);
+                    // csnum = getNumCS(gRin);
 
                     gRin >> markArc;
-                    //std::cout  <<" "<<csnum<<  " " << gRin.numSats();
-                    gRin >> decimateData
-                        >> basic
-                        >> eclipsedSV
-                        >> grDelay
-                        >> svPcenter;
-                    //std::cout <<  " " << gRin.numSats() << " ";
-                    gRin >> requireObs
-                        >> corr
-                        >> windup
-                        >> linear2
-                        >> pcFilter
-                        >> phaseAlign
-                        >> linear3
-                        >> baseChange
-                        >> cDOP;
+                    // std::cout  <<" "<<csnum<<  " " << gRin.numSats();
+                    gRin >> decimateData >> basic >> eclipsedSV >> grDelay >> svPcenter;
+                    // std::cout <<  " " << gRin.numSats() << " ";
+                    gRin >> requireObs >> corr >> windup >> linear2 >> pcFilter >> phaseAlign
+                        >> linear3 >> baseChange >> cDOP;
 
                     if (cycles < 1)
                         gRin >> pppSolver;
                     else
                         gRin >> fbpppSolver;
-                    
+
                     //   std::cout /*<<  " " << gRin.numSats()*/ << std::endl;
                 }
                 catch (DecimateEpoch& d)
@@ -366,11 +352,12 @@ namespace pod
                     double fm = fmod(((GPSWeekSecond)time).getSOW(), outInt);
 
                     if (fm < 0.1)
-                        pppSolver.printSolution(outfile, time0, time, cDOP, ep,  0.0, stats, nominalPos);
+                        pppSolver.printSolution(
+                            outfile, time0, time, cDOP, ep, 0.0, stats, nominalPos);
                     gMap.data.insert(std::pair<CommonTime, GnssEpoch>(time, ep));
-                }  // End of 'if ( cycles < 1 )'
-             
-            }  // End of 'while(rin >> gRin)'
+                } // End of 'if ( cycles < 1 )'
+
+            } // End of 'while(rin >> gRin)'
 
             rin.close();
         }
@@ -409,9 +396,9 @@ namespace pod
             return false;
         }
 
-        // Reprocess is over. Let's finish with the last processing		
+        // Reprocess is over. Let's finish with the last processing
         // Loop over all data epochs, again, and print results
-    
+
         while (fbpppSolver.LastProcess(gRin))
         {
             GnssEpoch ep(gRin.getBody());
@@ -422,24 +409,24 @@ namespace pod
                 time0 = time;
                 b = false;
             }
-			if (apprPos().getPosition(gRin, nominalPos))
-				continue;
+            if (apprPos().getPosition(gRin, nominalPos))
+                continue;
             double fm = fmod(((GPSWeekSecond)time).getSOW(), outInt);
             if (fm < 0.1)
                 fbpppSolver.printSolution(outfile, time0, time, cDOP, ep, 0.0, stats, nominalPos);
-            //add epoch to results
+            // add epoch to results
             gMap.data.insert(std::pair<CommonTime, GnssEpoch>(time, ep));
-        }  // End of 'while( fbpppSolver.LastProcess(gRin) )'
+        } // End of 'while( fbpppSolver.LastProcess(gRin) )'
 
         // Close output file for this station
         outfile.close();
-        
+
         return true;
     }
 
     double PODSolution::mapSNR(double value)
     {
-       return 20.0*log10(value);
+        return 20.0 * log10(value);
     }
     void PODSolution::updateRequaredObs()
     {
@@ -449,28 +436,33 @@ namespace pod
         requireObs.addRequiredType(TypeID::L2);
         requireObs.addRequiredType(TypeID::S1);
     }
-    void PODSolution::printSolution(std::ofstream& outfile, const SolverLMS& solver, const CommonTime& time, GnssEpoch& gEpoch)
+    void PODSolution::printSolution(std::ofstream& outfile,
+                                    const SolverLMS& solver,
+                                    const CommonTime& time,
+                                    GnssEpoch& gEpoch)
     {
         // Prepare for printing
         outfile << std::fixed << std::setprecision(outputPrec);
 
         // Print results
-        outfile << static_cast<YDSTime>(time).year << "-";   // Year           - #1
-        outfile << static_cast<YDSTime>(time).doy << "-";    // DayOfYear      - #2
-        outfile << static_cast<YDSTime>(time).sod << "  ";   // SecondsOfDay   - #3
-        outfile << std::setprecision(6) << (static_cast<YDSTime>(time).doy + static_cast<YDSTime>(time).sod / 86400.0) << "  " << std::setprecision(outputPrec);
+        outfile << static_cast<YDSTime>(time).year << "-"; // Year           - #1
+        outfile << static_cast<YDSTime>(time).doy << "-";  // DayOfYear      - #2
+        outfile << static_cast<YDSTime>(time).sod << "  "; // SecondsOfDay   - #3
+        outfile << std::setprecision(6)
+                << (static_cast<YDSTime>(time).doy + static_cast<YDSTime>(time).sod / 86400.0)
+                << "  " << std::setprecision(outputPrec);
 
-        double x = nominalPos.X() + solver.getSolution(TypeID::dx);    // dx    - #4
-        double y = nominalPos.Y() + solver.getSolution(TypeID::dy);    // dy    - #5
-        double z = nominalPos.Z() + solver.getSolution(TypeID::dz);    // dz    - #6
+        double x = nominalPos.X() + solver.getSolution(TypeID::dx); // dx    - #4
+        double y = nominalPos.Y() + solver.getSolution(TypeID::dy); // dy    - #5
+        double z = nominalPos.Z() + solver.getSolution(TypeID::dz); // dz    - #6
 
         gEpoch.slnData.insert(std::pair<TypeID, double>(TypeID::recX, x));
         gEpoch.slnData.insert(std::pair<TypeID, double>(TypeID::recY, y));
         gEpoch.slnData.insert(std::pair<TypeID, double>(TypeID::recZ, z));
 
-        double varX = solver.getVariance(TypeID::dx);     // Cov dx    - #8
-        double varY = solver.getVariance(TypeID::dy);     // Cov dy    - #9
-        double varZ = solver.getVariance(TypeID::dz);     // Cov dz    - #10
+        double varX = solver.getVariance(TypeID::dx); // Cov dx    - #8
+        double varY = solver.getVariance(TypeID::dy); // Cov dy    - #9
+        double varZ = solver.getVariance(TypeID::dz); // Cov dz    - #10
         double sigma = sqrt(varX + varY + varZ);
 
         double cdt = solver.getSolution(TypeID::cdt);
@@ -503,20 +495,20 @@ namespace pod
 
         gEpoch.slnData.insert(std::pair<TypeID, double>(TypeID::recSlnType, 16));
 
-        outfile << gEpoch.satData.size() << std::endl;    // Number of satellites - #12
-
+        outfile << gEpoch.satData.size() << std::endl; // Number of satellites - #12
     }
-  
+
     //
     void PODSolution::process()
     {
-        //if (opts().isComputeApprPos)
+        // if (opts().isComputeApprPos)
         //{
-        //    PRProcess();
-        //}
-        //else
+        //     PRProcess();
+        // }
+        // else
         //{
-        //    std::cout << "Approximate Positions loading from \n" + opts().workingDir + "\\" + data->apprPosFile + "\n... ";
+        //     std::cout << "Approximate Positions loading from \n" + opts().workingDir + "\\" +
+        //     data->apprPosFile + "\n... ";
 
         //    std::cout << "\nComplete." << std::endl;
         //}
@@ -526,19 +518,19 @@ namespace pod
 
             gMap.updateMetadata();
         }
-        catch (ConfigurationException &conf_exp)
+        catch (ConfigurationException& conf_exp)
         {
-			std::cerr << conf_exp.what() << std::endl;
+            std::cerr << conf_exp.what() << std::endl;
             throw;
         }
-        catch (Exception &gpstk_e)
+        catch (Exception& gpstk_e)
         {
             GNSSTK_RETHROW(gpstk_e);
         }
-        catch (std::exception &std_e)
+        catch (std::exception& std_e)
         {
-			std::cerr << std_e.what() << std::endl;
+            std::cerr << std_e.what() << std::endl;
             throw;
         }
     }
-}
+} // namespace pod

@@ -1,33 +1,28 @@
 #pragma once
 #include "EquationComposer.h"
-#include"InterSystemBias.h"
+#include "InterSystemBias.h"
 
 namespace pod
 {
 
     class SingleEquationComposer //: public EquationComposer
     {
-        
-    public:
+
+      public:
         SingleEquationComposer() {};
-        
 
         virtual ~SingleEquationComposer() {};
 
-
-        //virtual  void Prepare(gnsstk::gnssRinex& gData) override;
+        // virtual  void Prepare(gnsstk::gnssRinex& gData) override;
 
         /** This method will be called in "Process" method of "solvers" objects.
-        *  It returns equations, corresponds  solver type and the  observations set, 
+        *  It returns equations, corresponds  solver type and the  observations set,
         *  which contains in the input gnssRinex object.
 
         * @param gData    Data object holding the data.
         */
 
-
-    protected:
+      protected:
         InterSystemBias isbHandler;
-
     };
-}
-
+} // namespace pod

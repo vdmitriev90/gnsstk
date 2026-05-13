@@ -5,21 +5,20 @@ using namespace gnsstk;
 namespace pod
 {
     SyncObs::SyncObs(const std::list<std::string>& files,
-        gnsstk::IRinex& roverData,
-        const double tol)
-        :Synchronize(roverData,tol), rinFiles(files)
+                     gnsstk::IRinex& roverData,
+                     const double tol)
+        : Synchronize(roverData, tol)
+        , rinFiles(files)
     {
-        //initialize  gnsstk::Synchronize object
+        // initialize  gnsstk::Synchronize object
         Synchronize::setReferenceSource(rin);
-        
-        //prepare ref. station data stream
+
+        // prepare ref. station data stream
         toNextFile();
     }
-    
-    SyncObs::~SyncObs()
-    {
-    }
-    
+
+    SyncObs::~SyncObs() {}
+
     void SyncObs::toNextFile()
     {
         if (rinFiles.size() == 0)
@@ -29,24 +28,24 @@ namespace pod
             GNSSTK_THROW(e);
         }
 
-        //extract firts filename from list
+        // extract firts filename from list
         curFile = rinFiles.front();
         rinFiles.pop_front();
 
-        //open new input stream for ref. station data
+        // open new input stream for ref. station data
         if (rin.is_open())
         {
             rin.close();
-            rin.headerRead = false; 
+            rin.headerRead = false;
         }
-           // rin = Rinex3ObsStream(curFile, std::ios::in);
+        // rin = Rinex3ObsStream(curFile, std::ios::in);
 
         rin.open(curFile, std::ios::in);
         rin >> header;
         firstTime = true;
     }
 
-	IRinex&  SyncObs::Process(IRinex& gData)
+    IRinex& SyncObs::Process(IRinex& gData)
     {
         if (rin.fail())
         {
@@ -59,7 +58,7 @@ namespace pod
             {
                 Synchronize::Process(gData);
             }
-            catch (gnsstk::SynchronizeException &e)
+            catch (gnsstk::SynchronizeException& e)
             {
                 toNextFile();
                 continue;
@@ -68,4 +67,4 @@ namespace pod
         }
         return gData;
     }
-}
+} // namespace pod

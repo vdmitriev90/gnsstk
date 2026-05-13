@@ -1,12 +1,13 @@
 #include "ComputeStatistic.h"
-#include"WinUtils.h"
+
+#include "WinUtils.h"
 
 using namespace gnsstk;
 
 namespace pod
 {
-    //method to compute correlation matrix from variance-covariance one
-    Matrix<double> ComputeStatistic::corrMatrix(const  Matrix<double>& covar)
+    // method to compute correlation matrix from variance-covariance one
+    Matrix<double> ComputeStatistic::corrMatrix(const Matrix<double>& covar)
     {
         Matrix<double> corr(covar.rows(), covar.cols(), .0);
 
@@ -16,7 +17,9 @@ namespace pod
         return corr;
     }
 
-    void ComputeStatistic::compute(const GnssEpochMap & data, gnsstk::Vector<double>& sln, gnsstk::Matrix<double>& covar)
+    void ComputeStatistic::compute(const GnssEpochMap& data,
+                                   gnsstk::Vector<double>& sln,
+                                   gnsstk::Matrix<double>& covar)
     {
         int s = types.size();
         std::list<Vector<double>> res;
@@ -24,8 +27,8 @@ namespace pod
         covar = Matrix<double>(s, s, .0);
         int i(0);
 
-        //for (auto ep = begin(data); ep != end(data); ep++)
-        for (auto && ep : data)
+        // for (auto ep = begin(data); ep != end(data); ep++)
+        for (auto&& ep : data)
         {
             SlnType curSt = (SlnType)(int)ep.second.slnData.getValue(TypeID::recSlnType);
 
@@ -34,7 +37,7 @@ namespace pod
                 i++;
                 Vector<double> resi(s, .0);
                 int j(0);
-                for (auto && it : types)
+                for (auto&& it : types)
                 {
                     resi[j] = ep.second.slnData.getValue(it);
                     sln[j] = sln[j] * (i - 1) / i + resi[j] / i;
@@ -43,10 +46,10 @@ namespace pod
                 res.push_back(resi);
             }
         }
-		goodEpochs = i;
-		totalEpochs = data.size();
+        goodEpochs = i;
+        totalEpochs = data.size();
 
-        //calculate sum squares 
+        // calculate sum squares
         for (auto&& it : res)
         {
             for (size_t k = 0; k < s; k++)
@@ -61,6 +64,5 @@ namespace pod
         for (size_t k = 0; k < s; k++)
             for (size_t l = 0; l <= k; l++)
                 covar(k, l) = covar(k, l) / (res.size() - 1);
-
     }
-}
+} // namespace pod

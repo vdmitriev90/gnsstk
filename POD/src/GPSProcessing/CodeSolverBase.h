@@ -1,80 +1,75 @@
 #ifndef POD_PR_SOLVER_BASE_H
 #define POD_PR_SOLVER_BASE_H
 
-#include"typenames.hpp"
-#include"PowerSum.hpp"
-#include "Rinex3ObsData.hpp"
-#include "NavLibrary.hpp"
+#include "CodeProcSvData.h"
 #include "GPSEllipsoid.hpp"
-#include"IonoModelStore.hpp"
-#include"Matrix.hpp"
-#include"TropModel.hpp"
-#include"NeillTropModel.hpp"
-#include"CodeProcSvData.h"
-#include"GnssDataStore.hpp"
-
+#include "GnssDataStore.hpp"
+#include "IonoModelStore.hpp"
+#include "Matrix.hpp"
+#include "NavLibrary.hpp"
+#include "NeillTropModel.hpp"
+#include "PowerSum.hpp"
+#include "Rinex3ObsData.hpp"
+#include "TropModel.hpp"
+#include "typenames.hpp"
 
 namespace pod
 {
     class CodeSolverBase
     {
-    protected:
+      protected:
+        static double eps;
+        static gnsstk::GPSEllipsoid ellGPS;
+        static void refreshSolution(gnsstk::Vector<double>& Sol, gnsstk::Vector<double>& dSol);
 
-        static  double eps;
-        static  gnsstk::GPSEllipsoid ellGPS;
-        static void refreshSolution(gnsstk::Vector<double> &Sol, gnsstk::Vector<double> &dSol);
-
-    public:
-
-        CodeSolverBase(GnssDataStore_sptr data );
-        virtual ~CodeSolverBase()
-        {};
+      public:
+        CodeSolverBase(GnssDataStore_sptr data);
+        virtual ~CodeSolverBase() {};
 
         std::string virtual getName()
         {
             return "PRSolverBase";
         };
-        void  selectObservables(
-            const gnsstk::Rinex3ObsData &rod,
-            const gnsstk::Rinex3ObsHeader& roh,
-            const std::set<gnsstk::SatelliteSystem> &systems,
-            const ObsTypes & typeMap,
-            CodeProcSvData & svData,
-            bool isApplyRCO = false
-        );
+        void selectObservables(const gnsstk::Rinex3ObsData& rod,
+                               const gnsstk::Rinex3ObsHeader& roh,
+                               const std::set<gnsstk::SatelliteSystem>& systems,
+                               const ObsTypes& typeMap,
+                               CodeProcSvData& svData,
+                               bool isApplyRCO = false);
 
         void prepare(const gnsstk::CommonTime& t, gnsstk::NavLibrary& Eph, CodeProcSvData& svData);
 
-        int solve(const gnsstk::CommonTime &t, const gnsstk::IonoModelStore &iono, CodeProcSvData & svData);
+        int solve(const gnsstk::CommonTime& t,
+                  const gnsstk::IonoModelStore& iono,
+                  CodeProcSvData& svData);
 
-        virtual gnsstk::NeillTropModel initTropoModel(const gnsstk::Position &nominalPos, int DoY) = 0;
+        virtual gnsstk::NeillTropModel initTropoModel(const gnsstk::Position& nominalPos,
+                                                      int DoY) = 0;
 
-        virtual double getTropoCorrection(const gnsstk::Position &rxPos, const gnsstk::Position &svPos, const gnsstk::CommonTime &t) const = 0;
+        virtual double getTropoCorrection(const gnsstk::Position& rxPos,
+                                          const gnsstk::Position& svPos,
+                                          const gnsstk::CommonTime& t) const = 0;
 
-    protected:
-         int solveInter(
-            const gnsstk::CommonTime &t,
-             const gnsstk::IonoModelStore &iono,
-            CodeProcSvData & svData,
-			 gnsstk::Matrix<double>& Cov
+      protected:
+        int solveInter(const gnsstk::CommonTime& t,
+                       const gnsstk::IonoModelStore& iono,
+                       CodeProcSvData& svData,
+                       gnsstk::Matrix<double>& Cov
 
         );
-         void calcSigma(
-             const gnsstk::Position& rxPos,
-             const gnsstk::Matrix<double> & W,
-             const gnsstk::Vector<double> & b,
-             const CodeProcSvData &svsData);
+        void calcSigma(const gnsstk::Position& rxPos,
+                       const gnsstk::Matrix<double>& W,
+                       const gnsstk::Vector<double>& b,
+                       const CodeProcSvData& svsData);
 
         void calcStat(const gnsstk::Matrix<double>& Cov);
 
-        int catchSatByResid(
-            const gnsstk::CommonTime & t,
-            const gnsstk::IonoModelStore & iono,
-            CodeProcSvData & svsData
-        );
+        int catchSatByResid(const gnsstk::CommonTime& t,
+                            const gnsstk::IonoModelStore& iono,
+                            CodeProcSvData& svsData);
 
-    public:
-		gnsstk::ComputeIonoModel::IonoModelType ionoType;
+      public:
+        gnsstk::ComputeIonoModel::IonoModelType ionoType;
 
         double maskSNR;
         double maskEl;
@@ -82,7 +77,7 @@ namespace pod
         int maxIter;
         int iter;
 
-		gnsstk::Vector< double> Sol;
+        gnsstk::Vector<double> Sol;
 
         double sigma;
         double RMS3D;
@@ -91,8 +86,8 @@ namespace pod
 
         std::ofstream dbg;
 
-        friend  std::ostream& operator<<(std::ostream& strs, const CodeSolverBase& gdsMap);
+        friend std::ostream& operator<<(std::ostream& strs, const CodeSolverBase& gdsMap);
     };
-}
+} // namespace pod
 
 #endif // !POD_PR_SOLVER_BASE_H

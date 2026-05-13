@@ -1,19 +1,18 @@
 #pragma once
 #include "KalmanSolver.h"
-#include"ProcessingList.hpp"
-#include"RinexEpoch.h"
-#include"UsedInPvtMarker.hpp"
-#include"LICSDetector2.hpp"
-#include"MWCSDetector.hpp"
-#include"SatArcMarker.hpp"
+#include "LICSDetector2.hpp"
+#include "MWCSDetector.hpp"
+#include "ProcessingList.hpp"
+#include "RinexEpoch.h"
+#include "SatArcMarker.hpp"
+#include "UsedInPvtMarker.hpp"
 
 namespace pod
 {
-    class KalmanSolverFB :
-        public KalmanSolver
+    class KalmanSolverFB : public KalmanSolver
     {
-		
-    public:
+
+      public:
         KalmanSolverFB();
         KalmanSolverFB(eqComposer_sptr eqs);
 
@@ -24,18 +23,18 @@ namespace pod
             return "KalmanSolverFB";
         }
 
-		virtual EquationComposer& eqComposer() override
-		{
-			return solver.eqComposer();
-		}
+        virtual EquationComposer& eqComposer() override
+        {
+            return solver.eqComposer();
+        }
 
         // Solution
-        virtual const  gnsstk::Vector<double>& Solution() const
+        virtual const gnsstk::Vector<double>& Solution() const
         {
             return solver.Solution();
         }
 
-        virtual  gnsstk::Vector<double>& Solution()
+        virtual gnsstk::Vector<double>& Solution()
         {
             return solver.Solution();
         }
@@ -46,96 +45,97 @@ namespace pod
             return solver.PostfitResiduals();
         }
 
-        //return postfit residuals vector
+        // return postfit residuals vector
         virtual gnsstk::Vector<double>& PostfitResiduals() override
         {
             return solver.PostfitResiduals();
         }
 
-        //return current varince - covarince matrix
+        // return current varince - covarince matrix
         virtual const gnsstk::Matrix<double>& CovMatrix() const
         {
             return solver.CovMatrix();
         }
 
-        //return current varince - covarince matrix
+        // return current varince - covarince matrix
         virtual gnsstk::Matrix<double>& CovMatrix()
         {
             return solver.CovMatrix();
         }
 
-        //return sqrt(vpv/(n-p)) value
+        // return sqrt(vpv/(n-p)) value
         virtual double getSigma() const
         {
             return solver.getSigma();
         }
 
-		//return sqrt(vpv/(n-p)) value
-		virtual double getPhaseSigma() const
-		{
-			return solver.getPhaseSigma();
-		}
+        // return sqrt(vpv/(n-p)) value
+        virtual double getPhaseSigma() const
+        {
+            return solver.getPhaseSigma();
+        }
 
-		//return sqrt(vpv/(n-p)) value
-		virtual double getCodeSigma() const
-		{
-			return solver.getCodeSigma();
-		}
+        // return sqrt(vpv/(n-p)) value
+        virtual double getCodeSigma() const
+        {
+            return solver.getCodeSigma();
+        }
 
-        //return minimum number of satellites requared for state esimation
+        // return minimum number of satellites requared for state esimation
         virtual double getMinSatNumber() const
         {
             return solver.getMinSatNumber();
         }
 
-        //return current solver  status 
-        // true - solution valid
-        // false - invalid
+        // return current solver  status
+        //  true - solution valid
+        //  false - invalid
         virtual bool getValid() const
         {
             return solver.getValid();
         }
 
-		virtual gnsstk::ProcessingList& ReProcList()
-		{
-			return reProcList;
-		}
+        virtual gnsstk::ProcessingList& ReProcList()
+        {
+            return reProcList;
+        }
 
-		virtual const gnsstk::ProcessingList& ReProcList() const
-		{
-			return reProcList;
-		}
+        virtual const gnsstk::ProcessingList& ReProcList() const
+        {
+            return reProcList;
+        }
 
-		virtual UsedInPvtMarker& UsedSvMarker()
-		{
-			return usedSvMarker;
-		}
+        virtual UsedInPvtMarker& UsedSvMarker()
+        {
+            return usedSvMarker;
+        }
 
-		virtual const UsedInPvtMarker& UsedSvMarker() const
-		{
-			return usedSvMarker;
-		}
+        virtual const UsedInPvtMarker& UsedSvMarker() const
+        {
+            return usedSvMarker;
+        }
 
-        //set minimum number of satellites requared for state esimation
+        // set minimum number of satellites requared for state esimation
         virtual KalmanSolverFB& setMinSatNumber(int value) override
         {
             solver.setMinSatNumber(value);
             return *this;
         }
 
-        //get current value for given filter parameter
+        // get current value for given filter parameter
         double getSolution(const FilterParameter& type) const override
         {
             return solver.getSolution(type);
         }
- 
-        //get current varince value for given filter parameter
+
+        // get current varince value for given filter parameter
         double getVariance(const FilterParameter& type) const override
         {
             return solver.getVariance(type);
         }
-		
-        KalmanSolverFB& setLimits(const std::vector<double>& codeLims, const std::vector<double>& phaseLims);
+
+        KalmanSolverFB& setLimits(const std::vector<double>& codeLims,
+                                  const std::vector<double>& phaseLims);
 
         KalmanSolverFB& setCyclesNumber(size_t number)
         {
@@ -143,25 +143,24 @@ namespace pod
             return *this;
         }
 
-        gnsstk::IRinex & Process(gnsstk::IRinex & gRin);
+        gnsstk::IRinex& Process(gnsstk::IRinex& gRin);
 
-        //last forward process cycle
-        bool lastProcess(gnsstk::IRinex & gRin);
+        // last forward process cycle
+        bool lastProcess(gnsstk::IRinex& gRin);
 
-        //Reprocess the data stored during a previous 'Process()' call.
+        // Reprocess the data stored during a previous 'Process()' call.
         void reProcess(void);
 
-		void setCSDetRef(gnsstk::LICSDetector2& li, gnsstk::MWCSDetector&  mw )
-		{
-			LIDet = &li;
-			MWDet = &mw;
-		}
-        
-    private:
-		
-		gnsstk::IRinex & ReProcessOneEpoch(gnsstk::IRinex & gRin);
+        void setCSDetRef(gnsstk::LICSDetector2& li, gnsstk::MWCSDetector& mw)
+        {
+            LIDet = &li;
+            MWDet = &mw;
+        }
 
-        //This method checks the residuals and modifies 'gData' accordingly.
+      private:
+        gnsstk::IRinex& ReProcessOneEpoch(gnsstk::IRinex& gRin);
+
+        // This method checks the residuals and modifies 'gData' accordingly.
         void checkLimits(gnsstk::IRinex& gData, size_t cycleNumber);
 
         double getLimit(const gnsstk::TypeID& type, size_t cycleNumber);
@@ -172,44 +171,40 @@ namespace pod
         {
             std::vector<double> codeLimits;
             std::vector<double> phaseLimits;
-        }tresholds;
+        } tresholds;
 
-    public:
-
+      public:
         // Number of processed measurements.
         int processedMeasurements;
 
-        //Number of measurements rejected because they were off limits.
+        // Number of measurements rejected because they were off limits.
         int rejectedMeasurements;
 
-    private:
-
-        //observations data to be reprocessed
+      private:
+        // observations data to be reprocessed
         std::list<gnsstk::irinex_uptr> ObsData;
 
-		std::map<gnsstk::CommonTime, gnsstk::LICSDetector2> LIDetMap;
-		std::map<gnsstk::CommonTime, gnsstk::MWCSDetector>  MWDetMap;
+        std::map<gnsstk::CommonTime, gnsstk::LICSDetector2> LIDetMap;
+        std::map<gnsstk::CommonTime, gnsstk::MWCSDetector> MWDetMap;
 
-        //internal kalman solver object, which do main part of real work
+        // internal kalman solver object, which do main part of real work
         KalmanSolver solver;
 
-        //number of forward-backward cycles
+        // number of forward-backward cycles
         size_t cyclesNumber;
-		
-		//current  forward-backward cycle
+
+        // current  forward-backward cycle
         size_t currCycle;
 
-		//
-		gnsstk::ProcessingList reProcList;
+        //
+        gnsstk::ProcessingList reProcList;
 
-		//
-		UsedInPvtMarker usedSvMarker;
+        //
+        UsedInPvtMarker usedSvMarker;
 
-		gnsstk::LICSDetector2* LIDet;
-		gnsstk::MWCSDetector*  MWDet;
+        gnsstk::LICSDetector2* LIDet;
+        gnsstk::MWCSDetector* MWDet;
 
 #pragma endregion
-
     };
-}
-
+} // namespace pod

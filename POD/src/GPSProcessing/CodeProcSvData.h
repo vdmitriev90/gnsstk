@@ -1,16 +1,14 @@
 #ifndef CODE_PROC_SV_DATA_H
 #define CODE_PROC_SV_DATA_H
-#include<map>
-#include<set>
+#include "Matrix.hpp"
+#include "RinexObsID.hpp"
+#include "SatID.hpp"
+#include "Triple.hpp"
+#include "TypeID.hpp"
+#include "Vector.hpp"
 
-#include"Matrix.hpp"
-#include"Vector.hpp"
-#include"SatID.hpp"
-#include"RinexObsID.hpp"
-#include"Triple.hpp"
-#include"TypeID.hpp"
-
-
+#include <map>
+#include <set>
 
 namespace pod
 {
@@ -21,77 +19,79 @@ namespace pod
         struct SvDataItem
         {
             bool use;
-			gnsstk::Triple pos;
-			gnsstk::Triple alph;
+            gnsstk::Triple pos;
+            gnsstk::Triple alph;
             double pr = 0, resid = 0, snr = 0, el = 0;
         };
-      
-    private:
-       
+
+      private:
         static bool init();
 
-    public:
+      public:
         static ObsTypes obsTypes;
         static class _init
         {
-        public:
+          public:
             _init();
         } _initializer;
 
-        CodeProcSvData(/*double scrMak = 30, double elMask = 5*/) 
-           // :CNoMask(30), elMask(elMask)
-        { }
+        CodeProcSvData(/*double scrMak = 30, double elMask = 5*/)
+        // :CNoMask(30), elMask(elMask)
+        {
+        }
 
         ///
-        ///try add item to data 
-        bool tryAdd(const gnsstk::SatID & id, const SvDataItem & item);
-        
+        /// try add item to data
+        bool tryAdd(const gnsstk::SatID& id, const SvDataItem& item);
+
         //
-        //try remove item by gnsstk::SatID 
-        bool tryRemove(const gnsstk::SatID & id);
-        
+        // try remove item by gnsstk::SatID
+        bool tryRemove(const gnsstk::SatID& id);
+
         ///
-        ///get number of satellies with 'use==true'
+        /// get number of satellies with 'use==true'
         size_t getNumUsedSv() const;
-        
+
         ///
-        ///get number of satellies with 'use==true' for given satellie system
+        /// get number of satellies with 'use==true' for given satellie system
         size_t getNumUsedSv(gnsstk::SatelliteSystem sys) const;
-        
+
         ///
-        ///get number of parameters for autonomous code position computation 
+        /// get number of parameters for autonomous code position computation
         size_t getParamNum() const;
-        
+
         ///
         /// update solution vector length, according to constellations,
         /// available for solution computation
-        void updateSolutionLength(gnsstk::Vector<double> & sol) const;
-        
+        void updateSolutionLength(gnsstk::Vector<double>& sol) const;
+
         ///
-        ///add system clock corrections to PR residuals vector
-        double appendResid(gnsstk::Vector<double> & sol, gnsstk::SatelliteSystem sys) const;
-        
+        /// add system clock corrections to PR residuals vector
+        double appendResid(gnsstk::Vector<double>& sol, gnsstk::SatelliteSystem sys) const;
+
         ///
-        ///forming  a system of equations for autonomous code position computation 
-        int getEquations(gnsstk::Matrix<double>& P, gnsstk::Matrix<double>& W, gnsstk::Vector<double>& resid);
-        
+        /// forming  a system of equations for autonomous code position computation
+        int getEquations(gnsstk::Matrix<double>& P,
+                         gnsstk::Matrix<double>& W,
+                         gnsstk::Vector<double>& resid);
+
         ///
         /// set all 'use' memebers to true
         void resetUseFlags(bool newValue = true);
-        
+
         ///
         /// apply C/No mask
         void applyCNoMask(double CNoMask);
-       
+
         ///
         void clear();
 
-		std::set<gnsstk::SatelliteSystem> satSyst;
+        std::set<gnsstk::SatelliteSystem> satSyst;
 
-		std::map<gnsstk::SatID, SvDataItem> data;
+        std::map<gnsstk::SatID, SvDataItem> data;
 
         friend std::ostream& operator<<(std::ostream& os, const CodeProcSvData& svData);
     };
-}
+} // namespace pod
 
 #endif // !CODE_PROC_SV_DATA_H

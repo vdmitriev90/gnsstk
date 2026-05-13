@@ -1,8 +1,8 @@
 
 /**
-* @file GravityModel.cpp
-* 
-*/
+ * @file GravityModel.cpp
+ *
+ */
 #include "GravityModel.h"
 
 namespace pod
@@ -12,9 +12,7 @@ namespace pod
      * @param m Desired order.
      */
 
-     ///default constructor.
-    GravityModel:: GravityModel(const GravityModelData &gData) : gmData_(gData)
-    {
-    };
+    /// default constructor.
+    GravityModel::GravityModel(const GravityModelData& gData) : gmData_(gData) {};
 
-}  // End of namespace 'gpstk'
+} // namespace pod

@@ -1,0 +1,120 @@
+# Base style (starting point: Microsoft C++ formatting)
+BasedOnStyle: Microsoft
+
+# -------------------------
+# Indentation settings
+# -------------------------
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+
+# -------------------------
+# Maximum line length
+# Controls when wrapping occurs
+# -------------------------
+ColumnLimit: 100
+
+# -------------------------
+# Braces style (Allman / MSVC-like)
+# Forces braces onto new lines
+# -------------------------
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterClass: true
+  AfterFunction: true
+  AfterControlStatement: true
+  AfterEnum: true
+  AfterStruct: true
+  AfterNamespace: true
+  BeforeElse: true
+  BeforeCatch: true
+
+# -------------------------
+# Spacing rules
+# -------------------------
+SpaceBeforeParens: ControlStatements
+SpacesInParentheses: false
+
+# -------------------------
+# Alignment rules
+# -------------------------
+AlignConsecutiveAssignments: false
+AlignConsecutiveDeclarations: false
+
+# -------------------------
+# Argument formatting
+# Disable packing multiple arguments on one line
+# -------------------------
+BinPackArguments: false
+BinPackParameters: false
+
+# -------------------------
+# Function formatting
+# -------------------------
+AllowAllParametersOfDeclarationOnNextLine: false
+
+# Allow {} only for empty functions (important for constructors)
+AllowShortFunctionsOnASingleLine: Empty
+
+# -------------------------
+# Small block formatting
+# -------------------------
+# Allows {} only for empty blocks
+AllowShortBlocksOnASingleLine: Empty
+
+# -------------------------
+# Control statements formatting
+# -------------------------
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+
+# -------------------------
+# Namespace formatting
+# -------------------------
+NamespaceIndentation: All
+
+# -------------------------
+# Include directives handling
+# -------------------------
+SortIncludes: true
+IncludeBlocks: Regroup
+
+# -------------------------
+# Pointer and reference alignment
+# Example: int* ptr
+# -------------------------
+PointerAlignment: Left
+
+# -------------------------
+# Expression wrapping
+# -------------------------
+BreakBeforeBinaryOperators: NonAssignment
+
+# -------------------------
+# Constructor formatting (critical section)
+# -------------------------
+ConstructorInitializerIndentWidth: 4
+
+# Place each initializer on a new line
+BreakConstructorInitializers: BeforeComma
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+
+# Prevent packing all initializers on the next line
+AllowAllConstructorInitializersOnNextLine: false
+
+# -------------------------
+# Comment formatting
+# -------------------------
+ReflowComments: true
+
+# Braced initialization (very important for std::map, vector, etc.)
+Cpp11BracedListStyle: true
+AlwaysBreakTemplateDeclarations: Yes
+# -------------------------
+# Macro handling (important for frameworks)
+# Prevents breaking special macros
+# -------------------------
+StatementMacros:
+  - Q_OBJECT
+  - BEGIN_MESSAGE_MAP
+  - END_MESSAGE_MAP

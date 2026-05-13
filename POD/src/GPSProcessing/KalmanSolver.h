@@ -1,164 +1,161 @@
 #pragma once
+#include "EquationComposer.h"
+#include "SimpleKalmanFilter.hpp"
 #include "SolverBase.hpp"
-#include"SimpleKalmanFilter.hpp"
-#include"EquationComposer.h"
 
 namespace pod
 {
-	class KalmanSolver :
-		public gnsstk::SolverBase, public gnsstk::ProcessingClass
-	{
-	public:
-		typedef std::map<gnsstk::CommonTime, EquationComposer::FilterState> filterHistory;
+    class KalmanSolver : public gnsstk::SolverBase, public gnsstk::ProcessingClass
+    {
+      public:
+        typedef std::map<gnsstk::CommonTime, EquationComposer::FilterState> filterHistory;
 
-	protected:
-		//set of all possible TypeID for code pseudorange postfit residuals 
-		static const std::set<gnsstk::TypeID> codeResTypes;
+      protected:
+        // set of all possible TypeID for code pseudorange postfit residuals
+        static const std::set<gnsstk::TypeID> codeResTypes;
 
-		//set of all possible TypeID for  carrier phase postfit residuals 
-		static const std::set<gnsstk::TypeID> phaseResTypes;
+        // set of all possible TypeID for  carrier phase postfit residuals
+        static const std::set<gnsstk::TypeID> phaseResTypes;
 
-	public:
-		//maximum time interval without data
-		static double maxGap;
+      public:
+        // maximum time interval without data
+        static double maxGap;
 
-		KalmanSolver();
+        KalmanSolver();
 
-		KalmanSolver(eqComposer_sptr eqs);
+        KalmanSolver(eqComposer_sptr eqs);
 
-		virtual ~KalmanSolver();
+        virtual ~KalmanSolver();
 
+        virtual gnsstk::IRinex& Process(gnsstk::IRinex& gData);
 
-		virtual gnsstk::IRinex& Process(gnsstk::IRinex& gData);
+        // Returns a string identifying this object.
+        virtual std::string getClassName(void) const
+        {
+            return "KalmanSolver";
+        }
 
-		// Returns a string identifying this object.
-		virtual std::string getClassName(void) const
-		{
-			return "KalmanSolver";
-		}
+        virtual EquationComposer& eqComposer()
+        {
+            return *equations;
+        }
 
-		virtual EquationComposer& eqComposer()
-		{
-			return *equations;
-		}
+        // return sqrt(vpv/(n-p)) value
+        virtual double getSigma() const
+        {
+            return sigma;
+        }
 
-		//return sqrt(vpv/(n-p)) value
-		virtual double getSigma() const
-		{
-			return sigma;
-		}
+        virtual double getPhaseSigma() const
+        {
+            return phaseSigma;
+        }
 
-		virtual double getPhaseSigma() const
-		{
-			return phaseSigma;
-		}
+        virtual double getCodeSigma() const
+        {
+            return codeSigma;
+        }
 
-		virtual double getCodeSigma() const
-		{
-			return codeSigma;
-		}
+        // return minimum number of satellites requared for state esimation
+        virtual double getMinSatNumber() const
+        {
+            return minSatNumber;
+        }
 
-		//return minimum number of satellites requared for state esimation
-		virtual double getMinSatNumber() const
-		{
-			return minSatNumber;
-		}
+        // return isValid
+        virtual bool getValid() const
+        {
+            return isValid;
+        }
 
-		//return isValid
-		virtual bool getValid() const
-		{
-			return isValid;
-		}
+        // set minimum number of satellites requared for state esimation
+        virtual KalmanSolver& setMinSatNumber(int value)
+        {
+            minSatNumber = value;
+            return *this;
+        }
 
-		//set minimum number of satellites requared for state esimation
-		virtual KalmanSolver& setMinSatNumber(int value)
-		{
-			minSatNumber = value;
-			return *this;
-		}
+        // get solution
+        virtual double getSolution(const FilterParameter& type) const;
 
-		// get solution 
-		virtual double getSolution(const FilterParameter& type) const;
+        // get solution variance
+        virtual double getVariance(const FilterParameter& type) const;
 
-		// get solution variance
-		virtual double getVariance(const FilterParameter& type) const;
+        virtual const EquationComposer::FilterState& getState() const
+        {
+            return equations->getState();
+        }
 
-		virtual const EquationComposer::FilterState & getState() const
-		{
-			return equations->getState();
-		}
+        virtual KalmanSolver& setState(const EquationComposer::FilterState& newState)
+        {
+            equations->setState(newState);
+            return *this;
+        }
+        bool getResetState()
+        {
+            return isReset;
+        }
 
-		virtual KalmanSolver & setState(const EquationComposer::FilterState & newState)
-		{
-			equations->setState(newState);
-			return *this;
-		}
-		bool getResetState()
-		{
-			return isReset;
-		}
+        bool ResetIfRequared(const gnsstk::CommonTime& t, const filterHistory& data);
 
-		bool ResetIfRequared(const gnsstk::CommonTime& t, const filterHistory& data);
+        // filter states, processed so far will be used in case of filer reset
+        std::map<gnsstk::CommonTime, EquationComposer::FilterState> FilterData;
 
-		//filter states, processed so far will be used in case of filer reset
-		std::map<gnsstk::CommonTime, EquationComposer::FilterState> FilterData;
+      protected:
+        double getSigma(const gnsstk::TypeIDSet& types) const;
 
-	protected:
+        int getUnknownIndex(const FilterParameter& parameter) const;
 
-		double getSigma(const gnsstk::TypeIDSet& types) const;
+        // resolve carrier  phase ambiguities ot integer values
+        virtual void fixAmbiguities(gnsstk::IRinex& gData);
 
-		int getUnknownIndex(const FilterParameter& parameter) const;
+        // check phase data integrity
+        int checkPhase(gnsstk::IRinex& gData);
 
-		//resolve carrier  phase ambiguities ot integer values
-		virtual void fixAmbiguities(gnsstk::IRinex& gData);
+        // reject bad observation using residuals value
+        virtual gnsstk::IRinex& reject(gnsstk::IRinex& gData, const gnsstk::TypeIDSet& typeOfResid);
 
-		//check phase data integrity 
-		int checkPhase(gnsstk::IRinex& gData);
+        virtual void reset()
+        {
+            equations->clearData();
+        }
 
-		//reject bad observation using residuals value
-		virtual gnsstk::IRinex& reject(gnsstk::IRinex& gData, const gnsstk::TypeIDSet& typeOfResid);
+        gnsstk::CommonTime t_pre = gnsstk::CommonTime::BEGINNING_OF_TIME;
 
-		virtual void reset()
-		{
-			equations->clearData();
-		}
+        bool firstTime;
 
-		gnsstk::CommonTime t_pre = gnsstk::CommonTime::BEGINNING_OF_TIME;
+        // Minimum satellites number required for state computation
+        size_t minSatNumber;
 
-		bool firstTime;
+        // State transition matrix
+        gnsstk::Matrix<double> phiMatrix;
 
-		// Minimum satellites number required for state computation
-		size_t minSatNumber;
+        // Process noise matrix
+        gnsstk::Matrix<double> qMatrix;
 
-		// State transition matrix
-		gnsstk::Matrix<double> phiMatrix;
+        // Geometry matrix (derivative of observations wrt state)
+        gnsstk::Matrix<double> hMatrix;
 
-		// Process noise matrix
-		gnsstk::Matrix<double> qMatrix;
+        // weights matrix
+        gnsstk::Matrix<double> weigthMatrix;
 
-		// Geometry matrix (derivative of observations wrt state)
-		gnsstk::Matrix<double> hMatrix;
+        // Measurements vector (prefit-residuals)
+        gnsstk::Vector<double> measVector;
 
-		// weights matrix
-		gnsstk::Matrix<double> weigthMatrix;
+        // Weight unit error (sqrt(vpv/(n-p)))
+        double sigma;
 
-		// Measurements vector (prefit-residuals)
-		gnsstk::Vector<double> measVector;
+        double phaseSigma;
 
-		//Weight unit error (sqrt(vpv/(n-p)))
-		double sigma;
+        double codeSigma;
 
-		double phaseSigma;
+        // object to prepare h, phi, q  matrices for filter
+        eqComposer_sptr equations;
 
-		double codeSigma;
+        // Indicator of current filter state validity
+        bool isValid;
 
-		//object to prepare h, phi, q  matrices for filter
-		eqComposer_sptr equations;
-
-		// Indicator of current filter state validity
-		bool isValid;
-
-		// Indicate, if reset occurred on current filter step
-		bool isReset;
-	};
-}
+        // Indicate, if reset occurred on current filter step
+        bool isReset;
+    };
+} // namespace pod
