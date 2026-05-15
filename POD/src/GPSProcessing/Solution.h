@@ -4,10 +4,10 @@
 #include "BasicFramework.hpp"
 #include "ConfDataReader.hpp"
 #include "CustomSolution.h"
-#include "GnssEpochMap.h"
 
 namespace pod
 {
+    struct GnssEpochMap;
     class Solution : public gnsstk::BasicFramework
     {
 
@@ -18,7 +18,7 @@ namespace pod
         void chekObs();
         void saveToDb();
         void saveStatistic();
-        GnssEpochMap getData()
+        GnssEpochMap& getData()
         {
             return solver.getData();
         };

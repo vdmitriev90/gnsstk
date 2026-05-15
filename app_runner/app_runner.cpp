@@ -3,7 +3,6 @@
 #include <boost/dynamic_bitset.hpp>
 
 #include"Solution.h"
-#include"Action.h"
 #include"Rtcm3Decoder.hpp"
 #include"SerialDataSource.hpp"
 
