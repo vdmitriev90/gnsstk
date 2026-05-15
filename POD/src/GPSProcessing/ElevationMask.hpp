@@ -1,37 +1,36 @@
 #pragma once
-#include"ProcessingClass.hpp"
+#include "ProcessingClass.hpp"
 
 namespace pod
 {
-	class ElevationMask : public gnsstk::ProcessingClass
-	{
+    class ElevationMask : public gnsstk::ProcessingClass
+    {
 
-	public:
+      public:
+        ElevationMask() : elevation(-90) {}
 
-		ElevationMask() :elevation(-90)
-		{}
+        ElevationMask(double el) : elevation(el) {}
 
-		ElevationMask(double el) :elevation(el)
-		{}
+        // Inherited via ProcessingClass
+        virtual gnsstk::IRinex& Process(gnsstk::IRinex& gData);
 
-		// Inherited via ProcessingClass
-		virtual gnsstk::IRinex & Process(gnsstk::IRinex & gData);
+        double getElevation() const
+        {
+            return elevation;
+        }
 
+        ElevationMask& setElevation(double value)
+        {
+            elevation = value;
+            return *this;
+        }
 
-		double getElevation() const
-		{ return elevation; }
+        virtual std::string getClassName(void) const override
+        {
+            return "pod::ElevationMasks";
+        }
 
-		ElevationMask& setElevation(double value)
-		{
-			elevation = value;
-			return *this;
-		}
-
-		virtual std::string getClassName(void) const override
-		{ return "pod::ElevationMasks"; }
-
-	private:
-		double elevation;
-
-	};
-}
+      private:
+        double elevation;
+    };
+} // namespace pod

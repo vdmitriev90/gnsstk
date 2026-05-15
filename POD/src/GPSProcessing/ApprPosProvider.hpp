@@ -18,15 +18,15 @@ namespace pod
     class IApprPosProvider
     {
       public:
-        IApprPosProvider()          = default;
+        IApprPosProvider() = default;
         virtual ~IApprPosProvider() = default;
 
         virtual int getPosition(const gnsstk::IRinex& gRin, gnsstk::Position& pos) = 0;
-        virtual ApprPositionSource getSource() const                               = 0;
+        virtual ApprPositionSource getSource() const = 0;
 
       protected:
-        static int ComputeApprSol(const gnsstk::IRinex&   gRin,
-                                  gnsstk::NavLibrary&     ephem,
+        static int ComputeApprSol(const gnsstk::IRinex& gRin,
+                                  gnsstk::NavLibrary& ephem,
                                   gnsstk::Vector<double>& pos);
     };
 

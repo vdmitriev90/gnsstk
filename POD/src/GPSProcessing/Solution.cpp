@@ -2,10 +2,7 @@
 
 #include "ComputeStatistic.h"
 #include "FsUtils.h"
-#include "Shlwapi.h"
 
-#include <direct.h>
-#include <windows.h>
 using namespace gnsstk;
 namespace pod
 {
@@ -13,13 +10,12 @@ namespace pod
 
     Solution::Solution(const char* path)
         : BasicFramework("pod", "discr")
-        ,
         // Option initialization. "true" means a mandatory option
-        confFile(CommandOption::stdType,
-                 'c',
-                 "conffile",
-                 " [-c|--conffile]    Name of configuration file ('config.txt' by default).",
-                 false)
+        , confFile(CommandOption::stdType,
+                   'c',
+                   "conffile",
+                   " [-c|--conffile]    Name of configuration file ('config.txt' by default).",
+                   false)
     {
         data.reset(new GnssDataStore(confReader));
         data->LoadData(path);
@@ -42,6 +38,7 @@ namespace pod
             GNSSTK_RETHROW(e);
         }
     }
+
     void Solution::saveStatistic()
     {
         auto fName = solver.fileName();
