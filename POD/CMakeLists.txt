@@ -22,3 +22,20 @@ target_compile_features(pod PUBLIC cxx_std_23)
 target_link_libraries(pod  gnsstk)
 target_link_libraries(pod  SOFA)
 target_link_libraries(pod sqlite)
+
+
+find_package(Python3 REQUIRED)
+
+set(PY_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/src/scripts/download_brdm.py)
+
+set(RUNTIME_DIR $<TARGET_FILE_DIR:app_runner>)
+
+add_custom_target(download_brdm
+    COMMAND ${Python3_EXECUTABLE} -u ${PY_SCRIPT}
+    --from 2020-09-02
+    --to 2020-09-02
+    --sites FFMJ00DEU,TIT200DEU
+    --out ${RUNTIME_DIR}/data
+    WORKING_DIRECTORY ${RUNTIME_DIR}
+    SOURCES ${PY_SCRIPT}
+)
