@@ -270,7 +270,6 @@ namespace pod
                 CommonTime refTime = CommonTime::BEGINNING_OF_TIME;
                 if (rNavHeader.fileAgency == "AIUB")
                 {
-
                     for (auto&& it : rNavHeader.commentList)
                     {
                         int doy = -1, yr = -1;

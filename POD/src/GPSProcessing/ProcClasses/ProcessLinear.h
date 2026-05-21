@@ -13,7 +13,7 @@ namespace pod
     class ProcessLinear : public gnsstk::ProcessingClass
     {
       public:
-        ProcessLinear() {};
+        ProcessLinear() : useC1(false) {};
         virtual ~ProcessLinear() {};
         void setUseC1(bool useC1);
 
