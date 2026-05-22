@@ -1,3 +1,4 @@
 # apps/CMakeLists.txt
-
-add_subdirectory(tests)
+if(TEST_SWITCH)
+  add_subdirectory(tests)
+endif()

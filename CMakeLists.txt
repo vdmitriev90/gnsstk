@@ -52,7 +52,8 @@ option( PIP_WHEEL_SWITCH "HELP: PIP_WHEEL_SWITCH: SWITCH, Default= OFF, Build a 
 option( BUILD_FOR_PACKAGE_SWITCH "HELP: BUILD_FOR_PACKAGE_SWITCH: SWITCH, Default= OFF, Modify python install paths assuming creation of deb/rpm." OFF )
 option( PYTHON_USER_INSTALL "HELP: PYTHON_USER_INSTALL: SWITCH, Default= OFF, Install python in user mode." OFF )
 option( VERSIONED_HEADER_INSTALL "HELP: VERSIONED_HEADER_INSTALL: SWITCH, Default= OFF, Install header files into maj/min versioned directory." OFF )
-option( BUILD_POD "HELP: BUILD_POD: SWITCH, Default = ON, Build the pod and app_runner project, in addition to the core library." OFF )
+option( BUILD_EXAMPLES "HELP: BUILD_EXAMPLES: SWITCH, Default = OFF, Build the examples project, in addition to the core library." OFF )
+option( BUILD_POD "HELP: BUILD_POD: SWITCH, Default = ON, Build the pod and app_runner project, in addition to the core library." ON )
 
 set(PYTHON_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}" CACHE PATH "Directory to install SWIG files for Python")
 
@@ -284,7 +285,7 @@ set(PYTHON_VERSION_MAJOR 0)
 set(PYTHON_VERSION_MINOR 0)
 set(GNSSTK_SWIG_MODULE_DIR "")
 
-if( BUILD_EXT )
+if( BUILD_EXAMPLES )
    add_subdirectory( examples )
    if( BUILD_PYTHON )
        include( swig/PythonSetup.cmake )
