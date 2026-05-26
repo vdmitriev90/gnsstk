@@ -1,0 +1,84 @@
+---
+Checks: >
+  -*,
+  readability-identifier-naming
+
+CheckOptions:
+  # Class/struct members: camelCase with trailing underscore
+  - key: readability-identifier-naming.MemberCase
+    value: camelBack
+  - key: readability-identifier-naming.MemberSuffix
+    value: '_'
+
+  # Public member fields (same as above)
+  - key: readability-identifier-naming.PublicMemberCase
+    value: camelBack
+  - key: readability-identifier-naming.PublicMemberSuffix
+    value: '_'
+
+  # Protected member fields
+  - key: readability-identifier-naming.ProtectedMemberCase
+    value: camelBack
+  - key: readability-identifier-naming.ProtectedMemberSuffix
+    value: '_'
+
+  # Private member fields
+  - key: readability-identifier-naming.PrivateMemberCase
+    value: camelBack
+  - key: readability-identifier-naming.PrivateMemberSuffix
+    value: '_'
+
+  # Local variables: lower_case (snake_case)
+  - key: readability-identifier-naming.LocalVariableCase
+    value: lower_case
+
+  # Function parameters: camelBack (camelBack)
+  - key: readability-identifier-naming.ParameterCase
+    value: camelBack
+
+  # Free functions: camelBack
+  - key: readability-identifier-naming.FunctionCase
+    value: camelBack
+
+  # Methods: camelBack
+  - key: readability-identifier-naming.MethodCase
+    value: camelBack
+
+  # Classes/structs: CamelCase
+  - key: readability-identifier-naming.ClassCase
+    value: CamelCase
+
+  # Enums: CamelCase
+  - key: readability-identifier-naming.EnumCase
+    value: CamelCase
+
+  # Enum constants: CamelCase
+  - key: readability-identifier-naming.EnumConstantCase
+    value: CamelCase
+
+  # Namespaces: lower_case
+  - key: readability-identifier-naming.NamespaceCase
+    value: lower_case
+
+  # Global constants: UPPER_CASE
+  - key: readability-identifier-naming.GlobalConstantCase
+    value: UPPER_CASE
+
+  # Static constants: UPPER_CASE
+  - key: readability-identifier-naming.StaticConstantCase
+    value: UPPER_CASE
+
+  # Typedefs: CamelCase
+  - key: readability-identifier-naming.TypedefCase
+    value: CamelCase
+
+  # Type aliases (using): CamelCase
+  - key: readability-identifier-naming.TypeAliasCase
+    value: CamelCase
+
+  # Template parameters: CamelCase
+  - key: readability-identifier-naming.TemplateParameterCase
+    value: CamelCase
+
+HeaderFilterRegex: 'pod/src/.*'
+...
