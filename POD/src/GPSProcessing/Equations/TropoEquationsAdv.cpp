@@ -10,7 +10,7 @@ namespace pod
     void TropoEquationsAdv::updateH(const gnsstk::IRinex& gData,
                                     const gnsstk::TypeIDSet& obsTypes,
                                     gnsstk::Matrix<double>& H,
-                                    int& col_0)
+                                    int& startColumn)
     {
 
         int row(0);
@@ -19,11 +19,11 @@ namespace pod
             for (const auto& it : gData.getBody())
             {
                 double mf = it.second->get_value().at(typeId);
-                H(row, col_0) = mf;
-                H(row++, col_0 + 1) = mf * dt;
+                H(row, startColumn) = mf;
+                H(row++, startColumn + 1) = mf * dt;
             }
         }
-        col_0 += 2;
+        startColumn += 2;
     }
 
     void TropoEquationsAdv::updatePhi(gnsstk::Matrix<double>& Phi, int& index) const

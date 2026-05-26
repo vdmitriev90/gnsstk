@@ -43,7 +43,7 @@ namespace pod
     void PositionEquations::updateH(const gnsstk::IRinex& gData,
                                     const gnsstk::TypeIDSet& obsTypes,
                                     gnsstk::Matrix<double>& H,
-                                    int& col_0)
+                                    int& startColumn)
     {
         int row(0);
 
@@ -52,10 +52,10 @@ namespace pod
             {
                 int j(0);
                 for (auto&& t : types)
-                    H(row, col_0 + j++) = it.second->get_value().at(t.type);
+                    H(row, startColumn + j++) = it.second->get_value().at(t.type);
                 row++;
             }
-        col_0 += 3;
+        startColumn += 3;
     }
 
     void PositionEquations::updatePhi(gnsstk::Matrix<double>& Phi, int& index) const

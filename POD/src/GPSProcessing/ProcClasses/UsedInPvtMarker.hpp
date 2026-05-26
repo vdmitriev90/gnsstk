@@ -20,7 +20,7 @@ namespace pod
         ~UsedInPvtMarker() {};
 
         // mark all SV in IRinex as useable in PVT
-        gnsstk::IRinex& Process(gnsstk::IRinex& gRin) override;
+        gnsstk::IRinex& Process(gnsstk::IRinex& rin_epoch) override;
 
         // mark all SV in SatTypePtrMap as useable in PVT
         gnsstk::SatTypePtrMap& markAsUsed(gnsstk::SatTypePtrMap& satData) const;
@@ -33,7 +33,7 @@ namespace pod
 
         gnsstk::SatTypePtrMap& CleanSatArcFlags(gnsstk::SatTypePtrMap& satData) const;
 
-        UsedInPvtMarker& updateLastEpoch(const gnsstk::IRinex& gRin);
+        UsedInPvtMarker& updateLastEpoch(const gnsstk::IRinex& rin_epoch);
 
         virtual std::string getClassName(void) const
         {

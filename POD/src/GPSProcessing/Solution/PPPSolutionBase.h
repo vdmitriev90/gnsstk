@@ -21,18 +21,15 @@ namespace pod
       public:
         PPPSolutionBase(GnssDataStore_sptr data);
 
-      public:
         virtual ~PPPSolutionBase();
 
 #pragma region methods
 
-      public:
         virtual SlnType desiredSlnType() const override
         {
             return SlnType::PPP_Float;
         }
 
-      public:
         virtual std::string fileName() const override
         {
             return opts().SiteRover + "_ppp_float.txt";
@@ -41,13 +38,10 @@ namespace pod
       protected:
         virtual void PRProcess();
 
-      protected:
         virtual bool processCore() = 0;
 
-      protected:
         virtual void mapSNR(gnsstk::IRinex& value);
 
-      protected:
         virtual double mapSNR(double value)
         {
             return value;
@@ -58,10 +52,12 @@ namespace pod
 #pragma region Fields
 
         // pointer to object for code solution
-      protected:
-        std::unique_ptr<CodeSolverBase> solverPR;
+        std::unique_ptr<CodeSolverBase> solverPR_;
 
 #pragma endregion
     };
+
+    // number of decimal places for output
+    static constexpr int outputCoordsPrec = 3;
 } // namespace pod
 #endif // !POD_PPP_SOLUTION_BASE_H

@@ -70,7 +70,7 @@ void testRinParse(char* path1)
     rout.close();
 }
 
-void testPod(char * path)
+void testPod(const char * path)
 {
     auto t1 = clock();
     Solution sol(path);

@@ -1,4 +1,4 @@
-#include "SQLiteAdapter.h"
+﻿#include "SQLiteAdapter.h"
 
 #include "StringUtils.h"
 #include "WinUtils.h"
@@ -17,7 +17,7 @@ namespace pod
 
         namespace fs = std::filesystem;
         Rinex3ObsStream rin(path2obs);
-        gnssRinex gRin;
+        gnssRinex rin_epoch;
 
         std::ostringstream ss;
         auto t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
@@ -32,11 +32,11 @@ namespace pod
         rin >> header;
 
         // Read the RINEX data epoch by epoch
-        while (rin >> gRin)
+        while (rin >> rin_epoch)
         {
-            auto ge = GnssEpoch(gRin);
+            auto ge = GnssEpoch(rin_epoch);
             ge.slnData[TypeID::recSlnType] = 0;
-            eMap.data.insert(std::make_pair(gRin.header.epoch, ge));
+            eMap.data.insert(std::make_pair(rin_epoch.header.epoch, ge));
         }
 
         eMap.updateMetadata();
@@ -59,15 +59,15 @@ namespace pod
         sqlite3_initialize();
 
         int rc = sqlite3_open_v2(
-            fileName.c_str(), &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
+            fileName_.c_str(), &db_, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
         if (rc)
         {
             auto excStr =
-                (boost::format("Error opening SQLite3 database:%1%") % sqlite3_errmsg(db)).str();
+                (boost::format("Error opening SQLite3 database:%1%") % sqlite3_errmsg(db_)).str();
             errorHandler(rc, const_cast<char*>(excStr.c_str()));
         }
 
-        // string dbString = (boost::format("Data Source =%1%;Version=3;") % fileName).str();
+        // string dbString = (boost::format("Data Source =%1%;Version=3;") % fileName_).str();
         create();
     };
 
@@ -90,7 +90,7 @@ namespace pod
     void SQLiteAdapter::create()
     {
         setPragmas();
-        sqlite3_exec(db, createSchemaCommand.c_str(), NULL, NULL, NULL);
+        sqlite3_exec(db_, createSchemaCommand.c_str(), NULL, NULL, NULL);
         // tryExecuteNonQuery(createSchemaCommand.c_str());
     }
 
@@ -102,11 +102,11 @@ namespace pod
     {
         const char* sql = "INSERT INTO `GnssObsFile`(`FullName`,`Title`) VALUES( @Name, @Title);";
         sqlite3_stmt* comm;
-        sqlite3_prepare_v2(db, sql, -1, &comm, NULL);
+        sqlite3_prepare_v2(db_, sql, -1, &comm, NULL);
         sqlite3_bind_text(comm, 1, eMap.title.c_str(), -1, 0);
         sqlite3_bind_text(comm, 2, eMap.title.c_str(), -1, 0);
 
-        lastFileID = tryExecuteNonQueryAndGetRowId(comm);
+        lastFileID_ = tryExecuteNonQueryAndGetRowId(comm);
 
         // fill the  SV metadata
         tryExecuteNonQuery("BEGIN TRANSACTION;");
@@ -124,8 +124,8 @@ namespace pod
             const char* sql =
                 "INSERT INTO `TypeIDsByFiles`(`FileId`,`TypeId`) VALUES( @FileId, @TypeId);";
             sqlite3_stmt* comm;
-            sqlite3_prepare_v2(db, sql, -1, &comm, NULL);
-            sqlite3_bind_int(comm, 1, lastFileID);
+            sqlite3_prepare_v2(db_, sql, -1, &comm, NULL);
+            sqlite3_bind_int(comm, 1, lastFileID_);
             sqlite3_bind_int(comm, 2, it.type);
             tryExecuteNonQuery(comm);
         }
@@ -141,13 +141,13 @@ namespace pod
     {
         const char* sql = "INSERT INTO `RinexTypePairs`(`Type`,`Value`) VALUES (@Type, @Value);";
         sqlite3_stmt* comm;
-        sqlite3_prepare_v2(db, sql, -1, &comm, NULL);
+        sqlite3_prepare_v2(db_, sql, -1, &comm, NULL);
         sqlite3_bind_int(comm, 1, typeValuePair.first.type);
         sqlite3_bind_double(comm, 2, typeValuePair.second);
 
-        lastTypeValuePairID = tryExecuteNonQueryAndGetRowId(comm);
+        lastTypeValuePairID_ = tryExecuteNonQueryAndGetRowId(comm);
 
-        ++obsItemCounter;
+        ++obsItemCounter_;
     }
 
     void SQLiteAdapter::addSlnData(const gnsstk::typeValueMap& slnData)
@@ -158,10 +158,10 @@ namespace pod
             const char* sql =
                 "INSERT INTO `SlnDataItems`(`EpochID`,`DataID`) VALUES (@EpochID, @DataID);";
             sqlite3_stmt* comm;
-            int rc = sqlite3_prepare_v2(db, sql, -1, &comm, NULL);
+            int rc = sqlite3_prepare_v2(db_, sql, -1, &comm, NULL);
 
-            sqlite3_bind_int(comm, 1, lastEpochID);
-            sqlite3_bind_int64(comm, 2, lastTypeValuePairID);
+            sqlite3_bind_int(comm, 1, lastEpochID_);
+            sqlite3_bind_int64(comm, 2, lastTypeValuePairID_);
             tryExecuteNonQuery(comm);
         }
     }
@@ -179,11 +179,11 @@ namespace pod
                     "INSERT INTO `SvDataItems`(`SV`,`DataID`, `EpochID`) VALUES ((SELECT ID FROM "
                     "SVS WHERE SVID = @SVID AND SSID = @SSID), @DataID, @EpochID);";
                 sqlite3_stmt* comm;
-                int rc = sqlite3_prepare_v2(db, sql, -1, &comm, NULL);
+                int rc = sqlite3_prepare_v2(db_, sql, -1, &comm, NULL);
                 sqlite3_bind_int(comm, 1, satId.id);
                 sqlite3_bind_int(comm, 2, static_cast<int>(satId.system));
-                sqlite3_bind_int64(comm, 3, lastTypeValuePairID);
-                sqlite3_bind_int(comm, 4, lastEpochID);
+                sqlite3_bind_int64(comm, 3, lastTypeValuePairID_);
+                sqlite3_bind_int(comm, 4, lastEpochID_);
 
                 tryExecuteNonQuery(comm);
             }
@@ -196,14 +196,14 @@ namespace pod
         const char* sql = "INSERT INTO `Epochs`(`Time`,`FileID`,'OccupationID') VALUES(@time, "
                           "@FileID, @OccupationID);";
         sqlite3_stmt* comm;
-        sqlite3_prepare_v2(db, sql, -1, &comm, NULL);
+        sqlite3_prepare_v2(db_, sql, -1, &comm, NULL);
 
-        std::string occId = StringUtils::formatTime(epoch.first);
-        sqlite3_bind_text(comm, 1, occId.c_str(), -1, 0);
-        sqlite3_bind_int(comm, 2, lastFileID);
+        std::string occ_id = StringUtils::formatTime(epoch.first);
+        sqlite3_bind_text(comm, 1, occ_id.c_str(), -1, 0);
+        sqlite3_bind_int(comm, 2, lastFileID_);
         sqlite3_bind_text(comm, 3, "", -1, 0);
 
-        lastEpochID = tryExecuteNonQueryAndGetRowId(comm);
+        lastEpochID_ = tryExecuteNonQueryAndGetRowId(comm);
 
         addSlnData(epoch.second.slnData);
         // TypeIDSet typeSet;// { TypeID::postfitC };
@@ -216,7 +216,7 @@ namespace pod
     {
         const char* sql = "INSERT OR IGNORE INTO `SVS`(`SVID`,`SSID`) VALUES (@SVID, @SSID);";
         sqlite3_stmt* comm;
-        sqlite3_prepare_v2(db, sql, -1, &comm, NULL);
+        sqlite3_prepare_v2(db_, sql, -1, &comm, NULL);
         sqlite3_bind_int(comm, 1, sv.id);
         sqlite3_bind_int(comm, 2, (int)sv.system);
 
@@ -229,8 +229,7 @@ namespace pod
 
     void SQLiteAdapter::tryExecuteNonQuery(sqlite3_stmt* comm)
     {
-        char* zErrMsg;
-        int OK_DONE = SQLITE_DONE | SQLITE_OK;
+        constexpr int OK_DONE = SQLITE_DONE | SQLITE_OK;
         int rc;
         while (rc = sqlite3_step(comm) == SQLITE_ROW)
         {
@@ -250,7 +249,7 @@ namespace pod
     {
         tryExecuteNonQuery(stmt);
 
-        return sqlite3_last_insert_rowid(db);
+        return sqlite3_last_insert_rowid(db_);
     }
 
     void SQLiteAdapter::tryExecuteNonQuery(const std::string& sql)
@@ -261,7 +260,7 @@ namespace pod
     void SQLiteAdapter::tryExecuteNonQuery(const char* sql)
     {
         sqlite3_stmt* comm;
-        int rc = sqlite3_prepare_v2(db, sql, -1, &comm, NULL);
+        int rc = sqlite3_prepare_v2(db_, sql, -1, &comm, NULL);
         if (rc != SQLITE_OK)
         {
             sqlite3_finalize(comm);
@@ -278,7 +277,7 @@ namespace pod
     int SQLiteAdapter::tryExecuteNonQueryAndGetRowId(const char* sql)
     {
         sqlite3_stmt* comm;
-        int rc = sqlite3_prepare_v2(db, sql, -1, &comm, NULL);
+        int rc = sqlite3_prepare_v2(db_, sql, -1, &comm, NULL);
         if (rc != SQLITE_OK)
         {
             sqlite3_finalize(comm);
@@ -302,24 +301,24 @@ namespace pod
 
     void SQLiteAdapter::updateTransaction()
     {
-        if (firstTime)
+        if (firstTime_)
             tryExecuteNonQuery("BEGIN TRANSACTION;");
 
-        firstTime = false;
+        firstTime_ = false;
 
-        if (obsItemCounter > maxObsItemsPerTransaction)
+        if (obsItemCounter_ > maxObsItemsPerTransaction_)
         {
             tryExecuteNonQuery("COMMIT;");
             tryExecuteNonQuery("BEGIN TRANSACTION;");
-            obsItemCounter = 0;
+            obsItemCounter_ = 0;
         }
     }
 
     void SQLiteAdapter::finalizeTransactionsSequence()
     {
-        if (!firstTime)
+        if (!firstTime_)
             tryExecuteNonQuery("COMMIT;");
-        firstTime = true;
+        firstTime_ = true;
     }
 
 #pragma endregion

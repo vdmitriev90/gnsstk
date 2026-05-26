@@ -21,11 +21,11 @@ namespace pod
         IApprPosProvider() = default;
         virtual ~IApprPosProvider() = default;
 
-        virtual int getPosition(const gnsstk::IRinex& gRin, gnsstk::Position& pos) = 0;
+        virtual int getPosition(const gnsstk::IRinex& rin_epoch, gnsstk::Position& pos) = 0;
         virtual ApprPositionSource getSource() const = 0;
 
       protected:
-        static int ComputeApprSol(const gnsstk::IRinex& gRin,
+        static int ComputeApprSol(const gnsstk::IRinex& rin_epoch,
                                   gnsstk::NavLibrary& ephem,
                                   gnsstk::Vector<double>& pos);
     };
@@ -55,7 +55,7 @@ namespace pod
             return prePos;
         }
 
-        virtual int getPosition(const gnsstk::IRinex& gRin, gnsstk::Position& pos) override;
+        virtual int getPosition(const gnsstk::IRinex& rin_epoch, gnsstk::Position& pos) override;
 
         virtual ApprPositionSource getSource() const override
         {
@@ -76,7 +76,7 @@ namespace pod
         ComputeOnePos(gnsstk::NavLibrary& ephem) : ephStore(ephem), isFirstTime(true) {}
 
         // Inherited via IApprPosProvider
-        virtual int getPosition(const gnsstk::IRinex& gRin, gnsstk::Position& pos) override;
+        virtual int getPosition(const gnsstk::IRinex& rin_epoch, gnsstk::Position& pos) override;
 
         virtual ApprPositionSource getSource() const override
         {
@@ -100,7 +100,7 @@ namespace pod
             loadApprPos(path);
         }
 
-        int getPosition(const gnsstk::IRinex& gRin, gnsstk::Position& pos) override;
+        int getPosition(const gnsstk::IRinex& rin_epoch, gnsstk::Position& pos) override;
 
         int size()
         {
@@ -122,7 +122,7 @@ namespace pod
 
       public:
         ApprPosSimple(const gnsstk::Position& pos) : apprPos(pos) {};
-        int getPosition(const gnsstk::IRinex& gRin, gnsstk::Position& pos) override
+        int getPosition(const gnsstk::IRinex& rin_epoch, gnsstk::Position& pos) override
         {
             pos = apprPos;
             return 0;

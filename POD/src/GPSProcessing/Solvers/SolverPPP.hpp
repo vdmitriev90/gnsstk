@@ -93,13 +93,13 @@ namespace pod
      *
      *     // PROCESSING PART
      *
-     *   gnssRinex gRin;
+     *   gnssRinex rin_epoch;
      *
-     *   while(rin >> gRin)
+     *   while(rin >> rin_epoch)
      *   {
      *      try
      *      {
-     *         gRin  >> basicM
+     *         rin_epoch  >> basicM
      *               >> correctObs
      *               >> compWindup
      *               >> computeTropo
@@ -129,9 +129,9 @@ namespace pod
      * @endcode
      *
      * The "SolverPPP" object will extract all the data it needs from the
-     * GNSS data structure that is "gRin" and will try to solve the PPP
+     * GNSS data structure that is "rin_epoch" and will try to solve the PPP
      * system of equations using a Kalman filter. It will also insert back
-     * postfit residual data (both code and phase) into "gRin" if it
+     * postfit residual data (both code and phase) into "rin_epoch" if it
      * successfully solves the equation system.
      *
      * By default, it will build the geometry matrix from the values of

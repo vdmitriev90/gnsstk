@@ -1,4 +1,4 @@
-#include "PppFloatSolution.h"
+﻿#include "PppFloatSolution.h"
 
 #include "AdvClockModel.h"
 #include "AmbiguitiesEquations.h"
@@ -59,23 +59,23 @@ namespace pod
     {
         updateRequaredObs();
 
-        BasicModel model(data->navLibrary_);
-        model.setDefaultObservable(codeL1);
+        BasicModel model(data_->navLibrary_);
+        model.setDefaultObservable(codeL1_);
         model.setMinElev(.0);
 
         ElevationMask elMask(opts().maskEl);
 
-        SimpleFilter CodeFilter(TypeIDSet{codeL1, TypeID::P2, TypeID::L1, TypeID::L2});
+        SimpleFilter CodeFilter(TypeIDSet{codeL1_, TypeID::P2, TypeID::L1, TypeID::L2});
         SimpleFilter SNRFilter(TypeID::S1, confReader().getValueAsInt("SNRmask"), DBL_MAX);
         // Object to remove eclipsed satellites
         EclipsedSatFilter eclipsedSV;
 
-        RinexEpoch gRin;
+        RinexEpoch rin_epoch;
 
         // Object to decimate data
         Decimate decimateData(confReader().getValueAsDouble("decimationInterval"),
                               confReader().getValueAsDouble("decimationTolerance"),
-                              data->navLibrary_.getInitialTime());
+                              data_->navLibrary_.getInitialTime());
 
         // Object to compute gravitational delay effects
         GravitationalDelay grDelayRover;
@@ -101,7 +101,7 @@ namespace pod
 
         // check sharp SNR drops
         SNRCatcher snrCatcherL1Rover;
-        PrefitResCatcher resCatcher(Equations->measTypes());
+        PrefitResCatcher resCatcher(equations_->measTypes());
 
         // Object to keep track of satellite arcs
         SatArcMarker markArcRover(TypeID::CSL1, true, 31.0);
@@ -120,7 +120,7 @@ namespace pod
 
 #pragma region correct observable
 
-        CorrectObservables corrRover(data->navLibrary_);
+        CorrectObservables corrRover(data_->navLibrary_);
 
         // Vector from monument to antenna ARP [UEN], in meters
         Triple offsetARP;
@@ -146,7 +146,7 @@ namespace pod
         ocean.setFilename(opts().genericFilesDirectory + confReader().getValue("oceanLoadingFile"));
 
         ComputeWindUp windupRover(
-            data->navLibrary_, opts().genericFilesDirectory + confReader().getValue("satDataFile"));
+            data_->navLibrary_, opts().genericFilesDirectory + confReader().getValue("satDataFile"));
 
         ComputeSatPCenter svPcenterRover;
         svPcenterRover.setAntexReader(antexReader);
@@ -156,12 +156,12 @@ namespace pod
         linearIonoFree.add(std::make_unique<LCCombimnation>());
 
         UsedInPvtMarker useMarker;
-        KalmanSolver solver(Equations);
-        KalmanSolverFB solverFb(Equations);
+        KalmanSolver solver(equations_);
+        KalmanSolverFB solverFb(equations_);
 
-        if (forwardBackwardCycles > 0)
+        if (forwardBackwardCycles_ > 0)
         {
-            solverFb.setCyclesNumber(forwardBackwardCycles);
+            solverFb.setCyclesNumber(forwardBackwardCycles_);
             solverFb.setLimits(confReader().getValueListAsDouble("codeLimList"),
                                confReader().getValueListAsDouble("phaseLimList"));
             solverFb.setCSDetRef(markCSLI2Rover, markCSMW2Rover);
@@ -174,7 +174,7 @@ namespace pod
 
         bool firstTime = true;
         //
-        for (auto& obsFile : data->getObsFiles(opts().SiteRover))
+        for (auto& obsFile : data_->getObsFiles(opts().SiteRover))
         {
             std::cout << obsFile << std::endl;
             // Input observation file stream
@@ -188,22 +188,22 @@ namespace pod
 
             // read the header
             rin >> roh;
-            gMap.header = roh;
+            gMap_.header = roh;
 
             // read all epochs
-            while (rin >> gRin)
+            while (rin >> rin_epoch)
             {
-                // gRin.removeSatID(18, SatelliteSystem::GPS);
-                if (decimateData.check(gRin))
+                // rin_epoch.removeSatID(18, SatelliteSystem::GPS);
+                if (decimateData.check(rin_epoch))
                     continue;
 
-                if (gRin.getBody().size() == 0)
+                if (rin_epoch.getBody().size() == 0)
                 {
-                    printMsg(gRin.getHeader().epoch, "Empty epoch record in Rinex file");
+                    printMsg(rin_epoch.getHeader().epoch, "Empty epoch record in Rinex file");
                     continue;
                 }
 
-                const auto& t = gRin.getHeader().epoch;
+                const auto& t = rin_epoch.getHeader().epoch;
 #if _DEBUG
                 bool b;
 
@@ -212,105 +212,105 @@ namespace pod
                     DBOUT_LINE("catched")
 #endif
                 // keep only satellites from satellites systems selecyted for processing
-                gRin.keepOnlySatSystems(opts().systems);
+                rin_epoch.keepOnlySatSystems(opts().systems);
 
                 // keep only types used for processing
-                //  gRin.keepOnlyTypeID(requireObs.getRequiredType());
+                //  rin_epoch.keepOnlyTypeID(requireObs_.getRequiredType());
 
                 // get approximate position
-                if (apprPos().getPosition(gRin, nominalPos))
+                if (apprPos().getPosition(rin_epoch, nominalPos_))
                     continue;
-                // std::cout << nominalPos << std::endl;
-                grDelayRover.setNominalPosition(nominalPos);
+                // std::cout << nominalPos_ << std::endl;
+                grDelayRover.setNominalPosition(nominalPos_);
 
-                tropoRovPtr.setAllParameters(t, nominalPos);
+                tropoRovPtr.setAllParameters(t, nominalPos_);
 
-                corrRover.setNominalPosition(nominalPos);
-                windupRover.setNominalPosition(nominalPos);
-                svPcenterRover.setNominalPosition(nominalPos);
-                model.setRxPosition(nominalPos);
+                corrRover.setNominalPosition(nominalPos_);
+                windupRover.setNominalPosition(nominalPos_);
+                svPcenterRover.setNominalPosition(nominalPos_);
+                model.setRxPosition(nominalPos_);
 
-                gRin >> requireObs;
-                gRin >> CodeFilter;
-                gRin >> SNRFilter;
+                rin_epoch >> requireObs_;
+                rin_epoch >> CodeFilter;
+                rin_epoch >> SNRFilter;
 
-                if (gRin.getBody().size() == 0)
+                if (rin_epoch.getBody().size() == 0)
                 {
-                    printMsg(gRin.getHeader().epoch, "Rover receiver: all SV has been rejected.");
+                    printMsg(rin_epoch.getHeader().epoch, "Rover receiver: all SV has been rejected.");
                     continue;
                 }
-                gRin >> computeLinear;
+                rin_epoch >> computeLinear_;
 
-                auto eop = data->eopStore.getEOP(MJD(t).mjd, IERSConvention::IERS2010);
+                auto eop = data_->eopStore.getEOP(MJD(t).mjd, IERSConvention::IERS2010);
                 pole.setXY(eop.xp, eop.yp);
 
-                gRin >> model;
-                gRin >> eclipsedSV;
-                gRin >> grDelayRover;
-                gRin >> svPcenterRover;
+                rin_epoch >> model;
+                rin_epoch >> eclipsedSV;
+                rin_epoch >> grDelayRover;
+                rin_epoch >> svPcenterRover;
 
-                Triple tides(solid.getSolidTide(t, nominalPos)
+                Triple tides(solid.getSolidTide(t, nominalPos_)
                              + ocean.getOceanLoading(opts().SiteRover, t)
-                             + pole.getPoleTide(t, nominalPos));
+                             + pole.getPoleTide(t, nominalPos_));
                 corrRover.setExtraBiases(tides);
-                gRin >> corrRover;
+                rin_epoch >> corrRover;
 
-                gRin >> windupRover;
-                gRin >> computeTropoRover;
+                rin_epoch >> windupRover;
+                rin_epoch >> computeTropoRover;
 
-                gRin >> linearIonoFree;
-                gRin >> oMinusC;
-                gRin >> resCatcher;
-                gRin >> computeWeightSimple;
+                rin_epoch >> linearIonoFree;
+                rin_epoch >> oMinusC_;
+                rin_epoch >> resCatcher;
+                rin_epoch >> computeWeightSimple;
 
-                gRin >> useMarker;
-                gRin >> markCSLI2Rover;
-                gRin >> markCSMW2Rover;
-                gRin >> markArcRover;
-                gRin >> elMask;
-                // gRin >> snrCatcherL1Rover;
+                rin_epoch >> useMarker;
+                rin_epoch >> markCSLI2Rover;
+                rin_epoch >> markCSMW2Rover;
+                rin_epoch >> markArcRover;
+                rin_epoch >> elMask;
+                // rin_epoch >> snrCatcherL1Rover;
 
-                // DBOUT_LINE(">>" << CivilTime(gRin.getHeader().epoch).asString());
+                // DBOUT_LINE(">>" << CivilTime(rin_epoch.getHeader().epoch).asString());
 
-                if (forwardBackwardCycles > 0)
+                if (forwardBackwardCycles_ > 0)
                 {
-                    solverFb.setMinSatNumber(4 /*+ gRin.getBody().getSatSystems().size()*/);
-                    gRin >> solverFb;
+                    solverFb.setMinSatNumber(4 /*+ rin_epoch.getBody().getSatSystems().size()*/);
+                    rin_epoch >> solverFb;
                 }
                 else
                 {
-                    solver.setMinSatNumber(4 /*+ gRin.getBody().getSatSystems().size()*/);
-                    gRin >> solver;
-                    auto ep = opts().fullOutput ? GnssEpoch(gRin.getBody()) : GnssEpoch();
+                    solver.setMinSatNumber(4 /*+ rin_epoch.getBody().getSatSystems().size()*/);
+                    rin_epoch >> solver;
+                    auto ep = opts().fullOutput ? GnssEpoch(rin_epoch.getBody()) : GnssEpoch();
                     // updateNomPos(solverFB);
                     printSolution(solver, t, ep);
-                    gMap.data.insert(std::make_pair(t, ep));
+                    gMap_.data.insert(std::make_pair(t, ep));
                 }
             }
         }
-        if (forwardBackwardCycles > 0)
+        if (forwardBackwardCycles_ > 0)
         {
             markCSLI2Rover.setIsReprocess(true);
             markCSMW2Rover.setIsReprocess(true);
 
             std::cout << "Fw-Bw part started" << std::endl;
             solverFb.reProcess();
-            RinexEpoch gRin;
+            RinexEpoch rin_epoch;
             std::cout << "Last process part started" << std::endl;
 
-            while (solverFb.lastProcess(gRin))
+            while (solverFb.lastProcess(rin_epoch))
             {
                 // fill GnssEpoch by IRinex object data
-                auto ep = opts().fullOutput ? GnssEpoch(gRin.getBody()) : GnssEpoch();
+                auto ep = opts().fullOutput ? GnssEpoch(rin_epoch.getBody()) : GnssEpoch();
 
                 // uptate nominal position
-                apprPos().getPosition(gRin, nominalPos);
+                apprPos().getPosition(rin_epoch, nominalPos_);
 
                 // fill GnssEpoch by filter state data
-                printSolution(solverFb, gRin.getHeader().epoch, ep);
+                printSolution(solverFb, rin_epoch.getHeader().epoch, ep);
 
                 // add epoch to map
-                gMap.data.insert(std::make_pair(gRin.getHeader().epoch, ep));
+                gMap_.data.insert(std::make_pair(rin_epoch.getHeader().epoch, ep));
             }
             std::cout << "Measurments rejected: " << solverFb.rejectedMeasurements << std::endl;
         }
@@ -321,50 +321,50 @@ namespace pod
         LinearCombinations comm;
         bool useC1 = confReader().getValueAsBoolean("useC1");
 
-        codeL1 = useC1 ? TypeID::C1 : TypeID::P1;
-        computeLinear.setUseC1(useC1);
-        computeLinear.add(std::make_unique<PDelta>());
-        computeLinear.add(std::make_unique<MWoubenna>());
+        codeL1_ = useC1 ? TypeID::C1 : TypeID::P1;
+        computeLinear_.setUseC1(useC1);
+        computeLinear_.add(std::make_unique<PDelta>());
+        computeLinear_.add(std::make_unique<MWoubenna>());
 
-        computeLinear.add(std::make_unique<LDelta>());
-        computeLinear.add(std::make_unique<LICombimnation>());
+        computeLinear_.add(std::make_unique<LDelta>());
+        computeLinear_.add(std::make_unique<LICombimnation>());
 
         configureSolver();
 
-        requireObs.addRequiredType(codeL1);
-        requireObs.addRequiredType(TypeID::P2);
-        requireObs.addRequiredType(TypeID::L1);
-        requireObs.addRequiredType(TypeID::L2);
-        requireObs.addRequiredType(TypeID::LLI1);
-        requireObs.addRequiredType(TypeID::LLI2);
+        requireObs_.addRequiredType(codeL1_);
+        requireObs_.addRequiredType(TypeID::P2);
+        requireObs_.addRequiredType(TypeID::L1);
+        requireObs_.addRequiredType(TypeID::L2);
+        requireObs_.addRequiredType(TypeID::LLI1);
+        requireObs_.addRequiredType(TypeID::LLI2);
 
-        requireObs.addRequiredType(TypeID::S1);
+        requireObs_.addRequiredType(TypeID::S1);
 
-        oMinusC.add(std::make_unique<PrefitPC>(true));
-        oMinusC.add(std::make_unique<PrefitLC>());
+        oMinusC_.add(std::make_unique<PrefitPC>(true));
+        oMinusC_.add(std::make_unique<PrefitLC>());
 
-        Equations->measTypes().insert(TypeID::prefitPC);
-        Equations->measTypes().insert(TypeID::prefitLC);
-        Equations->residTypes().insert(TypeID::postfitPC);
-        Equations->residTypes().insert(TypeID::postfitLC);
+        equations_->measTypes().insert(TypeID::prefitPC);
+        equations_->measTypes().insert(TypeID::prefitLC);
+        equations_->residTypes().insert(TypeID::postfitPC);
+        equations_->residTypes().insert(TypeID::postfitLC);
     }
 
     void PppFloatSolution::configureSolver()
     {
-        Equations->clearEquations();
+        equations_->clearEquations();
 
         double qPrimeVert = confReader().getValueAsDouble("tropoQ1");
         double qPrimeHor = confReader().getValueAsDouble("tropoQ2");
 
         if (opts().tropoModelType == TropoModelType::Simple)
-            Equations->addEquation(std::make_unique<TropoEquations>(qPrimeVert));
+            equations_->addEquation(std::make_unique<TropoEquations>(qPrimeVert));
 
         else if (opts().tropoModelType == TropoModelType::SimpleWithGradients)
-            Equations->addEquation(
+            equations_->addEquation(
                 std::make_unique<TropoGradEquations>(qPrimeVert, qPrimeHor, qPrimeHor));
 
         else if (opts().tropoModelType == TropoModelType::Advanced)
-            Equations->addEquation(std::make_unique<TropoEquationsAdv>(qPrimeVert, qPrimeHor));
+            equations_->addEquation(std::make_unique<TropoEquationsAdv>(qPrimeVert, qPrimeHor));
 
 #pragma region Position stochastic model
 
@@ -383,21 +383,21 @@ namespace pod
                 coord->setStochasicModel(it, std::make_shared<RandomWalkModel>(posSigma));
 
         // add position equations
-        Equations->addEquation(std::move(coord));
+        equations_->addEquation(std::move(coord));
 
 #pragma endregion
 
         if (confReader().getValueAsBoolean("useAdvClkModel"))
-            Equations->addEquation(std::make_unique<AdvClockModel>(
+            equations_->addEquation(std::make_unique<AdvClockModel>(
                 confReader().getValueAsDouble("q1Clk"), confReader().getValueAsDouble("q2Clk")));
         else
-            Equations->addEquation(std::make_unique<ClockBiasEquations>());
+            equations_->addEquation(std::make_unique<ClockBiasEquations>());
 
         if (opts().systems.size() > 1)
-            Equations->addEquation(std::make_unique<InterSystemBias>());
+            equations_->addEquation(std::make_unique<InterSystemBias>());
 
-        Equations->addEquation(std::make_unique<AmbiguitiesEquations>(TypeID::BLC));
+        equations_->addEquation(std::make_unique<AmbiguitiesEquations>(TypeID::BLC));
 
-        forwardBackwardCycles = confReader().getValueAsInt("forwardBackwardCycles");
+        forwardBackwardCycles_ = confReader().getValueAsInt("forwardBackwardCycles_");
     }
 } // namespace pod

@@ -72,7 +72,7 @@ namespace pod
     void IonoEquations::updateH(const gnsstk::IRinex& gData,
                                 const gnsstk::TypeIDSet& types,
                                 gnsstk::Matrix<double>& H,
-                                int& col_0)
+                                int& startColumn)
     {
         int nSv = currParameters.size();
         Matrix<double> mI = ident<double>(nSv);
@@ -88,12 +88,12 @@ namespace pod
                 int fcn = sv.sv.getGloFcn();
                 double wl = getWavelength(sv.sv.system, band, fcn);
                 wl *= wl;
-                H(row, col_0 + i) = sign * wl / SQR_L1_WL_GPS;
+                H(row, startColumn + i) = sign * wl / SQR_L1_WL_GPS;
                 row++;
                 i++;
             }
         }
-        col_0 += nSv;
+        startColumn += nSv;
     }
 
     void IonoEquations::updatePhi(gnsstk::Matrix<double>& Phi, int& index) const

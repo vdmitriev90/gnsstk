@@ -80,7 +80,7 @@ namespace pod
     void AmbiguitiesEquations::updateH(const gnsstk::IRinex& gData,
                                        const gnsstk::TypeIDSet& types,
                                        gnsstk::Matrix<double>& H,
-                                       int& col_0)
+                                       int& startColumn)
     {
         // total number of  ambiguities
         int numAmbs(csFlags.size());
@@ -133,12 +133,12 @@ namespace pod
                 }
 
                 // Put coefficient in the right place
-                H(row, j + col_0) = wavelength;
+                H(row, j + startColumn) = wavelength;
 
                 ++row;
             }
 
-            col_0 += numAmbs;
+            startColumn += numAmbs;
         }
         satSet = currentSatSet;
     }

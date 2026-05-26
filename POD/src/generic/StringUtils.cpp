@@ -4,15 +4,15 @@
 
 using namespace gnsstk;
 
-namespace pod
+namespace pod::StringUtils
 {
-    std::string StringUtils::formatTime(const CommonTime& t)
+    std::string formatTime(const CommonTime& t)
     {
         const char* fmt = "%Y-%02m-%02d %02H:%02M:%06.3f";
         return CivilTime(t).printf(fmt);
     }
 
-    bool StringUtils::tryParseTime(const std::string& str, gnsstk::CommonTime& time)
+    bool tryParseTime(const std::string& str, gnsstk::CommonTime& time)
     {
         time = CommonTime::BEGINNING_OF_TIME;
         const char* pattern =
@@ -35,7 +35,7 @@ namespace pod
         return false;
     }
 
-    std::vector<std::string> StringUtils::split(const std::string& str, const std::string& delim)
+    std::vector<std::string> split(const std::string& str, const std::string& delim)
     {
         std::vector<std::string> res;
         std::string token;
@@ -54,4 +54,4 @@ namespace pod
         return res;
     }
 
-} // namespace pod
+} // namespace pod::StringUtils

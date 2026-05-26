@@ -123,15 +123,15 @@ namespace pod
      *
      *     // PROCESSING PART
      *
-     *   gnssRinex gRin;
+     *   gnssRinex rin_epoch;
      *
      *      // --->>> Process() phase <<<--- //
      *
-     *   while(rin >> gRin)
+     *   while(rin >> rin_epoch)
      *   {
      *      try
      *      {
-     *         gRin  >> basicM
+     *         rin_epoch  >> basicM
      *               >> correctObs
      *               >> compWindup
      *               >> computeTropo
@@ -150,7 +150,7 @@ namespace pod
      *         continue;
      *      }
      *
-     *   }   // End of 'while(rin >> gRin)'
+     *   }   // End of 'while(rin >> rin_epoch)'
      *
      *
      *      // --->>> ReProcess() phase <<<--- //
@@ -171,11 +171,11 @@ namespace pod
      *      // --->>> LastProcess() phase <<<--- //
      *
      *      // Loop over all data epochs, again
-     *   while( pppSolver.LastProcess(gRin) )  // True while there are data
+     *   while( pppSolver.LastProcess(rin_epoch) )  // True while there are data
      *   {
      *
-     *         // In this case, gRin is an output from 'LastProcess()'
-     *      CommonTime time(gRin.header.epoch);
+     *         // In this case, rin_epoch is an output from 'LastProcess()'
+     *      CommonTime time(rin_epoch.header.epoch);
      *
      *         // Print results
      *      cout << time.DOYsecond() << "  ";     // Epoch - Output field #1
@@ -189,7 +189,7 @@ namespace pod
      * @endcode
      *
      * The "SolverPPPFB" object will also insert back postfit residual data
-     * (both code and phase) into "gRin" if it successfully solves the
+     * (both code and phase) into "rin_epoch" if it successfully solves the
      * equation system.
      *
      * By default, it will build the geometry matrix from the values of

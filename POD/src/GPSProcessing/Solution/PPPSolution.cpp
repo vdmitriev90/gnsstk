@@ -1,4 +1,4 @@
-
+﻿
 #pragma region gpstk includes
 #include "BasicModel.hpp"
 #include "ComputeDOP.hpp"
@@ -45,10 +45,10 @@ namespace pod
         // opts().DoY = confReader().getValueAsInt("dayOfYear");
 
         // initialize troposhperic model
-        // tropModel = NeillTropModel(nominalPos.getAltitude(),
-        // nominalPos.getGeodeticLatitude(),opts().DoY);
+        // tropModel = NeillTropModel(nominalPos_.getAltitude(),
+        // nominalPos_.getGeodeticLatitude(),opts().DoY);
 
-        // solverPR = unique_ptr<CodeSolverBase>(new CodeSolver(tropModel, data));
+        // solverPR_ = unique_ptr<CodeSolverBase>(new CodeSolver(tropModel, data));
     }
 
     bool PPPSolution::processCore()
@@ -57,13 +57,13 @@ namespace pod
         int i = 0;
         for (auto& it : confReader().getValueListAsDouble("nominalPosition", opts().SiteRover))
             pos[i++] = it;
-        nominalPos = Position(pos);
+        nominalPos_ = Position(pos);
 
         updateRequaredObs();
 
         // This object will check that code observations are within
         // reasonable limits
-        SimpleFilter PRFilter(TypeIDSet{codeL1, TypeID::P2});
+        SimpleFilter PRFilter(TypeIDSet{codeL1_, TypeID::P2});
         SimpleFilter SNRFilter(TypeID::S1, confReader().getValueAsInt("SNRmask"), DBL_MAX);
 
         ProcessLinear linear1;
@@ -87,21 +87,21 @@ namespace pod
         // Object to decimate data
         Decimate decimateData(confReader().getValueAsDouble("decimationInterval"),
                               confReader().getValueAsDouble("decimationTolerance"),
-                              data->navLibrary_.getInitialTime());
+                              data_->navLibrary_.getInitialTime());
 
         // Declare a basic modeler
         // BasicModel basic(Position(0.0, 0.0, 0.0), SP3EphList);
-        BasicModel basic(nominalPos, data->navLibrary_);
+        BasicModel basic(nominalPos_, data_->navLibrary_);
         // Set the minimum elevation
         basic.setMinElev(opts().maskEl);
 
-        basic.setDefaultObservable(codeL1);
+        basic.setDefaultObservable(codeL1_);
 
         // Object to remove eclipsed satellites
         EclipsedSatFilter eclipsedSV;
 
         // Object to compute gravitational delay effects
-        GravitationalDelay grDelay(nominalPos);
+        GravitationalDelay grDelay(nominalPos_);
 
         // Vector from monument to antenna ARP [UEN], in meters
         Triple offsetARP;
@@ -123,13 +123,13 @@ namespace pod
             antexReader.getAntenna(confReader().getValue("antennaModel", opts().SiteRover));
 
         // Object to compute satellite antenna phase center effect
-        ComputeSatPCenter svPcenter(nominalPos);
+        ComputeSatPCenter svPcenter(nominalPos_);
 
         // Feed 'ComputeSatPCenter' object with 'AntexReader' object
         svPcenter.setAntexReader(antexReader);
 
         // Declare an object to correct observables to monument
-        CorrectObservables corr(data->navLibrary_);
+        CorrectObservables corr(data_->navLibrary_);
 
         corr.setMonument(offsetARP);
 
@@ -143,8 +143,8 @@ namespace pod
         }
 
         // Object to compute wind-up effect
-        ComputeWindUp windup(data->navLibrary_,
-                             nominalPos,
+        ComputeWindUp windup(data_->navLibrary_,
+                             nominalPos_,
                              opts().genericFilesDirectory + confReader().getValue("satDataFile"));
 
         // Object to compute the tropospheric data
@@ -175,7 +175,7 @@ namespace pod
         linear3.addLinear(comb.lcPrefit);
 
         // Declare a base-changing object: From ECEF to North-East-Up (NEU)
-        XYZ2NEU baseChange(nominalPos);
+        XYZ2NEU baseChange(nominalPos_);
 
         // Object to compute DOP values
         ComputeDOP cDOP;
@@ -227,7 +227,7 @@ namespace pod
 
         // This is the GNSS data structure that will hold all the
         // GNSS-related information
-        RinexEpoch gRin;
+        RinexEpoch rin_epoch;
 
 #pragma region Output streams
 
@@ -241,7 +241,7 @@ namespace pod
 
         i = 1;
         std::cout << "First forward processing part started." << std::endl;
-        for (auto& obsFile : data->getObsFiles(opts().SiteRover))
+        for (auto& obsFile : data_->getObsFiles(opts().SiteRover))
         {
             std::cout << obsFile << std::endl;
             // Input observation file stream
@@ -255,72 +255,72 @@ namespace pod
 
             // read the header
             rin >> roh;
-            gMap.header = roh;
+            gMap_.header = roh;
 
             // set def. interval for basic model object
             basic.setDefaultInterval(roh.interval);
 
             // Let's process all lines of observation data, one by one
-            while (rin >> gRin)
+            while (rin >> rin_epoch)
             {
                 // work around for post header comments
-                if (gRin.getBody().size() == 0)
+                if (rin_epoch.getBody().size() == 0)
                     continue;
                 //
-                gRin.keepOnlySatSystems(opts().systems);
+                rin_epoch.keepOnlySatSystems(opts().systems);
 
                 /// update current time and nominal position
-                CommonTime time(gRin.getHeader().epoch);
-                apprPos().getPosition(gRin, nominalPos);
+                CommonTime time(rin_epoch.getHeader().epoch);
+                apprPos().getPosition(rin_epoch, nominalPos_);
 
                 /// compute pole tide displacment
-                auto eop = data->eopStore.getEOP(MJD(time).mjd, IERSConvention::IERS2010);
+                auto eop = data_->eopStore.getEOP(MJD(time).mjd, IERSConvention::IERS2010);
                 PoleTides pole;
                 pole.setXY(eop.xp, eop.yp);
 
-                basic.setRxPosition(nominalPos);
-                grDelay.setNominalPosition(nominalPos);
-                svPcenter.setNominalPosition(nominalPos);
-                windup.setNominalPosition(nominalPos);
-                XYZ2NEU baseChange(nominalPos);
-                tropModel.setAllParameters(time, nominalPos);
+                basic.setRxPosition(nominalPos_);
+                grDelay.setNominalPosition(nominalPos_);
+                svPcenter.setNominalPosition(nominalPos_);
+                windup.setNominalPosition(nominalPos_);
+                XYZ2NEU baseChange(nominalPos_);
+                tropModel.setAllParameters(time, nominalPos_);
                 // Compute solid, oceanic and pole tides effects at this epoch
-                Triple tides(solid.getSolidTide(time, nominalPos)
+                Triple tides(solid.getSolidTide(time, nominalPos_)
                              + ocean.getOceanLoading(opts().SiteRover, time)
-                             + pole.getPoleTide(time, nominalPos));
+                             + pole.getPoleTide(time, nominalPos_));
 
                 // Update observable correction object with tides information
                 corr.setExtraBiases(tides);
-                corr.setNominalPosition(nominalPos);
+                corr.setNominalPosition(nominalPos_);
 
                 try
                 {
-                    gRin >> requireObs;
-                    gRin >> PRFilter;
-                    gRin >> SNRFilter;
-                    gRin >> linear1;
-                    gRin >> markCSLI2;
-                    gRin >> markCSMW;
-                    gRin >> markArc;
-                    gRin >> decimateData;
-                    gRin >> basic;
-                    gRin >> eclipsedSV;
-                    gRin >> grDelay;
-                    gRin >> svPcenter;
-                    gRin >> corr;
-                    gRin >> windup;
-                    gRin >> computeTropo;
-                    gRin >> linear2;
-                    gRin >> pcFilter;
-                    // gRin >> phaseAlign;
-                    gRin >> linear3;
-                    // gRin >> baseChange;
-                    gRin >> cDOP;
+                    rin_epoch >> requireObs_;
+                    rin_epoch >> PRFilter;
+                    rin_epoch >> SNRFilter;
+                    rin_epoch >> linear1;
+                    rin_epoch >> markCSLI2;
+                    rin_epoch >> markCSMW;
+                    rin_epoch >> markArc;
+                    rin_epoch >> decimateData;
+                    rin_epoch >> basic;
+                    rin_epoch >> eclipsedSV;
+                    rin_epoch >> grDelay;
+                    rin_epoch >> svPcenter;
+                    rin_epoch >> corr;
+                    rin_epoch >> windup;
+                    rin_epoch >> computeTropo;
+                    rin_epoch >> linear2;
+                    rin_epoch >> pcFilter;
+                    // rin_epoch >> phaseAlign;
+                    rin_epoch >> linear3;
+                    // rin_epoch >> baseChange;
+                    rin_epoch >> cDOP;
 
                     if (cycles < 1)
-                        gRin >> pppSolver;
+                        rin_epoch >> pppSolver;
                     else
-                        gRin >> fbpppSolver;
+                        rin_epoch >> fbpppSolver;
                 }
                 catch (DecimateEpoch& d)
                 {
@@ -332,14 +332,14 @@ namespace pod
                 // Check what type of solver we are using
                 if (cycles < 1)
                 {
-                    GnssEpoch ep(gRin.getBody());
-                    CommonTime time(gRin.getHeader().epoch);
+                    GnssEpoch ep(rin_epoch.getBody());
+                    CommonTime time(rin_epoch.getHeader().epoch);
 
                     // Let's print to output file the results of this epoch
                     printSolution(outfile, pppSolver, time, ep);
 
                     // add epoch to results
-                    gMap.data.insert(std::pair<CommonTime, GnssEpoch>(time, ep));
+                    gMap_.data.insert(std::pair<CommonTime, GnssEpoch>(time, ep));
                 }
             }
 
@@ -380,15 +380,15 @@ namespace pod
 
         // Reprocess is over. Let's finish with the last processing
         // Loop over all data epochs, again, and print results
-        while (fbpppSolver.LastProcess(gRin))
+        while (fbpppSolver.LastProcess(rin_epoch))
         {
             // update current time and nominal position
-            GnssEpoch ep(gRin.getBody());
-            apprPos().getPosition(gRin, nominalPos);
-            printSolution(outfile, fbpppSolver, gRin.getHeader().epoch, ep);
-            gMap.data.insert(std::pair<CommonTime, GnssEpoch>(gRin.getHeader().epoch, ep));
+            GnssEpoch ep(rin_epoch.getBody());
+            apprPos().getPosition(rin_epoch, nominalPos_);
+            printSolution(outfile, fbpppSolver, rin_epoch.getHeader().epoch, ep);
+            gMap_.data.insert(std::pair<CommonTime, GnssEpoch>(rin_epoch.getHeader().epoch, ep));
 
-        } // End of 'while( fbpppSolver.LastProcess(gRin) )'
+        } // End of 'while( fbpppSolver.LastProcess(rin_epoch) )'
 
         std::cout << "Processing finished for station: '" << opts().SiteRover << "'." << std::endl;
         std::cout << "Num. of rejected meas. " << fbpppSolver.getRejectedMeasurements()
@@ -401,13 +401,13 @@ namespace pod
 
     void PPPSolution::updateRequaredObs()
     {
-        codeL1 = confReader().getValueAsBoolean("useC1") ? TypeID::C1 : TypeID::P1;
+        codeL1_ = confReader().getValueAsBoolean("useC1") ? TypeID::C1 : TypeID::P1;
 
-        requireObs.addRequiredType(codeL1);
-        requireObs.addRequiredType(TypeID::P2);
-        requireObs.addRequiredType(TypeID::L1);
-        requireObs.addRequiredType(TypeID::L2);
-        requireObs.addRequiredType(TypeID::S1);
+        requireObs_.addRequiredType(codeL1_);
+        requireObs_.addRequiredType(TypeID::P2);
+        requireObs_.addRequiredType(TypeID::L1);
+        requireObs_.addRequiredType(TypeID::L2);
+        requireObs_.addRequiredType(TypeID::S1);
     }
 
     void PPPSolution::printSolution(std::ofstream& outfile,
@@ -416,7 +416,7 @@ namespace pod
                                     GnssEpoch& gEpoch)
     {
         // Prepare for printing
-        outfile << std::fixed << std::setprecision(outputPrec);
+        outfile << std::fixed << std::setprecision(outputCoordsPrec);
 
         // Print results
         outfile << static_cast<YDSTime>(time).year << "-"; // Year           - #1
@@ -424,7 +424,7 @@ namespace pod
         outfile << static_cast<YDSTime>(time).sod << "  "; // SecondsOfDay   - #3
         outfile << std::setprecision(6)
                 << (static_cast<YDSTime>(time).doy + static_cast<YDSTime>(time).sod / 86400.0)
-                << "  " << std::setprecision(outputPrec);
+                << "  " << std::setprecision(outputCoordsPrec);
 
         // We add 0.1 meters to 'wetMap' because 'NeillTropModel' sets a
         // nominal value of 0.1 m. Also to get the total we have to add the
@@ -435,9 +435,9 @@ namespace pod
 
         gEpoch.slnData.insert(std::pair<TypeID, double>(TypeID::recZTropo, wetMap));
 
-        double x = nominalPos.X() + solver.getSolution(TypeID::dx); // dx    - #4
-        double y = nominalPos.Y() + solver.getSolution(TypeID::dy); // dy    - #5
-        double z = nominalPos.Z() + solver.getSolution(TypeID::dz); // dz    - #6
+        double x = nominalPos_.X() + solver.getSolution(TypeID::dx); // dx    - #4
+        double y = nominalPos_.Y() + solver.getSolution(TypeID::dy); // dy    - #5
+        double z = nominalPos_.Z() + solver.getSolution(TypeID::dz); // dz    - #6
 
         gEpoch.slnData.insert(std::pair<TypeID, double>(TypeID::recX, x));
         gEpoch.slnData.insert(std::pair<TypeID, double>(TypeID::recY, y));
@@ -486,7 +486,7 @@ namespace pod
         try
         {
             processCore();
-            gMap.updateMetadata();
+            gMap_.updateMetadata();
         }
         catch (ConfigurationException& conf_exp)
         {

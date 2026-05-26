@@ -1,4 +1,4 @@
-#include "PdFloatSolution.h"
+﻿#include "PdFloatSolution.h"
 
 #include "AmbiguitiesEquations.h"
 #include "AntexReader.hpp"
@@ -61,7 +61,7 @@ namespace pod
         std::list<ProcessingClass*> reProcList;
         updateRequaredObs();
 
-        SimpleFilter CodePhaseFilterBase(TypeIDSet{codeL1, TypeID::P2, TypeID::L1, TypeID::L2});
+        SimpleFilter CodePhaseFilterBase(TypeIDSet{codeL1_, TypeID::P2, TypeID::L1, TypeID::L2});
         SimpleFilter CodePhaseFilterRover(CodePhaseFilterBase);
 
         SimpleFilter SNRFilterBase(TypeID::S1, confReader().getValueAsInt("SNRmask"), DBL_MAX);
@@ -78,19 +78,19 @@ namespace pod
         Position refPos(pos);
 
         // basic model object for ref. station
-        BasicModel modelRef(data->navLibrary_);
-        modelRef.setDefaultObservable(codeL1);
+        BasicModel modelRef(data_->navLibrary_);
+        modelRef.setDefaultObservable(codeL1_);
         modelRef.setMinElev(opts().maskEl);
         // basic model object for rover has the same settings as BasicModel for ref. station
         BasicModel modelRover(modelRef);
         modelRef.setRxPosition(refPos);
-        RinexEpoch gRin, gRef;
-        SyncObs sync(data->getObsFiles(opts().SiteBase), gRin);
+        RinexEpoch rin_epoch, gRef;
+        SyncObs sync(data_->getObsFiles(opts().SiteBase), rin_epoch);
 
         // Object to decimate data
         Decimate decimateData(confReader().getValueAsDouble("decimationInterval"),
                               confReader().getValueAsDouble("decimationTolerance"),
-                              data->navLibrary_.getInitialTime());
+                              data_->navLibrary_.getInitialTime());
 
 #pragma region troposhere modeling objects
 
@@ -104,7 +104,7 @@ namespace pod
 
 #pragma endregion
 
-        IonexModel ionoModel(nominalPos, data->ionexStore, TypeID::C1, false);
+        IonexModel ionoModel(nominalPos_, data_->ionexStore, TypeID::C1, false);
 
         // Object to compute gravitational delay effects
         GravitationalDelay grDelayBase(refPos);
@@ -126,7 +126,7 @@ namespace pod
         // check sharp SNR drops
         SNRCatcher snrCatcherL1Base(TypeID::S1, TypeID::CSL1, 901.0, 5, 30);
         SNRCatcher snrCatcherL1Rover(TypeID::S1, TypeID::CSL1, 901.0, 5, 30);
-        PrefitResCatcher resCatcher(Equations->measTypes());
+        PrefitResCatcher resCatcher(equations_->measTypes());
         NumSatFilter minSatFilter(desiredSlnType());
 
         // Object to keep track of satellite arcs
@@ -147,10 +147,10 @@ namespace pod
 
 #pragma region correct observable
 
-        CorrectObservables corrBase(data->navLibrary_);
+        CorrectObservables corrBase(data_->navLibrary_);
         corrBase.setNominalPosition(refPos);
 
-        CorrectObservables corrRover(data->navLibrary_);
+        CorrectObservables corrRover(data_->navLibrary_);
 
         // Vector from monument to antenna ARP [UEN], in meters
         // for base
@@ -187,11 +187,11 @@ namespace pod
         OceanLoading ocean;
         ocean.setFilename(opts().genericFilesDirectory + confReader().getValue("oceanLoadingFile"));
 
-        ComputeWindUp windupBase(data->navLibrary_,
+        ComputeWindUp windupBase(data_->navLibrary_,
                                  refPos,
                                  opts().genericFilesDirectory
                                      + confReader().getValue("satDataFile"));
-        ComputeWindUp windupRover(data->navLibrary_,
+        ComputeWindUp windupRover(data_->navLibrary_,
                                   refPos,
                                   opts().genericFilesDirectory
                                       + confReader().getValue("satDataFile"));
@@ -212,24 +212,24 @@ namespace pod
 
         // configure single differences operator with appropriate measurements types
         TypeIDSet diffTypeSet;
-        for (auto&& it : Equations->measTypes())
+        for (auto&& it : equations_->measTypes())
             diffTypeSet.insert(it);
         delta.setDiffTypeSet(diffTypeSet);
 
-        KalmanSolver solver(Equations);
+        KalmanSolver solver(equations_);
         solver.setMinSatNumber(5);
-        KalmanSolverFB solverFb(Equations);
+        KalmanSolverFB solverFb(equations_);
         solverFb.setMinSatNumber(5);
-        if (forwardBackwardCycles > 0)
+        if (forwardBackwardCycles_ > 0)
         {
-            solverFb.setCyclesNumber(forwardBackwardCycles);
+            solverFb.setCyclesNumber(forwardBackwardCycles_);
             solverFb.setLimits(confReader().getValueListAsDouble("codeLimList"),
                                confReader().getValueListAsDouble("phaseLimList"));
         }
 
         bool firstTime = true;
         //
-        for (auto& obsFile : data->getObsFiles(opts().SiteRover))
+        for (auto& obsFile : data_->getObsFiles(opts().SiteRover))
         {
             std::cout << obsFile << std::endl;
             // Input observation file stream
@@ -243,22 +243,22 @@ namespace pod
 
             // read the header
             rin >> roh;
-            gMap.header = roh;
+            gMap_.header = roh;
 
             Antenna ant_rov(antexReader.getAntenna(roh.antType));
             corrRover.setAntenna(ant_rov);
 
             // read all epochs
-            while (rin >> gRin)
+            while (rin >> rin_epoch)
             {
 
-                if (gRin.getBody().size() == 0)
+                if (rin_epoch.getBody().size() == 0)
                 {
-                    printMsg(gRin.getHeader().epoch, "Empty epoch record in Rinex file");
+                    printMsg(rin_epoch.getHeader().epoch, "Empty epoch record in Rinex file");
                     continue;
                 }
 
-                const auto& t = gRin.getHeader().epoch;
+                const auto& t = rin_epoch.getHeader().epoch;
                 bool b;
 #if _DEBUG
                 CATCH_TIME(t, 2014, 12, 19, 0, 14, 15, b)
@@ -266,55 +266,55 @@ namespace pod
                     DBOUT_LINE("catched")
 #endif
                 // keep only satellites from satellites systems selecyted for processing
-                gRin.keepOnlySatSystems(opts().systems);
+                rin_epoch.keepOnlySatSystems(opts().systems);
 
                 // keep only types used for processing
-                //  gRin.keepOnlyTypeID(requireObs.getRequiredType());
+                //  rin_epoch.keepOnlyTypeID(requireObs_.getRequiredType());
 
                 // compute approximate position
                 if (firstTime)
                 {
-                    /* if (computeApprPos(gRin, data->SP3EphList, nominalPos))
+                    /* if (computeApprPos(rin_epoch, data_->SP3EphList, nominalPos_))
                          continue;*/
                     i = 0;
                     for (auto& it :
                          confReader().getValueListAsDouble("nominalPosition", opts().SiteRover))
                         pos[i++] = it;
-                    nominalPos = Position(pos);
+                    nominalPos_ = Position(pos);
 
                     std::cout << "Baseline: " << std::setprecision(4)
-                              << (nominalPos - refPos).mag() / 1000 << " km" << std::endl;
+                              << (nominalPos_ - refPos).mag() / 1000 << " km" << std::endl;
                     firstTime = false;
                 }
 
-                grDelayRover.setNominalPosition(nominalPos);
+                grDelayRover.setNominalPosition(nominalPos_);
 
-                tropoRovPtr.setAllParameters(t, nominalPos);
+                tropoRovPtr.setAllParameters(t, nominalPos_);
                 tropoBasePtr.setAllParameters(t, refPos);
-                ionoModel.setInitialRxPosition(nominalPos);
+                ionoModel.setInitialRxPosition(nominalPos_);
 
-                modelRover.setRxPosition(nominalPos);
-                corrRover.setNominalPosition(nominalPos);
-                windupRover.setNominalPosition(nominalPos);
-                svPcenterRover.setNominalPosition(nominalPos);
+                modelRover.setRxPosition(nominalPos_);
+                corrRover.setNominalPosition(nominalPos_);
+                windupRover.setNominalPosition(nominalPos_);
+                svPcenterRover.setNominalPosition(nominalPos_);
 
-                gRin >> requireObs;
-                gRin >> CodePhaseFilterRover;
-                gRin >> SNRFilterRover;
+                rin_epoch >> requireObs_;
+                rin_epoch >> CodePhaseFilterRover;
+                rin_epoch >> SNRFilterRover;
 
-                if (gRin.getBody().size() == 0)
+                if (rin_epoch.getBody().size() == 0)
                 {
-                    printMsg(gRin.getHeader().epoch, "Rover receiver: all SV has been rejected.");
+                    printMsg(rin_epoch.getHeader().epoch, "Rover receiver: all SV has been rejected.");
                     continue;
                 }
 
-                gRin >> computeLinear;
-                gRin >> markCSLI2Rover;
-                gRin >> markCSMW2Rover;
-                gRin >> snrCatcherL1Rover;
-                gRin >> markArcRover;
+                rin_epoch >> computeLinear_;
+                rin_epoch >> markCSLI2Rover;
+                rin_epoch >> markCSMW2Rover;
+                rin_epoch >> snrCatcherL1Rover;
+                rin_epoch >> markArcRover;
 
-                auto eop = data->eopStore.getEOP(MJD(t).mjd, IERSConvention::IERS2010);
+                auto eop = data_->eopStore.getEOP(MJD(t).mjd, IERSConvention::IERS2010);
                 pole.setXY(eop.xp, eop.yp);
 
                 try
@@ -328,13 +328,13 @@ namespace pod
                     gRef.keepOnlySatSystems(opts().systems);
 
                     // keep only types used for processing
-                    gRef.keepOnlyTypeID(requireObs.getRequiredType());
+                    gRef.keepOnlyTypeID(requireObs_.getRequiredType());
 
-                    gRef >> requireObs;
+                    gRef >> requireObs_;
                     gRef >> CodePhaseFilterBase;
                     gRef >> SNRFilterBase;
 
-                    gRef >> computeLinear;
+                    gRef >> computeLinear_;
                     gRef >> markCSLI2Base;
                     gRef >> markCSMW2Base;
                     gRef >> snrCatcherL1Base;
@@ -355,12 +355,12 @@ namespace pod
 
                     gRef >> corrBase;
                     gRef >> windupBase;
-                    data->ionoCorrector.setNominalPosition(refPos);
+                    data_->ionoCorrector.setNominalPosition(refPos);
 
                     gRef >> computeTropoBase;
                     // gRef >> ionoFilterBase;
                     gRef >> linearIonoFree;
-                    gRef >> oMinusC;
+                    gRef >> oMinusC_;
 
                     delta.setRefData(gRef.getBody());
                 }
@@ -373,56 +373,56 @@ namespace pod
                     break;
                 }
 
-                gRin >> modelRover;
-                // gRin >> eclipsedSV;
-                gRin >> grDelayRover;
-                gRin >> svPcenterRover;
+                rin_epoch >> modelRover;
+                // rin_epoch >> eclipsedSV;
+                rin_epoch >> grDelayRover;
+                rin_epoch >> svPcenterRover;
 
-                Triple tides(solid.getSolidTide(t, nominalPos)
+                Triple tides(solid.getSolidTide(t, nominalPos_)
                              + ocean.getOceanLoading(opts().SiteRover, t)
-                             + pole.getPoleTide(t, nominalPos));
+                             + pole.getPoleTide(t, nominalPos_));
                 corrRover.setExtraBiases(tides);
-                gRin >> corrRover;
+                rin_epoch >> corrRover;
 
-                gRin >> windupRover;
-                gRin >> computeTropoRover;
-                // gRin >> ionoFilterRover;
-                gRin >> linearIonoFree;
-                gRin >> oMinusC;
-                gRin >> delta;
-                gRin >> resCatcher;
-                gRin >> computeWeightSimple;
+                rin_epoch >> windupRover;
+                rin_epoch >> computeTropoRover;
+                // rin_epoch >> ionoFilterRover;
+                rin_epoch >> linearIonoFree;
+                rin_epoch >> oMinusC_;
+                rin_epoch >> delta;
+                rin_epoch >> resCatcher;
+                rin_epoch >> computeWeightSimple;
 
-                gRin >> minSatFilter;
-                gRin >> useMarker;
+                rin_epoch >> minSatFilter;
+                rin_epoch >> useMarker;
 
-                DBOUT_LINE(">>" << CivilTime(gRin.getHeader().epoch).asString());
-                if (forwardBackwardCycles > 0)
+                DBOUT_LINE(">>" << CivilTime(rin_epoch.getHeader().epoch).asString());
+                if (forwardBackwardCycles_ > 0)
                 {
-                    gRin >> solverFb;
+                    rin_epoch >> solverFb;
                 }
                 else
                 {
-                    gRin >> solver;
-                    auto ep = opts().fullOutput ? GnssEpoch(gRin.getBody()) : GnssEpoch();
+                    rin_epoch >> solver;
+                    auto ep = opts().fullOutput ? GnssEpoch(rin_epoch.getBody()) : GnssEpoch();
                     // updateNomPos(solverFB);
                     printSolution(solver, t, ep);
-                    gMap.data.insert(std::make_pair(t, ep));
+                    gMap_.data.insert(std::make_pair(t, ep));
                 }
             }
         }
-        if (forwardBackwardCycles > 0)
+        if (forwardBackwardCycles_ > 0)
         {
             std::cout << "Fw-Bw part started" << std::endl;
             solverFb.reProcess();
-            RinexEpoch gRin;
+            RinexEpoch rin_epoch;
             std::cout << "Last process part started" << std::endl;
-            while (solverFb.lastProcess(gRin))
+            while (solverFb.lastProcess(rin_epoch))
             {
-                auto ep = opts().fullOutput ? GnssEpoch(gRin.getBody()) : GnssEpoch();
+                auto ep = opts().fullOutput ? GnssEpoch(rin_epoch.getBody()) : GnssEpoch();
                 // updateNomPos(solverFB);
-                printSolution(solverFb, gRin.getHeader().epoch, ep);
-                gMap.data.insert(std::make_pair(gRin.getHeader().epoch, ep));
+                printSolution(solverFb, rin_epoch.getHeader().epoch, ep);
+                gMap_.data.insert(std::make_pair(rin_epoch.getHeader().epoch, ep));
             }
             std::cout << "Measurments rejected: " << solverFb.rejectedMeasurements << std::endl;
         }
@@ -438,61 +438,61 @@ namespace pod
         LinearCombinations comm;
         bool useC1 = confReader().getValueAsBoolean("useC1");
 
-        codeL1 = useC1 ? TypeID::C1 : TypeID::P1;
-        computeLinear.setUseC1(useC1);
-        computeLinear.add(std::make_unique<PDelta>());
-        computeLinear.add(std::make_unique<MWoubenna>());
+        codeL1_ = useC1 ? TypeID::C1 : TypeID::P1;
+        computeLinear_.setUseC1(useC1);
+        computeLinear_.add(std::make_unique<PDelta>());
+        computeLinear_.add(std::make_unique<MWoubenna>());
 
-        computeLinear.add(std::make_unique<LDelta>());
-        computeLinear.add(std::make_unique<LICombimnation>());
+        computeLinear_.add(std::make_unique<LDelta>());
+        computeLinear_.add(std::make_unique<LICombimnation>());
 
         configureSolver();
 
-        requireObs.addRequiredType(codeL1);
-        requireObs.addRequiredType(TypeID::P2);
-        requireObs.addRequiredType(TypeID::L1);
-        requireObs.addRequiredType(TypeID::L2);
-        requireObs.addRequiredType(TypeID::LLI1);
-        requireObs.addRequiredType(TypeID::LLI2);
+        requireObs_.addRequiredType(codeL1_);
+        requireObs_.addRequiredType(TypeID::P2);
+        requireObs_.addRequiredType(TypeID::L1);
+        requireObs_.addRequiredType(TypeID::L2);
+        requireObs_.addRequiredType(TypeID::LLI1);
+        requireObs_.addRequiredType(TypeID::LLI2);
 
-        requireObs.addRequiredType(TypeID::S1);
+        requireObs_.addRequiredType(TypeID::S1);
 
         if (opts().carrierBands.find(CarrierBand::L1) != opts().carrierBands.end())
         {
             if (useC1)
-                oMinusC.add(std::make_unique<PrefitC1>(true));
+                oMinusC_.add(std::make_unique<PrefitC1>(true));
             else
-                oMinusC.add(std::make_unique<PrefitP1>(true));
+                oMinusC_.add(std::make_unique<PrefitP1>(true));
 
-            oMinusC.add(std::make_unique<PrefitL1>());
+            oMinusC_.add(std::make_unique<PrefitL1>());
 
-            Equations->measTypes().insert(TypeID::prefitC);
-            Equations->measTypes().insert(TypeID::prefitL1);
+            equations_->measTypes().insert(TypeID::prefitC);
+            equations_->measTypes().insert(TypeID::prefitL1);
 
-            Equations->residTypes().insert(TypeID::postfitC);
-            Equations->residTypes().insert(TypeID::postfitL1);
+            equations_->residTypes().insert(TypeID::postfitC);
+            equations_->residTypes().insert(TypeID::postfitL1);
         }
         if (opts().carrierBands.find(CarrierBand::L2) != opts().carrierBands.end())
         {
-            oMinusC.add(std::make_unique<PrefitP2>(true));
-            oMinusC.add(std::make_unique<PrefitL2>());
+            oMinusC_.add(std::make_unique<PrefitP2>(true));
+            oMinusC_.add(std::make_unique<PrefitL2>());
 
-            Equations->measTypes().insert(TypeID::prefitP2);
-            Equations->measTypes().insert(TypeID::prefitL2);
-            Equations->residTypes().insert(TypeID::postfitP2);
-            Equations->residTypes().insert(TypeID::postfitL2);
+            equations_->measTypes().insert(TypeID::prefitP2);
+            equations_->measTypes().insert(TypeID::prefitL2);
+            equations_->residTypes().insert(TypeID::postfitP2);
+            equations_->residTypes().insert(TypeID::postfitL2);
         }
     }
 
     void PdFloatSolution::configureSolver()
     {
-        Equations->clearEquations();
+        equations_->clearEquations();
 
         // tropo
         if (opts().computeTropo)
         {
             double qPrimeVert = confReader().getValueAsDouble("tropoQVertical");
-            Equations->addEquation(std::make_unique<TropoEquations>(qPrimeVert));
+            equations_->addEquation(std::make_unique<TropoEquations>(qPrimeVert));
         }
 
         //  Equations->addEquation(std::make_unique<IonoEquations>(confReader().getValueAsDouble("ionoQ")));
@@ -515,16 +515,16 @@ namespace pod
         }
 
         // add position equations
-        Equations->addEquation(std::move(coord));
+        equations_->addEquation(std::move(coord));
 
-        Equations->addEquation(
+        equations_->addEquation(
             std::make_unique<ClockBiasEquations>(confReader().getValueAsDouble("clkSigma")));
 
         if (opts().systems.size() > 1)
-            Equations->addEquation(std::make_unique<InterSystemBias>());
+            equations_->addEquation(std::make_unique<InterSystemBias>());
 
         if (opts().carrierBands.size() > 1)
-            Equations->addEquation(std::make_unique<InterFrequencyBiases>());
+            equations_->addEquation(std::make_unique<InterFrequencyBiases>());
 
         if (confReader().getValueAsBoolean("computeIono"))
         {
@@ -539,15 +539,15 @@ namespace pod
 
             double ionoSigma = confReader().getValueAsDouble("ionoSigma");
             ionoEq->setSigma(ionoSigma);
-            Equations->addEquation(std::move(ionoEq));
+            equations_->addEquation(std::move(ionoEq));
         }
 
         if (opts().carrierBands.find(CarrierBand::L1) != opts().carrierBands.end())
-            Equations->addEquation(std::make_unique<AmbiguitiesEquations>(TypeID::BL1));
+            equations_->addEquation(std::make_unique<AmbiguitiesEquations>(TypeID::BL1));
 
         if (opts().carrierBands.find(CarrierBand::L2) != opts().carrierBands.end())
-            Equations->addEquation(std::make_unique<AmbiguitiesEquations>(TypeID::BL2));
+            equations_->addEquation(std::make_unique<AmbiguitiesEquations>(TypeID::BL2));
 
-        forwardBackwardCycles = confReader().getValueAsInt("forwardBackwardCycles");
+        forwardBackwardCycles_ = confReader().getValueAsInt("forwardBackwardCycles_");
     }
 } // namespace pod

@@ -24,79 +24,65 @@ namespace pod
 
 #pragma region Constructors
 
-      public:
         GnssSolution(GnssDataStore_sptr dataStore, double maxsigma);
 
-      public:
         virtual ~GnssSolution();
 
 #pragma endregion
 
 #pragma region Methods
 
-      public:
         virtual void process() = 0;
 
-      public:
         virtual GnssEpochMap& getData()
         {
-            return gMap;
+            return gMap_;
         };
 
-      public:
         virtual std::string fileName() const = 0;
 
-      public:
         virtual SlnType desiredSlnType() const = 0;
 
-      public:
         virtual double getMaxSigma() const
         {
-            return maxSigma;
+            return maxSigma_;
         }
 
-      public:
         virtual GnssSolution& setMaxSigma(double sigma)
         {
-            maxSigma = sigma;
+            maxSigma_ = sigma;
             return (*this);
         }
 
-      public:
         virtual GnssSolution& setConfigData(GnssDataStore_sptr dataStore)
         {
-            data = dataStore;
+            data_ = dataStore;
             return (*this);
         };
 
       protected:
         virtual gnsstk::ConfDataReader& confReader()
         {
-            return *(data->confReader);
+            return *(data_->confReader);
         }
 
-      protected:
         virtual GnssDataStore::ProcessOpts& opts()
         {
-            return data->opts;
+            return data_->opts;
         }
 
-      protected:
         virtual IApprPosProvider& apprPos()
         {
-            return *data->apprPos;
+            return *data_->apprPos;
         }
 
-      protected:
         virtual GnssDataStore::ProcessOpts& opts() const
         {
-            return data->opts;
+            return data_->opts;
         }
 
-      protected:
         virtual void updateRequaredObs() = 0;
 
-      protected:
         virtual void printSolution(const KalmanSolver& slr,
                                    const gnsstk::CommonTime& t,
                                    GnssEpoch& ep);
@@ -105,50 +91,36 @@ namespace pod
 
 #pragma region Fields
 
-        // Input processing data and configuration
-      protected:
-        GnssDataStore_sptr data;
+// Input processing data and configuration
+GnssDataStore_sptr data_;
 
-        // Nominal position
-      protected:
-        gnsstk::Position nominalPos;
+// Nominal position
+gnsstk::Position nominalPos_;
 
-        // Processing result
-      protected:
-        GnssEpochMap gMap;
+// Processing result
+GnssEpochMap gMap_;
 
-        // This object will filter out satellites, which doesn't meet  predefined required
-        // observables set
-      protected:
-        gnsstk::RequireObservables requireObs;
+// This object will filter out satellites, which doesn't meet  predefined required
+// observables set
+gnsstk::RequireObservables requireObs_;
 
-        // L1 code measurements used for position computation (typical C1 and P1)
-      protected:
-        gnsstk::TypeID codeL1;
+// L1 code measurements used for position computation (typical C1 and P1)
+gnsstk::TypeID codeL1_;
 
-        // number of decimal places for output
-      protected:
-        int outputPrec = 3;
+// object to compute prefit residuals
+ProcessLinear oMinusC_;
 
-        // object to compute prefit residuals
-      protected:
-        ProcessLinear oMinusC;
+// equation System composer
+eqComposer_sptr equations_;
 
-        // equation System composer
-      protected:
-        eqComposer_sptr Equations;
+// number of forward-backward cycles
+int forwardBackwardCycles_;
 
-        // number of forward-backward cycles
-      protected:
-        int forwardBackwardCycles;
+// object to compute linear combinations
+ProcessLinear computeLinear_;
 
-        // object to compute linear combinations
-      protected:
-        ProcessLinear computeLinear;
-
-        // max sigma
-      protected:
-        double maxSigma;
+// max sigma
+double maxSigma_;
 
 #pragma endregion
     };

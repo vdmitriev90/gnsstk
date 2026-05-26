@@ -143,10 +143,10 @@ namespace pod
             return *this;
         }
 
-        gnsstk::IRinex& Process(gnsstk::IRinex& gRin);
+        gnsstk::IRinex& Process(gnsstk::IRinex& rin_epoch);
 
         // last forward process cycle
-        bool lastProcess(gnsstk::IRinex& gRin);
+        bool lastProcess(gnsstk::IRinex& rin_epoch);
 
         // Reprocess the data stored during a previous 'Process()' call.
         void reProcess(void);
@@ -158,7 +158,7 @@ namespace pod
         }
 
       private:
-        gnsstk::IRinex& ReProcessOneEpoch(gnsstk::IRinex& gRin);
+        gnsstk::IRinex& ReProcessOneEpoch(gnsstk::IRinex& rin_epoch);
 
         // This method checks the residuals and modifies 'gData' accordingly.
         void checkLimits(gnsstk::IRinex& gData, size_t cycleNumber);

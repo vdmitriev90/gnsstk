@@ -13,9 +13,9 @@ namespace pod
     }
 
     GnssSolution::GnssSolution(GnssDataStore_sptr gnssData, double sigma = 50.0)
-        : data(gnssData)
-        , Equations(std::make_shared<EquationComposer>())
-        , maxSigma(sigma)
+        : data_(gnssData)
+        , equations_(std::make_shared<EquationComposer>())
+        , maxSigma_(sigma)
     {
     }
 
@@ -26,7 +26,7 @@ namespace pod
                                      GnssEpoch& gEpoch)
     {
 
-        for (auto&& it : Equations->currentUnknowns())
+        for (auto&& it : equations_->currentUnknowns())
         {
             if (it.type == TypeID::dx || it.type == TypeID::dy || it.type == TypeID::dz)
                 continue;
@@ -51,31 +51,30 @@ namespace pod
                     gEpoch.satData[it.sv][it.type] = amb;
             }
         }
-        Position newPos;
-        double stDev3D(NAN);
+        Position new_pos;
+        double st_dev3_d(NAN);
 
-        newPos[0] = nominalPos.X() + solver.getSolution(FilterParameter(TypeID::dx)); // dx    - #4
-        newPos[1] = nominalPos.Y() + solver.getSolution(FilterParameter(TypeID::dy)); // dy    - #5
-        newPos[2] = nominalPos.Z() + solver.getSolution(FilterParameter(TypeID::dz)); // dz    - #6
+        new_pos[0] = nominalPos_.X() + solver.getSolution(FilterParameter(TypeID::dx)); // dx    - #4
+        new_pos[1] = nominalPos_.Y() + solver.getSolution(FilterParameter(TypeID::dy)); // dy    - #5
+        new_pos[2] = nominalPos_.Z() + solver.getSolution(FilterParameter(TypeID::dz)); // dz    - #6
 
-        double varX = solver.getVariance(FilterParameter(TypeID::dx)); // Cov dx    - #8
-        double varY = solver.getVariance(FilterParameter(TypeID::dy)); // Cov dy    - #9
-        double varZ = solver.getVariance(FilterParameter(TypeID::dz)); // Cov dz    - #10
-        stDev3D = sqrt(varX + varY + varZ);
+        double var_x = solver.getVariance(FilterParameter(TypeID::dx)); // Cov dx    - #8
+        double var_y = solver.getVariance(FilterParameter(TypeID::dy)); // Cov dy    - #9
+        double var_z = solver.getVariance(FilterParameter(TypeID::dz)); // Cov dz    - #10
+        st_dev3_d = sqrt(var_x + var_y + var_z);
 
-        gEpoch.slnData.insert(std::make_pair(TypeID::recX, newPos.X()));
-        gEpoch.slnData.insert(std::make_pair(TypeID::recY, newPos.Y()));
-        gEpoch.slnData.insert(std::make_pair(TypeID::recZ, newPos.Z()));
-        gEpoch.slnData.insert(std::make_pair(TypeID::recStDev3D, stDev3D));
+        gEpoch.slnData.insert(std::make_pair(TypeID::recX, new_pos.X()));
+        gEpoch.slnData.insert(std::make_pair(TypeID::recY, new_pos.Y()));
+        gEpoch.slnData.insert(std::make_pair(TypeID::recZ, new_pos.Z()));
+        gEpoch.slnData.insert(std::make_pair(TypeID::recStDev3D, st_dev3_d));
 
         // number of used sats = number of residuals/number of measurement types
-        int numUsedSats = solver.PostfitResiduals().size() / Equations->measTypes().size();
-        gEpoch.slnData.insert(std::make_pair(TypeID::recUsedSV, numUsedSats));
+        int num_used_sats = solver.PostfitResiduals().size() / equations_->measTypes().size();
+        gEpoch.slnData.insert(std::make_pair(TypeID::recUsedSV, num_used_sats));
 
-        SlnType slnType = solver.getValid() ? desiredSlnType() : SlnType::NONE_SOLUTION;
+        SlnType sln_type = solver.getValid() ? desiredSlnType() : SlnType::NONE_SOLUTION;
 
-        gEpoch.slnData.insert(std::make_pair(TypeID::recSlnType, slnType));
-
+        gEpoch.slnData.insert(std::make_pair(TypeID::recSlnType, sln_type));
         gEpoch.slnData.insert(std::make_pair(TypeID::sigma, solver.getPhaseSigma()));
     };
 } // namespace pod

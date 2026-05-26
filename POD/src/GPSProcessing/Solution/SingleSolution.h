@@ -18,37 +18,30 @@ namespace pod
         SingleSolution(GnssDataStore_sptr data_ptr);
         virtual ~SingleSolution() {};
 
-      public:
         virtual std::string fileName() const
         {
             return opts().SiteRover + "_" + slnType2Str.at(desiredSlnType());
         }
 
-      public:
         virtual SlnType desiredSlnType() const override
         {
             return SlnType::Standalone;
         }
 
-      public:
         virtual void process() override;
 
       protected:
         virtual void updateRequaredObs() override;
 
-      protected:
         virtual void configureSolver();
 
-      protected:
         void updateNomPos(KalmanSolver& solver);
 
         // code smoother
-      protected:
-        CodeSmoother2 codeSmoother;
+        CodeSmoother2 codeSmoother_;
 
         // Maximum size of filter window, in seconds.
-      protected:
-        int codeSmWindowSize;
+        int codeSmWindowSize_;
     };
 } // namespace pod
 #endif //! POD_SINGLE_SOLUTION_H

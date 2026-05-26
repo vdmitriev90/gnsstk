@@ -22,19 +22,19 @@ namespace pod
 
       public:
         SQLiteAdapter() = delete;
-        SQLiteAdapter(const std::string& spath) : firstTime(true), fileName(spath)
+        SQLiteAdapter(const std::string& spath) : firstTime_(true), fileName_(spath)
         {
             initialize();
         }
 
-        SQLiteAdapter(char* path) : firstTime(true), fileName(path)
+        SQLiteAdapter(char* path) : firstTime_(true), fileName_(path)
         {
             initialize();
         }
 
         ~SQLiteAdapter()
         {
-            sqlite3_close(db);
+            sqlite3_close(db_);
         }
 
       private:
@@ -76,14 +76,14 @@ namespace pod
 #pragma region Fields
 
       private:
-        std::string fileName;
-        sqlite3* db;
-        int lastFileID;
-        int lastEpochID;
-        long lastTypeValuePairID;
-        bool firstTime;
-        int obsItemCounter = 0;
-        int maxObsItemsPerTransaction = 100000;
+        std::string fileName_;
+        sqlite3* db_;
+        int lastFileID_;
+        int lastEpochID_;
+        long lastTypeValuePairID_;
+        bool firstTime_;
+        int obsItemCounter_ = 0;
+        int maxObsItemsPerTransaction_ = 100000;
 
 #pragma endregion
     };

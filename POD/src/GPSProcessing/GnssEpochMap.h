@@ -14,7 +14,7 @@ namespace pod
 
         GnssEpoch(const gnsstk::satTypeValueMap& sData);
         GnssEpoch(const gnsstk::SatTypePtrMap& stpMap);
-        GnssEpoch(const gnsstk::gnssRinex& gRin);
+        GnssEpoch(const gnsstk::gnssRinex& rin_epoch);
         ~GnssEpoch();
 
         gnsstk::satTypeValueMap satData;

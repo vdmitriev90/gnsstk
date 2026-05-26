@@ -22,7 +22,7 @@ namespace pod
     void TropoGradEquations::updateH(const gnsstk::IRinex& gData,
                                      const gnsstk::TypeIDSet& obsTypes,
                                      gnsstk::Matrix<double>& H,
-                                     int& col_0)
+                                     int& startColumn)
     {
 
         for (auto&& type : types)
@@ -31,9 +31,9 @@ namespace pod
             for (const auto& t : obsTypes)
             {
                 for (const auto& it : gData.getBody())
-                    H(row++, col_0) = it.second->get_value().at(type.type);
+                    H(row++, startColumn) = it.second->get_value().at(type.type);
             }
-            col_0++;
+            startColumn++;
         }
     }
 

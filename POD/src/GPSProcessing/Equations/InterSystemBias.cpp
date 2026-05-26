@@ -46,7 +46,7 @@ namespace pod
     void InterSystemBias::updateH(const gnsstk::IRinex& gData,
                                   const gnsstk::TypeIDSet& obsTypes,
                                   gnsstk::Matrix<double>& H,
-                                  int& col_0)
+                                  int& startColumn)
     {
         auto currentSatSet = gData.getBody().getSatID();
         int row(0);
@@ -64,12 +64,12 @@ namespace pod
                 {
                     auto it = types.find(ss2isb[sv.system]);
                     int j = std::distance(types.begin(), it);
-                    H(row, col_0 + j) = 1;
+                    H(row, startColumn + j) = 1;
                 }
                 row++;
             }
         }
-        col_0 += types.size();
+        startColumn += types.size();
     }
 
     InterSystemBias& InterSystemBias::setStochasicModel(const SatelliteSystem& system,

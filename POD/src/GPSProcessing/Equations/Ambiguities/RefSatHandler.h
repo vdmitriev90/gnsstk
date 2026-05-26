@@ -13,7 +13,7 @@ namespace pod
 
         // return satellites set, contains satellites with maximum elevation for each satellite
         // system
-        gnsstk::SatIDSet getRefSats(gnsstk::IRinex& gRin);
+        gnsstk::SatIDSet getRefSats(gnsstk::IRinex& rin_epoch);
 
         // return DD to SD transition matrix
         gnsstk::Matrix<double> getSD2DDMatrix(gnsstk::IRinex& gData,

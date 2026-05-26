@@ -4,10 +4,10 @@ using namespace gnsstk;
 namespace pod
 {
 
-    gnsstk::IRinex& UsedInPvtMarker::Process(gnsstk::IRinex& gRin)
+    gnsstk::IRinex& UsedInPvtMarker::Process(gnsstk::IRinex& rin_epoch)
     {
-        markAsUsed(gRin.getBody());
-        return gRin;
+        markAsUsed(rin_epoch.getBody());
+        return rin_epoch;
     }
 
     // mark all SV in SatTypePtrMap as useable in PVT
@@ -60,10 +60,10 @@ namespace pod
         return satData;
     }
 
-    UsedInPvtMarker& UsedInPvtMarker::updateLastEpoch(const gnsstk::IRinex& gRin)
+    UsedInPvtMarker& UsedInPvtMarker::updateLastEpoch(const gnsstk::IRinex& rin_epoch)
     {
-        preEpoch = gRin.getHeader().epoch;
-        preEpochSats = gRin.getBody().getSatID();
+        preEpoch = rin_epoch.getHeader().epoch;
+        preEpochSats = rin_epoch.getBody().getSatID();
 
         return *this;
     }

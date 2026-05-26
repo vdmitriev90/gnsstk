@@ -30,12 +30,12 @@ namespace pod
     void ClockBiasEquations::updateH(const gnsstk::IRinex& svs,
                                      const gnsstk::TypeIDSet& types,
                                      gnsstk::Matrix<double>& H,
-                                     int& col_0)
+                                     int& startColumn)
     {
         for (size_t i = 0; i < H.rows(); i++)
-            H(i, col_0) = 1.0;
+            H(i, startColumn) = 1.0;
 
-        col_0++;
+        startColumn++;
     }
 
     void ClockBiasEquations::updatePhi(Matrix<double>& Phi, int& index) const

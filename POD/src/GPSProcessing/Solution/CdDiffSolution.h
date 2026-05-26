@@ -32,7 +32,7 @@ namespace pod
         void configureSolver() override;
 
         // code smoothers for Ref. receiver obseravtions
-        CodeSmoother2 codeSmootherRef;
+        CodeSmoother2 codeSmootherRef_;
     };
 } // namespace pod
 #endif // !POD_CDDIFFSOLUTION_H

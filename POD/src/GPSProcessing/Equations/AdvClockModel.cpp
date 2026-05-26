@@ -56,14 +56,14 @@ namespace pod
     void AdvClockModel::updateH(const gnsstk::IRinex& gData,
                                 const gnsstk::TypeIDSet& types,
                                 gnsstk::Matrix<double>& H,
-                                int& col_0)
+                                int& startColumn)
     {
         for (size_t i = 0; i < H.rows(); i++)
         {
-            H(i, col_0) = 1.0;
-            H(i, col_0 + 1) = dt;
+            H(i, startColumn) = 1.0;
+            H(i, startColumn + 1) = dt;
         }
-        col_0 += 2;
+        startColumn += 2;
     }
 
     int AdvClockModel::getNumUnknowns() const

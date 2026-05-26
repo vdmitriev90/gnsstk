@@ -18,7 +18,7 @@ namespace pod
         virtual void updateH(const gnsstk::IRinex& gData,
                              const gnsstk::TypeIDSet& types,
                              gnsstk::Matrix<double>& H,
-                             int& col_0) override;
+                             int& startColumn) override;
 
         virtual ParametersSet getParameters() const override
         {

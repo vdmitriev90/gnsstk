@@ -40,7 +40,7 @@ namespace pod
         virtual void updateH(const gnsstk::IRinex& gData,
                              const gnsstk::TypeIDSet& types,
                              gnsstk::Matrix<double>& H,
-                             int& col_0) = 0;
+                             int& startColumn) = 0;
 
         virtual ParametersSet getAmbSet() const
         {

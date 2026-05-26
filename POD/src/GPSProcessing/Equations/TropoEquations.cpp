@@ -18,13 +18,13 @@ namespace pod
     void TropoEquations::updateH(const gnsstk::IRinex& gData,
                                  const gnsstk::TypeIDSet& obsTypes,
                                  gnsstk::Matrix<double>& H,
-                                 int& col_0)
+                                 int& startColumn)
     {
         int row(0);
         for (const auto& t : obsTypes)
             for (const auto& it : gData.getBody())
-                H(row++, col_0) = it.second->get_value().at(type.type);
-        col_0++;
+                H(row++, startColumn) = it.second->get_value().at(type.type);
+        startColumn++;
     }
 
     void TropoEquations::updatePhi(gnsstk::Matrix<double>& Phi, int& index) const

@@ -75,14 +75,14 @@ namespace pod
     } // End of method 'IonoEstimator::Process()'
 
     ///
-    bool IonoEstimator::feed(const gnsstk::SatID& sv, IRinex& gRin)
+    bool IonoEstimator::feed(const gnsstk::SatID& sv, IRinex& rin_epoch)
     {
         double ionoCode(.0);
-        if (!lcIonoCode.getCombination(sv, gRin.getBody()[sv]->get_value(), ionoCode))
+        if (!lcIonoCode.getCombination(sv, rin_epoch.getBody()[sv]->get_value(), ionoCode))
             return false;
 
         double ionoPhase(.0);
-        if (!lcIonoPhase.getCombination(sv, gRin.getBody()[sv]->get_value(), ionoPhase))
+        if (!lcIonoPhase.getCombination(sv, rin_epoch.getBody()[sv]->get_value(), ionoPhase))
             return false;
 
         // get reference to current sv data
@@ -96,8 +96,8 @@ namespace pod
         }
 
         // update stochastic models
-        data.rWalkModel.Prepare(sv, gRin);
-        biasStochModel.Prepare(sv, gRin);
+        data.rWalkModel.Prepare(sv, rin_epoch);
+        biasStochModel.Prepare(sv, rin_epoch);
 
         //
         Matrix<double> Cov(2, 2, .0), Q(2, 2, .0), Phi(2, 2, .0);
@@ -139,7 +139,7 @@ namespace pod
         data.state.delay = state(0);
         data.state.bias = state(1);
 
-        gRin.getBody()[sv]->get_value()[TypeID::ionoL1] = data.state.delay;
+        rin_epoch.getBody()[sv]->get_value()[TypeID::ionoL1] = data.state.delay;
 
         return true;
     }

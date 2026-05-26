@@ -62,18 +62,18 @@ namespace pod
         std::ofstream fStat(sPath, std::ios::out);
 
         RinexObsHeader head;
-        RinexEpoch gRin;
+        RinexEpoch rin_epoch;
 
         rin >> head;
         rout << head;
         sv_stat stat;
-        while (rin >> gRin)
+        while (rin >> rin_epoch)
         {
             for (auto& it : csList)
-                gRin >> it;
+                rin_epoch >> it;
 
             bool isEpochFirstTime = true;
-            for (auto& it : gRin.getBody())
+            for (auto& it : rin_epoch.getBody())
             {
                 bool isSVFirstTime = true;
                 for (auto& it1 : csList)
@@ -84,7 +84,7 @@ namespace pod
                     {
                         if (isEpochFirstTime)
                         {
-                            fStat << CivilTime(gRin.getHeader().epoch) << " " << std::endl;
+                            fStat << CivilTime(rin_epoch.getHeader().epoch) << " " << std::endl;
                             isEpochFirstTime = false;
                         }
 
@@ -114,9 +114,9 @@ namespace pod
             if (!isEpochFirstTime)
                 fStat << std::endl;
             for (auto& it : smList)
-                gRin >> it;
+                rin_epoch >> it;
 
-            rout << gRin;
+            rout << rin_epoch;
         }
 
         std::cout << "Rinex file whith smoothed PR: " << oPath << std::endl;

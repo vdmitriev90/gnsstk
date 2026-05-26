@@ -50,7 +50,6 @@ namespace pod
                                    std::list<fs::path>& files)
     {
         std::regex rx(ext);
-        int totalUrls = 0;
         std::list<fs::path> paths;
         getAllFilesInDir(dir, paths);
         for (auto& p : paths)

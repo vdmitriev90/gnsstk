@@ -49,7 +49,7 @@ namespace pod
     void InterFrequencyBiases::updateH(const gnsstk::IRinex& gData,
                                        const gnsstk::TypeIDSet& obsTypes,
                                        gnsstk::Matrix<double>& H,
-                                       int& col_0)
+                                       int& startColumn)
     {
         // ParametersSet availableTypes, typeToRemove;
 
@@ -87,10 +87,10 @@ namespace pod
             {
                 auto it = types.find(ss2ifb[sv.system]);
                 int j = std::distance(types.begin(), it);
-                H(row++, col_0 + j) = 1;
+                H(row++, startColumn + j) = 1;
             }
         }
-        col_0 += types.size();
+        startColumn += types.size();
     }
 
     InterFrequencyBiases& InterFrequencyBiases::setStochasicModel(const SatelliteSystem& system,

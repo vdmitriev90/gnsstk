@@ -59,7 +59,7 @@ namespace pod
       protected:
         virtual GnssDataStore::ProcessOpts& opts() override
         {
-            return data->opts;
+            return data_->opts;
         };
 
       protected:

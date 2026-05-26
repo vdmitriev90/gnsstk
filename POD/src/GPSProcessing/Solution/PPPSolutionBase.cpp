@@ -22,12 +22,12 @@ namespace pod
     PPPSolutionBase::PPPSolutionBase(GnssDataStore_sptr procData) : GnssSolution(procData, 1.0) {}
     PPPSolutionBase::~PPPSolutionBase()
     {
-        solverPR.release();
+        solverPR_.release();
     }
 
-    void PPPSolutionBase::mapSNR(IRinex& gRin)
+    void PPPSolutionBase::mapSNR(IRinex& rin_epoch)
     {
-        for (auto& it1 : gRin.getBody())
+        for (auto& it1 : rin_epoch.getBody())
         {
             auto ts1 = TypeID(TypeID::S1);
             auto ts2 = TypeID(TypeID::S2);
@@ -44,22 +44,22 @@ namespace pod
 
     void PPPSolutionBase::PRProcess()
     {
-        NeillTropModel NeillModel = solverPR->initTropoModel(nominalPos, opts().DoY);
+        NeillTropModel NeillModel = solverPR_->initTropoModel(nominalPos_, opts().DoY);
 
-        std::cout << "solverType " << solverPR->getName() << std::endl;
+        std::cout << "solverType " << solverPR_->getName() << std::endl;
 
-        solverPR->maskEl = 5;
-        solverPR->ionoType = data->ionoCorrector.getType();
+        solverPR_->maskEl = 5;
+        solverPR_->ionoType = data_->ionoCorrector.getType();
 
         std::ofstream os;
-        std::string outPath = opts().workingDir + "\\" + data->apprPosFile;
+        std::string outPath = opts().workingDir + "\\" + data_->apprPosFile;
         os.open(outPath);
 
         // decimation
         int sampl(1);
         double tol(0.1);
 
-        for (auto obsFile : data->getObsFiles(opts().SiteRover))
+        for (auto obsFile : data_->getObsFiles(opts().SiteRover))
         {
             int badSol(0);
             std::cout << obsFile << std::endl;
@@ -87,7 +87,7 @@ namespace pod
                         continue;
                     Tpre = rod.time;
                     double dt = rod.time - ct0;
-                    GPSWeekSecond gpst = static_cast<GPSWeekSecond>(rod.time);
+                    const GPSWeekSecond gpst = static_cast<GPSWeekSecond>(rod.time);
 
                     if (fmod(gpst.getSOW(), sampl) > tol)
                         continue;
@@ -96,13 +96,13 @@ namespace pod
                     int res = 0;
                     CodeProcSvData svData;
                     ///
-                    solverPR->selectObservables(
+                    solverPR_->selectObservables(
                         rod, roh, opts().systems, CodeProcSvData::obsTypes, svData);
 
                     for (auto& it : svData.data)
                         it.second.snr = mapSNR(it.second.snr);
 
-                    svData.applyCNoMask(solverPR->maskSNR);
+                    svData.applyCNoMask(solverPR_->maskSNR);
                     GoodSats = svData.getNumUsedSv();
 
                     os << std::setprecision(6);
@@ -113,8 +113,8 @@ namespace pod
                     {
                         try
                         {
-                            solverPR->prepare(rod.time, data->navLibrary_, svData);
-                            res = solverPR->solve(rod.time, data->bceIonoStore, svData);
+                            solverPR_->prepare(rod.time, data_->navLibrary_, svData);
+                            res = solverPR_->solve(rod.time, data_->bceIonoStore, svData);
                             os << res;
                         }
                         catch (Exception& e)
@@ -125,18 +125,18 @@ namespace pod
                     else
                         res = -1;
 
-                    os << *solverPR << " " << svData << std::endl;
+                    os << *solverPR_ << " " << svData << std::endl;
 
                     if (res == 0)
                     {
                         Xvt xvt;
-                        xvt.x = Triple(solverPR->Sol(0), solverPR->Sol(1), solverPR->Sol(2));
-                        xvt.clkbias = solverPR->Sol(3);
+                        xvt.x = Triple(solverPR_->Sol(0), solverPR_->Sol(1), solverPR_->Sol(2));
+                        xvt.clkbias = solverPR_->Sol(3);
                         // data->apprPos.insert(pair<CommonTime, Xvt>(rod.time, xvt));
                     }
                     else
                     {
-                        solverPR->Sol = 0.0;
+                        solverPR_->Sol = 0.0;
                         badSol++;
                     }
                 }

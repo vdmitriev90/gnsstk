@@ -26,29 +26,29 @@ namespace pod
 
     KalmanSolverFB::~KalmanSolverFB() {}
 
-    gnsstk::IRinex& KalmanSolverFB::Process(gnsstk::IRinex& gRin)
+    gnsstk::IRinex& KalmanSolverFB::Process(gnsstk::IRinex& rin_epoch)
     {
-        solver.Process(gRin);
+        solver.Process(rin_epoch);
         if (solver.getResetState())
         {
-            LIDetMap[gRin.getHeader().epoch] = *LIDet;
-            MWDetMap[gRin.getHeader().epoch] = *MWDet;
+            LIDetMap[rin_epoch.getHeader().epoch] = *LIDet;
+            MWDetMap[rin_epoch.getHeader().epoch] = *MWDet;
         }
 
         // Before returning, store the results for a future iteration
         if (currCycle == 0)
         {
             // Store observation data
-            ObsData.push_back(gRin.clone());
+            ObsData.push_back(rin_epoch.clone());
 
             // Update the number of processed measurements
-            processedMeasurements += gRin.getBody().numSats();
+            processedMeasurements += rin_epoch.getBody().numSats();
         }
 
-        return gRin;
+        return rin_epoch;
     }
 
-    bool KalmanSolverFB::lastProcess(gnsstk::IRinex& gRin)
+    bool KalmanSolverFB::lastProcess(gnsstk::IRinex& rin_epoch)
     {
 
         // Keep processing while 'ObsData' is not empty
@@ -56,7 +56,7 @@ namespace pod
         {
             // Get the first data epoch in 'ObsData' and process it.
             // The result will be stored in 'gData'
-            gRin = ReProcessOneEpoch(*ObsData.front());
+            rin_epoch = ReProcessOneEpoch(*ObsData.front());
 
             // gData = ObsData.front();
             // Remove the first data epoch in 'ObsData', freeing some
@@ -88,38 +88,38 @@ namespace pod
         }
     }
 
-    gnsstk::IRinex& KalmanSolverFB::ReProcessOneEpoch(gnsstk::IRinex& gRin)
+    gnsstk::IRinex& KalmanSolverFB::ReProcessOneEpoch(gnsstk::IRinex& rin_epoch)
     {
 
-        if (solver.ResetIfRequared(gRin.getHeader().epoch, solver.FilterData))
+        if (solver.ResetIfRequared(rin_epoch.getHeader().epoch, solver.FilterData))
         {
-            *LIDet = LIDetMap[gRin.getHeader().epoch];
-            *MWDet = MWDetMap[gRin.getHeader().epoch];
+            *LIDet = LIDetMap[rin_epoch.getHeader().epoch];
+            *MWDet = MWDetMap[rin_epoch.getHeader().epoch];
             DBOUT_LINE("state update")
-            //*satArcMarker = SatArcMap[gRin.getHeader().epoch];
+            //*satArcMarker = SatArcMap[rin_epoch.getHeader().epoch];
         }
 
-        gRin.resetCurrData();
+        rin_epoch.resetCurrData();
 
-        usedSvMarker.keepOnlyUsed(gRin.getBody());
-        usedSvMarker.CleanSatArcFlags(gRin.getBody());
-        usedSvMarker.CleanScFlags(gRin.getBody());
-        checkLimits(gRin, currCycle);
+        usedSvMarker.keepOnlyUsed(rin_epoch.getBody());
+        usedSvMarker.CleanSatArcFlags(rin_epoch.getBody());
+        usedSvMarker.CleanScFlags(rin_epoch.getBody());
+        checkLimits(rin_epoch, currCycle);
 
-        gRin >> reProcList;
+        rin_epoch >> reProcList;
 
-        solver.Process(gRin);
+        solver.Process(rin_epoch);
 
-        if (LIDetMap.find(gRin.getHeader().epoch) != LIDetMap.end())
+        if (LIDetMap.find(rin_epoch.getHeader().epoch) != LIDetMap.end())
         {
-            solver.FilterData[gRin.getHeader().epoch] = solver.getState();
-            LIDetMap[gRin.getHeader().epoch] = *LIDet;
-            MWDetMap[gRin.getHeader().epoch] = *MWDet;
+            solver.FilterData[rin_epoch.getHeader().epoch] = solver.getState();
+            LIDetMap[rin_epoch.getHeader().epoch] = *LIDet;
+            MWDetMap[rin_epoch.getHeader().epoch] = *MWDet;
             DBOUT_LINE("state stored")
         }
-        // SatArcMap[gRin.getHeader().epoch] = *satArcMarker;
+        // SatArcMap[rin_epoch.getHeader().epoch] = *satArcMarker;
 
-        return gRin;
+        return rin_epoch;
     }
 
     KalmanSolverFB& KalmanSolverFB::setLimits(const std::vector<double>& codeLims,

@@ -26,9 +26,9 @@ namespace pod
             return (this->useC1);
         }
 
-        bool getCombination(const SatID& sv, const gnssRinex& gRin, double& value) const
+        bool getCombination(const SatID& sv, const gnssRinex& rin_epoch, double& value) const
         {
-            return getCombination(sv, gRin.body, value);
+            return getCombination(sv, rin_epoch.body, value);
         }
 
         bool getCombination(const SatID& sv, const satTypeValueMap& gData, double& value) const
