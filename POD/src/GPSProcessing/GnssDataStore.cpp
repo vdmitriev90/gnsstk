@@ -156,16 +156,15 @@ namespace pod
     bool GnssDataStore::loadEphemeris()
     {
 
-        std::list<std::string> files;
         std::string subdir = confReader->getValue("EphemerisDir");
-        FsUtils::getAllFilesInDir(opts.workingDir + "\\" + subdir, files);
+        const auto files = FsUtils::getAllFilesInDir(opts.workingDir + "\\" + subdir);
 
-        for (auto file : files)
+        for (const auto& file : files)
         {
             // Try to load each ephemeris file
             try
             {
-                sp3NavFactory_->addDataSource(file);
+                sp3NavFactory_->addDataSource(file.string());
             }
             catch (FileMissingException& e)
             {
@@ -181,16 +180,15 @@ namespace pod
     // reading clock data
     bool GnssDataStore::loadClocks()
     {
-        std::list<std::string> files;
         std::string subdir = confReader->getValue("RinexClockDir");
-        FsUtils::getAllFilesInDir(opts.workingDir + "\\" + subdir, files);
+        const auto files = FsUtils::getAllFilesInDir(opts.workingDir + "\\" + subdir);
 
-        for (auto file : files)
+        for (const auto& file : files)
         {
             // Try to load each ephemeris file
             try
             {
-                sp3NavFactory_->addDataSource(file);
+                sp3NavFactory_->addDataSource(file.string());
             }
             catch (FileMissingException& e)
             {
@@ -235,13 +233,12 @@ namespace pod
 
     bool GnssDataStore::loadIonoMap()
     {
-        std::list<std::string> files;
         std::string subdir = confReader->getValue("IonexDir");
-        FsUtils::getAllFilesInDir(opts.workingDir + "\\" + subdir, files);
+        const auto files = FsUtils::getAllFilesInDir(opts.workingDir + "\\" + subdir);
         ionexStore.clear();
-        for (auto& file : files)
+        for (const auto& file : files)
         {
-            ionexStore.loadFile(file);
+            ionexStore.loadFile(file.string());
         }
 
         return ionexStore.size() > 0;
@@ -250,11 +247,10 @@ namespace pod
     bool GnssDataStore::loadBceIonoModel()
     {
         const std::string gpsObsExt = ".[\\d]{2}[nN]";
-        std::list<std::string> files;
-
-        FsUtils::getAllFilesInDir(opts.workingDir + "\\" + opts.bceDir, gpsObsExt, files);
+        const auto files =
+            FsUtils::getFilesByExtensionRegex(opts.workingDir + "\\" + opts.bceDir, gpsObsExt);
         int i = 0;
-        for (auto file : files)
+        for (auto&& file : files)
         {
             try
             {
@@ -262,7 +258,7 @@ namespace pod
                 Rinex3NavStream rNavFile;
                 Rinex3NavHeader rNavHeader;
 
-                rNavFile.open(file.c_str(), std::ios::in);
+                rNavFile.open(file.string().c_str(), std::ios::in);
                 rNavFile >> rNavHeader;
 
 #pragma region try get the date
@@ -341,14 +337,14 @@ namespace pod
     bool GnssDataStore::loadFcn()
     {
         const std::string glnObsExt = ".[\\d]{2}[gG]";
-        std::list<std::string> files;
-        FsUtils::getAllFilesInDir(opts.workingDir + "\\" + opts.bceDir, glnObsExt, files);
+        auto files =
+            FsUtils::getFilesByExtensionRegex(opts.workingDir + "\\" + opts.bceDir, glnObsExt);
 
         for (auto file : files)
         {
             try
             {
-                SatID::loadGloFcn(file.c_str());
+                SatID::loadGloFcn(file.string().c_str());
             }
             catch (...)
             {
@@ -517,9 +513,11 @@ namespace pod
 
     std::list<std::string> GnssDataStore::getObsFiles(const std::string& siteID) const
     {
-        std::list<std::string> ObsFiles;
         std::string subdir = confReader->getValue("RinesObsDir");
-        FsUtils::getAllFilesInDir(opts.workingDir + "\\" + subdir + "\\" + siteID, ObsFiles);
-        return ObsFiles;
+        auto paths = FsUtils::getAllFilesInDir(opts.workingDir + "\\" + subdir + "\\" + siteID);
+        std::list<std::string> result;
+        for (const auto& p : paths)
+            result.push_back(p.string());
+        return result;
     }
 } // namespace pod

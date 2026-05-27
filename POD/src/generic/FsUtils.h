@@ -2,25 +2,24 @@
 #define POD_FS_UTILS_H
 
 #include <filesystem>
-#include <list>
 #include <string>
+#include <vector>
 
-namespace pod
+namespace pod::FsUtils
 {
-    class FsUtils
-    {
-      public:
-        static void getAllFilesInDir(const std::string& dir, std::list<std::string>& files);
-        static void getAllFilesInDir(const std::string& dir,
-                                     std::list<std::filesystem::path>& files);
+    /// Returns all file paths in \p dir (non-recursive).
+    /// Throws std::runtime_error if \p dir does not exist.
+    std::vector<std::filesystem::path> getAllFilesInDir(const std::filesystem::path& dir);
 
-        static void getAllFilesInDir(const std::string& dir,
-                                     const std::string& ext,
-                                     std::list<std::string>& files);
-        static void getAllFilesInDir(const std::string& dir,
-                                     const std::string& ext,
-                                     std::list<std::filesystem::path>& files);
-    };
-} // namespace pod
+    /// Returns file paths in \p dir whose extension matches \p ext exactly
+    /// (e.g. ".obs", ".rnx").  Case-sensitive.
+    std::vector<std::filesystem::path> getFilesByExtension(const std::filesystem::path& dir,
+                                                           const std::string& ext);
+
+    /// Returns file paths in \p dir whose extension matches the regex \p pattern
+    /// (e.g. R"(\.\d{2}[oOdD])").
+    std::vector<std::filesystem::path> getFilesByExtensionRegex(const std::filesystem::path& dir,
+                                                                const std::string& pattern);
+} // namespace pod::FsUtils
 
 #endif // ! POD_FS_UTILS_H

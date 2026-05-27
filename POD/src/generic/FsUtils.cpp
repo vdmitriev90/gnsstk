@@ -1,65 +1,56 @@
 #include "FsUtils.h"
 
-#include <filesystem>
 #include <iostream>
 #include <regex>
+#include <stdexcept>
 
 namespace fs = std::filesystem;
 
-namespace pod
+namespace pod::FsUtils
 {
-
-    void FsUtils::getAllFilesInDir(const std::string& dir, std::list<std::string>& files)
+    std::vector<fs::path> getAllFilesInDir(const fs::path& dir)
     {
-        std::list<fs::path> paths;
-        getAllFilesInDir(dir, paths);
+        if (!fs::exists(dir))
+            throw std::runtime_error("directory: " + dir.string() + " doesn't exist.");
 
-        for (auto& p : paths)
-            files.push_back(p.string());
-    }
-
-    void FsUtils::getAllFilesInDir(const std::string& dir, std::list<fs::path>& files)
-    {
-        files.clear();
-        fs::path p(dir);
-
-        if (!fs::exists(p))
+        std::vector<fs::path> result;
+        for (const auto& entry : fs::directory_iterator(dir))
         {
-            std::string message = "directory: " + dir + " doesn't exist.";
-            std::cerr << message << std::endl;
-            throw std::exception(message.c_str());
+            if (entry.is_regular_file())
+                result.push_back(entry.path());
         }
-
-        for (auto& p : fs::directory_iterator(dir))
-            files.push_back(p.path());
+        return result;
     }
 
-    void FsUtils::getAllFilesInDir(const std::string& dir,
-                                   const std::string& ext,
-                                   std::list<std::string>& files)
+    std::vector<fs::path> getFilesByExtension(const fs::path& dir, const std::string& ext)
     {
-        std::list<fs::path> paths;
-        getAllFilesInDir(dir, ext, paths);
+        auto all_files = getAllFilesInDir(dir);
 
-        for (auto& p : paths)
-            files.push_back(p.string());
-    }
+        std::vector<fs::path> result;
+        result.reserve(all_files.size());
 
-    void FsUtils::getAllFilesInDir(const std::string& dir,
-                                   const std::string& ext,
-                                   std::list<fs::path>& files)
-    {
-        std::regex rx(ext);
-        std::list<fs::path> paths;
-        getAllFilesInDir(dir, paths);
-        for (auto& p : paths)
+        for (const auto& p : all_files)
         {
-            if (p.has_extension())
-            {
-                std::string exti = p.extension().string();
-                if (regex_match(exti, rx))
-                    files.push_back(p);
-            }
+            if (p.extension().string() == ext)
+                result.push_back(p);
         }
+        return result;
     }
-} // namespace pod
+
+    std::vector<fs::path> getFilesByExtensionRegex(const fs::path& dir,
+                                                   const std::string& pattern)
+    {
+        std::regex rx(pattern);
+        auto all_files = getAllFilesInDir(dir);
+
+        std::vector<fs::path> result;
+        result.reserve(all_files.size());
+
+        for (const auto& p : all_files)
+        {
+            if (p.has_extension() && std::regex_match(p.extension().string(), rx))
+                result.push_back(p);
+        }
+        return result;
+    }
+} // namespace pod::FsUtils
