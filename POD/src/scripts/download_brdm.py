@@ -163,37 +163,175 @@ def download_and_extract(url, path):
   return True
 
 
-def download_clk(date, output_dir):
-  gps_week = int((date - datetime.date(1980, 1, 6)).days / 7)
-  dow = (date - datetime.date(1980, 1, 6)).days % 7
+def download_ionex(date, output_dir):
+  year = date.year
+  doy = date.timetuple().tm_yday
+  yy = str(year)[-2:]
 
-  filename = f"igr{gps_week}{dow}.clk.Z"
-  extracted = os.path.join(output_dir, filename[:-2])
+  yyyy = f"{year:04d}"
+  ddd = f"{doy:03d}"
+
+  os.makedirs(output_dir, exist_ok=True)
+
+  # ===================== TRY NEW FORMAT =====================
+  filename = f"COD0OPSFIN_{yyyy}{ddd}0000_01D_01H_GIM.INX.gz"
+  extracted = os.path.join(output_dir, filename[:-3])
   if os.path.exists(extracted):
+    log(f"IONEX already exists, skipping: {relpath(extracted)}")
     return
 
-  url = f"https://cddis.nasa.gov/archive/gnss/products/{gps_week}/{filename}"
+  # Check if legacy fallback already exists
+  legacy_filename = f"codg{ddd}0.{yy}i"
+  legacy_extracted = os.path.join(output_dir, legacy_filename)
+  if os.path.exists(legacy_extracted):
+    log(f"IONEX (legacy) already exists, skipping: {relpath(legacy_extracted)}")
+    return
+
+  url = f"https://cddis.nasa.gov/archive/gnss/products/ionex/{yyyy}/{ddd}/{filename}"
   path = os.path.join(output_dir, filename)
 
-  log(f"Downloading CLK: {url}")
-  download_and_extract(url, path)
+  log(f"Trying IONEX: {url}")
+
+  if download_and_extract(url, path):
+    return
+
+  # ===================== FALLBACK TO LEGACY FORMAT =====================
+  legacy_compressed = f"codg{ddd}0.{yy}i.Z"
+  url = f"https://cddis.nasa.gov/archive/gnss/products/ionex/{yyyy}/{ddd}/{legacy_compressed}"
+  path = os.path.join(output_dir, legacy_compressed)
+
+  log(f"IONEX not found, trying legacy fallback: {url}")
+
+  if download_and_extract(url, path):
+    return
+
+  error(f"IONEX download failed for {yyyy}-{ddd}")
+
+
+def download_clk(date, output_dir):
+    gps_week = int((date - datetime.date(1980, 1, 6)).days / 7)
+    dow = (date - datetime.date(1980, 1, 6)).days % 7
+
+    year = date.year
+    doy = date.timetuple().tm_yday
+    yyyy = f"{year:04d}"
+    ddd = f"{doy:03d}"
+
+    os.makedirs(output_dir, exist_ok=True)
+
+    # ===================== TRY COD MGXFIN =====================
+    cod_filename = f"COD0MGXFIN_{yyyy}{ddd}0000_01D_30S_CLK.CLK.gz"
+    cod_extracted = os.path.join(output_dir, cod_filename[:-3])
+
+    if os.path.exists(cod_extracted):
+        log(f"CLK (COD) already exists, skipping: {relpath(cod_extracted)}")
+        return
+
+    # fallback already exists
+    legacy_filename = f"igr{gps_week}{dow}.clk"
+    legacy_extracted = os.path.join(output_dir, legacy_filename)
+
+    if os.path.exists(legacy_extracted):
+        log(f"CLK (legacy) already exists, skipping: {relpath(legacy_extracted)}")
+        return
+
+    url = f"https://cddis.nasa.gov/archive/gnss/products/{gps_week}/{cod_filename}"
+    path = os.path.join(output_dir, cod_filename)
+
+    log(f"Trying CLK (COD): {url}")
+
+    if download_and_extract(url, path):
+        return
+
+    # ===================== FALLBACK TO LEGACY =====================
+    legacy_compressed = f"igr{gps_week}{dow}.clk.Z"
+    url = f"https://cddis.nasa.gov/archive/gnss/products/{gps_week}/{legacy_compressed}"
+    path = os.path.join(output_dir, legacy_compressed)
+
+    log(f"CLK (COD) not found, trying legacy fallback: {url}")
+
+    if download_and_extract(url, path):
+        return
+
+    error(f"CLK download failed for {yyyy}-{ddd}")
 
 
 def download_sp3(date, output_dir):
-  gps_week = int((date - datetime.date(1980, 1, 6)).days / 7)
-  dow = (date - datetime.date(1980, 1, 6)).days % 7
+    gps_week = int((date - datetime.date(1980, 1, 6)).days / 7)
+    dow = (date - datetime.date(1980, 1, 6)).days % 7
 
-  filename = f"igr{gps_week}{dow}.sp3.Z"
-  extracted = os.path.join(output_dir, filename[:-2])
-  if os.path.exists(extracted):
-    log(f"SP3 already exists, skipping: {relpath(extracted)}")
-    return
+    year = date.year
+    doy = date.timetuple().tm_yday
+    yyyy = f"{year:04d}"
+    ddd = f"{doy:03d}"
 
-  url = f"https://cddis.nasa.gov/archive/gnss/products/{gps_week}/{filename}"
-  path = os.path.join(output_dir, filename)
+    os.makedirs(output_dir, exist_ok=True)
 
-  log(f"Downloading SP3: {url}")
-  download_and_extract(url, path)
+    # ===================== TRY COD MGXFIN =====================
+    cod_filename = f"COD0MGXFIN_{yyyy}{ddd}0000_01D_05M_ORB.SP3.gz"
+    cod_extracted = os.path.join(output_dir, cod_filename[:-3])
+
+    if os.path.exists(cod_extracted):
+        log(f"SP3 (COD) already exists, skipping: {relpath(cod_extracted)}")
+        return
+
+    # fallback already exists
+    legacy_filename = f"igr{gps_week}{dow}.sp3"
+    legacy_extracted = os.path.join(output_dir, legacy_filename)
+
+    if os.path.exists(legacy_extracted):
+        log(f"SP3 (legacy) already exists, skipping: {relpath(legacy_extracted)}")
+        return
+
+    url = f"https://cddis.nasa.gov/archive/gnss/products/{gps_week}/{cod_filename}"
+    path = os.path.join(output_dir, cod_filename)
+
+    log(f"Trying SP3 (COD): {url}")
+
+    if download_and_extract(url, path):
+        return
+
+    # ===================== FALLBACK TO LEGACY =====================
+    legacy_compressed = f"igr{gps_week}{dow}.sp3.Z"
+    url = f"https://cddis.nasa.gov/archive/gnss/products/{gps_week}/{legacy_compressed}"
+    path = os.path.join(output_dir, legacy_compressed)
+
+    log(f"SP3 (COD) not found, trying legacy fallback: {url}")
+
+    if download_and_extract(url, path):
+        return
+
+    error(f"SP3 download failed for {yyyy}-{ddd}")
+
+
+def download_erp(date, output_dir):
+    gps_week = int((date - datetime.date(1980, 1, 6)).days / 7)
+    dow = (date - datetime.date(1980, 1, 6)).days % 7
+
+    year = date.year
+    doy = date.timetuple().tm_yday
+    yyyy = f"{year:04d}"
+    ddd = f"{doy:03d}"
+
+    os.makedirs(output_dir, exist_ok=True)
+
+    # ===================== TRY COD MGXFIN ERP =====================
+    cod_filename = f"COD0MGXFIN_{yyyy}{ddd}0000_03D_12H_ERP.ERP.gz"
+    cod_extracted = os.path.join(output_dir, cod_filename[:-3])
+
+    if os.path.exists(cod_extracted):
+        log(f"ERP (COD) already exists, skipping: {relpath(cod_extracted)}")
+        return
+
+    url = f"https://cddis.nasa.gov/archive/gnss/products/{gps_week}/{cod_filename}"
+    path = os.path.join(output_dir, cod_filename)
+
+    log(f"Trying ERP (COD): {url}")
+
+    if download_and_extract(url, path):
+        return
+
+    error(f"ERP download failed for {yyyy}-{ddd}")
 
 
 def download_brdm(date, output_dir):
@@ -263,21 +401,61 @@ def _expected_nav_filenames(start_date, end_date):
   return names
 
 
+
 def _expected_sp3_filenames(start_date, end_date):
-  names = set()
-  for d in date_range(start_date, end_date):
-    gps_week = int((d - datetime.date(1980, 1, 6)).days / 7)
-    dow = (d - datetime.date(1980, 1, 6)).days % 7
-    names.add(f"igr{gps_week}{dow}.sp3")
-  return names
+    names = set()
+
+    for d in date_range(start_date, end_date):
+        gps_week = int((d - datetime.date(1980, 1, 6)).days / 7)
+        dow = (d - datetime.date(1980, 1, 6)).days % 7
+        yyyy = f"{d.year:04d}"
+        ddd = f"{d.timetuple().tm_yday:03d}"
+
+        names.add(f"COD0MGXFIN_{yyyy}{ddd}0000_01D_05M_ORB.SP3")
+        names.add(f"igr{gps_week}{dow}.sp3")
+
+    return names
+
+
 
 
 def _expected_clk_filenames(start_date, end_date):
+    names = set()
+
+    for d in date_range(start_date, end_date):
+        gps_week = int((d - datetime.date(1980, 1, 6)).days / 7)
+        dow = (d - datetime.date(1980, 1, 6)).days % 7
+        yyyy = f"{d.year:04d}"
+        ddd = f"{d.timetuple().tm_yday:03d}"
+
+        names.add(f"COD0MGXFIN_{yyyy}{ddd}0000_01D_30S_CLK.CLK")
+        names.add(f"igr{gps_week}{dow}.clk")
+
+    return names
+
+
+def _expected_erp_filenames(start_date, end_date):
+    names = set()
+
+    for d in date_range(start_date, end_date):
+        gps_week = int((d - datetime.date(1980, 1, 6)).days / 7)
+        dow = (d - datetime.date(1980, 1, 6)).days % 7
+        yyyy = f"{d.year:04d}"
+        ddd = f"{d.timetuple().tm_yday:03d}"
+
+        names.add(f"COD0MGXFIN_{yyyy}{ddd}0000_01D_12H_ERP.ERP")
+
+    return names
+
+
+def _expected_ionex_filenames(start_date, end_date):
   names = set()
   for d in date_range(start_date, end_date):
-    gps_week = int((d - datetime.date(1980, 1, 6)).days / 7)
-    dow = (d - datetime.date(1980, 1, 6)).days % 7
-    names.add(f"igr{gps_week}{dow}.clk")
+    yyyy = f"{d.year:04d}"
+    ddd = f"{d.timetuple().tm_yday:03d}"
+    yy = str(d.year)[-2:]
+    names.add(f"COD0OPSFIN_{yyyy}{ddd}0000_01D_01H_GIM.INX")
+    names.add(f"codg{ddd}0.{yy}i")
   return names
 
 
@@ -289,6 +467,8 @@ def clean_outside_range(base_dir, start_date, end_date):
     (os.path.join(base_dir, "nav"), _expected_nav_filenames(start_date, end_date)),
     (os.path.join(base_dir, "sp3"), _expected_sp3_filenames(start_date, end_date)),
     (os.path.join(base_dir, "clk"), _expected_clk_filenames(start_date, end_date)),
+    (os.path.join(base_dir, "inx"), _expected_ionex_filenames(start_date, end_date)),
+    (os.path.join(base_dir, "erp"), _expected_erp_filenames(start_date, end_date)),
   ]
 
   for subdir, valid_names in checks:
@@ -309,15 +489,20 @@ def download_obs_site(date, output_dir, site_id):
   yyyy = f"{year:04d}"
   ddd = f"{doy:03d}"
 
-  site4 = site_id[:4].lower()        # ✅ legacy
-  station_full = site_id.upper()     # ✅ RINEX3
+  site4 = site_id[:4].lower()
+  site4_upper = site_id[:4].upper()
+  station_full = site_id.upper()
+
+  site_dir = os.path.join(output_dir, site4_upper)
+  log(f"Trying RINEX3: {site_dir}")
+  os.makedirs(site_dir, exist_ok=True)
 
   # ===================== RINEX3 =====================
   rnx3_name = f"{station_full}_R_{yyyy}{ddd}0000_01D_30S_MO.crx.gz"
 
   url = f"https://cddis.nasa.gov/archive/gnss/data/daily/{yyyy}/{ddd}/{yy}d/{rnx3_name}"
 
-  path = os.path.join(output_dir, rnx3_name)
+  path = os.path.join(site_dir, rnx3_name)
 
   log(f"Trying RINEX3: {url}")
 
@@ -329,7 +514,7 @@ def download_obs_site(date, output_dir, site_id):
 
   url = f"https://cddis.nasa.gov/archive/gnss/data/daily/{yyyy}/{ddd}/{yy}d/{legacy_name}"
 
-  path = os.path.join(output_dir, legacy_name)
+  path = os.path.join(site_dir, legacy_name)
 
   log(f"Trying RINEX2 legacy: {url}")
 
@@ -342,19 +527,22 @@ def download_obs_site(date, output_dir, site_id):
 
 
 def clean_obs_dir(base_dir):
-  obs_dir = os.path.join(base_dir, "obs")
+  obs_dir = os.path.join(base_dir, "OBS")
   if not os.path.exists(obs_dir):
     return
 
-  for name in os.listdir(obs_dir):
-    path = os.path.join(obs_dir, name)
-    if os.path.isfile(path):
-      log(f"Removing obs file: {relpath(path)}")
-      os.remove(path)
+  for site_name in os.listdir(obs_dir):
+    site_path = os.path.join(obs_dir, site_name)
+    if os.path.isdir(site_path):
+      for name in os.listdir(site_path):
+        path = os.path.join(site_path, name)
+        if os.path.isfile(path):
+          log(f"Removing obs file: {relpath(path)}")
+          os.remove(path)
 
 
 def download_obs_day(date, base_dir, site_ids):
-  obs_dir = os.path.join(base_dir, "obs")
+  obs_dir = os.path.join(base_dir, "OBS")
   os.makedirs(obs_dir, exist_ok=True)
 
   for site_id in site_ids:
@@ -367,20 +555,26 @@ def download_products_day(date, base_dir):
   nav_dir = os.path.join(base_dir, "nav")
   sp3_dir = os.path.join(base_dir, "sp3")
   clk_dir = os.path.join(base_dir, "clk")
+  inx_dir = os.path.join(base_dir, "inx")
+  erp_dir = os.path.join(base_dir, "erp")
 
   os.makedirs(nav_dir, exist_ok=True)
   os.makedirs(sp3_dir, exist_ok=True)
   os.makedirs(clk_dir, exist_ok=True)
+  os.makedirs(inx_dir, exist_ok=True)
+  os.makedirs(erp_dir, exist_ok=True)
 
   log(f"Processing date: {date_str}")
 
   download_brdm(date, nav_dir)
   download_sp3(date, sp3_dir)
   download_clk(date, clk_dir)
+  download_ionex(date, inx_dir)
+  download_erp(date, erp_dir)
 
 
 def clean_all(base_dir):
-  for subdir in ("nav", "sp3", "clk"):
+  for subdir in ("nav", "sp3", "clk", "inx", "erp"):
     path = os.path.join(base_dir, subdir)
     if os.path.exists(path):
       log(f"Cleaning: {relpath(path)}")
@@ -401,12 +595,12 @@ def process_range(start_date, end_date, base_dir, site_ids=None):
     log(f"--- Window for {window_start} {current} {window_end}")
     clean_outside_range(base_dir, window_start, window_end)
 
-    for d in window:
-      download_products_day(d, base_dir)
-
     if site_ids:
       clean_obs_dir(base_dir)
       download_obs_day(current, base_dir, site_ids)
+
+    for d in window:
+      download_products_day(d, base_dir)
 
 
 def main():
