@@ -153,8 +153,8 @@ namespace pod
 
         void setCSDetRef(gnsstk::LICSDetector2& li, gnsstk::MWCSDetector& mw)
         {
-            LIDet = &li;
-            MWDet = &mw;
+            LiCsDetector_ = &li;
+            MwCsDetector_ = &mw;
         }
 
       private:
@@ -202,8 +202,8 @@ namespace pod
         //
         UsedInPvtMarker usedSvMarker;
 
-        gnsstk::LICSDetector2* LIDet;
-        gnsstk::MWCSDetector* MWDet;
+        gnsstk::LICSDetector2* LiCsDetector_;
+        gnsstk::MWCSDetector* MwCsDetector_;
 
 #pragma endregion
     };

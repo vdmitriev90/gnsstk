@@ -11,15 +11,21 @@ namespace pod
 
     KalmanSolverFB::KalmanSolverFB()
         : currCycle(0)
+        , cyclesNumber(0)
         , processedMeasurements(0)
         , rejectedMeasurements(0)
+        , LiCsDetector_(nullptr)
+        , MwCsDetector_(nullptr)
     {
     }
 
     KalmanSolverFB::KalmanSolverFB(eqComposer_sptr eqs)
         : currCycle(0)
+        , cyclesNumber(0)
         , processedMeasurements(0)
         , rejectedMeasurements(0)
+        , LiCsDetector_(nullptr)
+        , MwCsDetector_(nullptr)
     {
         solver = KalmanSolver(eqs);
     }
@@ -29,10 +35,10 @@ namespace pod
     gnsstk::IRinex& KalmanSolverFB::Process(gnsstk::IRinex& rin_epoch)
     {
         solver.Process(rin_epoch);
-        if (solver.getResetState())
+        if (LiCsDetector_ && MwCsDetector_ && solver.getResetState())
         {
-            LIDetMap[rin_epoch.getHeader().epoch] = *LIDet;
-            MWDetMap[rin_epoch.getHeader().epoch] = *MWDet;
+            LIDetMap[rin_epoch.getHeader().epoch] = *LiCsDetector_;
+            MWDetMap[rin_epoch.getHeader().epoch] = *MwCsDetector_;
         }
 
         // Before returning, store the results for a future iteration
@@ -93,8 +99,8 @@ namespace pod
 
         if (solver.ResetIfRequared(rin_epoch.getHeader().epoch, solver.FilterData))
         {
-            *LIDet = LIDetMap[rin_epoch.getHeader().epoch];
-            *MWDet = MWDetMap[rin_epoch.getHeader().epoch];
+            *LiCsDetector_ = LIDetMap[rin_epoch.getHeader().epoch];
+            *MwCsDetector_ = MWDetMap[rin_epoch.getHeader().epoch];
             DBOUT_LINE("state update")
             //*satArcMarker = SatArcMap[rin_epoch.getHeader().epoch];
         }
@@ -110,11 +116,12 @@ namespace pod
 
         solver.Process(rin_epoch);
 
-        if (LIDetMap.find(rin_epoch.getHeader().epoch) != LIDetMap.end())
+        if (LiCsDetector_ && MwCsDetector_ 
+            && LIDetMap.find(rin_epoch.getHeader().epoch) != LIDetMap.end())
         {
             solver.FilterData[rin_epoch.getHeader().epoch] = solver.getState();
-            LIDetMap[rin_epoch.getHeader().epoch] = *LIDet;
-            MWDetMap[rin_epoch.getHeader().epoch] = *MWDet;
+            LIDetMap[rin_epoch.getHeader().epoch] = *LiCsDetector_;
+            MWDetMap[rin_epoch.getHeader().epoch] = *MwCsDetector_;
             DBOUT_LINE("state stored")
         }
         // SatArcMap[rin_epoch.getHeader().epoch] = *satArcMarker;
