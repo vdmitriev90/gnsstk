@@ -119,6 +119,7 @@ namespace pod
 
                 if (apprPos().getPosition(rin_epoch, nominalPos_))
                     continue;
+
                 if (firstTime)
                 {
                     std::cout << std::setprecision(10) << nominalPos_ << std::endl;

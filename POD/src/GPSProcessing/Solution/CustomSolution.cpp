@@ -11,7 +11,7 @@
 
 namespace pod
 {
-    GnssSolution_uptr CustomSolution::Factory(GnssDataStore_sptr dataStore)
+    GnssSolutionUPtr CustomSolution::Factory(GnssDataStore_sptr dataStore)
     {
         switch (dataStore->opts.slnType)
         {

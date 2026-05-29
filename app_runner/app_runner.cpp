@@ -94,7 +94,7 @@ void testPod(const char * path)
 int main(int argc, char* argv[])
 {
 	cout << "Build: " << __DATE__" " << __TIME__ << endl << endl;
-	testRtcm();
+	//testRtcm();
     //cout << CivilTime(CommonTime::BEGINNING_OF_TIME) << endl;
     //Solution sol(argv[1]);
     //sol.chekObs();
@@ -106,7 +106,7 @@ int main(int argc, char* argv[])
     //testRinParse(argv[1]);
     cout << argv[1] << endl;
 
-    //testPod(argv[1]);
-    //system("pause");
+    testPod(argv[1]);
+    system("pause");
     return 0;
 }

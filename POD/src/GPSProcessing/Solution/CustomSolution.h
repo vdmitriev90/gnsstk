@@ -12,7 +12,7 @@ namespace pod
     class CustomSolution : public GnssSolution
     {
       private:
-        static GnssSolution_uptr Factory(GnssDataStore_sptr dataStore);
+        static GnssSolutionUPtr Factory(GnssDataStore_sptr dataStore);
 
       public:
         CustomSolution();
@@ -75,7 +75,7 @@ namespace pod
 #pragma endregion
 
       private:
-        GnssSolution_uptr ptr;
+        GnssSolutionUPtr ptr;
     };
 } // namespace pod
 #endif // !POD_CUSTOM_SOLUTION_H

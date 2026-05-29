@@ -334,14 +334,15 @@ namespace pod
 
     int KalmanSolver::getUnknownIndex(const FilterParameter& parameter) const
     {
-        auto it = equations->currentUnknowns().find(parameter);
+        const auto& unknowns = equations->currentUnknowns();
+        auto it = unknowns.find(parameter);
         if (it == equations->currentUnknowns().end())
         {
             InvalidRequest e("Type: '" + parameter.toString()
                              + "' not found in  current set of unknowns.");
             GNSSTK_THROW(e);
         }
-        return std::distance(equations->currentUnknowns().begin(), it);
+        return std::distance(unknowns.begin(), it);
     }
 
     double KalmanSolver::getSolution(const FilterParameter& parameter) const

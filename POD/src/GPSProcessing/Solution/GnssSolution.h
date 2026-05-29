@@ -91,39 +91,39 @@ namespace pod
 
 #pragma region Fields
 
-// Input processing data and configuration
-GnssDataStore_sptr data_;
+        // Input processing data and configuration
+        GnssDataStore_sptr data_;
 
-// Nominal position
-gnsstk::Position nominalPos_;
+        // Nominal position
+        gnsstk::Position nominalPos_;
 
-// Processing result
-GnssEpochMap gMap_;
+        // Processing result
+        GnssEpochMap gMap_;
 
-// This object will filter out satellites, which doesn't meet  predefined required
-// observables set
-gnsstk::RequireObservables requireObs_;
+        // This object will filter out satellites, which doesn't meet  predefined required
+        // observables set
+        gnsstk::RequireObservables requireObs_;
 
-// L1 code measurements used for position computation (typical C1 and P1)
-gnsstk::TypeID codeL1_;
+        // L1 code measurements used for position computation (typical C1 and P1)
+        gnsstk::TypeID codeL1_;
 
-// object to compute prefit residuals
-ProcessLinear oMinusC_;
+        // object to compute prefit residuals
+        ProcessLinear oMinusC_;
 
-// equation System composer
-eqComposer_sptr equations_;
+        // equation System composer
+        eqComposer_sptr equations_;
 
-// number of forward-backward cycles
-int forwardBackwardCycles_;
+        // number of forward-backward cycles
+        int forwardBackwardCycles_;
 
-// object to compute linear combinations
-ProcessLinear computeLinear_;
+        // object to compute linear combinations
+        ProcessLinear computeLinear_;
 
-// max sigma
-double maxSigma_;
+        // max sigma
+        double maxSigma_;
 
 #pragma endregion
     };
-    typedef std::unique_ptr<GnssSolution> GnssSolution_uptr;
+    typedef std::unique_ptr<GnssSolution> GnssSolutionUPtr;
 } // namespace pod
 #endif // !POD_GNSS_SOLUTION_H

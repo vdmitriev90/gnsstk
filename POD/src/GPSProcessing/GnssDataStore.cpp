@@ -246,7 +246,7 @@ namespace pod
 
     bool GnssDataStore::loadBceIonoModel()
     {
-        const std::string gpsObsExt = ".[\\d]{2}[nN]";
+        const std::string gpsObsExt = ".[\\d]{2}[nN]|\\.rnx";
         const auto files =
             FsUtils::getFilesByExtensionRegex(opts.workingDir + "\\" + opts.bceDir, gpsObsExt);
         int i = 0;
@@ -336,9 +336,9 @@ namespace pod
 
     bool GnssDataStore::loadFcn()
     {
-        const std::string glnObsExt = ".[\\d]{2}[gG]";
+        const std::string gln_nav_ext = ".[\\d]{2}[gG]|\\.rnx";
         auto files =
-            FsUtils::getFilesByExtensionRegex(opts.workingDir + "\\" + opts.bceDir, glnObsExt);
+            FsUtils::getFilesByExtensionRegex(opts.workingDir + "\\" + opts.bceDir, gln_nav_ext);
 
         for (auto file : files)
         {
@@ -360,26 +360,40 @@ namespace pod
     bool GnssDataStore::loadEOPData()
     {
 
-        std::string iersEopFile = opts.genericFilesDirectory;
+        fs::path eop_dir = opts.workingDir;
         try
         {
-            iersEopFile += confReader->getValue("IersEopFile");
+            const std::string subdir = confReader->getValue("ErpDir");
+            eop_dir.append(subdir);
         }
         catch (...)
         {
-            std::cerr << "Problem get value from config: file \"IersEopFile\" " << std::endl;
+            std::cerr << "Problem get value from config: file \"ErpDir\" " << std::endl;
             exit(-1);
         }
 
         try
         {
-            eopStore.addIERSFile(iersEopFile);
+            const auto files = FsUtils::getFilesByExtension(eop_dir, ".ERP");
+            
+            if (files.empty())
+            {
+                std::cerr << "Empty ERP dierectory " << eop_dir << std::endl;
+                return false;
+            }
+            
+            for (const auto& file : files)
+                eopStore.addFile(file.string());
+
+            if (eopStore.size() == 0)
+                std::cerr << "Empty ERP store after import " << eop_dir << std::endl;
+            
         }
-        catch (...)
+        catch (gnsstk::Exception& ex)
         {
-            std::cerr << "Problem opening file " << iersEopFile << std::endl;
-            std::cerr << "Maybe it doesn't exist or you don't have proper read "
-                      << "permissions." << std::endl;
+            std::cerr << "Problem opening file " << ex << std::endl;
+                        
+            return true;
             exit(-1);
         }
         return eopStore.size() > 0;
@@ -396,6 +410,7 @@ namespace pod
         {
             std::cerr << "Problem get value from config: file \"IersEopFile\" " << std::endl;
             exit(-1);
+            return true;
         }
 
         try

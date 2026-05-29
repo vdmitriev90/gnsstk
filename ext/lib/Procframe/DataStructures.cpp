@@ -2507,6 +2507,7 @@ namespace gnsstk
            }
            catch (gnsstk::InvalidRequest &e)
            {
+               std::cerr << "gnsstk::InvalidRequest"<<e<< std::endl;
                continue;
            }
            theMap[sat] = tvMap;
