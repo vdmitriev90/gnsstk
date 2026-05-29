@@ -334,6 +334,32 @@ def download_erp(date, output_dir):
     error(f"ERP download failed for {yyyy}-{ddd}")
 
 
+def download_brdc_nav(date, output_dir):
+  year = date.year
+  doy = date.timetuple().tm_yday
+  yy = str(year)[-2:]
+
+  yyyy = f"{year:04d}"
+  ddd = f"{doy:03d}"
+
+  os.makedirs(output_dir, exist_ok=True)
+
+  filename = f"brdc{ddd}0.{yy}n.gz"
+  extracted = os.path.join(output_dir, filename[:-3])
+
+  if os.path.exists(extracted):
+    log(f"BRDC nav already exists, skipping: {relpath(extracted)}")
+    return
+
+  url = f"https://cddis.nasa.gov/archive/gnss/data/daily/{yyyy}/{ddd}/{yy}n/{filename}"
+  path = os.path.join(output_dir, filename)
+
+  log(f"Trying BRDC nav: {url}")
+
+  if not download_and_extract(url, path):
+    error(f"BRDC nav download failed for {yyyy}-{ddd}")
+
+
 def download_brdm(date, output_dir):
   year = date.year
   doy = date.timetuple().tm_yday
@@ -396,10 +422,11 @@ def _expected_nav_filenames(start_date, end_date):
   for d in date_range(start_date, end_date):
     yyyy = f"{d.year:04d}"
     ddd = f"{d.timetuple().tm_yday:03d}"
+    yy = str(d.year)[-2:]
     names.add(f"BRDM00DLR_S_{yyyy}{ddd}0000_01D_MN.rnx")
     names.add(f"BRDC00IGS_R_{yyyy}{ddd}0000_01D_MN.rnx")
+    names.add(f"brdc{ddd}0.{yy}n")
   return names
-
 
 
 def _expected_sp3_filenames(start_date, end_date):
@@ -566,7 +593,6 @@ def download_products_day(date, base_dir):
 
   log(f"Processing date: {date_str}")
 
-  download_brdm(date, nav_dir)
   download_sp3(date, sp3_dir)
   download_clk(date, clk_dir)
   download_ionex(date, inx_dir)
@@ -594,6 +620,11 @@ def process_range(start_date, end_date, base_dir, site_ids=None):
 
     log(f"--- Window for {window_start} {current} {window_end}")
     clean_outside_range(base_dir, window_start, window_end)
+
+    nav_dir = os.path.join(base_dir, "nav")
+    os.makedirs(nav_dir, exist_ok=True)
+    download_brdm(current, nav_dir)
+    download_brdc_nav(current, nav_dir)
 
     if site_ids:
       clean_obs_dir(base_dir)

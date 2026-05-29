@@ -26,11 +26,11 @@ target_link_libraries(pod sqlite)
 
 find_package(Python3 REQUIRED)
 
-set(PY_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/src/scripts/download_brdm.py)
+set(PY_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/src/scripts/download_cddis.py)
 
 set(RUNTIME_DIR $<TARGET_FILE_DIR:app_runner>)
 
-add_custom_target(download_brdm
+add_custom_target(download_cddis
     COMMAND ${Python3_EXECUTABLE} -u ${PY_SCRIPT}
     --from 2020-09-02
     --to 2020-09-02
