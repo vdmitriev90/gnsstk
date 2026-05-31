@@ -334,7 +334,7 @@ def download_erp(date, output_dir):
     error(f"ERP download failed for {yyyy}-{ddd}")
 
 
-def download_brdc_nav(date, output_dir):
+def download_brdc_gps(date, output_dir):
   year = date.year
   doy = date.timetuple().tm_yday
   yy = str(year)[-2:]
@@ -373,6 +373,88 @@ def download_brdc_nav(date, output_dir):
 
   if not download_and_extract(legacy_url, legacy_path):
     error(f"BRDC nav download failed for {yyyy}-{ddd}")
+
+
+def download_brdc_glo(date, output_dir):
+  year = date.year
+  doy = date.timetuple().tm_yday
+  yy = str(year)[-2:]
+
+  yyyy = f"{year:04d}"
+  ddd = f"{doy:03d}"
+
+  os.makedirs(output_dir, exist_ok=True)
+
+  filename = f"brdc{ddd}0.{yy}g.gz"
+  extracted = os.path.join(output_dir, filename[:-3])
+
+  if os.path.exists(extracted):
+    log(f"BRDC GLO nav already exists, skipping: {relpath(extracted)}")
+    return
+
+  url = f"https://cddis.nasa.gov/archive/gnss/data/daily/{yyyy}/{ddd}/{yy}g/{filename}"
+  path = os.path.join(output_dir, filename)
+
+  log(f"Trying BRDC GLO nav: {url}")
+
+  if download_and_extract(url, path):
+    return
+
+  # ===================== FALLBACK TO LEGACY .Z FORMAT =====================
+  legacy_filename = f"brdc{ddd}0.{yy}g.Z"
+  legacy_extracted = os.path.join(output_dir, legacy_filename[:-2])
+  if os.path.exists(legacy_extracted):
+    log(f"BRDC GLO nav (legacy) already exists, skipping: {relpath(legacy_extracted)}")
+    return
+
+  legacy_url = f"https://cddis.nasa.gov/archive/gnss/data/daily/{yyyy}/{ddd}/{yy}g/{legacy_filename}"
+  legacy_path = os.path.join(output_dir, legacy_filename)
+
+  log(f"BRDC GLO nav not found, trying legacy fallback: {legacy_url}")
+
+  if not download_and_extract(legacy_url, legacy_path):
+    error(f"BRDC GLO nav download failed for {yyyy}-{ddd}")
+
+
+def download_brdc_glo(date, output_dir):
+  year = date.year
+  doy = date.timetuple().tm_yday
+  yy = str(year)[-2:]
+
+  yyyy = f"{year:04d}"
+  ddd = f"{doy:03d}"
+
+  os.makedirs(output_dir, exist_ok=True)
+
+  filename = f"brdc{ddd}0.{yy}g.gz"
+  extracted = os.path.join(output_dir, filename[:-3])
+
+  if os.path.exists(extracted):
+    log(f"BRDC GLO nav already exists, skipping: {relpath(extracted)}")
+    return
+
+  url = f"https://cddis.nasa.gov/archive/gnss/data/daily/{yyyy}/{ddd}/{yy}g/{filename}"
+  path = os.path.join(output_dir, filename)
+
+  log(f"Trying BRDC GLO nav: {url}")
+
+  if download_and_extract(url, path):
+    return
+
+  # ===================== FALLBACK TO LEGACY .Z FORMAT =====================
+  legacy_filename = f"brdc{ddd}0.{yy}g.Z"
+  legacy_extracted = os.path.join(output_dir, legacy_filename[:-2])
+  if os.path.exists(legacy_extracted):
+    log(f"BRDC GLO nav (legacy) already exists, skipping: {relpath(legacy_extracted)}")
+    return
+
+  legacy_url = f"https://cddis.nasa.gov/archive/gnss/data/daily/{yyyy}/{ddd}/{yy}g/{legacy_filename}"
+  legacy_path = os.path.join(output_dir, legacy_filename)
+
+  log(f"BRDC GLO nav not found, trying legacy fallback: {legacy_url}")
+
+  if not download_and_extract(legacy_url, legacy_path):
+    error(f"BRDC GLO nav download failed for {yyyy}-{ddd}")
 
 
 def download_brdm(date, output_dir):
@@ -441,6 +523,7 @@ def _expected_nav_filenames(start_date, end_date):
     names.add(f"BRDM00DLR_S_{yyyy}{ddd}0000_01D_MN.rnx")
     names.add(f"BRDC00IGS_R_{yyyy}{ddd}0000_01D_MN.rnx")
     names.add(f"brdc{ddd}0.{yy}n")
+    names.add(f"brdc{ddd}0.{yy}g")
   return names
 
 
@@ -608,6 +691,7 @@ def download_products_day(date, base_dir):
 
   log(f"Processing date: {date_str}")
 
+  download_brdc_gps(date, nav_dir)
   download_sp3(date, sp3_dir)
   download_clk(date, clk_dir)
   download_ionex(date, inx_dir)
@@ -638,8 +722,8 @@ def process_range(start_date, end_date, base_dir, site_ids=None):
 
     nav_dir = os.path.join(base_dir, "nav")
     os.makedirs(nav_dir, exist_ok=True)
-    download_brdm(current, nav_dir)
-    download_brdc_nav(current, nav_dir)
+    #download_brdm(current, nav_dir)
+    download_brdc_glo(current, nav_dir)
 
     if site_ids:
       clean_obs_dir(base_dir)
