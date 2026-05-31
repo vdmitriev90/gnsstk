@@ -2,6 +2,7 @@
 #include "NavLibrary.hpp"
 #include "Position.hpp"
 #include "RinexEpoch.h"
+#include <filesystem>
 
 namespace pod
 {
@@ -95,7 +96,7 @@ namespace pod
     {
 
       public:
-        PositionFromFile(std::string path)
+        PositionFromFile(const std::filesystem::path& path)
         {
             loadApprPos(path);
         }
@@ -112,7 +113,7 @@ namespace pod
         }
 
       private:
-        bool loadApprPos(const std::string& path);
+        bool loadApprPos(const std::filesystem::path& path);
 
         std::map<gnsstk::CommonTime, gnsstk::Xvt> pvtStore;
     };

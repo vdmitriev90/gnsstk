@@ -235,7 +235,7 @@ namespace pod
         int prec(4);
 
         std::ofstream outfile;
-        outfile.open(opts().workingDir + "\\" + fileName(), std::ios::out);
+        outfile.open(opts().workingDir / fileName(), std::ios::out);
 
 #pragma endregion
 

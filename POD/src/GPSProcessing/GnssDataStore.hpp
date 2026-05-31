@@ -14,6 +14,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <filesystem>
 
 namespace pod
 {
@@ -84,7 +85,7 @@ private:
   bool loadFcn();
   bool loadClocks();
   bool loadEOPData();
-  bool loadCodeBiades();
+  bool loadCodeBiases();
   bool createPosProvider();
   gnsstk::Position getPosition(std::string siteId);
 
@@ -146,7 +147,7 @@ public:
             std::string genericFilesDirectory;
 
             // working directory
-            std::string workingDir;
+            std::filesystem::path workingDir;
 
             // Broadcast ephemeris directory
             std::string bceDir;

@@ -2,7 +2,6 @@
 
 #include "BasicModel.hpp"
 #include "ClockBiasEquations.h"
-#include "ComputeMOPSWeights.hpp"
 #include "ComputeTropModel.hpp"
 #include "ComputeWeightSimple.h"
 #include "Decimate.hpp"
@@ -11,7 +10,6 @@
 #include "LinearCombinations.hpp"
 #include "MWCSDetector.hpp"
 #include "NeillTropModel.hpp"
-#include "OneFreqCSDetector.hpp"
 #include "PositionEquations.h"
 #include "PowerSum.hpp"
 #include "SimpleFilter.hpp"
@@ -40,11 +38,6 @@ namespace pod
             PRFilter.addFilteredType(TypeID::P2);
 
         SimpleFilter SNRFilter(TypeID::S1, 30, DBL_MAX);
-        std::list<Position> nomPos;
-        // nominalPos.asECEF();
-        // int i = 0;
-        // for (auto& it : confReader().getListValueAsDouble("nominalPosition"))
-        //     nominalPos[i++] = it;
 
         // Object to decimate data
         Decimate decimateData(confReader().getValueAsDouble("decimationInterval"),
@@ -95,7 +88,8 @@ namespace pod
             gMap_.header = roh;
 
             // update code smoothers sampling rate, according to current rinex file sampling rate
-            codeSmoother_.setInterval(codeSmWindowSize_ / roh.interval);
+            if (roh.interval > 0.0)
+                codeSmoother_.setInterval(codeSmWindowSize_ / roh.interval);
 
             // read all epochs
             while (rin >> rin_epoch)
@@ -155,15 +149,15 @@ namespace pod
                 rin_epoch >> data_->ionoCorrector;
                 rin_epoch >> oMinusC_;
                 rin_epoch >> w;
-                int minSvNum = rin_epoch.getBody().getSatSystems().size() + 3;
+                const size_t min_sv_num = rin_epoch.getBody().getSatSystems().size() + 3;
                 if (forwardBackwardCycles_ > 0)
                 {
-                    solverFb.setMinSatNumber(minSvNum);
+                    solverFb.setMinSatNumber(min_sv_num);
                     rin_epoch >> solverFb;
                 }
                 else
                 {
-                    solver.setMinSatNumber(minSvNum);
+                    solver.setMinSatNumber(min_sv_num);
                     rin_epoch >> solver;
                     auto ep = opts().fullOutput ? GnssEpoch(rin_epoch.getBody()) : GnssEpoch();
                     // updateNomPos(solverFB);
@@ -186,14 +180,14 @@ namespace pod
                 printSolution(solverFb, rin_epoch.getHeader().epoch, ep);
                 gMap_.data.insert(std::make_pair(rin_epoch.getHeader().epoch, ep));
             }
-            std::cout << "measurments rejected: " << solverFb.rejectedMeasurements << std::endl;
+            std::cout << "measurements rejected: " << solverFb.rejectedMeasurements << std::endl;
         }
     }
 
     void SingleSolution::updateNomPos(KalmanSolver& solver)
     {
         PowerSum psum;
-        for (auto it : solver.PostfitResiduals())
+        for (const auto& it : solver.PostfitResiduals())
             psum.add(it);
         double sigma = sqrt(psum.variance());
 
@@ -250,7 +244,6 @@ namespace pod
 
     void SingleSolution::updateRequaredObs()
     {
-        LinearCombinations comm;
         bool useC1 = confReader().getValueAsBoolean("useC1");
         computeLinear_.setUseC1(useC1);
 
@@ -268,8 +261,6 @@ namespace pod
             equations_->measTypes() = TypeIDSet{TypeID::prefitP1};
             oMinusC_.add(std::make_unique<PrefitP1>(false));
         }
-
-        requireObs_.addRequiredType(codeL1_);
 
         requireObs_.addRequiredType(codeL1_);
         requireObs_.addRequiredType(TypeID::C1);

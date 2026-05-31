@@ -150,8 +150,8 @@ namespace pod
         for (const auto& it : measTypes())
         {
             auto meas = gData.getBody().getVectorOfTypeID(it);
-            int numSat = meas.size();
-            for (int i = 0; i < numSat; i++)
+            size_t numSat = meas.size();
+            for (size_t i = 0; i < numSat; i++)
                 measVector(i + j * numSat) = meas(i);
             j++;
         }
@@ -239,12 +239,16 @@ namespace pod
     std::vector<double> EquationComposer::getResiduals(const gnsstk::Vector<double>& residuals,
                                                        const TypeIDSet& types) const
     {
-        int nsv = residuals.size() / residTypes().size();
+        size_t numResTypes = residTypes().size();
+        if (numResTypes == 0)
+            return {};
+
+        size_t nsv = residuals.size() / numResTypes;
 
         std::vector<double> res;
         res.reserve(types.size() * nsv);
 
-        int iType(0);
+        size_t iType(0);
         for (auto&& resType : residTypes())
         {
             if (types.find(resType) != types.end())

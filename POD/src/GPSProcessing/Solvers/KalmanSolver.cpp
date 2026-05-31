@@ -1,7 +1,5 @@
 #include "KalmanSolver.h"
 
-#include "ARMLambda.hpp"
-#include "ARSimple.hpp"
 #include "AmbiguityHandler.h"
 #include "GnssSolution.h"
 #include "MatrixExtensions.h"
@@ -10,6 +8,7 @@
 #include "WinUtils.h"
 
 #include <algorithm>
+#include <cmath>
 
 using namespace std;
 using namespace gnsstk;
@@ -51,7 +50,7 @@ namespace pod
         // invalidate solution
         isValid = false;
         isReset = false;
-        double dt = abs(t_pre - gData.getHeader().epoch);
+        double dt = std::abs(t_pre - gData.getHeader().epoch);
 
         if (dt > maxGap)
         {
@@ -64,7 +63,7 @@ namespace pod
         t_pre = gData.getHeader().epoch;
         // workaround: reset PPP engine every day
         double sec = gData.getHeader().epoch.getSecondOfDay();
-        if ((int)sec % 86400 == 0 && equations->getSlnType() == SlnType::PPP_Float)
+        if (static_cast<int>(sec) == 0 && equations->getSlnType() == SlnType::PPP_Float)
             equations->clearSvData();
 
         equations->Prepare(gData);
@@ -159,7 +158,7 @@ namespace pod
             int numMeas = postfitResiduals.size();
             int numPar = solution.size();
 
-            sigma = sqrt(vpv(0) / (numMeas - numPar));
+            sigma = (numMeas > numPar) ? sqrt(vpv(0) / (numMeas - numPar)) : 0.0;
             phaseSigma = getSigma(phaseResTypes);
 
             if (i == 0 && checkPhase(gData) == 0)
@@ -211,7 +210,7 @@ namespace pod
             }
             for (auto&& sv : svSet)
             {
-                double vali = ::abs(postfitResiduals(i_res));
+                double vali = std::abs(postfitResiduals(i_res));
                 if (maxPhaseResid.value < vali)
                 {
                     maxPhaseResid.value = vali;
@@ -314,8 +313,8 @@ namespace pod
             std::max_element(gData.getBody().begin(),
                              gData.getBody().end(),
                              [&](const type& it1, const type& it2) -> bool {
-                                 double val1 = ::abs(it1.second->get_value().at(*id));
-                                 double val2 = ::abs(it2.second->get_value().at(*id));
+                                 double val1 = std::abs(it1.second->get_value().at(*id));
+                                 double val2 = std::abs(it2.second->get_value().at(*id));
                                  return (val1 < val2);
                              });
 
@@ -364,7 +363,7 @@ namespace pod
     {
         double dt = t - t_pre;
 
-        if (::abs(dt) > maxGap)
+        if (std::abs(dt) > maxGap)
         {
             auto it = data.find(t);
             if (it != data.end())

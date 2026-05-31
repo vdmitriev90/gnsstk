@@ -42,10 +42,10 @@
 
 #include "SolverPPP.hpp"
 
-#include "FsUtils.h"
 #include "WinUtils.h"
 
 #include <iostream>
+#include <iterator>
 
 namespace pod
 {
@@ -354,7 +354,7 @@ namespace pod
 
     void SolverPPP::updateWeightMatrix(gnsstk::Matrix<double>& rMatrix,
                                        gnsstk::IRinex& gData,
-                                       int numCurrentSV)
+                                       size_t numCurrentSV)
     {
         // Weights matrix
         rMatrix.resize(numMeas, numMeas, 0.0);
@@ -364,13 +364,13 @@ namespace pod
         gnsstk::satTypeValueMap dummy(gData.getBody().extractTypeID(gnsstk::TypeID::weight));
 
         // Check if weights match
-        if (dummy.numSats() == (size_t)numCurrentSV)
+        if (dummy.numSats() == numCurrentSV)
         {
             // If we have weights information, let's load it
             gnsstk::Vector<double> weightsVector(
                 gData.getBody().getVectorOfTypeID(gnsstk::TypeID::weight));
 
-            for (int i = 0; i < numCurrentSV; i++)
+            for (size_t i = 0; i < numCurrentSV; i++)
             {
                 rMatrix(i, i) = weightsVector(i);
                 rMatrix(i + numCurrentSV, i + numCurrentSV) = weightsVector(i) * weightFactor;
@@ -381,7 +381,7 @@ namespace pod
         {
 
             // If weights don't match, assign generic weights
-            for (int i = 0; i < numCurrentSV; i++)
+            for (size_t i = 0; i < numCurrentSV; i++)
             {
                 rMatrix(i, i) = 1.0;
 
@@ -486,13 +486,8 @@ namespace pod
             {
                 // Find in which position of 'satSet' is the current '(*itSat)'
                 // Please note that 'currSatSet' is a subset of 'satSet'
-                int j(0);
-                auto itSat2 = satSet.begin();
-                while ((*itSat2) != (itSat))
-                {
-                    ++j;
-                    ++itSat2;
-                }
+                auto itSat2 = satSet.find(itSat);
+                int j = static_cast<int>(std::distance(satSet.begin(), itSat2));
 
                 // Put coefficient in the right place
                 hMatrix(count1 + numCurrentSV, j + numVar) = 1.0;
@@ -646,7 +641,7 @@ namespace pod
             // Now we have to add the new values to the data structure
             gnsstk::Vector<double> postfitCode(numCurrentSV, 0.0);
             gnsstk::Vector<double> postfitPhase(numCurrentSV, 0.0);
-            for (int i = 0; i < numCurrentSV; i++)
+            for (size_t i = 0; i < numCurrentSV; i++)
             {
                 postfitCode(i) = postfitResiduals(i);
                 postfitPhase(i) = postfitResiduals(i + numCurrentSV);

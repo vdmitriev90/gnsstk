@@ -250,7 +250,7 @@ namespace pod
         int precision(4);
 
         std::ofstream outfile;
-        outfile.open(opts().workingDir + "\\" + fileName(), std::ios::out);
+        outfile.open(opts().workingDir / fileName(), std::ios::out);
 
 #pragma endregion
 

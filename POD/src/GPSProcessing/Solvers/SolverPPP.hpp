@@ -612,7 +612,7 @@ namespace pod
         /// update weight Matrix
         void updateWeightMatrix(gnsstk::Matrix<double>& rMatrix,
                                 gnsstk::IRinex& gData,
-                                int numCurrentSV);
+                                size_t numCurrentSV);
 
         /// Constant stochastic model
         gnsstk::ConstantModel constantModel;

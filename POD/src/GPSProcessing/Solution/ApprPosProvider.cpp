@@ -91,7 +91,7 @@ namespace pod
         return 0;
     }
 
-    bool PositionFromFile::loadApprPos(const std::string& path)
+    bool PositionFromFile::loadApprPos(const std::filesystem::path& path)
     {
         pvtStore.clear();
         try
@@ -119,7 +119,7 @@ namespace pod
             }
             else
             {
-                auto mess = "Can't load data from file: " + path;
+                auto mess = "Can't load data from file: " + path.string();
                 std::exception e(mess.c_str());
                 throw e;
             }

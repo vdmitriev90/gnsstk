@@ -44,7 +44,7 @@ namespace pod
         auto fName = solver.fileName();
         auto& gMap = solver.getData();
 
-        fs::path db_path(data->opts.workingDir + "\\" + fName + ".txt");
+        fs::path db_path(data->opts.workingDir / fName / ".txt");
         TypeIDSet typeSet{TypeID::recX, TypeID::recY, TypeID::recZ};
         ComputeStatistic st(solver.desiredSlnType(), typeSet);
 
@@ -114,7 +114,8 @@ namespace pod
         gMap.title = fName;
         gMap.updateMetadata();
 
-        fs::path dbPath(data->opts.workingDir + "\\" + fName + ".db");
+        const std::string file_w_ext = fName + ".db";
+        fs::path dbPath(data->opts.workingDir / file_w_ext);
 
         // delete curtrent solution database file, if exists
         // string cmd = "del \"" + db_path.string() + "\"";

@@ -20,36 +20,17 @@ namespace pod
 
         static gnsstk::TypeIDSet get_all_types(const std::set<FilterParameter>& parameters);
 
-        FilterParameter() : type(gnsstk::TypeID::Unknown), sv(gnsstk::SatID::dummy) {};
+        FilterParameter() : type(gnsstk::TypeID::Unknown), sv(gnsstk::SatID::dummy) {}
+
+        FilterParameter(const FilterParameter& parameter) = default;
+        FilterParameter& operator=(const FilterParameter& other) = default;
+        ~FilterParameter() = default;
 
         FilterParameter(const gnsstk::TypeID& obsType, const gnsstk::SatID& sat)
             : type(obsType)
-            , sv(sat) {};
+            , sv(sat) {}
 
-        FilterParameter(const gnsstk::TypeID& obsType) : type(obsType), sv(gnsstk::SatID::dummy) {};
-
-        FilterParameter(const FilterParameter& parameter)
-            : type(parameter.type)
-            , sv(parameter.sv) {};
-
-        ~FilterParameter() {};
-
-        FilterParameter& operator=(const FilterParameter& other)
-        {
-            // check for self-assignment
-            if (&other == this)
-                return *this;
-
-            this->sv = other.sv;
-            this->type = other.type;
-
-            return *this;
-        }
-
-        inline bool operator==(const FilterParameter& parameter) const
-        {
-            return (this->type == parameter.type && this->sv == parameter.sv);
-        }
+        FilterParameter(const gnsstk::TypeID& obsType) : type(obsType), sv(gnsstk::SatID::dummy) {}
 
         std::string toString() const;
 
@@ -58,6 +39,10 @@ namespace pod
         gnsstk::SatID sv;
     };
 
+    inline bool operator==(const FilterParameter& lhs, const FilterParameter& rhs)
+    {
+        return (lhs.type == rhs.type && lhs.sv == rhs.sv);
+    }
     inline bool operator<(const FilterParameter& parameter1, const FilterParameter& parameter2)
     {
         // first, compare the types

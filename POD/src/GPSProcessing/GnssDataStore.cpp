@@ -66,7 +66,6 @@ namespace
         // Data is obtained from a joint BRDC file generated the day after actual data collection,
         // so the timestamp must be shifted back by one day.
         return ct.convertToCommonTime().addDays(-1);
-
     }
     std::optional<CommonTime> resolveNavHeaderRefTime(const Rinex3NavHeader& rNavHeader)
     {
@@ -139,7 +138,7 @@ namespace pod
         {
             initReader(path);
 
-            opts.workingDir = fs::path(path).parent_path().string();
+            opts.workingDir = fs::path(path).parent_path();
 
             opts.isSpaceborneRcv = confReader->getValueAsBoolean("IsSpaceborneRcv");
 
@@ -168,7 +167,7 @@ namespace pod
 
             // set generic files direcory
             std::string subdir = confReader->getValue("GenericFilesDir");
-            opts.genericFilesDirectory = opts.workingDir + "\\" + subdir + "\\";
+            opts.genericFilesDirectory = (opts.workingDir / subdir).string() + "\\";
 
             for (auto it : confReader->getValueListAsInt("carrierBands"))
                 opts.carrierBands.insert(static_cast<CarrierBand>(it));
@@ -236,36 +235,38 @@ namespace pod
     {
 
         std::string subdir = confReader->getValue("EphemerisDir");
-        const auto files = FsUtils::getAllFilesInDir(opts.workingDir + "\\" + subdir);
+        const auto files = FsUtils::getAllFilesInDir(opts.workingDir / subdir);
         if (files.empty())
         {
-            std::cerr << "Empty ephemeris dierectory " << opts.workingDir + "\\" + subdir
+            std::cerr << "Empty ephemeris directory " << opts.workingDir / subdir
                       << std::endl;
             return false;
         }
+        bool res = false;
         for (const auto& file : files)
         {
             // Try to load each ephemeris file
             try
             {
-                sp3NavFactory_->addDataSource(file.string());
+                if (sp3NavFactory_->addDataSource(file.string()))
+                    res = true;
             }
             catch (FileMissingException& e)
             {
                 // If file doesn't exist, issue a warning
                 std::cerr << "SP3 file '" << file << "' doesn't exist or you don't "
                           << "have permission to read it. Skipping it." << std::endl;
-                exit(-1);
+                continue;
             }
         }
-        return true;
+        return res;
     }
 
     // reading clock data
     bool GnssDataStore::loadClocks()
     {
         std::string subdir = confReader->getValue("RinexClockDir");
-        const auto files = FsUtils::getAllFilesInDir(opts.workingDir + "\\" + subdir);
+        const auto files = FsUtils::getAllFilesInDir(opts.workingDir / subdir);
 
         for (const auto& file : files)
         {
@@ -279,7 +280,7 @@ namespace pod
                 // If file doesn't exist, issue a warning
                 std::cerr << "Rinex clock file '" << file << "' doesn't exist or you don't "
                           << "have permission to read it. Skipping it." << std::endl;
-                exit(-1);
+                continue;
             }
         }
         return files.size() > 0;
@@ -318,7 +319,7 @@ namespace pod
     bool GnssDataStore::loadIonoMap()
     {
         std::string subdir = confReader->getValue("IonexDir");
-        const auto files = FsUtils::getAllFilesInDir(opts.workingDir + "\\" + subdir);
+        const auto files = FsUtils::getAllFilesInDir(opts.workingDir / subdir);
         ionexStore.clear();
         for (const auto& file : files)
         {
@@ -332,7 +333,7 @@ namespace pod
     {
         const std::string gpsObsExt = ".[\\d]{2}[nN]|";
         const auto files =
-            FsUtils::getFilesByExtensionRegex(opts.workingDir + "\\" + opts.bceDir, gpsObsExt);
+            FsUtils::getFilesByExtensionRegex(opts.workingDir / opts.bceDir, gpsObsExt);
         for (auto&& file : files)
         {
             try
@@ -394,7 +395,7 @@ namespace pod
     {
         const std::string gln_nav_ext = ".[\\d]{2}[gG]|\\.rnx";
         auto files =
-            FsUtils::getFilesByExtensionRegex(opts.workingDir + "\\" + opts.bceDir, gln_nav_ext);
+            FsUtils::getFilesByExtensionRegex(opts.workingDir / opts.bceDir, gln_nav_ext);
 
         for (auto file : files)
         {
@@ -407,7 +408,7 @@ namespace pod
                 std::cerr << "Problem opening file " << file << std::endl;
                 std::cerr << "Maybe it doesn't exist or you don't have proper read "
                           << "permissions." << std::endl;
-                exit(-1);
+                return false;
             }
         }
         return SatID::glonassFcn.size() > 0;
@@ -434,7 +435,7 @@ namespace pod
 
             if (files.empty())
             {
-                std::cerr << "Empty ERP dierectory " << eop_dir << std::endl;
+                std::cerr << "Empty ERP directory " << eop_dir << std::endl;
                 return false;
             }
 
@@ -447,14 +448,12 @@ namespace pod
         catch (gnsstk::Exception& ex)
         {
             std::cerr << "Problem opening file " << ex << std::endl;
-
-            return true;
-            exit(-1);
+            return false;
         }
         return eopStore.size() > 0;
     }
 
-    bool GnssDataStore::loadCodeBiades()
+    bool GnssDataStore::loadCodeBiases()
     {
         std::string biasesFile = opts.genericFilesDirectory;
         try
@@ -464,22 +463,13 @@ namespace pod
         catch (...)
         {
             std::cerr << "Problem get value from config: file \"IersEopFile\" " << std::endl;
-            exit(-1);
-            return true;
+            return false;
         }
 
-        try
-        {
-            // DCBData.setDCBFile(biasesFile,);
-        }
-        catch (...)
-        {
-            std::cerr << "Problem opening file " << biasesFile << std::endl;
-            std::cerr << "Maybe it doesn't exist or you don't have proper read "
-                      << "permissions." << std::endl;
-            exit(-1);
-        }
-        return eopStore.size() > 0;
+        // TODO: implement DCB loading
+        // DCBData.setDCBFile(biasesFile,);
+
+        return true;
     }
 
     GnssDataStore::GnssDataStore(gnsstk::ConfDataReader& confReader) : confReader(&confReader)
@@ -490,7 +480,7 @@ namespace pod
 
     void GnssDataStore::checkObservable()
     {
-        std::ofstream os(opts.workingDir + "\\ObsStatisic.out");
+        std::ofstream os((opts.workingDir / "ObsStatistic.out").string());
 
         for (auto obsFile : getObsFiles(opts.SiteRover))
         {
@@ -511,7 +501,7 @@ namespace pod
             {
                 if (rod.epochFlag == 0 || rod.epochFlag == 1) // Begin usable data
                 {
-                    int NumC1(0), NumP1(0), NumP2(0), NumBadCNo1(0);
+                    int NumP1(0), NumP2(0), NumBadCNo1(0);
                     os << std::setprecision(12) << (CivilTime)rod.time << " ";
                     int nGPS = 0, nGLN = 0;
                     for (auto& it : rod.obs)
@@ -525,9 +515,7 @@ namespace pod
 
                         auto& ids = CodeProcSvData::obsTypes[it.first.system];
 
-                        double C1 = rod.getObs(it.first, ids[TypeID::C1], roh).data;
-
-                        int CNoL1 = rod.getObs(it.first, ids[TypeID::S1], roh).data;
+                        double CNoL1 = rod.getObs(it.first, ids[TypeID::S1], roh).data;
                         if (CNoL1 < 30)
                             NumBadCNo1++;
 
@@ -564,8 +552,8 @@ namespace pod
             apprPos = std::make_unique<ComputeOnePos>(navLibrary_);
             return true;
         case ApprPositionSource::LoadFromFile:
-            apprPos = std::make_unique<PositionFromFile>(opts.workingDir + "\\"
-                                                         + confReader->getValue("ApprPosFile"));
+            apprPos = std::make_unique<PositionFromFile>(
+                (opts.workingDir / confReader->getValue("ApprPosFile")).string());
             return true;
         default:
             return false;
@@ -577,14 +565,18 @@ namespace pod
         Position pos;
         int i = 0;
         for (auto& it : confReader->getValueListAsDouble("nominalPosition", opts.SiteRover))
+        {
+            if (i >= 3)
+                break;
             pos[i++] = it;
+        }
         return pos;
     }
 
     std::list<std::string> GnssDataStore::getObsFiles(const std::string& siteID) const
     {
         std::string subdir = confReader->getValue("RinesObsDir");
-        auto paths = FsUtils::getAllFilesInDir(opts.workingDir + "\\" + subdir + "\\" + siteID);
+        auto paths = FsUtils::getAllFilesInDir(opts.workingDir / subdir / siteID);
         std::list<std::string> result;
         for (const auto& p : paths)
             result.push_back(p.string());

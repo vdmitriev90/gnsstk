@@ -52,7 +52,7 @@ namespace pod
         solverPR_->ionoType = data_->ionoCorrector.getType();
 
         std::ofstream os;
-        std::string outPath = opts().workingDir + "\\" + data_->apprPosFile;
+        const auto outPath = opts().workingDir / data_->apprPosFile;
         os.open(outPath);
 
         // decimation
