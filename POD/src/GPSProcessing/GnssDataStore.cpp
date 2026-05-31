@@ -6,6 +6,85 @@
 #include "SP3NavDataFactory.hpp"
 
 using namespace gnsstk;
+namespace
+{
+    std::optional<CommonTime> parseAiubRefTime(const Rinex3NavHeader& rNavHeader)
+    {
+        for (auto&& it : rNavHeader.commentList)
+        {
+            int doy = -1, yr = -1;
+            std::cmatch res;
+            std::regex rxDoY("DAY [0-9]{3}"), rxY(" [0-9]{4}");
+            if (std::regex_search(it.c_str(), res, rxDoY))
+            {
+                std::string sDay = res[0];
+                sDay = sDay.substr(sDay.size() - 4, 4);
+                doy = stoi(sDay);
+            }
+            if (std::regex_search(it.c_str(), res, rxY))
+            {
+                std::string sDay = res[0];
+                sDay = sDay.substr(sDay.size() - 5, 5);
+                yr = stoi(sDay);
+            }
+            if (doy > 0 && yr > 0)
+                return YDSTime(yr, doy, 0, TimeSystem::GPS);
+        }
+        return std::nullopt;
+    }
+
+    std::optional<CommonTime> parseRinexHeaderDate(const std::string& date)
+    {
+        if (date.empty())
+            return std::nullopt;
+
+        static const std::map<std::string, int> monthMap = {{"JAN", 1},
+                                                            {"FEB", 2},
+                                                            {"MAR", 3},
+                                                            {"APR", 4},
+                                                            {"MAY", 5},
+                                                            {"JUN", 6},
+                                                            {"JUL", 7},
+                                                            {"AUG", 8},
+                                                            {"SEP", 9},
+                                                            {"OCT", 10},
+                                                            {"NOV", 11},
+                                                            {"DEC", 12}};
+
+        int day = 0, yr = 0, hr = 0, mn = 0;
+        char monStr[4] = {};
+        if (sscanf(date.c_str(), "%d-%3s-%d %d:%d", &day, monStr, &yr, &hr, &mn) != 5)
+            return std::nullopt;
+
+        auto it = monthMap.find(std::string(monStr));
+        if (it == monthMap.end())
+            return std::nullopt;
+
+        yr += (yr < 80) ? 2000 : 1900;
+        CivilTime ct(yr, it->second, day, hr, mn, 0.0, TimeSystem::GPS);
+
+        // Data is obtained from a joint BRDC file generated the day after actual data collection,
+        // so the timestamp must be shifted back by one day.
+        return ct.convertToCommonTime().addDays(-1);
+
+    }
+    std::optional<CommonTime> resolveNavHeaderRefTime(const Rinex3NavHeader& rNavHeader)
+    {
+        if (rNavHeader.fileAgency == "AIUB")
+            if (auto time_rnx = parseAiubRefTime(rNavHeader))
+                return time_rnx;
+
+        if (auto time_rnx = parseRinexHeaderDate(rNavHeader.date))
+            return time_rnx;
+
+        const auto it = rNavHeader.mapTimeCorr.find("GPUT");
+        if (it != rNavHeader.mapTimeCorr.end()
+            && it->second.refTime != CommonTime::BEGINNING_OF_TIME)
+            return it->second.refTime;
+
+        return std::nullopt;
+    }
+} // namespace
 
 namespace pod
 {
@@ -158,7 +237,12 @@ namespace pod
 
         std::string subdir = confReader->getValue("EphemerisDir");
         const auto files = FsUtils::getAllFilesInDir(opts.workingDir + "\\" + subdir);
-
+        if (files.empty())
+        {
+            std::cerr << "Empty ephemeris dierectory " << opts.workingDir + "\\" + subdir
+                      << std::endl;
+            return false;
+        }
         for (const auto& file : files)
         {
             // Try to load each ephemeris file
@@ -174,7 +258,7 @@ namespace pod
                 exit(-1);
             }
         }
-        return files.size() > 0;
+        return true;
     }
 
     // reading clock data
@@ -246,10 +330,9 @@ namespace pod
 
     bool GnssDataStore::loadBceIonoModel()
     {
-        const std::string gpsObsExt = ".[\\d]{2}[nN]|\\.rnx";
+        const std::string gpsObsExt = ".[\\d]{2}[nN]|";
         const auto files =
             FsUtils::getFilesByExtensionRegex(opts.workingDir + "\\" + opts.bceDir, gpsObsExt);
-        int i = 0;
         for (auto&& file : files)
         {
             try
@@ -263,40 +346,9 @@ namespace pod
 
 #pragma region try get the date
 
-                CommonTime refTime = CommonTime::BEGINNING_OF_TIME;
-                if (rNavHeader.fileAgency == "AIUB")
-                {
-                    for (auto&& it : rNavHeader.commentList)
-                    {
-                        int doy = -1, yr = -1;
-                        std::cmatch res;
-                        std::regex rxDoY("DAY [0-9]{3}"), rxY(" [0-9]{4}");
-                        bool b = std::regex_search(it.c_str(), res, rxDoY);
-                        if (b)
-                        {
-                            std::string sDay = res[0];
-                            sDay = sDay.substr(sDay.size() - 4, 4);
-                            doy = stoi(sDay);
-                        }
-                        if (std::regex_search(it.c_str(), res, rxY))
-                        {
-                            std::string sDay = res[0];
-                            sDay = sDay.substr(sDay.size() - 5, 5);
-                            yr = stoi(sDay);
-                        }
-                        if (doy > 0 && yr > 0)
-                        {
-                            refTime = YDSTime(yr, doy, 0, TimeSystem::GPS);
-                            break;
-                        }
-                    }
-                }
-                else
-                {
-                    const auto& time_rnx = rNavHeader.mapTimeCorr["GPUT"].refTime;
-                    if (time_rnx != CommonTime::BEGINNING_OF_TIME)
-                        refTime = time_rnx;
-                }
+                const auto nav_ref_time = resolveNavHeaderRefTime(rNavHeader);
+                if (!nav_ref_time)
+                    continue;
 #pragma endregion
 
                 if (rNavHeader.valid & Rinex3NavHeader::validIonoCorrGPS)
@@ -307,31 +359,35 @@ namespace pod
 
                     // Feed the ionospheric model with the parameters
                     iMod.setModel(ionAlpha, ionBeta);
-                    i++;
                 }
                 else
                 {
                     std::cerr << "WARNING: Navigation file " << file
                               << " doesn't have valid ionospheric correction parameters."
                               << std::endl;
-                    exit(-1);
                 }
 
-                bceIonoStore.addIonoModel(refTime, iMod);
+                bceIonoStore.addIonoModel(nav_ref_time.value(), iMod);
             }
             catch (...)
             {
                 std::cerr << "Problem opening file " << file << std::endl;
                 std::cerr << "Maybe it doesn't exist or you don't have proper read "
                           << "permissions." << std::endl;
-                exit(-1);
+                return false;
             }
         }
 
+        if (bceIonoStore.empty())
+        {
+            std::cerr << "No valid ionospheric model found in Rinex GPS Navigation files."
+                      << std::endl;
+            return false;
+        }
         //
         ionoCorrector.setKlobucharModel(bceIonoStore);
 
-        return i > 0;
+        return true;
     }
 
     bool GnssDataStore::loadFcn()
@@ -375,24 +431,23 @@ namespace pod
         try
         {
             const auto files = FsUtils::getFilesByExtension(eop_dir, ".ERP");
-            
+
             if (files.empty())
             {
                 std::cerr << "Empty ERP dierectory " << eop_dir << std::endl;
                 return false;
             }
-            
+
             for (const auto& file : files)
                 eopStore.addFile(file.string());
 
             if (eopStore.size() == 0)
                 std::cerr << "Empty ERP store after import " << eop_dir << std::endl;
-            
         }
         catch (gnsstk::Exception& ex)
         {
             std::cerr << "Problem opening file " << ex << std::endl;
-                        
+
             return true;
             exit(-1);
         }
