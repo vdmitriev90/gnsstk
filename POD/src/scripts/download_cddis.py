@@ -356,7 +356,22 @@ def download_brdc_nav(date, output_dir):
 
   log(f"Trying BRDC nav: {url}")
 
-  if not download_and_extract(url, path):
+  if download_and_extract(url, path):
+    return
+
+  # ===================== FALLBACK TO LEGACY .Z FORMAT =====================
+  legacy_filename = f"brdc{ddd}0.{yy}n.Z"
+  legacy_extracted = os.path.join(output_dir, legacy_filename[:-2])
+  if os.path.exists(legacy_extracted):
+    log(f"BRDC nav (legacy) already exists, skipping: {relpath(legacy_extracted)}")
+    return
+
+  legacy_url = f"https://cddis.nasa.gov/archive/gnss/data/daily/{yyyy}/{ddd}/{yy}n/{legacy_filename}"
+  legacy_path = os.path.join(output_dir, legacy_filename)
+
+  log(f"BRDC nav not found, trying legacy fallback: {legacy_url}")
+
+  if not download_and_extract(legacy_url, legacy_path):
     error(f"BRDC nav download failed for {yyyy}-{ddd}")
 
 
