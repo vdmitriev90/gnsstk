@@ -11,10 +11,10 @@ namespace pod
     double LinearCombination::getIonoFreeWaveLength(const gnsstk::SatID& sv, int band1, int band2)
     {
         int fcn = sv.getGloFcn();
-        double wlL1 = getWavelength(sv.system, 1, fcn);
-        double wlL2 = getWavelength(sv.system, 2, fcn);
+        double wlL1 = getWavelength(sv.system, band1, fcn);
+        double wlL2 = getWavelength(sv.system, band2, fcn);
 
-        return wlL1 * wlL2 * (wlL1 + wlL2);
+        return wlL1 * wlL2 / (wlL1 + wlL2);
     }
 
 #pragma region MWoubenna
