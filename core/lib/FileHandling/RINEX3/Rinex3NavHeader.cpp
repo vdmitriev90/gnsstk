@@ -245,7 +245,10 @@ namespace gnsstk
                // GPS alpha "ION ALPHA"  R2.11
             IonoCorr ic("GPSA");
             for(i=0; i < 4; i++)
-               ic.param[i] = asDouble(line.substr(2 + 12*i, 12));
+            {
+               FormattedDouble temp(line.substr(2 + 12*i, 12), 12, 'D');
+               ic.param[i] = temp;
+            }
             mapIonoCorr[ic.asString()] = ic;
             if(mapIonoCorr.find("GPSB") != mapIonoCorr.end())
                valid |= validIonoCorrGPS;
@@ -255,7 +258,10 @@ namespace gnsstk
                // GPS beta "ION BETA"  R2.11
             IonoCorr ic("GPSB");
             for(i=0; i < 4; i++)
-               ic.param[i] = asDouble(line.substr(2 + 12*i, 12));
+            {
+               FormattedDouble temp(line.substr(2 + 12*i, 12), 12, 'D');
+               ic.param[i] = temp;
+            }
             mapIonoCorr[ic.asString()] = ic;
             if(mapIonoCorr.find("GPSA") != mapIonoCorr.end())
                valid |= validIonoCorrGPS;
@@ -274,7 +280,10 @@ namespace gnsstk
                GNSSTK_THROW(e);
             }
             for(i=0; i < 4; i++)
-               ic.param[i] = asDouble(line.substr(5 + 12*i, 12));
+            {
+               FormattedDouble temp(line.substr(5 + 12*i, 12), 12, 'D');
+               ic.param[i] = temp;
+            }
 
             if(ic.type == IonoCorr::GAL)
             {
