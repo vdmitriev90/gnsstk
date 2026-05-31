@@ -398,6 +398,6 @@ namespace pod
 
         equations_->addEquation(std::make_unique<AmbiguitiesEquations>(TypeID::BLC));
 
-        forwardBackwardCycles_ = confReader().getValueAsInt("forwardBackwardCycles_");
+        forwardBackwardCycles_ = confReader().getValueAsInt("forwardBackwardCycles");
     }
 } // namespace pod

@@ -548,6 +548,6 @@ namespace pod
         if (opts().carrierBands.find(CarrierBand::L2) != opts().carrierBands.end())
             equations_->addEquation(std::make_unique<AmbiguitiesEquations>(TypeID::BL2));
 
-        forwardBackwardCycles_ = confReader().getValueAsInt("forwardBackwardCycles_");
+        forwardBackwardCycles_ = confReader().getValueAsInt("forwardBackwardCycles");
     }
 } // namespace pod

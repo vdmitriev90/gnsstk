@@ -277,7 +277,7 @@ namespace pod
             equations_->addEquation(/*std::move(bias)*/ std::make_unique<InterSystemBias>());
 
         equations_->residTypes() = TypeIDSet{TypeID::postfitC};
-        forwardBackwardCycles_ = confReader().getValueAsInt("forwardBackwardCycles_");
+        forwardBackwardCycles_ = confReader().getValueAsInt("forwardBackwardCycles");
     }
 
     ///
