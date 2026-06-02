@@ -44,6 +44,7 @@
 //------------------------------------------------------------------------------------
 #include "EOPStore.hpp"
 //#include "logstream.hpp"
+#include <sstream>
 
 //------------------------------------------------------------------------------------
 using namespace std;
@@ -94,38 +95,31 @@ namespace gnsstk
          or a flat file produced by USNO (see http:  maia.usno.navy.mil/
          and get either file 'finals.data' or finals2000A.data').
          @param filename Name of file to read, including path.
-         @throw if the file is not found */
-   void EOPStore::addFile(const string& filename)
+         @return true on success, false on failure. */
+   bool EOPStore::addFile(const string& filename)
    {
-      try
+      if (addEOPPFile(filename))
       {
-         addEOPPFile(filename);
+         return true;
       }
-      catch (FileMissingException& fme)
+      if (addIERSFile(filename))
       {
-         if (StringUtils::matches(fme.getText(), string("wrong format")).empty())
-         {
-            GNSSTK_RETHROW(fme);
-         }
-
-            // try other format
-         try
-         {
-            addIERSFile(filename);
-         }
-         catch (FileMissingException& fme)
-         {
-            GNSSTK_RETHROW(fme);
-         }
+         return true;
       }
+      if (addERPFile(filename))
+      {
+         return true;
+      }
+      cerr << "EOPStore::addFile error: could not load file " << filename << endl;
+      return false;
    }
 
    //---------------------------------------------------------------------------------
       /* Add EOPs to the store via an EOPP file: read the EOPPrediction from the
          file and then compute EOPs for all days within the valid range.
          @param filename Name of file to read, including path.
-         @throw if the file is not found */
-   void EOPStore::addEOPPFile(const string& filename)
+         @return true on success, false on failure. */
+   bool EOPStore::addEOPPFile(const string& filename)
    {
          // read the file into an EOPPrediction
       EOPPrediction eopp;
@@ -133,9 +127,10 @@ namespace gnsstk
       {
          eopp.loadFile(filename);
       }
-      catch (FileMissingException& fme)
+      catch (Exception& e)
       {
-         GNSSTK_RETHROW(fme);
+         cerr << "EOPStore::addEOPPFile error: " << e.getText() << endl;
+         return false;
       }
 
          // pull out the beginning of the valid time range
@@ -149,25 +144,24 @@ namespace gnsstk
          addEOP(mjd, eo);
          mjd++;
       }
+      return true;
    }
 
    //---------------------------------------------------------------------------------
       // see http://maia.usno.navy.mil/readme.finals
-   void EOPStore::addIERSFile(const string& filename)
+   bool EOPStore::addIERSFile(const string& filename)
    {
-      bool ok;
-      int n, mjd;
-      double fracmjd;
-      string line, word;
+      int mjd;
+      string line;
 
       ifstream inpf(filename.c_str());
       if (!inpf)
       {
-         FileMissingException fme("Could not open IERS file " + filename);
-         GNSSTK_THROW(fme);
+         cerr << "EOPStore::addIERSFile error: could not open file " << filename << endl;
+         return false;
       }
 
-      ok = true;
+      bool loaded = false;
       while (!inpf.eof() && inpf.good())
       {
          getline(inpf, line);
@@ -179,8 +173,7 @@ namespace gnsstk
             // line length is actually 187
          if (inpf.bad() || line.size() < 70)
          {
-            ok = false;
-            break;
+            continue;
          }
          EarthOrientation eo;
          mjd = StringUtils::asInt(line.substr(7, 5));
@@ -188,22 +181,81 @@ namespace gnsstk
          eo.xp      = StringUtils::asDouble(line.substr(18, 9));  // arcseconds
          eo.yp      = StringUtils::asDouble(line.substr(37, 9));  // arcseconds
          eo.UT1mUTC = StringUtils::asDouble(line.substr(58, 10)); // seconds
-            /* Bulletin B
-               eo.xp = StringUtils::asDouble(line.substr(134,10));
-               arcseconds eo.yp = StringUtils::asDouble(line.substr(144,10));
-               arcseconds eo.UT1mUTC = StringUtils::asDouble(line.substr(154,11));
-               // seconds */
 
          addEOP(mjd, eo);
-      };
+         loaded = true;
+      }
       inpf.close();
 
-      if (!ok)
+      if (!loaded)
       {
-         FileMissingException fme("IERS File " + filename +
-                                  " is corrupted or wrong format");
-         GNSSTK_THROW(fme);
+         cerr << "EOPStore::addIERSFile error: no data loaded from " << filename << endl;
       }
+      return loaded;
+   }
+
+   //---------------------------------------------------------------------------------
+      // IGS ERP format, e.g. CODE MGEX solutions
+   bool EOPStore::addERPFile(const string& filename)
+   {
+      string line;
+
+      ifstream inpf(filename.c_str());
+      if (!inpf)
+      {
+         cerr << "EOPStore::addERPFile error: could not open file " << filename << endl;
+         return false;
+      }
+
+      bool loaded = false;
+      bool headerDone = false;
+      while (!inpf.eof() && inpf.good())
+      {
+         getline(inpf, line);
+         StringUtils::stripTrailing(line, '\r');
+         if (inpf.eof())
+         {
+            break;
+         }
+         // Data lines start with a valid MJD (numeric); skip header lines
+         string trimmed = StringUtils::stripLeading(line);
+         if (trimmed.empty() || !isdigit(trimmed[0]))
+         {
+            continue;
+         }
+
+         // Parse ERP data line
+         // Columns: MJD  X-P(1e-6")  Y-P(1e-6")  UT1UTC(1e-7s) ...
+         istringstream iss(line);
+         double mjdVal, xp, yp, ut1utc;
+         if (!(iss >> mjdVal >> xp >> yp >> ut1utc))
+         {
+            continue;
+         }
+
+         // only use integer MJD entries (skip fractional like .50)
+         double fracPart = mjdVal - static_cast<int>(mjdVal);
+         if (fracPart > 1.0e-9)
+         {
+            continue;
+         }
+
+         const int mjd = static_cast<int>(mjdVal);
+         EarthOrientation eo;
+         eo.xp      = xp * 1.0e-6;      // convert from 1e-6 arcsec to arcsec
+         eo.yp      = yp * 1.0e-6;      // convert from 1e-6 arcsec to arcsec
+         eo.UT1mUTC = ut1utc * 1.0e-7;  // convert from 1e-7 sec to sec
+
+         addEOP(mjd, eo);
+         loaded = true;
+      }
+      inpf.close();
+
+      if (!loaded)
+      {
+         cerr << "EOPStore::addERPFile error: no data loaded from " << filename << endl;
+      }
+      return loaded;
    }
 
    //---------------------------------------------------------------------------------

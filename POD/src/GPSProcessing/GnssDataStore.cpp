@@ -429,28 +429,22 @@ namespace pod
             exit(-1);
         }
 
-        try
+        const auto files = FsUtils::getFilesByExtension(eop_dir, ".ERP");
+
+        if (files.empty())
         {
-            const auto files = FsUtils::getFilesByExtension(eop_dir, ".ERP");
-
-            if (files.empty())
-            {
-                std::cerr << "Empty ERP directory " << eop_dir << std::endl;
-                return false;
-            }
-
-            for (const auto& file : files)
-                eopStore.addFile(file.string());
-
-            if (eopStore.size() == 0)
-                std::cerr << "Empty ERP store after import " << eop_dir << std::endl;
-        }
-        catch (gnsstk::Exception& ex)
-        {
-            std::cerr << "Problem opening file " << ex << std::endl;
+            std::cerr << "Empty ERP directory " << eop_dir << std::endl;
             return false;
         }
-        return eopStore.size() > 0;
+
+        for (const auto& file : files)
+        {
+            eopStore.addERPFile(file.string());
+        }
+
+        if (eopStore.empty())
+            std::cerr << "Empty ERP store after import " << eop_dir << std::endl;
+        return !eopStore.empty();
     }
 
     bool GnssDataStore::loadCodeBiases()
