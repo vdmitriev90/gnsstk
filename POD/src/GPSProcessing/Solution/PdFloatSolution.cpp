@@ -58,7 +58,6 @@ namespace pod
 
     void PdFloatSolution::process()
     {
-        std::list<ProcessingClass*> reProcList;
         updateRequaredObs();
 
         SimpleFilter CodePhaseFilterBase(TypeIDSet{codeL1_, TypeID::P2, TypeID::L1, TypeID::L2});
@@ -71,19 +70,15 @@ namespace pod
         EclipsedSatFilter eclipsedSV;
         ComputeWeightSimple computeWeightSimple(1);
 
-        Triple pos;
-        int i = 0;
-        for (auto& it : confReader().getValueListAsDouble("nominalPosition", opts().SiteBase))
-            pos[i++] = it;
-        Position refPos(pos);
-
+        const auto ref_base_pos = data_->getNominalPosition(opts().SiteBase);
         // basic model object for ref. station
-        BasicModel modelRef(data_->navLibrary_);
-        modelRef.setDefaultObservable(codeL1_);
+        BasicModel modelRef(ref_base_pos, data_->navLibrary_, codeL1_);
         modelRef.setMinElev(opts().maskEl);
-        // basic model object for rover has the same settings as BasicModel for ref. station
-        BasicModel modelRover(modelRef);
-        modelRef.setRxPosition(refPos);
+
+        BasicModel modelRover(data_->navLibrary_);
+        modelRover.setDefaultObservable(codeL1_);
+        modelRover.setMinElev(opts().maskEl);
+
         RinexEpoch rin_epoch, gRef;
         SyncObs sync(data_->getObsFiles(opts().SiteBase), rin_epoch);
 
@@ -107,7 +102,7 @@ namespace pod
         IonexModel ionoModel(nominalPos_, data_->ionexStore, TypeID::C1, false);
 
         // Object to compute gravitational delay effects
-        GravitationalDelay grDelayBase(refPos);
+        GravitationalDelay grDelayBase(ref_base_pos);
         GravitationalDelay grDelayRover;
 
 #pragma region Catcher objects
@@ -148,23 +143,19 @@ namespace pod
 #pragma region correct observable
 
         CorrectObservables corrBase(data_->navLibrary_);
-        corrBase.setNominalPosition(refPos);
+        corrBase.setNominalPosition(ref_base_pos);
 
         CorrectObservables corrRover(data_->navLibrary_);
 
         // Vector from monument to antenna ARP [UEN], in meters
         // for base
-        Triple offsetARP;
-        i = 0;
-        for (auto& it : confReader().getValueListAsDouble("offsetARP", opts().SiteBase))
-            offsetARP[i++] = it;
+        const Triple offsetARP = confReader().getValueListAsTriple("offsetARP", opts().SiteBase);
         corrBase.setMonument(offsetARP);
 
         // for rover
-        i = 0;
-        for (auto& it : confReader().getValueListAsDouble("offsetARP", opts().SiteRover))
-            offsetARP[i++] = it;
-        corrRover.setMonument(offsetARP);
+        const Triple offsetARP_Rover =
+            confReader().getValueListAsTriple("offsetARP", opts().SiteRover);
+        corrRover.setMonument(offsetARP_Rover);
 
         Antenna baseAnt(
             antexReader.getAntenna(confReader().getValue("antennaModel", opts().SiteBase)));
@@ -186,20 +177,16 @@ namespace pod
         // Configure ocean loading model
         OceanLoading ocean;
         ocean.setFilename(opts().genericFilesDirectory + confReader().getValue("oceanLoadingFile"));
+        const std::string sat_file =
+            opts().genericFilesDirectory + confReader().getValue("satDataFile");
 
-        ComputeWindUp windupBase(data_->navLibrary_,
-                                 refPos,
-                                 opts().genericFilesDirectory
-                                     + confReader().getValue("satDataFile"));
-        ComputeWindUp windupRover(data_->navLibrary_,
-                                  refPos,
-                                  opts().genericFilesDirectory
-                                      + confReader().getValue("satDataFile"));
+        ComputeWindUp windupBase(data_->navLibrary_, ref_base_pos, sat_file);
+        ComputeWindUp windupRover(data_->navLibrary_, ref_base_pos, sat_file);
 
-        ComputeSatPCenter svPcenterBase(refPos);
+        ComputeSatPCenter svPcenterBase(ref_base_pos);
         svPcenterBase.setAntexReader(antexReader);
 
-        ComputeSatPCenter svPcenterRover(refPos);
+        ComputeSatPCenter svPcenterRover(ref_base_pos);
         svPcenterRover.setAntexReader(antexReader);
 
         ProcessLinear linearIonoFree;
@@ -252,15 +239,15 @@ namespace pod
             while (rin >> rin_epoch)
             {
 
-                if (rin_epoch.getBody().size() == 0)
+                if (rin_epoch.getBody().empty())
                 {
                     printMsg(rin_epoch.getHeader().epoch, "Empty epoch record in Rinex file");
                     continue;
                 }
 
                 const auto& t = rin_epoch.getHeader().epoch;
-                bool b;
 #if _DEBUG
+                bool b;
                 CATCH_TIME(t, 2014, 12, 19, 0, 14, 15, b)
                 if (b)
                     DBOUT_LINE("catched")
@@ -276,21 +263,17 @@ namespace pod
                 {
                     /* if (computeApprPos(rin_epoch, data_->SP3EphList, nominalPos_))
                          continue;*/
-                    i = 0;
-                    for (auto& it :
-                         confReader().getValueListAsDouble("nominalPosition", opts().SiteRover))
-                        pos[i++] = it;
-                    nominalPos_ = Position(pos);
+                    const auto pos = data_->getNominalPosition(opts().SiteRover);
 
                     std::cout << "Baseline: " << std::setprecision(4)
-                              << (nominalPos_ - refPos).mag() / 1000 << " km" << std::endl;
+                              << (nominalPos_ - ref_base_pos).mag() / 1000 << " km" << std::endl;
                     firstTime = false;
                 }
 
                 grDelayRover.setNominalPosition(nominalPos_);
 
                 tropoRovPtr.setAllParameters(t, nominalPos_);
-                tropoBasePtr.setAllParameters(t, refPos);
+                tropoBasePtr.setAllParameters(t, ref_base_pos);
                 ionoModel.setInitialRxPosition(nominalPos_);
 
                 modelRover.setRxPosition(nominalPos_);
@@ -302,9 +285,10 @@ namespace pod
                 rin_epoch >> CodePhaseFilterRover;
                 rin_epoch >> SNRFilterRover;
 
-                if (rin_epoch.getBody().size() == 0)
+                if (rin_epoch.getBody().empty())
                 {
-                    printMsg(rin_epoch.getHeader().epoch, "Rover receiver: all SV has been rejected.");
+                    printMsg(rin_epoch.getHeader().epoch,
+                             "Rover receiver: all SV has been rejected.");
                     continue;
                 }
 
@@ -348,14 +332,14 @@ namespace pod
                     gRef >> grDelayBase;
                     gRef >> svPcenterBase;
 
-                    Triple tides(solid.getSolidTide(t, refPos)
+                    Triple tides(solid.getSolidTide(t, ref_base_pos)
                                  + ocean.getOceanLoading(opts().SiteBase, t)
-                                 + pole.getPoleTide(t, refPos));
+                                 + pole.getPoleTide(t, ref_base_pos));
                     corrBase.setExtraBiases(tides);
 
                     gRef >> corrBase;
                     gRef >> windupBase;
-                    data_->ionoCorrector.setNominalPosition(refPos);
+                    data_->ionoCorrector.setNominalPosition(ref_base_pos);
 
                     gRef >> computeTropoBase;
                     // gRef >> ionoFilterBase;

@@ -27,7 +27,5 @@ namespace pod
         virtual void updateRequaredObs() override;
 
         void configureSolver();
-
-        ProcessLinear OminusC;
     };
 } // namespace pod

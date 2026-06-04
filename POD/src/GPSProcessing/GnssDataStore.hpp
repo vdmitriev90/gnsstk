@@ -75,6 +75,7 @@ public:
   void checkObservable();
   void LoadData(const char* path);
   std::list<std::string> getObsFiles(const std::string& siteID) const;
+  gnsstk::Position getNominalPosition(std::string siteId);
 
 private:
   bool initReader(const char* path);
@@ -87,7 +88,6 @@ private:
   bool loadEOPData();
   bool loadCodeBiases();
   bool createPosProvider();
-  gnsstk::Position getPosition(std::string siteId);
 
 #pragma endregion
 

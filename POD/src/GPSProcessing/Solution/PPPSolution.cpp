@@ -53,11 +53,7 @@ namespace pod
 
     bool PPPSolution::processCore()
     {
-        Triple pos;
-        int i = 0;
-        for (auto& it : confReader().getValueListAsDouble("nominalPosition", opts().SiteRover))
-            pos[i++] = it;
-        nominalPos_ = Position(pos);
+        nominalPos_ = data_->getNominalPosition(opts().SiteRover);
 
         updateRequaredObs();
 
@@ -104,11 +100,8 @@ namespace pod
         GravitationalDelay grDelay(nominalPos_);
 
         // Vector from monument to antenna ARP [UEN], in meters
-        Triple offsetARP;
-        i = 0;
-        for (auto& it : confReader().getValueListAsDouble("offsetARP", opts().SiteRover))
-            offsetARP[i++] = it;
-
+        const Triple offset_ARP = confReader().getValueListAsTriple("offsetARP", opts().SiteRover);
+        
         AntexReader antexReader;
         Antenna receiverAntenna;
 
@@ -131,7 +124,7 @@ namespace pod
         // Declare an object to correct observables to monument
         CorrectObservables corr(data_->navLibrary_);
 
-        corr.setMonument(offsetARP);
+        corr.setMonument(offset_ARP);
 
         // Check if we want to use Antex patterns
         bool usepatterns(confReader().getValueAsBoolean("usePCPatterns", opts().SiteRover));
@@ -239,7 +232,7 @@ namespace pod
 
 #pragma endregion
 
-        i = 1;
+        int i = 1;
         std::cout << "First forward processing part started." << std::endl;
         for (auto& obsFile : data_->getObsFiles(opts().SiteRover))
         {

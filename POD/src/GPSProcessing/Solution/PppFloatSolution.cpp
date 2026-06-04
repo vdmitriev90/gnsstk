@@ -124,10 +124,7 @@ namespace pod
         CorrectObservables corrRover(data_->navLibrary_);
 
         // Vector from monument to antenna ARP [UEN], in meters
-        Triple offsetARP;
-        int i = 0;
-        for (auto& it : confReader().getValueListAsDouble("offsetARP", opts().SiteRover))
-            offsetARP[i++] = it;
+        const Triple offsetARP = confReader().getValueListAsTriple("offsetARP", opts().SiteRover);
         corrRover.setMonument(offsetARP);
 
         Antenna roverAnt(

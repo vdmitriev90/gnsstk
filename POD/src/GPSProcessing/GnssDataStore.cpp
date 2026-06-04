@@ -238,8 +238,7 @@ namespace pod
         const auto files = FsUtils::getAllFilesInDir(opts.workingDir / subdir);
         if (files.empty())
         {
-            std::cerr << "Empty ephemeris directory " << opts.workingDir / subdir
-                      << std::endl;
+            std::cerr << "Empty ephemeris directory " << opts.workingDir / subdir << std::endl;
             return false;
         }
         bool res = false;
@@ -394,8 +393,7 @@ namespace pod
     bool GnssDataStore::loadFcn()
     {
         const std::string gln_nav_ext = ".[\\d]{2}[gG]|\\.rnx";
-        auto files =
-            FsUtils::getFilesByExtensionRegex(opts.workingDir / opts.bceDir, gln_nav_ext);
+        auto files = FsUtils::getFilesByExtensionRegex(opts.workingDir / opts.bceDir, gln_nav_ext);
 
         for (auto file : files)
         {
@@ -537,7 +535,7 @@ namespace pod
         switch (apprPosProvider)
         {
         case ApprPositionSource::FromConfig:
-            apprPos = std::make_unique<ApprPosSimple>(getPosition(opts.SiteRover));
+            apprPos = std::make_unique<ApprPosSimple>(getNominalPosition(opts.SiteRover));
             return true;
         case ApprPositionSource::ComputeForEachEpoch:
             apprPos = std::make_unique<ComputeOnePos>(navLibrary_);
@@ -554,17 +552,10 @@ namespace pod
         }
     }
 
-    gnsstk::Position GnssDataStore::getPosition(std::string siteId)
+    gnsstk::Position GnssDataStore::getNominalPosition(std::string siteId)
     {
-        Position pos;
-        int i = 0;
-        for (auto& it : confReader->getValueListAsDouble("nominalPosition", opts.SiteRover))
-        {
-            if (i >= 3)
-                break;
-            pos[i++] = it;
-        }
-        return pos;
+        const auto pos = confReader->getValueListAsTriple("nominalPosition", siteId);
+        return Position(pos);
     }
 
     std::list<std::string> GnssDataStore::getObsFiles(const std::string& siteID) const

@@ -50,6 +50,7 @@
 #include "FFTextStream.hpp"
 #include "StringUtils.hpp"
 #include "Matrix.hpp"
+#include "Triple.hpp"
 
 
 namespace gnsstk
@@ -380,7 +381,18 @@ namespace gnsstk
           * @throw ConfigurationException
           */
       virtual std::vector<double> getValueListAsDouble( std::string variableList,
-                                                        std::string section = "DEFAULT" );
+                                                         std::string section = "DEFAULT" );
+
+
+         /** Method to get the first 3 values from a variable list as a Triple.
+          *
+          * @param variableList   Variable list name.
+          * @param section        Section the variable list belongs to.
+          * @return               Triple containing the first 3 values
+          * @throw ConfigurationException
+          */
+      virtual Triple getValueListAsTriple( std::string variableList,
+                                           std::string section = "DEFAULT" );
 
 
          /** Method to get all values from a variable list as integers.
