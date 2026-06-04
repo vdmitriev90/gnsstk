@@ -83,14 +83,24 @@ namespace pod
 
         virtual void updateRequaredObs() = 0;
 
-        virtual void printSolution(const KalmanSolver& slr,
+        void printSolution(const KalmanSolver& slr,
                                    const gnsstk::CommonTime& t,
-                                   GnssEpoch& ep);
+                                   GnssEpoch& ep) const;
+
+        virtual void storeReceiverParams(const KalmanSolver& solver,
+                                         const FilterParameter& param,
+                                         GnssEpoch& ep) const;
+
+        virtual void storeSatelliteParams(const KalmanSolver& solver,
+                                          const FilterParameter& param,
+                                          GnssEpoch& ep) const;
+      private:
+        void computeAndStoreSolution(const KalmanSolver& solver, GnssEpoch& gEpoch) const;
 
 #pragma endregion
 
 #pragma region Fields
-
+      protected:
         // Input processing data and configuration
         GnssDataStorePtr data_;
 

@@ -1,5 +1,8 @@
 #pragma once
 #include "GnssSolution.h"
+#include "NeillTropModel.hpp"
+#include "ComputeTropModel.hpp"
+
 namespace pod
 {
     class PppFloatSolution : public GnssSolution
@@ -24,8 +27,14 @@ namespace pod
       protected:
         virtual void updateRequaredObs() override;
 
+        void storeReceiverParams(const KalmanSolver& solver,
+                                 const FilterParameter& param,
+                                 GnssEpoch& ep) const override;
+
         void configureSolver();
 
-        ProcessLinear OminusC;
+      private:
+        gnsstk::NeillTropModel tropoRover_;
+        gnsstk::ComputeTropModel computeTropoRover_;
     };
 } // namespace pod

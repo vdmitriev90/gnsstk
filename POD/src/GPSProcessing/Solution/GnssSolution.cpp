@@ -21,47 +21,23 @@ namespace pod
 
     GnssSolution::~GnssSolution() {}
 
-    void GnssSolution::printSolution(const KalmanSolver& solver,
-                                     const gnsstk::CommonTime& time,
-                                     GnssEpoch& gEpoch)
+    void GnssSolution::computeAndStoreSolution(const KalmanSolver& solver, GnssEpoch& gEpoch) const
     {
-
-        for (auto&& it : equations_->currentUnknowns())
+        if (!solver.getValid())
         {
-            if (it.type == TypeID::dx || it.type == TypeID::dy || it.type == TypeID::dz)
-                continue;
-
-            if (it.sv == SatID::dummy)
-            {
-                if (it.type == TypeID::cdt)
-                    gEpoch.slnData[TypeID::recCdt] = solver.getSolution(it);
-                else if (it.type == TypeID::wetMap)
-                    gEpoch.slnData[TypeID::recZTropo] = solver.getSolution(it);
-                else if (it.type == TypeID::wetMapNorth)
-                    gEpoch.slnData[TypeID::recTropoNorth] = solver.getSolution(it);
-                else if (it.type == TypeID::wetMapEast)
-                    gEpoch.slnData[TypeID::recTropoEast] = solver.getSolution(it);
-                else
-                    gEpoch.slnData[it.type] = solver.getSolution(it);
-            }
-            else
-            {
-                double amb = solver.getSolution(it);
-                if (amb != 0)
-                    gEpoch.satData[it.sv][it.type] = amb;
-            }
+            gEpoch.slnData.insert(std::make_pair(TypeID::recSlnType, SlnType::NONE_SOLUTION));
+            return;
         }
-        Position new_pos;
-        double st_dev3_d(NAN);
 
-        new_pos[0] = nominalPos_.X() + solver.getSolution(FilterParameter(TypeID::dx)); // dx    - #4
-        new_pos[1] = nominalPos_.Y() + solver.getSolution(FilterParameter(TypeID::dy)); // dy    - #5
-        new_pos[2] = nominalPos_.Z() + solver.getSolution(FilterParameter(TypeID::dz)); // dz    - #6
+        Position new_pos = nominalPos_;
+        new_pos[0] += solver.getSolution(FilterParameter(TypeID::dx)); // dx
+        new_pos[1] += solver.getSolution(FilterParameter(TypeID::dy)); // dy
+        new_pos[2] += solver.getSolution(FilterParameter(TypeID::dz)); // dz
 
-        double var_x = solver.getVariance(FilterParameter(TypeID::dx)); // Cov dx    - #8
-        double var_y = solver.getVariance(FilterParameter(TypeID::dy)); // Cov dy    - #9
-        double var_z = solver.getVariance(FilterParameter(TypeID::dz)); // Cov dz    - #10
-        st_dev3_d = sqrt(var_x + var_y + var_z);
+        double var_x = solver.getVariance(FilterParameter(TypeID::dx)); // Cov dx
+        double var_y = solver.getVariance(FilterParameter(TypeID::dy)); // Cov dy
+        double var_z = solver.getVariance(FilterParameter(TypeID::dz)); // Cov dz
+        const double st_dev3_d = sqrt(var_x + var_y + var_z);
 
         gEpoch.slnData.insert(std::make_pair(TypeID::recX, new_pos.X()));
         gEpoch.slnData.insert(std::make_pair(TypeID::recY, new_pos.Y()));
@@ -72,9 +48,50 @@ namespace pod
         int num_used_sats = solver.PostfitResiduals().size() / equations_->measTypes().size();
         gEpoch.slnData.insert(std::make_pair(TypeID::recUsedSV, num_used_sats));
 
-        SlnType sln_type = solver.getValid() ? desiredSlnType() : SlnType::NONE_SOLUTION;
-
-        gEpoch.slnData.insert(std::make_pair(TypeID::recSlnType, sln_type));
+        gEpoch.slnData.insert(std::make_pair(TypeID::recSlnType, desiredSlnType()));
         gEpoch.slnData.insert(std::make_pair(TypeID::sigma, solver.getPhaseSigma()));
+    }
+
+    void GnssSolution::storeReceiverParams(const KalmanSolver& solver,
+                                            const FilterParameter& param,
+                                            GnssEpoch& gEpoch) const
+    {
+        if (param.type == TypeID::cdt)
+            gEpoch.slnData[TypeID::recCdt] = solver.getSolution(param);
+        else if (param.type == TypeID::wetMap)
+            gEpoch.slnData[TypeID::recZTropo] = solver.getSolution(param);
+        else if (param.type == TypeID::wetMapNorth)
+            gEpoch.slnData[TypeID::recTropoNorth] = solver.getSolution(param);
+        else if (param.type == TypeID::wetMapEast)
+            gEpoch.slnData[TypeID::recTropoEast] = solver.getSolution(param);
+        else
+            gEpoch.slnData[param.type] = solver.getSolution(param);
+    }
+
+    void GnssSolution::storeSatelliteParams(const KalmanSolver& solver,
+                                            const FilterParameter& param,
+                                            GnssEpoch& gEpoch) const
+    {
+        const double amb = solver.getSolution(param);
+        if (amb != 0)
+            gEpoch.satData[param.sv][param.type] = amb;
+    }
+
+    void GnssSolution::printSolution(const KalmanSolver& solver,
+                                     const gnsstk::CommonTime& time,
+                                     GnssEpoch& gEpoch) const
+    {
+        for (auto&& it : equations_->currentUnknowns())
+        {
+            if (it.type == TypeID::dx || it.type == TypeID::dy || it.type == TypeID::dz)
+                continue;
+
+            if (it.sv == SatID::dummy)
+                storeReceiverParams(solver, it, gEpoch);
+            else
+                storeSatelliteParams(solver, it, gEpoch);
+        }
+
+        computeAndStoreSolution(solver, gEpoch);
     };
 } // namespace pod

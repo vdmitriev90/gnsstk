@@ -25,7 +25,6 @@
 #include "LinearCombinations.hpp"
 #include "MJD.hpp"
 #include "MWCSDetector.hpp"
-#include "NeillTropModel.hpp"
 #include "OceanLoading.hpp"
 #include "PoleTides.hpp"
 #include "PositionEquations.h"
@@ -48,11 +47,13 @@ namespace pod
 {
     PppFloatSolution::PppFloatSolution(GnssDataStorePtr data_ptr)
         : GnssSolution(data_ptr, 50.0)
+        , computeTropoRover_(tropoRover_, false)
     {
     }
 
     PppFloatSolution::PppFloatSolution(GnssDataStorePtr data_ptr, double max_sigma)
         : GnssSolution(data_ptr, max_sigma)
+        , computeTropoRover_(tropoRover_, false)
     {
     }
 
@@ -84,8 +85,7 @@ namespace pod
 #pragma region troposhere modeling objects
 
         // for rover
-        NeillTropModel tropoRovPtr;
-        ComputeTropModel computeTropoRover(tropoRovPtr, true);
+        computeTropoRover_.setTropModel(tropoRover_);
 
 #pragma endregion
 
@@ -143,8 +143,9 @@ namespace pod
         OceanLoading ocean;
         ocean.setFilename(opts().genericFilesDirectory + confReader().getValue("oceanLoadingFile"));
 
-        ComputeWindUp windupRover(
-            data_->navLibrary_, opts().genericFilesDirectory + confReader().getValue("satDataFile"));
+        ComputeWindUp windupRover(data_->navLibrary_,
+                                  opts().genericFilesDirectory
+                                      + confReader().getValue("satDataFile"));
 
         ComputeSatPCenter svPcenterRover;
         svPcenterRover.setAntexReader(antexReader);
@@ -195,7 +196,7 @@ namespace pod
                 if (decimateData.check(rin_epoch))
                     continue;
 
-                if (rin_epoch.getBody().size() == 0)
+                if (rin_epoch.getBody().empty())
                 {
                     printMsg(rin_epoch.getHeader().epoch, "Empty epoch record in Rinex file");
                     continue;
@@ -221,7 +222,7 @@ namespace pod
                 // std::cout << nominalPos_ << std::endl;
                 grDelayRover.setNominalPosition(nominalPos_);
 
-                tropoRovPtr.setAllParameters(t, nominalPos_);
+                tropoRover_.setAllParameters(t, nominalPos_);
 
                 corrRover.setNominalPosition(nominalPos_);
                 windupRover.setNominalPosition(nominalPos_);
@@ -232,9 +233,10 @@ namespace pod
                 rin_epoch >> CodeFilter;
                 rin_epoch >> SNRFilter;
 
-                if (rin_epoch.getBody().size() == 0)
+                if (rin_epoch.getBody().empty())
                 {
-                    printMsg(rin_epoch.getHeader().epoch, "Rover receiver: all SV has been rejected.");
+                    printMsg(rin_epoch.getHeader().epoch,
+                             "Rover receiver: all SV has been rejected.");
                     continue;
                 }
                 rin_epoch >> computeLinear_;
@@ -254,7 +256,7 @@ namespace pod
                 rin_epoch >> corrRover;
 
                 rin_epoch >> windupRover;
-                rin_epoch >> computeTropoRover;
+                rin_epoch >> computeTropoRover_;
 
                 rin_epoch >> linearIonoFree;
                 rin_epoch >> oMinusC_;
@@ -314,6 +316,26 @@ namespace pod
         }
     }
 
+    void PppFloatSolution::storeReceiverParams(const KalmanSolver& solver,
+                                               const FilterParameter& param,
+                                               GnssEpoch& ep) const
+    {
+
+        if (param.type == TypeID::wetMap)
+        {
+            const double total_z_delay = tropoRover_.dry_zenith_delay()
+                                         + tropoRover_.wet_zenith_delay()
+                                         + solver.getSolution(param);
+
+            ep.slnData[TypeID::recZTropo] = total_z_delay;
+
+            return;
+        }
+
+        // Fallback to base implementation
+        GnssSolution::storeReceiverParams(solver, param, ep);
+    }
+
     void PppFloatSolution::updateRequaredObs()
     {
         LinearCombinations comm;
@@ -370,15 +392,20 @@ namespace pod
         auto coord = std::make_unique<PositionEquations>();
 
         double posSigma = confReader().getValueAsDouble("posSigma");
+
         if (opts().dynamics == GnssDataStore::Dynamics::Static)
+        {
             coord->setStochasicModel(std::make_shared<ConstantModel>());
-
+        }
         else if (opts().dynamics == GnssDataStore::Dynamics::Kinematic)
+        {
             coord->setStochasicModel(std::make_shared<WhiteNoiseModel>(posSigma));
-
+        }
         else if (opts().dynamics == GnssDataStore::Dynamics::RandomWalk)
+        {
             for (const auto& it : coord->getParameters())
                 coord->setStochasicModel(it, std::make_shared<RandomWalkModel>(posSigma));
+        }
 
         // add position equations
         equations_->addEquation(std::move(coord));

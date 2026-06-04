@@ -63,13 +63,6 @@ namespace pod
         };
 
       protected:
-        virtual void printSolution(const KalmanSolver& solver,
-                                   const gnsstk::CommonTime& time,
-                                   GnssEpoch& gEpoch) override {
-            // ptr->printSolution(of, solver, time, gEpoch)
-        };
-
-      protected:
         virtual void updateRequaredObs() override {}
 
 #pragma endregion
