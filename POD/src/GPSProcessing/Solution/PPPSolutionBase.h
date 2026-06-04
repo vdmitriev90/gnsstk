@@ -19,7 +19,7 @@ namespace pod
     {
 
       public:
-        PPPSolutionBase(GnssDataStore_sptr data);
+        PPPSolutionBase(GnssDataStorePtr data);
 
         virtual ~PPPSolutionBase();
 

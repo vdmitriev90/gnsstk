@@ -184,5 +184,5 @@ namespace pod
         SlnType slnType;
     };
 
-    typedef std::shared_ptr<pod::EquationComposer> eqComposer_sptr;
+    typedef std::shared_ptr<pod::EquationComposer> EquationComposerPtr;
 } // namespace pod

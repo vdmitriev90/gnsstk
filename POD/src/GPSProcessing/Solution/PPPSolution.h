@@ -10,7 +10,7 @@ namespace pod
     class PPPSolution : public PPPSolutionBase
     {
       public:
-        PPPSolution(GnssDataStore_sptr confReader);
+        PPPSolution(GnssDataStorePtr confReader);
         virtual ~PPPSolution() {};
 
         void process() override;

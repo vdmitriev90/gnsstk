@@ -24,7 +24,7 @@ namespace pod
 
 #pragma region Constructors
 
-        GnssSolution(GnssDataStore_sptr dataStore, double maxsigma);
+        GnssSolution(GnssDataStorePtr dataStore, double maxsigma);
 
         virtual ~GnssSolution();
 
@@ -54,7 +54,7 @@ namespace pod
             return (*this);
         }
 
-        virtual GnssSolution& setConfigData(GnssDataStore_sptr dataStore)
+        virtual GnssSolution& setConfigData(GnssDataStorePtr dataStore)
         {
             data_ = dataStore;
             return (*this);
@@ -92,7 +92,7 @@ namespace pod
 #pragma region Fields
 
         // Input processing data and configuration
-        GnssDataStore_sptr data_;
+        GnssDataStorePtr data_;
 
         // Nominal position
         gnsstk::Position nominalPos_;
@@ -111,7 +111,7 @@ namespace pod
         ProcessLinear oMinusC_;
 
         // equation System composer
-        eqComposer_sptr equations_;
+        EquationComposerPtr equations_;
 
         // number of forward-backward cycles
         int forwardBackwardCycles_;

@@ -15,7 +15,7 @@ namespace pod
     {
 
       public:
-        SingleSolution(GnssDataStore_sptr data_ptr);
+        SingleSolution(GnssDataStorePtr data_ptr);
         virtual ~SingleSolution() {};
 
         virtual std::string fileName() const

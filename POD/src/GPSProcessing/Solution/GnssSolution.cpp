@@ -12,7 +12,7 @@ namespace pod
         return (std::cout << "Epoch: " << CivilTime(time).asString() << " " << msg << std::endl);
     }
 
-    GnssSolution::GnssSolution(GnssDataStore_sptr gnssData, double sigma = 50.0)
+    GnssSolution::GnssSolution(GnssDataStorePtr gnssData, double sigma = 50.0)
         : data_(gnssData)
         , equations_(std::make_shared<EquationComposer>())
         , maxSigma_(sigma)

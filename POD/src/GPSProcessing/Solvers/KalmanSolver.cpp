@@ -36,7 +36,7 @@ namespace pod
 
     KalmanSolver::KalmanSolver() : firstTime(true), isValid(false) {}
 
-    KalmanSolver::KalmanSolver(eqComposer_sptr eqs)
+    KalmanSolver::KalmanSolver(EquationComposerPtr eqs)
         : firstTime(true)
         , equations(eqs)
         , isValid(false)

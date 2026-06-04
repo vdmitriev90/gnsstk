@@ -12,7 +12,7 @@ namespace pod
     double CodeSolverBase::eps = 1e-3;
     GPSEllipsoid CodeSolverBase::ellGPS;
 
-    CodeSolverBase::CodeSolverBase(GnssDataStore_sptr data)
+    CodeSolverBase::CodeSolverBase(GnssDataStorePtr data)
         : maskEl(data->opts.maskEl)
         , maskSNR(data->opts.maskSNR)
         , maxIter(15)

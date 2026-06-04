@@ -67,7 +67,7 @@
 using namespace gnsstk;
 namespace pod
 {
-    PODSolution::PODSolution(GnssDataStore_sptr confData) : PPPSolutionBase(confData)
+    PODSolution::PODSolution(GnssDataStorePtr confData) : PPPSolutionBase(confData)
     {
         solverPR_ = std::unique_ptr<CodeSolverBase>(new CodeSolverLEO(data_));
     }

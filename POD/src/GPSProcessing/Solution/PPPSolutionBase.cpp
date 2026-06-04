@@ -19,7 +19,7 @@ using namespace gnsstk;
 namespace pod
 {
 
-    PPPSolutionBase::PPPSolutionBase(GnssDataStore_sptr procData) : GnssSolution(procData, 1.0) {}
+    PPPSolutionBase::PPPSolutionBase(GnssDataStorePtr procData) : GnssSolution(procData, 1.0) {}
     PPPSolutionBase::~PPPSolutionBase()
     {
         solverPR_.release();

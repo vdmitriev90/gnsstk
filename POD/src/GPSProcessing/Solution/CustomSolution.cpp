@@ -11,7 +11,7 @@
 
 namespace pod
 {
-    GnssSolutionUPtr CustomSolution::Factory(GnssDataStore_sptr dataStore)
+    GnssSolutionUPtr CustomSolution::Factory(GnssDataStorePtr dataStore)
     {
         switch (dataStore->opts.slnType)
         {
@@ -43,7 +43,7 @@ namespace pod
 
     CustomSolution::CustomSolution() : GnssSolution(nullptr, .0), ptr(nullptr) {}
 
-    CustomSolution::CustomSolution(GnssDataStore_sptr dataStore) : GnssSolution(nullptr, .0)
+    CustomSolution::CustomSolution(GnssDataStorePtr dataStore) : GnssSolution(nullptr, .0)
     {
         ptr = Factory(dataStore);
     }

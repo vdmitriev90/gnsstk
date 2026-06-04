@@ -6,7 +6,7 @@ namespace pod
     class PdFixedSolution : public PdFloatSolution
     {
       public:
-        PdFixedSolution(GnssDataStore_sptr data_ptr);
+        PdFixedSolution(GnssDataStorePtr data_ptr);
         virtual ~PdFixedSolution();
 
         virtual SlnType desiredSlnType() const override

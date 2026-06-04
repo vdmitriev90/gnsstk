@@ -26,7 +26,7 @@ using namespace gnsstk;
 namespace pod
 {
 
-    CdDiffSolution::CdDiffSolution(GnssDataStore_sptr data_ptr) : SingleSolution(data_ptr) {}
+    CdDiffSolution::CdDiffSolution(GnssDataStorePtr data_ptr) : SingleSolution(data_ptr) {}
 
     CdDiffSolution::~CdDiffSolution() {}
 

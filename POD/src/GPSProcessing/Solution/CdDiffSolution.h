@@ -9,7 +9,7 @@ namespace pod
     class CdDiffSolution : public SingleSolution
     {
       public:
-        CdDiffSolution(GnssDataStore_sptr prt);
+        CdDiffSolution(GnssDataStorePtr prt);
 
         virtual ~CdDiffSolution();
 

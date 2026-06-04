@@ -12,13 +12,13 @@ namespace pod
     class CustomSolution : public GnssSolution
     {
       private:
-        static GnssSolutionUPtr Factory(GnssDataStore_sptr dataStore);
+        static GnssSolutionUPtr Factory(GnssDataStorePtr dataStore);
 
       public:
         CustomSolution();
 
       public:
-        CustomSolution(GnssDataStore_sptr dataStore);
+        CustomSolution(GnssDataStorePtr dataStore);
 
       public:
         virtual ~CustomSolution();
@@ -38,7 +38,7 @@ namespace pod
         }
 
       public:
-        virtual GnssSolution& setConfigData(GnssDataStore_sptr dataStore)
+        virtual GnssSolution& setConfigData(GnssDataStorePtr dataStore)
         {
             ptr = Factory(dataStore);
             return (*this);

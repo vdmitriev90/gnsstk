@@ -196,6 +196,6 @@ public:
 #pragma endregion
     };
 
-    typedef std::shared_ptr<pod::GnssDataStore> GnssDataStore_sptr;
+    typedef std::shared_ptr<pod::GnssDataStore> GnssDataStorePtr;
 } // namespace pod
 #endif // !POD_GNSSDATA_STORE_H

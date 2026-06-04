@@ -9,7 +9,7 @@ namespace pod
     {
 
       public:
-        PODSolution(GnssDataStore_sptr confData);
+        PODSolution(GnssDataStorePtr confData);
 
         virtual ~PODSolution() {};
 

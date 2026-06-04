@@ -11,7 +11,7 @@ namespace pod
     class CodeSolver : public CodeSolverBase
     {
       public:
-        CodeSolver(gnsstk::TropModel& tropo, GnssDataStore_sptr data)
+        CodeSolver(gnsstk::TropModel& tropo, GnssDataStorePtr data)
             : CodeSolverBase(data)
             , tropo(&tropo) {};
         virtual ~CodeSolver() {};

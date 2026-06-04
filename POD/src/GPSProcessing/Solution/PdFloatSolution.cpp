@@ -49,8 +49,8 @@ using namespace gnsstk;
 namespace pod
 {
 
-    PdFloatSolution::PdFloatSolution(GnssDataStore_sptr data_ptr) : GnssSolution(data_ptr, 50.0) {}
-    PdFloatSolution::PdFloatSolution(GnssDataStore_sptr data_ptr, double max_sigma)
+    PdFloatSolution::PdFloatSolution(GnssDataStorePtr data_ptr) : GnssSolution(data_ptr, 50.0) {}
+    PdFloatSolution::PdFloatSolution(GnssDataStorePtr data_ptr, double max_sigma)
         : GnssSolution(data_ptr, max_sigma)
     {
     }

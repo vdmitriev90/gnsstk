@@ -22,7 +22,7 @@ using namespace gnsstk;
 namespace pod
 {
 
-    SingleSolution::SingleSolution(GnssDataStore_sptr data_ptr)
+    SingleSolution::SingleSolution(GnssDataStorePtr data_ptr)
         : GnssSolution(data_ptr, 50.0)
         , codeSmWindowSize_(600)
     {

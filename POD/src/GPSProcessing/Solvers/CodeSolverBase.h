@@ -23,7 +23,7 @@ namespace pod
         static void refreshSolution(gnsstk::Vector<double>& Sol, gnsstk::Vector<double>& dSol);
 
       public:
-        CodeSolverBase(GnssDataStore_sptr data);
+        CodeSolverBase(GnssDataStorePtr data);
         virtual ~CodeSolverBase() {};
 
         std::string virtual getName()

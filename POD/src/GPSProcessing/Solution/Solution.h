@@ -29,7 +29,7 @@ namespace pod
         };
 
       protected:
-        GnssDataStore_sptr data;
+        GnssDataStorePtr data;
 
         gnsstk::CommandOptionWithArg confFile;
 

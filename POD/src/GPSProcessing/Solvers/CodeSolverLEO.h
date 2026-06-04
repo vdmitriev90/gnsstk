@@ -11,7 +11,7 @@ namespace pod
     class CodeSolverLEO : public CodeSolverBase
     {
       public:
-        CodeSolverLEO(GnssDataStore_sptr data) : CodeSolverBase(data) {};
+        CodeSolverLEO(GnssDataStorePtr data) : CodeSolverBase(data) {};
         virtual ~CodeSolverLEO() {};
 
         std::string virtual getName() override

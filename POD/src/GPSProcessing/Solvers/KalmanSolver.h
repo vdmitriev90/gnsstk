@@ -23,7 +23,7 @@ namespace pod
 
         KalmanSolver();
 
-        KalmanSolver(eqComposer_sptr eqs);
+        KalmanSolver(EquationComposerPtr eqs);
 
         virtual ~KalmanSolver();
 
@@ -150,7 +150,7 @@ namespace pod
         double codeSigma;
 
         // object to prepare h, phi, q  matrices for filter
-        eqComposer_sptr equations;
+        EquationComposerPtr equations;
 
         // Indicator of current filter state validity
         bool isValid;

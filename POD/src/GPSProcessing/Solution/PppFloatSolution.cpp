@@ -46,11 +46,12 @@ using namespace gnsstk;
 
 namespace pod
 {
-    PppFloatSolution::PppFloatSolution(GnssDataStore_sptr data_ptr) : GnssSolution(data_ptr, 50.0)
+    PppFloatSolution::PppFloatSolution(GnssDataStorePtr data_ptr)
+        : GnssSolution(data_ptr, 50.0)
     {
     }
 
-    PppFloatSolution::PppFloatSolution(GnssDataStore_sptr data_ptr, double max_sigma)
+    PppFloatSolution::PppFloatSolution(GnssDataStorePtr data_ptr, double max_sigma)
         : GnssSolution(data_ptr, max_sigma)
     {
     }

@@ -19,7 +19,7 @@ namespace pod
     {
     }
 
-    KalmanSolverFB::KalmanSolverFB(eqComposer_sptr eqs)
+    KalmanSolverFB::KalmanSolverFB(EquationComposerPtr eqs)
         : currCycle(0)
         , cyclesNumber(0)
         , processedMeasurements(0)

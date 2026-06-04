@@ -39,7 +39,7 @@
 
 namespace pod
 {
-    PPPSolution::PPPSolution(GnssDataStore_sptr gnssData) : PPPSolutionBase(gnssData)
+    PPPSolution::PPPSolution(GnssDataStorePtr gnssData) : PPPSolutionBase(gnssData)
     {
 
         // opts().DoY = confReader().getValueAsInt("dayOfYear");
