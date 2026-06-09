@@ -495,6 +495,8 @@ namespace gnsstk
       /// @ingroup exceptionclass
    NEW_EXCEPTION_CLASS(FFStreamError, gnsstk::Exception);
 
+   NEW_EXCEPTION_CLASS(WrongFormatFallback, gnsstk::FFStreamError);
+
       /// This gets thrown if a valid EOF occurs on formattedGetLine.
       /// @ingroup exceptionclass
    NEW_EXCEPTION_CLASS(EndOfFile, gnsstk::FFStreamError);

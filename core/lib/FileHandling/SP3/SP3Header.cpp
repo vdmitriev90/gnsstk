@@ -101,7 +101,7 @@ namespace gnsstk
       }
       else
       {
-         FFStreamError e("Unknown label in line 1: " + line.substr(0,2));
+         WrongFormatFallback e("Unknown label in line 1: " + line.substr(0, 2));
          GNSSTK_THROW(e);
       }
 
