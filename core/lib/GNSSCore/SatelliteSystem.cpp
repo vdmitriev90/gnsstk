@@ -44,6 +44,7 @@
 //==============================================================================
 
 #include "SatelliteSystem.hpp"
+#include "StringUtils.hpp"
 
 namespace gnsstk
 {
@@ -65,38 +66,89 @@ namespace gnsstk
             case SatelliteSystem::IRNSS:       return "IRNSS";
             case SatelliteSystem::Mixed:       return "Mixed";
             case SatelliteSystem::UserDefined: return "UserDefined";
-            default:                           return "???";
-         } // switch (e)
-      } // asString(SatelliteSystem)
+               default:                           return "???";
+               } // switch (e)
+            } // asString(SatelliteSystem)
 
 
-      SatelliteSystem asSatelliteSystem(const std::string& s) noexcept
+            std::string asCode(SatelliteSystem e) noexcept
+            {
+               switch (e)
+               {
+                  case SatelliteSystem::Unknown:     return "UNK";
+                  case SatelliteSystem::GPS:         return "GPS";
+                  case SatelliteSystem::Galileo:     return "GAL";
+                  case SatelliteSystem::Glonass:     return "GLO";
+                  case SatelliteSystem::Geosync:     return "GEO";
+                  case SatelliteSystem::LEO:         return "LEO";
+                  case SatelliteSystem::Transit:     return "TRN";
+                  case SatelliteSystem::BeiDou:      return "BDS";
+                  case SatelliteSystem::QZSS:        return "QZS";
+                  case SatelliteSystem::IRNSS:       return "IRN";
+                  case SatelliteSystem::Mixed:       return "MIX";
+                  case SatelliteSystem::UserDefined: return "USR";
+                  default:                           return "???";
+               } // switch (e)
+            } // asCode(SatelliteSystem)
+
+
+            SatelliteSystem asSatelliteSystem(const std::string& s) noexcept
       {
-         if (s == "Unknown")
+         std::string upper = upperCase(s);
+         if (upper == "UNKNOWN")
             return SatelliteSystem::Unknown;
-         if (s == "GPS")
+         if (upper == "GPS")
             return SatelliteSystem::GPS;
-         if (s == "Galileo")
+         if (upper == "GALILEO")
             return SatelliteSystem::Galileo;
-         if (s == "GLONASS")
+         if (upper == "GLONASS")
             return SatelliteSystem::Glonass;
-         if (s == "Geostationary")
+         if (upper == "GEOSTATIONARY")
             return SatelliteSystem::Geosync;
-         if (s == "LEO")
+         if (upper == "LEO")
             return SatelliteSystem::LEO;
-         if (s == "Transit")
+         if (upper == "TRANSIT")
             return SatelliteSystem::Transit;
-         if (s == "BeiDou")
+         if (upper == "BEIDOU")
             return SatelliteSystem::BeiDou;
-         if (s == "QZSS")
+         if (upper == "QZSS")
             return SatelliteSystem::QZSS;
-         if (s == "IRNSS")
+         if (upper == "IRNSS")
             return SatelliteSystem::IRNSS;
-         if (s == "Mixed")
+         if (upper == "MIXED")
             return SatelliteSystem::Mixed;
-         if (s == "UserDefined")
+         if (upper == "USERDEFINED")
             return SatelliteSystem::UserDefined;
          return SatelliteSystem::Unknown;
       } // asSatelliteSystem(string)
+
+
+      SatelliteSystem asSatelliteSystemCode(const std::string& s) noexcept
+      {
+         std::string upper = upperCase(s);
+         if (upper == "GPS")
+            return SatelliteSystem::GPS;
+         if (upper == "GAL")
+            return SatelliteSystem::Galileo;
+         if (upper == "GLO" || upper == "GLN")
+            return SatelliteSystem::Glonass;
+         if (upper == "GEO")
+            return SatelliteSystem::Geosync;
+         if (upper == "LEO")
+            return SatelliteSystem::LEO;
+         if (upper == "TRN")
+            return SatelliteSystem::Transit;
+         if (upper == "BDS")
+            return SatelliteSystem::BeiDou;
+         if (upper == "QZS")
+            return SatelliteSystem::QZSS;
+         if (upper == "IRN")
+            return SatelliteSystem::IRNSS;
+         if (upper == "MIX")
+            return SatelliteSystem::Mixed;
+         if (upper == "USR")
+            return SatelliteSystem::UserDefined;
+         return SatelliteSystem::Unknown;
+      } // asSatelliteSystemCode(string)
    } // namespace StringUtils
 } // namespace gnsstk

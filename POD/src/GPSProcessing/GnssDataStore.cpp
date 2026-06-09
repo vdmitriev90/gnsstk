@@ -178,12 +178,20 @@ namespace pod
             });
             std::cout << std::endl;
 
-            for (auto it : confReader->getValueListAsInt("satSystems"))
-                opts.systems.insert(static_cast<SatelliteSystem>(it));
+            for (auto it : confReader->getValueList("satSystems"))
+            {
+                auto sys = convertCodeToSatelliteSystem(it);
+                if (sys == SatelliteSystem::Unknown)
+                {
+                    std::cerr << "Warning: Unknown satellite system code '" << it << "' in configuration." << std::endl;
+                    continue;
+                }
+                opts.systems.insert(sys);
+            }
 
             std::cout << "Used Sat. Systems: ";
             for_each(opts.systems.begin(), opts.systems.end(), [](auto&& ss) {
-                std::cout << convertSatelliteSystemToString(ss) << " ";
+                std::cout << convertSatelliteSystemToCode(ss) << " ";
             });
             std::cout << std::endl;
 

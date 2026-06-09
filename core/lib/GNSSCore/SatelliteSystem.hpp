@@ -77,8 +77,12 @@ namespace gnsstk
    {
          /// Convert a SatelliteSystem to a whitespace-free string name.
       std::string asString(SatelliteSystem e) noexcept;
+         /// Convert a SatelliteSystem to a 3-letter constellation code.
+      std::string asCode(SatelliteSystem e) noexcept;
          /// Convert a string name to an SatelliteSystem
       SatelliteSystem asSatelliteSystem(const std::string& s) noexcept;
+         /// Convert a 3-letter constellation code to SatelliteSystem (case-insensitive)
+      SatelliteSystem asSatelliteSystemCode(const std::string& s) noexcept;
    }
 
       /** Translate system enumeration to its string representation.
@@ -103,11 +107,27 @@ namespace gnsstk
        * @return An enumeration equivalent of the given string.
        *   Unknown is returned for any names that do not
        *   exactly match known values.
-       */
-   inline SatelliteSystem convertStringToSatelliteSystem(
-      const std::string& s)
-   { return StringUtils::asSatelliteSystem(s); }
+             */
+          inline SatelliteSystem convertStringToSatelliteSystem(
+             const std::string& s)
+          { return StringUtils::asSatelliteSystem(s); }
 
-} // namespace gnsstk
+             /** Translate system enumeration to its 3-letter code representation.
+              * @param[in] s The system to get the 3-letter code of.
+              * @return A 3-letter string code for the GNSS.
+              */
+          inline std::string convertSatelliteSystemToCode(SatelliteSystem s)
+          { return StringUtils::asCode(s); }
 
-#endif // GNSSTK_SATELLITESYSTEM_HPP
+             /** Translate 3-letter GNSS codes into system enumeration equivalents.
+              * Case-insensitive.
+              * @param[in] s The 3-letter GNSS code to convert to enumeration.
+              * @return An enumeration equivalent of the given code.
+              *   Unknown is returned for any codes that do not match known values.
+              */
+          inline SatelliteSystem convertCodeToSatelliteSystem(const std::string& s)
+          { return StringUtils::asSatelliteSystemCode(s); }
+
+       } // namespace gnsstk
+
+       #endif // GNSSTK_SATELLITESYSTEM_HPP
