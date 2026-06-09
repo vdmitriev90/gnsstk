@@ -228,7 +228,7 @@ def download_clk(date, output_dir):
         return
 
     # fallback already exists
-    legacy_filename = f"igr{gps_week}{dow}.clk"
+    legacy_filename = f"cod{gps_week}{dow}.clk_05s"
     legacy_extracted = os.path.join(output_dir, legacy_filename)
 
     if os.path.exists(legacy_extracted):
@@ -244,7 +244,7 @@ def download_clk(date, output_dir):
         return
 
     # ===================== FALLBACK TO LEGACY =====================
-    legacy_compressed = f"igr{gps_week}{dow}.clk.Z"
+    legacy_compressed = f"cod{gps_week}{dow}.clk_05s.Z"
     url = f"https://cddis.nasa.gov/archive/gnss/products/{gps_week}/{legacy_compressed}"
     path = os.path.join(output_dir, legacy_compressed)
 
@@ -276,7 +276,7 @@ def download_sp3(date, output_dir):
         return
 
     # fallback already exists
-    legacy_filename = f"igr{gps_week}{dow}.sp3"
+    legacy_filename = f"cod{gps_week}{dow}.eph"
     legacy_extracted = os.path.join(output_dir, legacy_filename)
 
     if os.path.exists(legacy_extracted):
@@ -292,7 +292,7 @@ def download_sp3(date, output_dir):
         return
 
     # ===================== FALLBACK TO LEGACY =====================
-    legacy_compressed = f"igr{gps_week}{dow}.sp3.Z"
+    legacy_compressed = f"cod{gps_week}{dow}.eph.Z"
     url = f"https://cddis.nasa.gov/archive/gnss/products/{gps_week}/{legacy_compressed}"
     path = os.path.join(output_dir, legacy_compressed)
 
@@ -537,7 +537,7 @@ def _expected_sp3_filenames(start_date, end_date):
         ddd = f"{d.timetuple().tm_yday:03d}"
 
         names.add(f"COD0MGXFIN_{yyyy}{ddd}0000_01D_05M_ORB.SP3")
-        names.add(f"igr{gps_week}{dow}.sp3")
+        names.add(f"cod{gps_week}{dow}.eph")
 
     return names
 
@@ -554,7 +554,7 @@ def _expected_clk_filenames(start_date, end_date):
         ddd = f"{d.timetuple().tm_yday:03d}"
 
         names.add(f"COD0MGXFIN_{yyyy}{ddd}0000_01D_30S_CLK.CLK")
-        names.add(f"igr{gps_week}{dow}.clk")
+        names.add(f"cod{gps_week}{dow}.eph")
 
     return names
 
