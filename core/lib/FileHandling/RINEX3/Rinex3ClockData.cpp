@@ -120,72 +120,138 @@ namespace gnsstk
    }  // end reallyPutRecord()
 
 
-   void Rinex3ClockData::reallyGetRecord(FFStream& ffs)
+
+void Rinex3ClockData::reallyGetRecord(FFStream& ffs)
    {
-         // cast the stream to be an Rinex3ClockStream
-      Rinex3ClockStream& strm = dynamic_cast<Rinex3ClockStream&>(ffs);
+       Rinex3ClockStream& strm = dynamic_cast<Rinex3ClockStream&>(ffs);
 
-      clear();
+       clear();
 
-      string line;
-      strm.formattedGetLine(line,true);      // true means 'expect possible EOF'
-      stripTrailing(line);
-      if (line.length() < 59) {
-         FFStreamError e("Short line : " + line);
-         GNSSTK_THROW(e);
-      }
+       string line;
+       strm.formattedGetLine(line, true);
+       stripTrailing(line);
 
-         //cout << "Data Line: /" << line << "/" << endl;
-      datatype = line.substr(0,2);
-      site = line.substr(3,4);
-      if (datatype == string("AS"))
-      {
-         strip(site);
-         try
-         {
-            sat.fromString(site);
-         }
-         catch (Exception& exc)
-         {
-            FFStreamError e(exc);
-            e.addText("Invalid sat : /" + site + "/");
-            GNSSTK_THROW(e);
-         }
-         site = string();
-      }
+       if (line.length() < 10)
+       {
+           FFStreamError e("Short line : " + line);
+           GNSSTK_THROW(e);
+       }
 
-      time = CivilTime(asInt(line.substr( 8,4)),
-                       asInt(line.substr(12,3)),
-                       asInt(line.substr(15,3)),
-                       asInt(line.substr(18,3)),
-                       asInt(line.substr(21,3)),
-                       asDouble(line.substr(24,10)),
-                       TimeSystem::Any);
+       datatype = strip(line.substr(0, 2));
 
-      int n(asInt(line.substr(34,3)));
-      bias = line.substr(40,19);
-      if (n > 1 && line.length() >= 59)
-         sig_bias = line.substr(60,19);
+       // ============================================================
+       //  AS recorfd type parsing
+       // ============================================================
+       if (datatype == "AS")
+       {
+           try
+           {
+               std::istringstream iss(line);
 
-      if (n > 2)
-      {
-         strm.formattedGetLine(line,true);
-         stripTrailing(line);
-         if (int(line.length()) < (n-2)*20-1)
-         {
-            FFStreamError e("Short line : " + line);
-            GNSSTK_THROW(e);
-         }
-         drift =     line.substr( 0,19);
-         if (n > 3)
-            sig_drift = line.substr(20,19);
-         if (n > 4)
-            accel     = line.substr(40,19);
-         if (n > 5)
-            sig_accel = line.substr(60,19);
-      }
+               string recType;
+               string satStr;
+               int year, month, day, hour, minute;
+               double sec;
+               int n;
 
-   }   // end reallyGetRecord()
+               double biasVal = 0.0;
+               double sigBiasVal = 0.0;
+
+               iss >> recType >> satStr >> year >> month >> day >> hour >> minute >> sec >> n
+                   >> biasVal;
+
+               if (n > 1)
+                   iss >> sigBiasVal;
+
+               datatype = recType;
+
+               try
+               {
+                   sat.fromString(satStr);
+               }
+               catch (Exception& exc)
+               {
+                   FFStreamError e(exc);
+                   e.addText("Invalid sat : /" + satStr + "/");
+                   GNSSTK_THROW(e);
+               }
+
+               time = CivilTime(year, month, day, hour, minute, sec, TimeSystem::Any);
+
+               bias = asString(biasVal);
+               sig_bias = asString(sigBiasVal);
+
+               // --- continuation line ---
+               if (n > 2)
+               {
+                   strm.formattedGetLine(line, true);
+                   stripTrailing(line);
+
+                   std::istringstream iss2(line);
+
+                   double driftVal = 0.0, sigDriftVal = 0.0;
+                   double accelVal = 0.0, sigAccelVal = 0.0;
+
+                   iss2 >> driftVal;
+
+                   if (n > 3)
+                       iss2 >> sigDriftVal;
+                   if (n > 4)
+                       iss2 >> accelVal;
+                   if (n > 5)
+                       iss2 >> sigAccelVal;
+
+                   drift = asString(driftVal);
+                   sig_drift = asString(sigDriftVal);
+                   accel = asString(accelVal);
+                   sig_accel = asString(sigAccelVal);
+               }
+
+               site.clear();
+               return;
+           }
+           catch (std::exception& e)
+           {
+               FFStreamError err(string("Error parsing AS record: ") + e.what());
+               GNSSTK_THROW(err);
+           }
+       }
+
+       // ============================================================
+       //  AR recorfd type parsing
+       // ============================================================
+       site = line.substr(3, 4);
+
+       time = CivilTime(asInt(line.substr(8, 4)),
+                        asInt(line.substr(12, 3)),
+                        asInt(line.substr(15, 3)),
+                        asInt(line.substr(18, 3)),
+                        asInt(line.substr(21, 3)),
+                        asDouble(line.substr(24, 10)),
+                        TimeSystem::Any);
+
+       int n(asInt(line.substr(34, 3)));
+
+       bias = line.substr(40, 19);
+
+       if (n > 1 && line.length() >= 59)
+           sig_bias = line.substr(60, 19);
+
+       if (n > 2)
+       {
+           strm.formattedGetLine(line, true);
+           stripTrailing(line);
+
+           drift = line.substr(0, 19);
+
+           if (n > 3)
+               sig_drift = line.substr(20, 19);
+           if (n > 4)
+               accel = line.substr(40, 19);
+           if (n > 5)
+               sig_accel = line.substr(60, 19);
+       }
+   }
 
    void Rinex3ClockData::dump(ostream& s) const noexcept
    {

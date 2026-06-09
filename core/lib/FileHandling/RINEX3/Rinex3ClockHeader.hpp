@@ -85,6 +85,8 @@ namespace gnsstk
       GNSSTK_EXPORT
       static const std::string leapSecondsString;     ///< "LEAP SECONDS"
       GNSSTK_EXPORT
+      static const std::string leapSecondsGnssString; ///< "LEAP SECONDS GNSS"
+      GNSSTK_EXPORT
       static const std::string sysDCBString;          ///< "SYS / DCBS APPLIED"
       GNSSTK_EXPORT
       static const std::string sysPCVString;          ///< "SYS / PCVS APPLIED"

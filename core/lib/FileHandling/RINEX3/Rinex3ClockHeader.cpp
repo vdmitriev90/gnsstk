@@ -62,6 +62,7 @@ namespace gnsstk
    const string Rinex3ClockHeader::sysString =            "SYS / # / OBS TYPES";
    const string Rinex3ClockHeader::timeSystemString =     "TIME SYSTEM ID";
    const string Rinex3ClockHeader::leapSecondsString =    "LEAP SECONDS";
+   const string Rinex3ClockHeader::leapSecondsGnssString = "LEAP SECONDS GNSS";
    const string Rinex3ClockHeader::sysDCBString =         "SYS / DCBS APPLIED";
    const string Rinex3ClockHeader::sysPCVString =         "SYS / PCVS APPLIED";
    const string Rinex3ClockHeader::numDataString =        "# / TYPES OF DATA";
@@ -91,25 +92,40 @@ namespace gnsstk
       while(!(valid & endOfHeaderValid)) {
             // get a line
          strm.formattedGetLine(line);
-         stripTrailing(line);
+         //stripTrailing(line);
 
          if(debug) cout << "Rinex3Clock Header Line " << line << endl;
 
          if(line.length() == 0) continue;
-         else if(line.length() < 60 || line.length() > 80) {
+         else if(line.length() < 60 || line.length() > 85)
+         {
             FFStreamError e("Invalid line length");
             GNSSTK_THROW(e);
          }
 
             // parse the line
-         try {
-            string label(line, 60, 20);
+         try 
+         {
+            string label;
+            if(line.length() <= 80) {
+               label = string(line, 60, 20);
+            }
+            else 
+            {
+               // Line is longer than 80 characters - take last 20 characters as label
+               label = line.substr(line.length() - 20, 20);
+               if(debug) cout << "Warning: Line length " << line.length() 
+                              << " exceeds 80 characters, using last 20 as label" << endl;
+            }
+            label = strip(label);
+
             if(label == versionString) {
                version = asDouble(line.substr(0,9));
-               if(line[20] != 'C') {
+                if (line[20] != 'C' && line[21] != 'C')
+                {
                   FFStreamError e("Invalid file type: " + line.substr(20,1));
                   GNSSTK_THROW(e);
-               }
+                }
                fileSys = strip(line.substr(35,20));
                valid |= versionValid;
             }
@@ -152,7 +168,8 @@ namespace gnsstk
                timeSystem = gnsstk::StringUtils::asTimeSystem(ts);
                valid |= timeSystemValid;
             }
-            else if(label == leapSecondsString) {
+            else if (label == leapSecondsString || label == leapSecondsGnssString)
+            {
                leapSeconds = asInt(line.substr(0,6));
                valid |= leapSecondsValid;
             }
