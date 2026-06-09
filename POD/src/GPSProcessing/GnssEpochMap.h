@@ -111,6 +111,11 @@ namespace pod
             return data.size();
         }
 
+        bool empty() const
+        {
+            return data.empty();
+        }
+
       protected:
         void updateTypes(const gnsstk::TypeIDSet& types);
     };

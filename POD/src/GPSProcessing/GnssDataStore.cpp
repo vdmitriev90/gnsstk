@@ -197,10 +197,8 @@ namespace pod
             // load clock data from RINEX clk files, if required
             if (confReader->getValueAsBoolean("UseRinexClock"))
             {
-#if !_DEBUG
                 std::cout << "Load Rinex clock data ... ";
                 std::cout << loadClocks() << std::endl;
-#endif
             }
 
             std::cout << "Load ionospheric data ... ";
@@ -476,7 +474,6 @@ namespace pod
 
         for (auto obsFile : getObsFiles(opts.SiteRover))
         {
-
             // Input observation file stream
             Rinex3ObsStream rin;
             // Open Rinex observations file in read-only mode

@@ -17,41 +17,38 @@ namespace pod
       public:
         CustomSolution();
 
-      public:
         CustomSolution(GnssDataStorePtr dataStore);
 
-      public:
         virtual ~CustomSolution();
 
 #pragma region Methods
 
-      public:
         virtual std::string fileName() const override
         {
             return ptr->fileName();
         }
 
-      public:
         virtual SlnType desiredSlnType() const override
         {
             return ptr->desiredSlnType();
         }
 
-      public:
         virtual GnssSolution& setConfigData(GnssDataStorePtr dataStore)
         {
             ptr = Factory(dataStore);
             return (*this);
         };
 
-      public:
         virtual void process() override
         {
             ptr->process();
         };
-
-      public:
         virtual GnssEpochMap& getData() override
+        {
+            return ptr->getData();
+        };
+
+        virtual const GnssEpochMap& getData() const override
         {
             return ptr->getData();
         };
@@ -62,7 +59,6 @@ namespace pod
             return data_->opts;
         };
 
-      protected:
         virtual void updateRequaredObs() override {}
 
 #pragma endregion

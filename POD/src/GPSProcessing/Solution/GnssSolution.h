@@ -39,6 +39,11 @@ namespace pod
             return gMap_;
         };
 
+        virtual const GnssEpochMap& getData() const
+        {
+            return gMap_;
+        };
+        
         virtual std::string fileName() const = 0;
 
         virtual SlnType desiredSlnType() const = 0;

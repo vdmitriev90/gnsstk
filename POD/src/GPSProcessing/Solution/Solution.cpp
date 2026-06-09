@@ -41,22 +41,24 @@ namespace pod
 
     void Solution::saveStatistic()
     {
-        auto fName = solver.fileName();
-        auto& gMap = solver.getData();
+        const auto file_name = solver.fileName();
+        const auto& gnss_data = solver.getData();
+        if (gnss_data.empty())
+            return;
+        fs::path out_path(data->opts.workingDir / file_name / ".txt");
 
-        fs::path db_path(data->opts.workingDir / fName / ".txt");
         TypeIDSet typeSet{TypeID::recX, TypeID::recY, TypeID::recZ};
         ComputeStatistic st(solver.desiredSlnType(), typeSet);
 
         Vector<double> sln;
         Matrix<double> covar;
-        st.compute(gMap, sln, covar);
+        st.compute(gnss_data, sln, covar);
         int summ(0);
         double avgSvInView(0);
         double avgSvInUse(0);
 
         // calculate number of desired sln types
-        for_each(gMap.begin(), gMap.end(), [&](const auto& ep) {
+        for_each(gnss_data.begin(), gnss_data.end(), [&](const auto& ep) {
             if ((SlnType)(int)ep.second.slnData.getValue(TypeID::recSlnType)
                 == solver.desiredSlnType())
             {
@@ -69,13 +71,13 @@ namespace pod
         // calculate 3D RMS
         double rms3d = sqrt(covar(0, 0) + covar(1, 1) + covar(2, 2));
 
-        std::ofstream wrt(db_path.string(), std::ostream::out | std::ostream::app);
-        std::string sep = ",";
-
+        std::ofstream wrt(out_path.string(), std::ostream::out | std::ostream::app);
+        const std::string sep = ",";
+        
         // print time interval
-        std::string fmt = "%04Y-%02m-%02d %02H:%02M:%02S";
-        wrt << CivilTime(gMap.getInitialTime()).printf(fmt) << sep
-            << CivilTime(gMap.getFinalTime()).printf(fmt) << sep;
+        const std::string fmt = "%04Y-%02m-%02d %02H:%02M:%02S";
+        wrt << CivilTime(gnss_data.getInitialTime()).printf(fmt) << sep
+            << CivilTime(gnss_data.getFinalTime()).printf(fmt) << sep;
 
         // XYZ coordinates
         for (auto x : sln)
@@ -84,7 +86,7 @@ namespace pod
         wrt << solver.desiredSlnType() << sep;
 
         // number of good solutions
-        wrt << summ << sep << gMap.size() << sep << std::setprecision(1) << avgSvInView / summ
+        wrt << summ << sep << gnss_data.size() << sep << std::setprecision(1) << avgSvInView / summ
             << sep << avgSvInUse / summ << sep;
 
         // print rms3d
@@ -92,7 +94,7 @@ namespace pod
             << sep;
 
         // compute corr. matrix
-        auto corr = ComputeStatistic::corrMatrix(covar);
+        const auto corr = ComputeStatistic::corrMatrix(covar);
         // print std.dev.
         for (size_t i = 0; i < covar.rows(); i++)
             wrt << std::fixed << std::scientific << std::setprecision(4) << std::setfill(' ')
@@ -109,21 +111,21 @@ namespace pod
 
     void Solution::saveToDb()
     {
-        auto fName = solver.fileName();
-        auto& gMap = solver.getData();
-        gMap.title = fName;
-        gMap.updateMetadata();
+        const auto file_name = solver.fileName();
+        auto& gnss_data = solver.getData();
+        gnss_data.title = file_name;
+        gnss_data.updateMetadata();
 
-        const std::string file_w_ext = fName + ".db";
-        fs::path dbPath(data->opts.workingDir / file_w_ext);
+        const std::string file_w_ext = file_name + ".db";
+        fs::path db_path(data->opts.workingDir / file_w_ext);
 
         // delete curtrent solution database file, if exists
         // string cmd = "del \"" + db_path.string() + "\"";
         // system(cmd.c_str());
 
         // insert solution data into DB
-        SQLiteAdapter db(dbPath.string());
-        db.addNewFile(gMap);
+        SQLiteAdapter db(db_path.string());
+        db.addNewFile(gnss_data);
     }
 
     void Solution::chekObs()

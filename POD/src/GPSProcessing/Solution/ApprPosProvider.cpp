@@ -8,7 +8,7 @@
 #include <filesystem>
 
 using namespace gnsstk;
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 
 namespace pod
 {
