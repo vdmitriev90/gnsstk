@@ -34,18 +34,19 @@ namespace pod
         Advanced
     };
 
-    // desired type of GNSS solution
+    // Desired type of GNSS solution
     enum SlnType
     {
+        None = 0,
         Standalone = 1,
-        CODE_DIFF = 2,
-        PD_Float = 3,
-        PD_Fixed = 4,
-        PPP_Float = 16,
-        PPP_Fixed = 17,
-
-        NONE_SOLUTION = 0,
+        CodeDiff = 2,
+        PdFloat = 3,
+        PdFixed = 4,
+        PppFloat = 16,
+        PppFixed = 17,
     };
+
+    bool isDifferential(SlnType slnType);
 
     extern std::map<SlnType, std::string> slnType2Str;
     extern std::map<CarrierBand, std::string> carrierBand2Str;
@@ -136,7 +137,6 @@ public:
         // pocessing-spacific options
         struct ProcessOpts
         {
-
             // rover receiver site ID
             std::string SiteRover;
 

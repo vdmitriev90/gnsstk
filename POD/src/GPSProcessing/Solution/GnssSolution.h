@@ -8,6 +8,7 @@
 #include "ProcessLinear.h"
 #include "RequireObservables.hpp"
 #include "SQLiteAdapter.h"
+#include "SatelliteSystem.hpp"
 
 #define CATCH_TIME(t, Y, m, d, hh, mm, ss, flag)                                                   \
     static auto desiredTime =                                                                      \
@@ -16,9 +17,31 @@
 
 namespace pod
 {
+    class GnssSolution;
+
+    // Helper class to build file names for GnssSolution and its descendants
+    class FileNameBuilder
+    {
+      public:
+        explicit FileNameBuilder(const GnssSolution& solution) : solution_(solution) {}
+
+        std::string getFileName() const;
+
+      private:
+        // Format: SiteBase-SiteRover_SlnType_System1_System2...
+        std::string buildWithBaseAndRover() const;
+
+        // Format: SiteRover_SlnType System1 System2...
+        std::string buildRoverOnly() const;
+
+        const GnssSolution& solution_;
+    };
+
     // base class for all GNSS post processing  classes
     class GnssSolution
     {
+        friend class FileNameBuilder;
+
       public:
         static std::ostream& printMsg(const gnsstk::CommonTime& time, const char* msg);
 
@@ -43,8 +66,11 @@ namespace pod
         {
             return gMap_;
         };
-        
-        virtual std::string fileName() const = 0;
+
+        virtual std::string getFileName() const
+        {
+            return FileNameBuilder(*this).getFileName();
+        }
 
         virtual SlnType desiredSlnType() const = 0;
 
@@ -89,8 +115,8 @@ namespace pod
         virtual void updateRequaredObs() = 0;
 
         void printSolution(const KalmanSolver& slr,
-                                   const gnsstk::CommonTime& t,
-                                   GnssEpoch& ep) const;
+                           const gnsstk::CommonTime& t,
+                           GnssEpoch& ep) const;
 
         virtual void storeReceiverParams(const KalmanSolver& solver,
                                          const FilterParameter& param,
@@ -99,6 +125,7 @@ namespace pod
         virtual void storeSatelliteParams(const KalmanSolver& solver,
                                           const FilterParameter& param,
                                           GnssEpoch& ep) const;
+
       private:
         void computeAndStoreSolution(const KalmanSolver& solver, GnssEpoch& gEpoch) const;
 

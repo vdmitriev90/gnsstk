@@ -25,7 +25,7 @@ namespace pod
     {
         if (!solver.getValid())
         {
-            gEpoch.slnData.insert(std::make_pair(TypeID::recSlnType, SlnType::NONE_SOLUTION));
+            gEpoch.slnData.insert(std::make_pair(TypeID::recSlnType, SlnType::None));
             return;
         }
 
@@ -94,4 +94,29 @@ namespace pod
 
         computeAndStoreSolution(solver, gEpoch);
     };
+
+    std::string FileNameBuilder::getFileName() const
+    {
+        return isDifferential(solution_.desiredSlnType()) ? buildWithBaseAndRover()
+                                                          : buildRoverOnly();
+    }
+
+    std::string FileNameBuilder::buildWithBaseAndRover() const
+    {
+        std::string ss_str;
+        for (auto&& system : solution_.opts().systems)
+            ss_str += '_' + convertSatelliteSystemToCode(system);
+
+        return solution_.opts().SiteBase + "-" + solution_.opts().SiteRover + "_"
+               + slnType2Str.at(solution_.desiredSlnType()) + ss_str;
+    }
+
+    std::string FileNameBuilder::buildRoverOnly() const
+    {
+        std::string ss_str;
+        for (auto&& system : solution_.opts().systems)
+            ss_str += '_' + convertSatelliteSystemToCode(system);
+
+        return solution_.opts().SiteRover + "_" + slnType2Str.at(solution_.desiredSlnType()) + ss_str;
+    }
 } // namespace pod

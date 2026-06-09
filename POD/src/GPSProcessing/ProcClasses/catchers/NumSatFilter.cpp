@@ -7,10 +7,10 @@ namespace pod
 
     std::map<SlnType, int> NumSatFilter::minSatbySsForSt{
         {SlnType::Standalone, 1},
-        {SlnType::CODE_DIFF, 1},
-        {SlnType::PD_Float, 1},
-        {SlnType::PD_Fixed, 2},
-        {SlnType::PPP_Float, 1},
+        {SlnType::CodeDiff, 1},
+        {SlnType::PdFloat, 1},
+        {SlnType::PdFixed, 2},
+        {SlnType::PppFloat, 1},
     };
 
     IRinex& pod::NumSatFilter::Process(IRinex& gData)

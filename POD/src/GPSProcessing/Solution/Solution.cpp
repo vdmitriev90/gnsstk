@@ -41,7 +41,7 @@ namespace pod
 
     void Solution::saveStatistic()
     {
-        const auto file_name = solver.fileName();
+        const auto file_name = solver.getFileName();
         const auto& gnss_data = solver.getData();
         if (gnss_data.empty())
             return;
@@ -111,7 +111,7 @@ namespace pod
 
     void Solution::saveToDb()
     {
-        const auto file_name = solver.fileName();
+        const auto file_name = solver.getFileName();
         auto& gnss_data = solver.getData();
         gnss_data.title = file_name;
         gnss_data.updateMetadata();

@@ -11,7 +11,7 @@ namespace pod
 
         virtual SlnType desiredSlnType() const override
         {
-            return SlnType::PD_Fixed;
+            return SlnType::PdFixed;
         }
     };
 } // namespace pod

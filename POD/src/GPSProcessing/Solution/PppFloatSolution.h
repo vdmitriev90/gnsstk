@@ -1,7 +1,7 @@
 #pragma once
+#include "ComputeTropModel.hpp"
 #include "GnssSolution.h"
 #include "NeillTropModel.hpp"
-#include "ComputeTropModel.hpp"
 
 namespace pod
 {
@@ -12,14 +12,9 @@ namespace pod
         PppFloatSolution(GnssDataStorePtr data_ptr, double max_sigma);
         virtual ~PppFloatSolution() {};
 
-        virtual std::string fileName() const override
-        {
-            return opts().SiteRover + "_" + slnType2Str.at(desiredSlnType());
-        }
-
         virtual SlnType desiredSlnType() const override
         {
-            return SlnType::PPP_Float;
+            return SlnType::PppFloat;
         }
 
         virtual void process() override;

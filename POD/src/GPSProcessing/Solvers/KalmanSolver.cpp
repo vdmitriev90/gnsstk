@@ -63,7 +63,7 @@ namespace pod
         t_pre = gData.getHeader().epoch;
         // workaround: reset PPP engine every day
         double sec = gData.getHeader().epoch.getSecondOfDay();
-        if (static_cast<int>(sec) == 0 && equations->getSlnType() == SlnType::PPP_Float)
+        if (static_cast<int>(sec) == 0 && equations->getSlnType() == SlnType::PppFloat)
             equations->clearSvData();
 
         equations->Prepare(gData);
@@ -282,7 +282,7 @@ namespace pod
 
     void KalmanSolver::fixAmbiguities(IRinex& gData)
     {
-        if (equations->getSlnType() == SlnType::PD_Fixed && gData.getBody().size() > 5)
+        if (equations->getSlnType() == SlnType::PdFixed && gData.getBody().size() > 5)
         {
             int core_num = equations->currentUnknowns().size() - equations->currentAmb().size();
 

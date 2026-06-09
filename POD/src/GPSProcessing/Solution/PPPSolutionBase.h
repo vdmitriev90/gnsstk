@@ -27,10 +27,10 @@ namespace pod
 
         virtual SlnType desiredSlnType() const override
         {
-            return SlnType::PPP_Float;
+            return SlnType::PppFloat;
         }
 
-        virtual std::string fileName() const override
+        virtual std::string getFileName() const override
         {
             return opts().SiteRover + "_ppp_float.txt";
         }

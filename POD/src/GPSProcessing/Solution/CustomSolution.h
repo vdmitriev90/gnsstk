@@ -23,9 +23,9 @@ namespace pod
 
 #pragma region Methods
 
-        virtual std::string fileName() const override
+        virtual std::string getFileName() const override
         {
-            return ptr->fileName();
+            return ptr->getFileName();
         }
 
         virtual SlnType desiredSlnType() const override

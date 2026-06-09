@@ -17,20 +17,20 @@ namespace pod
         {
         case pod::Standalone:
             return std::make_unique<SingleSolution>(dataStore);
-        case pod::CODE_DIFF:
+        case pod::CodeDiff:
             return std::make_unique<CdDiffSolution>(dataStore);
-        case pod::PD_Float:
+        case pod::PdFloat:
             return std::make_unique<PdFloatSolution>(dataStore);
-        case pod::PD_Fixed:
+        case pod::PdFixed:
             return std::make_unique<PdFixedSolution>(dataStore);
-        case pod::PPP_Float:
+        case pod::PppFloat:
             if (dataStore->opts.isSpaceborneRcv)
                 return std::make_unique<PODSolution>(dataStore);
             else
                 // return std::make_unique<PPPSolution>(dataStore);
                 return std::make_unique<PppFloatSolution>(dataStore);
             break;
-        case pod::PPP_Fixed:
+        case pod::PppFixed:
             break;
         default:
             break;

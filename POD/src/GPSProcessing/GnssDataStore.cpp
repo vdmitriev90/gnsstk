@@ -87,6 +87,14 @@ namespace
 
 namespace pod
 {
+
+    bool isDifferential(SlnType slnType)
+    {
+        if (slnType == CodeDiff || slnType == PdFloat || slnType == PdFixed)
+            return true;
+        return false;
+    }
+
     namespace fs = std::filesystem;
 
     std::map<SlnType, std::string> pod::slnType2Str;
@@ -94,12 +102,12 @@ namespace pod
     GnssDataStore::Initializer::Initializer()
     {
         slnType2Str[SlnType::Standalone] = "Standalone";
-        slnType2Str[SlnType::CODE_DIFF] = "CODE_DIFF";
-        slnType2Str[SlnType::PD_Float] = "PD_Float";
-        slnType2Str[SlnType::PD_Fixed] = "PD_Fixed";
-        slnType2Str[SlnType::PPP_Float] = "PPP_Float";
-        slnType2Str[SlnType::PPP_Fixed] = "PPP_Fixed";
-        slnType2Str[SlnType::NONE_SOLUTION] = "NONE_SOLUTION";
+        slnType2Str[SlnType::CodeDiff] = "Code_Diff";
+        slnType2Str[SlnType::PdFloat] = "PD_Float";
+        slnType2Str[SlnType::PdFixed] = "PD_Fixed";
+        slnType2Str[SlnType::PppFloat] = "PPP_Float";
+        slnType2Str[SlnType::PppFixed] = "PPP_Fixed";
+        slnType2Str[SlnType::None] = "None";
 
         carrierBand2Str[CarrierBand::L1] = "L1";
         carrierBand2Str[CarrierBand::L2] = "L2";
@@ -572,4 +580,5 @@ namespace pod
             result.push_back(p.string());
         return result;
     }
+
 } // namespace pod

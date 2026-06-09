@@ -13,15 +13,9 @@ namespace pod
 
         virtual ~CdDiffSolution();
 
-        virtual std::string fileName() const
-        {
-            return opts().SiteBase + "-" + opts().SiteRover + "_"
-                   + slnType2Str.at(desiredSlnType());
-        }
-
         virtual SlnType desiredSlnType() const override
         {
-            return SlnType::CODE_DIFF;
+            return SlnType::CodeDiff;
         }
 
         virtual void process() override;

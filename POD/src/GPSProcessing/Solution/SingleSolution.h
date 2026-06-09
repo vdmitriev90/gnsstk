@@ -18,11 +18,6 @@ namespace pod
         SingleSolution(GnssDataStorePtr data_ptr);
         virtual ~SingleSolution() {};
 
-        virtual std::string fileName() const
-        {
-            return opts().SiteRover + "_" + slnType2Str.at(desiredSlnType());
-        }
-
         virtual SlnType desiredSlnType() const override
         {
             return SlnType::Standalone;
