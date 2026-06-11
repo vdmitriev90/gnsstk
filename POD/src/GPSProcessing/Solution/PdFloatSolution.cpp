@@ -263,8 +263,7 @@ namespace pod
                 {
                     /* if (computeApprPos(rin_epoch, data_->SP3EphList, nominalPos_))
                          continue;*/
-                    const auto pos = data_->getNominalPosition(opts().SiteRover);
-
+                    nominalPos_ = data_->getNominalPosition(opts().SiteRover);  
                     std::cout << "Baseline: " << std::setprecision(4)
                               << (nominalPos_ - ref_base_pos).mag() / 1000 << " km" << std::endl;
                     firstTime = false;
