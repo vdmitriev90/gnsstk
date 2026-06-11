@@ -23,10 +23,10 @@ namespace pod
     class InterSystemBias : public EquationBase
     {
       private:
-        static std::map<gnsstk::SatelliteSystem, FilterParameter> ss2isb;
-        static std::map<FilterParameter, gnsstk::SatelliteSystem> isb2ss;
+        static std::map<gnsstk::SatelliteSystem, FilterParameter> SatSystemToBiasTypeId;
+        static std::map<FilterParameter, gnsstk::SatelliteSystem> BiasTypeIdToSatSystem;
+        static const gnsstk::TypeIDSet kL1ObsTypes;
 
-        static const gnsstk::TypeIDSet l1Types;
 
       public:
         InterSystemBias();
@@ -41,7 +41,7 @@ namespace pod
 
         virtual ParametersSet getParameters() const override
         {
-            return types;
+            return params_;
         }
 
         virtual void updatePhi(gnsstk::Matrix<double>& Phi, int& index) const override;
@@ -55,13 +55,13 @@ namespace pod
         virtual int getNumUnknowns() const override;
 
         virtual InterSystemBias& setStochasicModel(const gnsstk::SatelliteSystem& system,
-                                                   gnsstk::StochasticModel_uptr newModel);
+                                                   gnsstk::StochasticModelUniquePtr newModel);
 
       private:
-        std::map<FilterParameter, gnsstk::StochasticModel_uptr> stochasticModels;
+        std::map<FilterParameter, gnsstk::StochasticModelUniquePtr> stochasticModels_;
 
         // current set of satellite systems
-        ParametersSet types;
+        ParametersSet params_;
 
         class Initilizer
         {

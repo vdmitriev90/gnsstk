@@ -94,7 +94,7 @@ namespace pod
     }
 
     InterFrequencyBiases& InterFrequencyBiases::setStochasicModel(const SatelliteSystem& system,
-                                                                  StochasticModel_uptr newModel)
+                                                                  StochasticModelUniquePtr newModel)
     {
         stochasticModels[ss2ifb.at(system)] = std::move(newModel);
         return *this;

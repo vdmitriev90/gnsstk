@@ -74,7 +74,7 @@ namespace pod
 
 #pragma region Fields
 
-        // gnsstk::StochasticModel_uptr pStochasticModel;
+        // gnsstk::StochasticModelUniquePtr pStochasticModel_;
 
         ParametersSet typeSet;
 

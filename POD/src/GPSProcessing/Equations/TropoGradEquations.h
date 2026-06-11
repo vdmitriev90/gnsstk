@@ -45,7 +45,7 @@ namespace pod
 
 #pragma endregion
 
-        TropoGradEquations& setModel(gnsstk::StochasticModel_uptr model)
+        TropoGradEquations& setModel(gnsstk::StochasticModelUniquePtr model)
         {
             pStochModelZ = std::move(model);
             return *this;
@@ -58,9 +58,9 @@ namespace pod
 
 #pragma region Fields
 
-        gnsstk::StochasticModel_uptr pStochModelZ;
-        gnsstk::StochasticModel_uptr pStochModelNorth;
-        gnsstk::StochasticModel_uptr pStochModelEast;
+        gnsstk::StochasticModelUniquePtr pStochModelZ;
+        gnsstk::StochasticModelUniquePtr pStochModelNorth;
+        gnsstk::StochasticModelUniquePtr pStochModelEast;
 
         ParametersSet types;
 

@@ -436,7 +436,7 @@ namespace gnsstk
 
    }; // End of class 'TropoRandomWalkModel'
 
-   typedef std::unique_ptr<IStochasticModel> StochasticModel_uptr;
+   typedef std::unique_ptr<IStochasticModel> StochasticModelUniquePtr;
    typedef std::shared_ptr<IStochasticModel> StochasticModel_sptr;
       //@}
 

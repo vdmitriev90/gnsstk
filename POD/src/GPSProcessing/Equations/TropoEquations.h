@@ -7,11 +7,8 @@ namespace pod
     class TropoEquations : public EquationBase
     {
       public:
-        TropoEquations()
-            : type(gnsstk::TypeID::wetMap)
-            , pStochasticModel(std::make_unique<gnsstk::RandomWalkModel>()) {};
+        TropoEquations();
         TropoEquations(double qPrime);
-        virtual ~TropoEquations() {};
 
 #pragma region Inherited via EquationBase
 
@@ -24,7 +21,7 @@ namespace pod
 
         virtual ParametersSet getParameters() const override
         {
-            return ParametersSet{type};
+            return ParametersSet{paramType_};
         }
 
         virtual void updatePhi(gnsstk::Matrix<double>& Phi, int& index) const override;
@@ -39,22 +36,22 @@ namespace pod
 
 #pragma endregion
 
-        TropoEquations& setModel(gnsstk::StochasticModel_uptr model)
+        TropoEquations& setModel(gnsstk::StochasticModelUniquePtr model)
         {
-            pStochasticModel = std::move(model);
+            pStochasticModel_ = std::move(model);
             return *this;
         }
 
         gnsstk::IStochasticModel* getModel() const
         {
-            return pStochasticModel.get();
+            return pStochasticModel_.get();
         }
 
 #pragma region Fields
 
-        gnsstk::StochasticModel_uptr pStochasticModel;
+        gnsstk::StochasticModelUniquePtr pStochasticModel_;
 
-        FilterParameter type;
+        FilterParameter paramType_;
 
 #pragma endregion
     };

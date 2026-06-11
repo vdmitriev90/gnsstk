@@ -82,12 +82,8 @@ namespace pod
         // Object to compute gravitational delay effects
         GravitationalDelay grDelayRover;
 
-#pragma region troposhere modeling objects
-
         // for rover
         computeTropoRover_.setTropModel(tropoRover_);
-
-#pragma endregion
 
 #pragma region CS detectors
 
@@ -192,7 +188,6 @@ namespace pod
             // read all epochs
             while (rin >> rin_epoch)
             {
-                // rin_epoch.removeSatID(18, SatelliteSystem::GPS);
                 if (decimateData.check(rin_epoch))
                     continue;
 
@@ -210,7 +205,7 @@ namespace pod
                 if (b)
                     DBOUT_LINE("catched")
 #endif
-                // keep only satellites from satellites systems selecyted for processing
+                // keep only satellites from satellites systems selected for processing
                 rin_epoch.keepOnlySatSystems(opts().systems);
 
                 // keep only types used for processing
@@ -219,7 +214,6 @@ namespace pod
                 // get approximate position
                 if (apprPos().getPosition(rin_epoch, nominalPos_))
                     continue;
-                // std::cout << nominalPos_ << std::endl;
                 grDelayRover.setNominalPosition(nominalPos_);
 
                 tropoRover_.setAllParameters(t, nominalPos_);
@@ -282,7 +276,6 @@ namespace pod
                     solver.setMinSatNumber(4 /*+ rin_epoch.getBody().getSatSystems().size()*/);
                     rin_epoch >> solver;
                     auto ep = opts().fullOutput ? GnssEpoch(rin_epoch.getBody()) : GnssEpoch();
-                    // updateNomPos(solverFB);
                     printSolution(solver, t, ep);
                     gMap_.data.insert(std::make_pair(t, ep));
                 }
@@ -303,7 +296,7 @@ namespace pod
                 // fill GnssEpoch by IRinex object data
                 auto ep = opts().fullOutput ? GnssEpoch(rin_epoch.getBody()) : GnssEpoch();
 
-                // uptate nominal position
+                // update nominal position
                 apprPos().getPosition(rin_epoch, nominalPos_);
 
                 // fill GnssEpoch by filter state data
@@ -338,7 +331,6 @@ namespace pod
 
     void PppFloatSolution::updateRequaredObs()
     {
-        LinearCombinations comm;
         bool useC1 = confReader().getValueAsBoolean("useC1");
 
         codeL1_ = useC1 ? TypeID::C1 : TypeID::P1;

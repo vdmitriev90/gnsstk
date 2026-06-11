@@ -38,10 +38,10 @@ namespace pod
         virtual int getNumUnknowns() const override;
 
         virtual InterFrequencyBiases& setStochasicModel(const gnsstk::SatelliteSystem& system,
-                                                        gnsstk::StochasticModel_uptr newModel);
+                                                        gnsstk::StochasticModelUniquePtr newModel);
 
       private:
-        std::map<FilterParameter, gnsstk::StochasticModel_uptr> stochasticModels;
+        std::map<FilterParameter, gnsstk::StochasticModelUniquePtr> stochasticModels;
 
         // current set of satellite systems
         ParametersSet types;

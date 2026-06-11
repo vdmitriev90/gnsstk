@@ -11,7 +11,7 @@ namespace pod
 
     class IonoEquations : public EquationBase
     {
-        typedef gnsstk::StochasticModel_uptr (IonoEquations::*StochModelInitialazer)(double qprime);
+        typedef gnsstk::StochasticModelUniquePtr (IonoEquations::*StochModelInitialazer)(double qprime);
         static const double SQR_L1_WL_GPS;
 
       public:
@@ -79,10 +79,10 @@ namespace pod
         }
 
       private:
-        gnsstk::StochasticModel_uptr constantModel(double sigma);
-        gnsstk::StochasticModel_uptr rWalkModel(double qPrime);
-        gnsstk::StochasticModel_uptr whiteNoiseModel(double sigma);
-        gnsstk::StochasticModel_uptr ionoModel(double sigma);
+        gnsstk::StochasticModelUniquePtr constantModel(double sigma);
+        gnsstk::StochasticModelUniquePtr rWalkModel(double qPrime);
+        gnsstk::StochasticModelUniquePtr whiteNoiseModel(double sigma);
+        gnsstk::StochasticModelUniquePtr ionoModel(double sigma);
 
 #pragma region Fields
 
@@ -93,7 +93,7 @@ namespace pod
 
         StochModelInitialazer stModelInitializer;
 
-        std::map<gnsstk::SatID, gnsstk::StochasticModel_uptr> stochModels;
+        std::map<gnsstk::SatID, gnsstk::StochasticModelUniquePtr> stochModels;
 
         double sigma;
 

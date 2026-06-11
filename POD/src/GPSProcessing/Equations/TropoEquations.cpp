@@ -3,16 +3,22 @@ using namespace gnsstk;
 
 namespace pod
 {
+    TropoEquations::TropoEquations()
+        : paramType_(gnsstk::TypeID::wetMap)
+        , pStochasticModel_(std::make_unique<gnsstk::RandomWalkModel>())
+    {
+    }
+
     TropoEquations::TropoEquations(double qPrime)
-        : type(gnsstk::TypeID::wetMap)
-        , pStochasticModel(std::make_unique<RandomWalkModel>(qPrime))
+        : paramType_(gnsstk::TypeID::wetMap)
+        , pStochasticModel_(std::make_unique<RandomWalkModel>(qPrime))
     {
     }
 
     void TropoEquations::Prepare(gnsstk::IRinex& gData)
     {
 
-        pStochasticModel->Prepare(SatID::dummy, gData);
+        pStochasticModel_->Prepare(SatID::dummy, gData);
     }
 
     void TropoEquations::updateH(const gnsstk::IRinex& gData,
@@ -23,19 +29,19 @@ namespace pod
         int row(0);
         for (const auto& t : obsTypes)
             for (const auto& it : gData.getBody())
-                H(row++, startColumn) = it.second->get_value().at(type.type);
+                H(row++, startColumn) = it.second->get_value().at(paramType_.type);
         startColumn++;
     }
 
     void TropoEquations::updatePhi(gnsstk::Matrix<double>& Phi, int& index) const
     {
-        Phi(index, index) = pStochasticModel->getPhi();
+        Phi(index, index) = pStochasticModel_->getPhi();
         ++index;
     }
 
     void TropoEquations::updateQ(gnsstk::Matrix<double>& Q, int& index) const
     {
-        Q(index, index) = pStochasticModel->getQ();
+        Q(index, index) = pStochasticModel_->getQ();
         ++index;
     }
 

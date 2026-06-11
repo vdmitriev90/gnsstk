@@ -18,22 +18,22 @@ namespace pod
                                                               {TypeID::prefitP2, 1}};
 #pragma region Stochasic model initializers
 
-    gnsstk::StochasticModel_uptr IonoEquations::constantModel(double sigma)
+    gnsstk::StochasticModelUniquePtr IonoEquations::constantModel(double sigma)
     {
         return std::make_unique<ConstantModel>();
     }
 
-    gnsstk::StochasticModel_uptr IonoEquations::rWalkModel(double qPrime)
+    gnsstk::StochasticModelUniquePtr IonoEquations::rWalkModel(double qPrime)
     {
         return std::make_unique<RandomWalkModel>(qPrime);
     }
 
-    gnsstk::StochasticModel_uptr IonoEquations::whiteNoiseModel(double sigma)
+    gnsstk::StochasticModelUniquePtr IonoEquations::whiteNoiseModel(double sigma)
     {
         return std::make_unique<WhiteNoiseModel>(sigma);
     }
 
-    gnsstk::StochasticModel_uptr IonoEquations::ionoModel(double sigma)
+    gnsstk::StochasticModelUniquePtr IonoEquations::ionoModel(double sigma)
     {
         return std::make_unique<IonoStochasticModel>(sigma);
     }
