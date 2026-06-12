@@ -375,6 +375,11 @@ namespace gnsstk
       GNSSTK_THROW(exc);                                                 \
    }
 
+/// Provide an "ASSERT" type macro with custom message
+#define GNSSTK_ASSERT_MSG(CONDITION, MESSAGE) if (!(CONDITION)) {        \
+      gnsstk::AssertionFailure exc(MESSAGE);                             \
+      GNSSTK_THROW(exc);                                                 \
+   }
 
 /**
  * A macro for quickly defining a new exception class that inherits from
