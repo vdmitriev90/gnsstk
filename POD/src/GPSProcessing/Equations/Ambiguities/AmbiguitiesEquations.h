@@ -8,19 +8,9 @@ namespace pod
     {
 
       public:
-        static const double sigma;
+        AmbiguitiesEquations() =delete;
 
-        AmbiguitiesEquations() : type(gnsstk::TypeID::BL1), obsType(typeMap[gnsstk::TypeID::BL1])
-        {
-            stochModel.setSigma(sigma);
-        };
-
-        AmbiguitiesEquations(const gnsstk::TypeID& obsType)
-            : type(obsType)
-            , obsType(typeMap[obsType])
-        {
-            stochModel.setSigma(sigma);
-        };
+        AmbiguitiesEquations(const gnsstk::TypeID& ambType);
 
         virtual ~AmbiguitiesEquations() {};
 
@@ -51,30 +41,21 @@ namespace pod
 
       private:
         /// type ID of unknown values
-        gnsstk::TypeID type;
+        gnsstk::TypeID ambType_;
 
         /// type ID of carrier phase measurements (or combination of measurements)
-        gnsstk::TypeID obsType;
+        gnsstk::TypeID obsType_;
 
         /// salellites set to be preocessed
-        gnsstk::SatIDSet satSet;
+        gnsstk::SatIDSet satSet_;
 
         /// current satellites set (subset of 'satSet')
-        gnsstk::SatIDSet svsInView;
+        gnsstk::SatIDSet svsInView_;
 
         /// cycle slip flags for satellites in 'satSet'
-        std::map<gnsstk::SatID, bool> csFlags;
+        std::map<gnsstk::SatID, bool> csFlags_;
 
         /// phase ambiguity stochasic model
-        mutable gnsstk::PhaseAmbiguityModel stochModel;
-
-        static std::map<gnsstk::TypeID, gnsstk::TypeID> typeMap;
-
-        class Initializer
-        {
-          public:
-            Initializer();
-        };
-        static Initializer initializer;
+        mutable gnsstk::PhaseAmbiguityModel stochModel_;
     };
 } // namespace pod
