@@ -13,14 +13,8 @@ namespace pod
     class ProcessLinear : public gnsstk::ProcessingClass
     {
       public:
-        ProcessLinear() : useC1(false) {};
+        ProcessLinear() {};
         virtual ~ProcessLinear() {};
-        void setUseC1(bool useC1);
-
-        bool getUseC1() const
-        {
-            return useC1;
-        }
 
         virtual gnsstk::IRinex& Process(gnsstk::IRinex& gData) override;
 
@@ -41,12 +35,17 @@ namespace pod
             return (*this);
         }
 
+        ProcessLinear& setObsTypesProvider(ObsTypesProviderPtr provider)
+        {
+            for (auto& comb : combs)
+                comb->setObsTypesProvider(provider);
+            return (*this);
+        }
+
       protected:
-        std::list<linear_ptr> combs;
+        std::vector<linear_ptr> combs;
 
         gnsstk::SatTypePtrMap& Process(gnsstk::SatTypePtrMap& gData);
-
-        bool useC1;
     };
 } // namespace pod
 

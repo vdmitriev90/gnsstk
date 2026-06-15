@@ -278,20 +278,15 @@ namespace pod
     ///
     void CdDiffSolution::updateRequaredObs()
     {
-        LinearCombinations comm;
-
-        computeLinear_.setUseC1(opts().useC1);
-
         configureSolver();
 
+        oMinusC_.add(std::make_unique<PrefitC1>(false));
         if (opts().useC1)
         {
-            oMinusC_.add(std::make_unique<PrefitC1>(false));
             equations_->measTypes() = {TypeID::prefitC};
         }
         else
         {
-            oMinusC_.add(std::make_unique<PrefitP1>(false));
             equations_->measTypes() = {TypeID::prefitP1};
         }
 

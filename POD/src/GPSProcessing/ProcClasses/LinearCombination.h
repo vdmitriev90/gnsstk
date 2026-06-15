@@ -3,29 +3,42 @@
 #include "DataStructures.hpp"
 
 #include <iostream>
+#include <memory>
 
 using namespace gnsstk;
 
 namespace pod
 {
+    class ObservationTypesProvider;
+    using ObsTypesProviderPtr = std::shared_ptr<ObservationTypesProvider>;
+    TypeID getPrefitObsTypeByObsType(const TypeID& originalType);
+
+    class ObservationTypesProvider
+    {
+      public:
+        static std::shared_ptr<ObservationTypesProvider> instance();
+
+        ObservationTypesProvider(bool useCaForGpsGlo = true) : useCaForGpsGlo_(useCaForGpsGlo) {};
+
+        void setGpsGloL1CodeType(bool useCaForGpsGlo);
+        TypeID getGpsGloL1CodeType() const;
+
+        TypeID getFirstCodeType(SatelliteSystem ss) const;
+        TypeID getSecondCodeType(SatelliteSystem ss) const;
+        TypeID getFirstPhaseType(SatelliteSystem ss) const;
+        TypeID getSecondPhaseType(SatelliteSystem ss) const;
+
+      private:
+        bool useCaForGpsGlo_ = true;
+    };
+
     class LinearCombination
     {
       public:
         static double getIonoFreeWaveLength(const gnsstk::SatID& sv, int band1, int band2);
 
-        LinearCombination() {};
-        virtual ~LinearCombination() {};
-
-        void setUseC1(bool useC1)
-        {
-            this->useC1 = useC1;
-        }
-
-        bool getUseC1() const
-        {
-            return (this->useC1);
-        }
-
+        LinearCombination() : obsTypesProvider_(ObservationTypesProvider::instance()) {};
+        virtual ~LinearCombination() = default;
         bool getCombination(const SatID& sv, const gnssRinex& rin_epoch, double& value) const
         {
             return getCombination(sv, rin_epoch.body, value);
@@ -45,10 +58,24 @@ namespace pod
                                     const typeValueMap& tvMap,
                                     double& value) const = 0;
 
-        virtual TypeID getType() const = 0;
+        virtual TypeID getType(SatelliteSystem ss) const = 0;
+
+        ObsTypesProviderPtr getObsTypesProvider() const
+        {
+            return obsTypesProvider_;
+        }
+
+        void setObsTypesProvider(ObsTypesProviderPtr provider)
+        {
+            obsTypesProvider_ = provider;
+        }
 
       protected:
-        bool useC1 = true;
+        std::optional<double> getIonoFreePhaseWaveLength(const SatID& sv) const;
+        std::optional<double> getFirstFreqWaveLength(const SatID& sv) const;
+        std::optional<double> getSecondFreqWaveLength(const SatID& sv) const;
+
+        ObsTypesProviderPtr obsTypesProvider_;
     };
 
     class MWoubenna : public LinearCombination
@@ -59,7 +86,7 @@ namespace pod
         virtual bool getCombination(const SatID& sv,
                                     const typeValueMap& tvMap,
                                     double& value) const override;
-        virtual TypeID getType() const override;
+        virtual TypeID getType(SatelliteSystem ss) const override;
     };
 
     class PDelta : public LinearCombination
@@ -70,7 +97,7 @@ namespace pod
         virtual bool getCombination(const SatID& sv,
                                     const typeValueMap& tvMap,
                                     double& value) const override;
-        virtual TypeID getType() const override;
+        virtual TypeID getType(SatelliteSystem ss) const override;
     };
 
     class LDelta : public LinearCombination
@@ -81,18 +108,18 @@ namespace pod
         virtual bool getCombination(const SatID& sv,
                                     const typeValueMap& tvMap,
                                     double& value) const override;
-        virtual TypeID getType() const override;
+        virtual TypeID getType(SatelliteSystem ss) const override;
     };
 
-    class PCCombimnation : public LinearCombination
+    class PCCombination : public LinearCombination
     {
       public:
-        PCCombimnation() {};
-        virtual ~PCCombimnation() {};
+        PCCombination() {};
+        virtual ~PCCombination() {};
         virtual bool getCombination(const SatID& sv,
                                     const typeValueMap& tvMap,
                                     double& value) const override;
-        virtual TypeID getType() const override;
+        virtual TypeID getType(SatelliteSystem ss) const override;
     };
 
     class LCCombimnation : public LinearCombination
@@ -103,7 +130,7 @@ namespace pod
         virtual bool getCombination(const SatID& sv,
                                     const typeValueMap& tvMap,
                                     double& value) const override;
-        virtual TypeID getType() const override;
+        virtual TypeID getType(SatelliteSystem ss) const override;
     };
 
     class LICombimnation : public LinearCombination
@@ -114,7 +141,7 @@ namespace pod
         virtual bool getCombination(const SatID& sv,
                                     const typeValueMap& tvMap,
                                     double& value) const override;
-        virtual TypeID getType() const override;
+        virtual TypeID getType(SatelliteSystem ss) const override;
     };
 
     class PrefitCode : public LinearCombination
@@ -137,34 +164,19 @@ namespace pod
         virtual bool getCombination(const SatID& sv,
                                     const typeValueMap& tvMap,
                                     double& value) const override;
-        virtual TypeID getType() const override;
+        virtual TypeID getType(SatelliteSystem ss) const override;
     };
 
-    class PrefitP1 : public PrefitCode
+    class PrefitC2 : public PrefitCode
     {
       public:
-        PrefitP1() = delete;
-        PrefitP1(bool isPreciseModel) : PrefitCode(isPreciseModel) {};
-        virtual ~PrefitP1() {};
+        PrefitC2() = delete;
+        PrefitC2(bool isPreciseModel) : PrefitCode(isPreciseModel) {};
+        virtual ~PrefitC2() {};
         virtual bool getCombination(const SatID& sv,
                                     const typeValueMap& tvMap,
                                     double& value) const override;
-        virtual TypeID getType() const override;
-
-      protected:
-        bool isPrecise;
-    };
-
-    class PrefitP2 : public PrefitCode
-    {
-      public:
-        PrefitP2() = delete;
-        PrefitP2(bool isPreciseModel) : PrefitCode(isPreciseModel) {};
-        virtual ~PrefitP2() {};
-        virtual bool getCombination(const SatID& sv,
-                                    const typeValueMap& tvMap,
-                                    double& value) const override;
-        virtual TypeID getType() const override;
+        virtual TypeID getType(SatelliteSystem ss) const override;
     };
 
     class PrefitPC : public PrefitCode
@@ -176,7 +188,7 @@ namespace pod
         virtual bool getCombination(const SatID& sv,
                                     const typeValueMap& tvMap,
                                     double& value) const override;
-        virtual TypeID getType() const override;
+        virtual TypeID getType(SatelliteSystem ss) const override;
     };
 
     class PrefitLC : public LinearCombination
@@ -187,7 +199,7 @@ namespace pod
         virtual bool getCombination(const SatID& sv,
                                     const typeValueMap& tvMap,
                                     double& value) const override;
-        virtual TypeID getType() const override;
+        virtual TypeID getType(SatelliteSystem ss) const override;
     };
 
     class PrefitL1 : public LinearCombination
@@ -198,7 +210,7 @@ namespace pod
         virtual bool getCombination(const SatID& sv,
                                     const typeValueMap& tvMap,
                                     double& value) const override;
-        virtual TypeID getType() const override;
+        virtual TypeID getType(SatelliteSystem ss) const override;
     };
 
     class PrefitL2 : public LinearCombination
@@ -209,7 +221,7 @@ namespace pod
         virtual bool getCombination(const SatID& sv,
                                     const typeValueMap& tvMap,
                                     double& value) const override;
-        virtual TypeID getType() const override;
+        virtual TypeID getType(SatelliteSystem ss) const override;
     };
 
     class CodeIonoDelayL1 : public LinearCombination
@@ -220,7 +232,7 @@ namespace pod
         virtual bool getCombination(const SatID& sv,
                                     const typeValueMap& tvMap,
                                     double& value) const override;
-        virtual TypeID getType() const override;
+        virtual TypeID getType(SatelliteSystem ss) const override;
     };
 
     class PhaseIonoDelayL1 : public LinearCombination
@@ -231,7 +243,7 @@ namespace pod
         virtual bool getCombination(const SatID& sv,
                                     const typeValueMap& tvMap,
                                     double& value) const override;
-        virtual TypeID getType() const override;
+        virtual TypeID getType(SatelliteSystem ss) const override;
     };
 } // namespace pod
 

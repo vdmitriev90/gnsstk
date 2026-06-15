@@ -244,8 +244,6 @@ namespace pod
 
     void SingleSolution::updateRequaredObs()
     {
-        computeLinear_.setUseC1(opts().useC1);
-
         configureSolver();
 
         if (opts().useC1)
@@ -256,7 +254,6 @@ namespace pod
         else
         {
             equations_->measTypes() = TypeIDSet{TypeID::prefitP1};
-            oMinusC_.add(std::make_unique<PrefitP1>(false));
         }
 
         requireObs_ = RequireObservablesBuilder(opts().systems, opts().useC1).build();

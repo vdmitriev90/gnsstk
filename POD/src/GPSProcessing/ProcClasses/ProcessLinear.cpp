@@ -7,13 +7,6 @@
 using namespace std;
 namespace pod
 {
-    void ProcessLinear::setUseC1(bool useC1)
-    {
-        this->useC1 = useC1;
-        for (auto& lc : this->combs)
-            lc->setUseC1(useC1);
-    }
-
     gnsstk::SatTypePtrMap& ProcessLinear::Process(gnsstk::SatTypePtrMap& gData)
     {
         for (auto& sv : gData)
@@ -22,7 +15,7 @@ namespace pod
             {
                 double value;
                 if (lc->getCombination(sv.first, sv.second->get_value(), value))
-                    sv.second->get_value().emplace(lc->getType(), value);
+                    sv.second->get_value().emplace(lc->getType(sv.first.system), value);
             }
         }
         return gData;

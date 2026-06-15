@@ -2,10 +2,12 @@
 
 #include "CodeProcSvData.h"
 #include "FsUtils.h"
+#include "LinearCombination.h"
 #include "Rinex3NavStream.hpp"
 #include "SP3NavDataFactory.hpp"
 
 using namespace gnsstk;
+
 namespace
 {
     std::optional<CommonTime> parseAiubRefTime(const Rinex3NavHeader& rNavHeader)
@@ -151,7 +153,9 @@ namespace pod
             opts.isSpaceborneRcv = confReader->getValueAsBoolean("IsSpaceborneRcv");
 
             opts.isSmoothCode = confReader->getValueAsBoolean("IsSmoothCode");
-            opts.useC1 = confReader->getValueAsBoolean("IsSmoothCode");
+
+            opts.useC1 = confReader->getValueAsBoolean("UseC1");
+            ObservationTypesProvider::instance()->setGpsGloL1CodeType(opts.useC1);
 
             opts.computeTropo = confReader->getValueAsBoolean("computeTropo");
 
@@ -192,7 +196,8 @@ namespace pod
                 auto sys = convertCodeToSatelliteSystem(it);
                 if (sys == SatelliteSystem::Unknown)
                 {
-                    std::cerr << "Warning: Unknown satellite system code '" << it << "' in configuration." << std::endl;
+                    std::cerr << "Warning: Unknown satellite system code '" << it
+                              << "' in configuration." << std::endl;
                     continue;
                 }
                 opts.systems.insert(sys);

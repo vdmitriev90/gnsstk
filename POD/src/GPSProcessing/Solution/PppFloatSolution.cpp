@@ -149,7 +149,7 @@ namespace pod
         svPcenterRover.setAntexReader(antexReader);
 
         ProcessLinear linearIonoFree;
-        linearIonoFree.add(std::make_unique<PCCombimnation>());
+        linearIonoFree.add(std::make_unique<PCCombination>());
         linearIonoFree.add(std::make_unique<LCCombimnation>());
 
         UsedInPvtMarker useMarker;
@@ -331,7 +331,7 @@ namespace pod
 
     void PppFloatSolution::updateRequaredObs()
     {
-        computeLinear_.setUseC1(opts().useC1);
+
         computeLinear_.add(std::make_unique<PDelta>());
         computeLinear_.add(std::make_unique<MWoubenna>());
 

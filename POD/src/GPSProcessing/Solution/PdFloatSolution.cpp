@@ -191,7 +191,7 @@ namespace pod
         svPcenterRover.setAntexReader(antexReader);
 
         ProcessLinear linearIonoFree;
-        linearIonoFree.add(std::make_unique<PCCombimnation>());
+        linearIonoFree.add(std::make_unique<PCCombination>());
         linearIonoFree.add(std::make_unique<LCCombimnation>());
 
         // Compute single differences opreator
@@ -418,7 +418,6 @@ namespace pod
     {
         LinearCombinations comm;
 
-        computeLinear_.setUseC1(opts().useC1);
         computeLinear_.add(std::make_unique<PDelta>());
         computeLinear_.add(std::make_unique<MWoubenna>());
 
@@ -431,11 +430,7 @@ namespace pod
 
         if (opts().carrierBands.find(CarrierBand::L1) != opts().carrierBands.end())
         {
-            if (opts().useC1)
-                oMinusC_.add(std::make_unique<PrefitC1>(true));
-            else
-                oMinusC_.add(std::make_unique<PrefitP1>(true));
-
+            oMinusC_.add(std::make_unique<PrefitC1>(true));
             oMinusC_.add(std::make_unique<PrefitL1>());
 
             equations_->measTypes().insert(TypeID::prefitC);
@@ -446,7 +441,7 @@ namespace pod
         }
         if (opts().carrierBands.find(CarrierBand::L2) != opts().carrierBands.end())
         {
-            oMinusC_.add(std::make_unique<PrefitP2>(true));
+            oMinusC_.add(std::make_unique<PrefitC2>(true));
             oMinusC_.add(std::make_unique<PrefitL2>());
 
             equations_->measTypes().insert(TypeID::prefitP2);

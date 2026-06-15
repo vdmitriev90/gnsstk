@@ -146,7 +146,7 @@ namespace pod
         // Object to compute ionosphere-free combinations to be used
         // as observables in the PPP processing
         ProcessLinear linear2;
-        linear2.add(std::make_unique<PCCombimnation>());
+        linear2.add(std::make_unique<PCCombination>());
         linear2.add(std::make_unique<LCCombimnation>());
 
         // Add to processing list
