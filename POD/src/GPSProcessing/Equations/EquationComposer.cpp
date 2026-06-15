@@ -1,24 +1,10 @@
 #include "EquationComposer.h"
+#include "Weighting.h"
 
 using namespace gnsstk;
 
 namespace pod
 {
-    const std::map<gnsstk::TypeID, double> EquationComposer::weigthFactors{
-
-        // code pseudorange weight factor
-        {TypeID::prefitC, 1.0},
-        {TypeID::prefitP1, 1.0},
-        {TypeID::prefitP2, 1.0},
-        {TypeID::prefitPC, 1.0},
-
-        // carrier phase weight factor
-        {TypeID::prefitL, 10000.0},
-        {TypeID::prefitL1, 10000.0},
-        {TypeID::prefitL2, 10000.0},
-        {TypeID::prefitLC, 10000.0},
-    };
-
     void EquationComposer::Prepare(IRinex& gData)
     {
         // clear ambiguities set
@@ -127,18 +113,10 @@ namespace pod
         size_t n(0);
         for (const auto& observable : measTypes())
         {
-            const auto weigthFactor = weigthFactors.find(observable);
-            if (weigthFactor == weigthFactors.end())
-            {
-                std::string msg =
-                    "Can't find weigth factor for TypeID:: " + TypeID::tStrings[observable.type];
-
-                InvalidRequest e(msg);
-                GNSSTK_THROW(e)
-            }
+            const double weigthFactor = pod::weighting::weightOf(observable.type);
 
             for (size_t i = 0; i < numsv; i++)
-                weigthMatrix(i + numsv * n, i + numsv * n) *= weigthFactor->second;
+                weigthMatrix(i + numsv * n, i + numsv * n) *= weigthFactor;
             n++;
         }
     }

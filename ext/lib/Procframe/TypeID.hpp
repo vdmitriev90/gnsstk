@@ -261,8 +261,8 @@ namespace gnsstk
          recCdtdot, ///< Receiver Clock offset 1-st derivative
 
          recISB_GLN, ///< GPS L1 - GLONASS L1 intersystem bias
-       //recISB_GAL, ///< GPS L1- GALILEO E1 intersystem bias
-         recISB_BDS, ///< GPS  L1- BEIDOU B1 intersystem bias 
+         //recISB_GAL, ///< GPS L1 - GALILEO E1 intersystem bias
+         recISB_BDS, ///< GPS L1 - BEIDOU B1 intersystem bias 
 
          recIFB_GPS_L2, ///< GPS L1 - GPS L2 inter frequency bias
          recIFB_GLN_L2, ///< GPS L1 - GLONASS L2 inter frequency bias
@@ -406,29 +406,46 @@ namespace gnsstk
              instL6,    ///< Instrumental delay, L6
              instL7,    ///< Instrumental delay, L7
              instL8,    ///< Instrumental delay, L8
+
                         // Equation system-related types
              prefitC,   ///< Prefit residual, code
+             prefitC1,   ///< Prefit residual, code C1
              prefitP1,  ///< Prefit residual, code P1
+             prefitC2,  ///< Prefit residual, code C2
              prefitP2,  ///< Prefit residual, code P2
              prefitC5,  ///< Prefit residual, code C5
+             prefitC6,  ///< Prefit residual, code C6
+             prefitC7,  ///< Prefit residual, code C7
+             prefitC8,  ///< Prefit residual, code C8
              prefitPC,  ///< Prefit residual, code iono-free
 
              prefitL,   ///< Prefit residual, phase
              prefitL1,  ///< Prefit residual, phase L1
              prefitL2,  ///< Prefit residual, phase L2
              prefitL5,  ///< Prefit residual, phase L5
+             prefitL6,  ///< Prefit residual, phase L6
+             prefitL7,  ///< Prefit residual, phase L7
+             prefitL8,  ///< Prefit residual, phase L8  
              prefitLC,  ///< Prefit residual, phase iono-free
 
              postfitC,  ///< Postfit residual, code
-             postfitP1, ///< Postfit residual, code P1
-             postfitP2, ///< Postfit residual, code P2
+             postfitC1,  ///< Postfit residual, code C1
+             postfitP1,  ///< Postfit residual, code P1
+             postfitC2, ///< Postfit residual, code C2
+             postfitP2, ///< Postfit residual, code C2
              postfitC5, ///< Postfit residual, code C5
+             postfitC6, ///< Postfit residual, code C6
+             postfitC7, ///< Postfit residual, code C7
+             postfitC8, ///< Postfit residual, code C8
              postfitPC, ///< Postfit residual, code iono-free
 
              postfitL,  ///< Postfit residual, phase
              postfitL1, ///< Postfit residual, phase L1
              postfitL2, ///< Postfit residual, phase L2
              postfitL5, ///< Postfit residual, phase L5
+             postfitL6, ///< Postfit residual, phase L6
+             postfitL7, ///< Postfit residual, phase L7
+             postfitL8, ///< Postfit residual, phase L8
              postfitLC, ///< Postfit residual, phase iono-free
 
              prefitGRAPHIC1,   ///< Prefit residual, GRAPHIC1

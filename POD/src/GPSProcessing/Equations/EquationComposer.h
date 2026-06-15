@@ -27,9 +27,6 @@ namespace pod
         };
         typedef std::map<FilterParameter, FilterData> FilterState;
 
-        // to map opbservables TypeID to weight factor
-        static const std::map<gnsstk::TypeID, double> weigthFactors;
-
         EquationComposer() {};
 
         EquationComposer(SlnType st) : slnType(st) {};
