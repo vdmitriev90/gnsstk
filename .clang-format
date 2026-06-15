@@ -12,7 +12,7 @@ UseTab: Never
 # Maximum line length
 # Controls when wrapping occurs
 # -------------------------
-ColumnLimit: 100
+ColumnLimit: 120
 
 # -------------------------
 # Braces style (Allman / MSVC-like)
@@ -105,7 +105,7 @@ AllowAllConstructorInitializersOnNextLine: false
 # -------------------------
 # Comment formatting
 # -------------------------
-ReflowComments: true
+ReflowComments: false
 
 # Braced initialization (very important for std::map, vector, etc.)
 Cpp11BracedListStyle: true
@@ -115,6 +115,9 @@ AlwaysBreakTemplateDeclarations: Yes
 # Prevents breaking special macros
 # -------------------------
 StatementMacros:
-  - Q_OBJECT
-  - BEGIN_MESSAGE_MAP
-  - END_MESSAGE_MAP
+  - GNSSTK_THROW
+  - GNSSTK_RETHROW
+  - GNSSTK_ASSERT
+  - GNSSTK_ASSERT_MSG
+  - DBOUT
+  - DBOUT_LINE
