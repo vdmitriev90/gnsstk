@@ -12,7 +12,6 @@ namespace pod
     class IonoEquations : public EquationBase
     {
         typedef gnsstk::StochasticModelUniquePtr (IonoEquations::*StochModelInitialazer)(double qprime);
-        static const double SQR_L1_WL_GPS;
 
       public:
         IonoEquations();
@@ -96,10 +95,6 @@ namespace pod
         std::map<gnsstk::SatID, gnsstk::StochasticModelUniquePtr> stochModels;
 
         double sigma;
-
-        static std::map<gnsstk::TypeID, int> obsType2Band;
-        static std::map<gnsstk::TypeID, int> obsType2Sign;
-
 #pragma endregion
     };
 } // namespace pod

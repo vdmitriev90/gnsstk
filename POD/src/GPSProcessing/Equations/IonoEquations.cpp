@@ -1,21 +1,12 @@
+#include "GnssObsMapping.h"
+
 #include "IonoEquations.h"
 
 using namespace gnsstk;
 namespace pod
 {
-    const double IonoEquations::SQR_L1_WL_GPS = L1_WAVELENGTH_GPS * L1_WAVELENGTH_GPS;
+    const double SQR_L1_WL_GPS = L1_WAVELENGTH_GPS * L1_WAVELENGTH_GPS;
 
-    std::map<gnsstk::TypeID, int> IonoEquations::obsType2Band{{TypeID::prefitL1, 1},
-                                                              {TypeID::prefitL2, 2},
-                                                              {TypeID::prefitP1, 1},
-                                                              {TypeID::prefitC, 1},
-                                                              {TypeID::prefitP2, 2}};
-
-    std::map<gnsstk::TypeID, int> IonoEquations::obsType2Sign{{TypeID::prefitL1, -1},
-                                                              {TypeID::prefitL2, -1},
-                                                              {TypeID::prefitP1, 1},
-                                                              {TypeID::prefitC, 1},
-                                                              {TypeID::prefitP2, 1}};
 #pragma region Stochasic model initializers
 
     gnsstk::StochasticModelUniquePtr IonoEquations::constantModel(double sigma)
@@ -80,15 +71,20 @@ namespace pod
         int row(0);
         for (const auto& it : types)
         {
-            int band = obsType2Band.at(it);
-            int sign = obsType2Sign.at(it);
+            const auto attr = obs_mapping::findObsAttr(it.type);
+                        if (!attr.valid())
+            {
+                GNSSTK_ASSERT_MSG(false, "Unknown observation type in IonoEquations");
+                continue;
+            }
+
             int i(0);
             for (const auto& sv : currParameters)
             {
                 int fcn = sv.sv.getGloFcn();
-                double wl = getWavelength(sv.sv.system, band, fcn);
+                double wl = getWavelength(sv.sv.system, attr.band, fcn);
                 wl *= wl;
-                H(row, startColumn + i) = sign * wl / SQR_L1_WL_GPS;
+                H(row, startColumn + i) = attr.sign * wl / SQR_L1_WL_GPS;
                 row++;
                 i++;
             }
