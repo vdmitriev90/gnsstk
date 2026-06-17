@@ -15,13 +15,13 @@ namespace pod
     {
     }
 
-    void TropoEquations::Prepare(gnsstk::IRinex& gData)
+    void TropoEquations::prepare(gnsstk::IRinex& gData)
     {
 
         pStochasticModel_->Prepare(SatID::dummy, gData);
     }
 
-    void TropoEquations::updateH(const gnsstk::IRinex& gData,
+    void TropoEquations::contributeDesignMatrix(const gnsstk::IRinex& gData,
                                  const gnsstk::TypeIDSet& obsTypes,
                                  gnsstk::Matrix<double>& H,
                                  int& startColumn)
@@ -33,13 +33,13 @@ namespace pod
         startColumn++;
     }
 
-    void TropoEquations::updatePhi(gnsstk::Matrix<double>& Phi, int& index) const
+    void TropoEquations::contributeTransitionMartix(gnsstk::Matrix<double>& Phi, int& index) const
     {
         Phi(index, index) = pStochasticModel_->getPhi();
         ++index;
     }
 
-    void TropoEquations::updateQ(gnsstk::Matrix<double>& Q, int& index) const
+    void TropoEquations::contributeProcessNoiseMatrix(gnsstk::Matrix<double>& Q, int& index) const
     {
         Q(index, index) = pStochasticModel_->getQ();
         ++index;

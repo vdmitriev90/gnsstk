@@ -5,7 +5,7 @@ using namespace gnsstk;
 namespace pod
 {
 
-    void AdvClockModel::Prepare(gnsstk::IRinex& gData)
+    void AdvClockModel::prepare(gnsstk::IRinex& gData)
     {
         // Update previous epoch
         setPreviousTime(currentTime);
@@ -21,7 +21,7 @@ namespace pod
         return types;
     }
 
-    void AdvClockModel::updatePhi(gnsstk::Matrix<double>& Phi, int& index) const
+    void AdvClockModel::contributeTransitionMartix(gnsstk::Matrix<double>& Phi, int& index) const
     {
         Phi(index, index) = 1.0;
         Phi(index, index + 1) = dt;
@@ -30,7 +30,7 @@ namespace pod
         index += 2;
     }
 
-    void AdvClockModel::updateQ(gnsstk::Matrix<double>& Q, int& index) const
+    void AdvClockModel::contributeProcessNoiseMatrix(gnsstk::Matrix<double>& Q, int& index) const
     {
         double dt2 = dt * dt;
         double dt3 = dt2 * dt;
@@ -53,7 +53,7 @@ namespace pod
         ++index;
     }
 
-    void AdvClockModel::updateH(const gnsstk::IRinex& gData,
+    void AdvClockModel::contributeDesignMatrix(const gnsstk::IRinex& gData,
                                 const gnsstk::TypeIDSet& types,
                                 gnsstk::Matrix<double>& H,
                                 int& startColumn)

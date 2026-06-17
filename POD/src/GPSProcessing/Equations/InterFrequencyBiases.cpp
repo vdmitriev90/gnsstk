@@ -28,7 +28,7 @@ namespace pod
             stochasticModels.insert(std::make_pair(it.first, std::make_unique<ConstantModel>()));
     }
 
-    void InterFrequencyBiases::Prepare(IRinex& gData)
+    void InterFrequencyBiases::prepare(IRinex& gData)
     {
         types.clear();
         for (const auto& it : gData.getBody())
@@ -46,7 +46,7 @@ namespace pod
             stochasticModels[ss]->Prepare(SatID::dummy, gData);
     }
 
-    void InterFrequencyBiases::updateH(const gnsstk::IRinex& gData,
+    void InterFrequencyBiases::contributeDesignMatrix(const gnsstk::IRinex& gData,
                                        const gnsstk::TypeIDSet& obsTypes,
                                        gnsstk::Matrix<double>& H,
                                        int& startColumn)
@@ -100,7 +100,7 @@ namespace pod
         return *this;
     }
 
-    void InterFrequencyBiases::updatePhi(gnsstk::Matrix<double>& Phi, int& index) const
+    void InterFrequencyBiases::contributeTransitionMartix(gnsstk::Matrix<double>& Phi, int& index) const
     {
         for (const auto& ss : types)
         {
@@ -109,7 +109,7 @@ namespace pod
         }
     }
 
-    void InterFrequencyBiases::updateQ(gnsstk::Matrix<double>& Q, int& index) const
+    void InterFrequencyBiases::contributeProcessNoiseMatrix(gnsstk::Matrix<double>& Q, int& index) const
     {
         for (const auto& ss : types)
         {

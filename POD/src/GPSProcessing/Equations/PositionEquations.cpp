@@ -34,13 +34,13 @@ namespace pod
         return *this;
     }
 
-    void PositionEquations::Prepare(gnsstk::IRinex& gData)
+    void PositionEquations::prepare(gnsstk::IRinex& gData)
     {
         for (const auto& it : stochasticModels)
             it.second->Prepare(SatID::dummy, gData);
     }
 
-    void PositionEquations::updateH(const gnsstk::IRinex& gData,
+    void PositionEquations::contributeDesignMatrix(const gnsstk::IRinex& gData,
                                     const gnsstk::TypeIDSet& obsTypes,
                                     gnsstk::Matrix<double>& H,
                                     int& startColumn)
@@ -58,7 +58,7 @@ namespace pod
         startColumn += 3;
     }
 
-    void PositionEquations::updatePhi(gnsstk::Matrix<double>& Phi, int& index) const
+    void PositionEquations::contributeTransitionMartix(gnsstk::Matrix<double>& Phi, int& index) const
     {
 
         for (const auto& it : types)
@@ -68,7 +68,7 @@ namespace pod
         }
     }
 
-    void PositionEquations::updateQ(gnsstk::Matrix<double>& Q, int& index) const
+    void PositionEquations::contributeProcessNoiseMatrix(gnsstk::Matrix<double>& Q, int& index) const
     {
 
         for (const auto& it : types)

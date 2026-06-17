@@ -50,7 +50,7 @@ namespace pod
         , sigma(qPrime)
         , stModelInitializer(&IonoEquations::constantModel) {};
 
-    void IonoEquations::Prepare(gnsstk::IRinex& gData)
+    void IonoEquations::prepare(gnsstk::IRinex& gData)
     {
         currParameters.clear();
         auto&& currentSatSet = gData.getBody().getSatID();
@@ -69,7 +69,7 @@ namespace pod
         }
     }
 
-    void IonoEquations::updateH(const gnsstk::IRinex& gData,
+    void IonoEquations::contributeDesignMatrix(const gnsstk::IRinex& gData,
                                 const gnsstk::TypeIDSet& types,
                                 gnsstk::Matrix<double>& H,
                                 int& startColumn)
@@ -96,7 +96,7 @@ namespace pod
         startColumn += nSv;
     }
 
-    void IonoEquations::updatePhi(gnsstk::Matrix<double>& Phi, int& index) const
+    void IonoEquations::contributeTransitionMartix(gnsstk::Matrix<double>& Phi, int& index) const
     {
         for (const auto& it : currParameters)
         {
@@ -105,7 +105,7 @@ namespace pod
         }
     }
 
-    void IonoEquations::updateQ(gnsstk::Matrix<double>& Q, int& index) const
+    void IonoEquations::contributeProcessNoiseMatrix(gnsstk::Matrix<double>& Q, int& index) const
     {
         for (const auto& it : currParameters)
         {

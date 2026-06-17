@@ -238,7 +238,7 @@ namespace pod
         if (opts().systems.size() > 1)
             equations_->addEquation(/*std::move(bias)*/ std::make_unique<InterSystemBias>());
 
-        equations_->residTypes() = TypeIDSet{TypeID::postfitC};
+        equations_->getResidTypes() = TypeIDSet{TypeID::postfitC};
         forwardBackwardCycles_ = confReader().getValueAsInt("forwardBackwardCycles");
     }
 
@@ -249,11 +249,11 @@ namespace pod
         if (opts().useC1)
         {
             oMinusC_.add(std::make_unique<PrefitC1>(false));
-            equations_->measTypes() = TypeIDSet{TypeID::prefitC};
+            equations_->getMeasTypes() = TypeIDSet{TypeID::prefitC};
         }
         else
         {
-            equations_->measTypes() = TypeIDSet{TypeID::prefitP1};
+            equations_->getMeasTypes() = TypeIDSet{TypeID::prefitP1};
         }
 
         requireObs_ = RequireObservablesBuilder(opts().systems, opts().useC1).build();

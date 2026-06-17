@@ -68,7 +68,7 @@ namespace pod
         if (static_cast<int>(sec) == 0 && equations->getSlnType() == SlnType::PppFloat)
             equations->clearSvData();
 
-        equations->Prepare(gData);
+        equations->prepare(gData);
         Vector<double> floatSolution;
 
         // if number of satellies passed to processing is less than 'MIN_NUM_SV'
@@ -80,12 +80,12 @@ namespace pod
             return gData;
         }
 
-        equations->updateH(gData, hMatrix);
+        equations->updateDesignMatrix(gData, hMatrix);
         equations->updateMeas(gData, measVector);
-        equations->updateW(gData, weigthMatrix);
+        equations->updateWeightsMatrix(gData, weightMatrix);
 
-        equations->updatePhi(phiMatrix);
-        equations->updateQ(qMatrix);
+        equations->updateTransitionMatrix(phiMatrix);
+        equations->updateProcessNoiseMatrix(qMatrix);
 
         if (dt > maxGap)
             equations->initKfState(solution, covMatrix);
@@ -113,14 +113,14 @@ namespace pod
             // DBOUT_LINE("meas Vector\n" << setprecision(10) << measVector);
             // DBOUT_LINE("H\n" << hMatrix);
             // DBOUT_LINE("Cov\n" << covMatrix);
-            // DBOUT_LINE("weigthMatrix\n" << weigthMatrix.diagCopy());
+            // DBOUT_LINE("weightMatrix\n" << weightMatrix.diagCopy());
             // DBOUT_LINE("qMatrix: " << qMatrix.diagCopy());
             // DBOUT_LINE("phiMatrix: " << phiMatrix.diagCopy());
 
             // prepare
             Matrix<double> hMatrixTr = transpose(hMatrix);
             Matrix<double> phiMatrixTr = transpose(phiMatrix);
-            Matrix<double> hTrTimesW = hMatrixTr * weigthMatrix;
+            Matrix<double> hTrTimesW = hMatrixTr * weightMatrix;
 
             // predict
             Matrix<double> Pminus = phiMatrix * covMatrix * phiMatrixTr + qMatrix;
@@ -156,7 +156,7 @@ namespace pod
             fixAmbiguities(gData);
             // storeAmbiguities(gData);
 
-            auto vpv = postfitResiduals * weigthMatrix * postfitResiduals;
+            auto vpv = postfitResiduals * weightMatrix * postfitResiduals;
             int numMeas = postfitResiduals.size();
             int numPar = solution.size();
 
@@ -203,7 +203,7 @@ namespace pod
         resid maxPhaseResid;
 
         int i_res = 0;
-        for (const auto& type : equations->residTypes())
+        for (const auto& type : equations->getResidTypes())
         {
             if (phaseResTypes.find(type) == phaseResTypes.end())
             {
@@ -231,7 +231,7 @@ namespace pod
             auto dist = std::distance(svSet.begin(), svSet.find(maxPhaseResid.sv));
 
             std::set<int> indeces;
-            for (size_t i = 0; i < equations->residTypes().size(); i++)
+            for (size_t i = 0; i < equations->getResidTypes().size(); i++)
                 indeces.insert(i * svSet.size() + dist);
 
             // update H
@@ -241,10 +241,10 @@ namespace pod
             MatrixExtensions::removeElms(measVector, indeces);
 
             // update weigths
-            MatrixExtensions::removeRows(weigthMatrix, indeces);
-            MatrixExtensions::removeColumns(weigthMatrix, indeces);
+            MatrixExtensions::removeRows(weightMatrix, indeces);
+            MatrixExtensions::removeColumns(weightMatrix, indeces);
 
-            auto ambSet = equations->currentAmb();
+            auto ambSet = equations->getCurrentAmb();
             auto typeSet = FilterParameter::get_all_types(ambSet);
 
             int corParNum = equations->getNumUnknowns() - ambSet.size();
@@ -286,9 +286,9 @@ namespace pod
     {
         if (equations->getSlnType() == SlnType::PdFixed && gData.getBody().size() > 5)
         {
-            int core_num = equations->currentUnknowns().size() - equations->currentAmb().size();
+            int core_num = equations->currentUnknowns().size() - equations->getCurrentAmb().size();
 
-            AmbiguityHandler ar(equations->currentAmb(), solution, covMatrix, core_num);
+            AmbiguityHandler ar(equations->getCurrentAmb(), solution, covMatrix, core_num);
             ar.fixL1L2(gData);
 
             for (int k = 0; k < core_num; k++)

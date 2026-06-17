@@ -12,12 +12,12 @@
 #include "LinearCombinations.hpp"
 #include "MWCSDetector.hpp"
 #include "NeillTropModel.hpp"
+#include "ObservablesSets.h"
 #include "OneFreqCSDetector.hpp"
 #include "PositionEquations.h"
 #include "PowerSum.hpp"
 #include "SimpleFilter.hpp"
 #include "SyncObs.h"
-#include "ObservablesSets.h"
 #include "WinUtils.h"
 
 #include <memory>
@@ -135,8 +135,8 @@ namespace pod
 
                 if (firstTime)
                 {
-                    std::cout << "Baseline: " << std::setprecision(4)
-                              << (nominalPos_ - refPos).mag() / 1000 << " km" << std::endl;
+                    std::cout << "Baseline: " << std::setprecision(4) << (nominalPos_ - refPos).mag() / 1000 << " km"
+                              << std::endl;
                     firstTime = false;
                 }
 
@@ -166,8 +166,7 @@ namespace pod
                     if (opts().isSmoothCode)
                     {
                         // update code smoother interval length
-                        codeSmootherRef_.setInterval(codeSmWindowSize_
-                                                    / sync.getRefHeader().interval);
+                        codeSmootherRef_.setInterval(codeSmWindowSize_ / sync.getRefHeader().interval);
 
                         // let's smooth the code
                         epoch_base >> codeSmootherRef_;
@@ -175,8 +174,7 @@ namespace pod
 
                     if (epoch_base.getBody().size() == 0)
                     {
-                        printMsg(epoch_base.getHeader().epoch,
-                                 "Reference receiver: all SV has been rejected.");
+                        printMsg(epoch_base.getHeader().epoch, "Reference receiver: all SV has been rejected.");
                         continue;
                     }
 
@@ -271,7 +269,7 @@ namespace pod
         if (opts().systems.size() > 1)
             equations_->addEquation(/*std::move(bias)*/ std::make_unique<InterSystemBias>());
 
-        equations_->residTypes() = TypeIDSet{TypeID::postfitC};
+        equations_->getResidTypes() = TypeIDSet{TypeID::postfitC};
         forwardBackwardCycles_ = confReader().getValueAsInt("forwardBackwardCycles");
     }
 
@@ -283,11 +281,11 @@ namespace pod
         oMinusC_.add(std::make_unique<PrefitC1>(false));
         if (opts().useC1)
         {
-            equations_->measTypes() = {TypeID::prefitC};
+            equations_->getMeasTypes() = {TypeID::prefitC};
         }
         else
         {
-            equations_->measTypes() = {TypeID::prefitP1};
+            equations_->getMeasTypes() = {TypeID::prefitP1};
         }
 
         requireObs_ = RequireObservablesBuilder(opts().systems, opts().useC1).build();

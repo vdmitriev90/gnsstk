@@ -161,7 +161,7 @@ namespace pod
         SatIDSet satRejectedSet;
 
         // Let's check limits
-        for (auto&& type : solver.eqComposer().residTypes())
+        for (auto&& type : solver.eqComposer().getResidTypes())
         {
             double limit = getLimit(type, cycleNumber);
             for (auto&& it : gData.getBody())

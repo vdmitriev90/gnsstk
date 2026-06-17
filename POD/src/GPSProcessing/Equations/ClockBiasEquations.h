@@ -14,8 +14,8 @@ namespace pod
         virtual ClockBiasEquations& setStochasicModel(gnsstk::StochasticModel_sptr newModel);
 
         // Inherited via EquationBase
-        virtual void Prepare(gnsstk::IRinex& gData) override;
-        virtual void updateH(const gnsstk::IRinex& gData,
+        virtual void prepare(gnsstk::IRinex& gData) override;
+        virtual void contributeDesignMatrix(const gnsstk::IRinex& gData,
                              const gnsstk::TypeIDSet& types,
                              gnsstk::Matrix<double>& H,
                              int& startColumn) override;
@@ -24,9 +24,9 @@ namespace pod
         {
             return ParametersSet({type});
         }
-        virtual void updatePhi(gnsstk::Matrix<double>& Phi, int& index) const override;
+        virtual void contributeTransitionMartix(gnsstk::Matrix<double>& Phi, int& index) const override;
 
-        virtual void updateQ(gnsstk::Matrix<double>& Q, int& index) const override;
+        virtual void contributeProcessNoiseMatrix(gnsstk::Matrix<double>& Q, int& index) const override;
 
         virtual void defStateAndCovariance(gnsstk::Vector<double>& x,
                                            gnsstk::Matrix<double>& P,

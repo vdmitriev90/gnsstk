@@ -15,9 +15,9 @@ namespace pod
         InterFrequencyBiases();
         virtual ~InterFrequencyBiases() {};
 
-        virtual void Prepare(gnsstk::IRinex& gData);
+        virtual void prepare(gnsstk::IRinex& gData);
 
-        void updateH(const gnsstk::IRinex& gData,
+        void contributeDesignMatrix(const gnsstk::IRinex& gData,
                      const gnsstk::TypeIDSet& types,
                      gnsstk::Matrix<double>& H,
                      int& startColumn);
@@ -27,9 +27,9 @@ namespace pod
             return types;
         }
 
-        virtual void updatePhi(gnsstk::Matrix<double>& Phi, int& index) const override;
+        virtual void contributeTransitionMartix(gnsstk::Matrix<double>& Phi, int& index) const override;
 
-        virtual void updateQ(gnsstk::Matrix<double>& Q, int& index) const override;
+        virtual void contributeProcessNoiseMatrix(gnsstk::Matrix<double>& Q, int& index) const override;
 
         virtual void defStateAndCovariance(gnsstk::Vector<double>& x,
                                            gnsstk::Matrix<double>& P,

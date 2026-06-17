@@ -20,12 +20,12 @@ namespace pod
         ~IonoEquations() {};
 
         /* update state of equations with new observational data */
-        virtual void Prepare(gnsstk::IRinex& gData) override;
+        virtual void prepare(gnsstk::IRinex& gData) override;
 
         /*Check, if unknown parameters currently observable, if so,
         put the corresponding TypeID into 'TypeIDSet'
         */
-        virtual void updateH(const gnsstk::IRinex& gData,
+        virtual void contributeDesignMatrix(const gnsstk::IRinex& gData,
                              const gnsstk::TypeIDSet& types,
                              gnsstk::Matrix<double>& H,
                              int& startColumn) override;
@@ -39,12 +39,12 @@ namespace pod
         /* Put the values in state tarnsition matrix, starting with specific index,
         index will be incremented inside this method
         */
-        virtual void updatePhi(gnsstk::Matrix<double>& Phi, int& index) const override;
+        virtual void contributeTransitionMartix(gnsstk::Matrix<double>& Phi, int& index) const override;
 
         /*Put process noise components into corresponding matrix,
         starting with specific index, index will be incremented inside this method
         */
-        virtual void updateQ(gnsstk::Matrix<double>& Q, int& index) const override;
+        virtual void contributeProcessNoiseMatrix(gnsstk::Matrix<double>& Q, int& index) const override;
 
         /* Put default values of state vector and it's covariance into corresponding matrices,
         starting with specific index, index will be incremented inside this method

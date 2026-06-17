@@ -7,7 +7,7 @@ using namespace gnsstk;
 namespace pod
 {
 
-    void TropoEquationsAdv::updateH(const gnsstk::IRinex& gData,
+    void TropoEquationsAdv::contributeDesignMatrix(const gnsstk::IRinex& gData,
                                     const gnsstk::TypeIDSet& obsTypes,
                                     gnsstk::Matrix<double>& H,
                                     int& startColumn)
@@ -26,7 +26,7 @@ namespace pod
         startColumn += 2;
     }
 
-    void TropoEquationsAdv::updatePhi(gnsstk::Matrix<double>& Phi, int& index) const
+    void TropoEquationsAdv::contributeTransitionMartix(gnsstk::Matrix<double>& Phi, int& index) const
     {
         Phi(index, index) = 1.0;
         Phi(index, index + 1) = dt;
@@ -35,7 +35,7 @@ namespace pod
         index += 2;
     }
 
-    void TropoEquationsAdv::updateQ(gnsstk::Matrix<double>& Q, int& index) const
+    void TropoEquationsAdv::contributeProcessNoiseMatrix(gnsstk::Matrix<double>& Q, int& index) const
     {
 
         double dt2 = dt * dt;
@@ -59,7 +59,7 @@ namespace pod
         ++index;
     }
 
-    void TropoEquationsAdv::Prepare(IRinex& gData)
+    void TropoEquationsAdv::prepare(IRinex& gData)
     {
         // Update previous epoch
         setPreviousTime(currentTime);

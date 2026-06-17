@@ -22,12 +22,12 @@ namespace pod
         return *this;
     }
 
-    void ClockBiasEquations::Prepare(IRinex& gData)
+    void ClockBiasEquations::prepare(IRinex& gData)
     {
         stochModel->Prepare(SatID::dummy, gData);
     }
 
-    void ClockBiasEquations::updateH(const gnsstk::IRinex& svs,
+    void ClockBiasEquations::contributeDesignMatrix(const gnsstk::IRinex& svs,
                                      const gnsstk::TypeIDSet& types,
                                      gnsstk::Matrix<double>& H,
                                      int& startColumn)
@@ -38,13 +38,13 @@ namespace pod
         startColumn++;
     }
 
-    void ClockBiasEquations::updatePhi(Matrix<double>& Phi, int& index) const
+    void ClockBiasEquations::contributeTransitionMartix(Matrix<double>& Phi, int& index) const
     {
         Phi(index, index) = stochModel->getPhi();
         ++index;
     }
 
-    void ClockBiasEquations::updateQ(Matrix<double>& Q, int& index) const
+    void ClockBiasEquations::contributeProcessNoiseMatrix(Matrix<double>& Q, int& index) const
     {
         Q(index, index) = stochModel->getQ();
         ++index;

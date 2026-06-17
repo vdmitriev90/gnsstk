@@ -137,7 +137,7 @@ namespace pod
         gnsstk::Matrix<double> hMatrix;
 
         // weights matrix
-        gnsstk::Matrix<double> weigthMatrix;
+        gnsstk::Matrix<double> weightMatrix;
 
         // Measurements vector (prefit-residuals)
         gnsstk::Vector<double> measVector;

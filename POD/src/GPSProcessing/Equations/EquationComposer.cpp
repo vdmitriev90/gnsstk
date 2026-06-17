@@ -1,131 +1,126 @@
 #include "EquationComposer.h"
+
 #include "Weighting.h"
 
 using namespace gnsstk;
 
 namespace pod
 {
-    void EquationComposer::Prepare(IRinex& gData)
+    void EquationComposer::prepare(IRinex& gData)
     {
         // clear ambiguities set
-        currAmb.clear();
-        for (auto& eq : equations)
+        currAmb_.clear();
+        for (auto& eq : equations_)
         {
             // prepare equations objects state
-            eq->Prepare(gData);
+            eq->prepare(gData);
 
             // update current set of ambiguities
             auto ambs = eq->getAmbSet();
-            currAmb.insert(ambs.cbegin(), ambs.cend());
+            currAmb_.insert(ambs.cbegin(), ambs.cend());
         }
     }
 
-    void EquationComposer::updateH(gnsstk::IRinex& gData, gnsstk::Matrix<double>& H)
+    void EquationComposer::updateDesignMatrix(gnsstk::IRinex& gData, gnsstk::Matrix<double>& H)
     {
         int numSVs = gData.getBody().size();
-        int numMeasTypes = measTypes().size();
+        int numMeasTypes = getMeasTypes().size();
 
         // number of measurements are equals number of satellites times observation types number
-        numMeas = numSVs * numMeasTypes;
+        numMeas_ = numSVs * numMeasTypes;
 
-        unknowns.clear();
-        for (auto&& eq : equations)
+        unknowns_.clear();
+        for (auto&& eq : equations_)
         {
-            auto&& t = eq->getParameters();
-            unknowns.insert(t.cbegin(), t.cend());
+            auto&& params = eq->getParameters();
+            unknowns_.insert(params.cbegin(), params.cend());
         }
 
-        numUnknowns = getNumUnknowns();
+        numUnknowns_ = getNumUnknowns();
 
         // set resize design matrix
-        H.resize(numMeas, numUnknowns, 0.0);
+        H.resize(numMeas_, numUnknowns_, 0.0);
 
         /*
         form the design martix H:
-           | Tropo | dX dY dZ | cdt | cdt(R1) | cdt(G2) | cdt(R2) |   iono delay   |     N1     | N2
-        |
+           | Tropo | dX dY dZ | cdt | cdt(R1) | cdt(G2) | cdt(R2) |   iono delay   |     N1     |     N2     |
            ---------------------------------------------------------------------------------------------------
-           |       |          |     |         |         |         |                |            | |
-        P1 |   m   | ax,ay,az |  1  |  R?1:0  |    0    |    0    |   dI/dr1*E     |     0      | 0
-        | |       |          |     |         |         |         |                |            | |
+           |       |          |     |         |         |         |                |            |            |
+        P1 |   m   | ax,ay,az |  1  |  R?1:0  |    0    |    0    |   dI/dr1*E     |     0      |     0      |
+           |       |          |     |         |         |         |                |            |            |
            ---------------------------------------------------------------------------------------------------
-           |       |          |     |         |         |         |                |            | |
-        P2 |   m   | ax,ay,az |  1  |    0    |  G?1:0  |  R?1:0  |   dI/dr2*E     |     0      | 0
-        | |       |          |     |         |         |         |                |            | |
+           |       |          |     |         |         |         |                |            |            |
+        P2 |   m   | ax,ay,az |  1  |    0    |  G?1:0  |  R?1:0  |   dI/dr2*E     |     0      |     0      |
+           |       |          |     |         |         |         |                |            |            |
            ---------------------------------------------------------------------------------------------------
-           |       |          |     |         |         |         |                |            | |
-        L1 |   m   | ax,ay,az |  1  |  R?1:0  |    0    |    0    |  -dI/dr1*E     | lambda_1*E | 0
-        | |       |          |     |         |         |         |                |            | |
+           |       |          |     |         |         |         |                |            |            |
+        L1 |   m   | ax,ay,az |  1  |  R?1:0  |    0    |    0    |  -dI/dr1*E     | lambda_1*E |     0      |
+           |       |          |     |         |         |         |                |            |            | 
            ---------------------------------------------------------------------------------------------------
-           |       |          |     |         |         |         |                |            | |
-        L2 |   m   | ax,ay,az |  1  |    0    |  G?1:0  |  R?1:0  |  -dI/dr2*E     |     0      |
-        lambda_2*E | |       |          |     |         |         |         |                | | |
+           |       |          |     |         |         |         |                |            |            |
+        L2 |   m   | ax,ay,az |  1  |    0    |  G?1:0  |  R?1:0  |  -dI/dr2*E     |     0      | lambda_2*E |
+           |       |          |     |         |         |         |                |            |            |
            ---------------------------------------------------------------------------------------------------
         */
 
         int col(0);
-        for (auto& eq : equations)
-            eq->updateH(gData, measTypes(), H, col);
+        for (auto& eq : equations_)
+            eq->contributeDesignMatrix(gData, getMeasTypes(), H, col);
     }
 
-    void EquationComposer::updatePhi(Matrix<double>& Phi) const
+    void EquationComposer::updateTransitionMatrix(Matrix<double>& Phi) const
     {
         int i = 0;
-        Phi.resize(numUnknowns, numUnknowns, 0.0);
-        for (auto& eq : equations)
-            eq->updatePhi(Phi, i);
+        Phi.resize(numUnknowns_, numUnknowns_, 0.0);
+        for (auto& eq : equations_)
+            eq->contributeTransitionMartix(Phi, i);
     }
 
-    void EquationComposer::updateQ(Matrix<double>& Q) const
+    void EquationComposer::updateProcessNoiseMatrix(Matrix<double>& Q) const
     {
         int i = 0;
-        Q.resize(numUnknowns, numUnknowns, 0.0);
-        for (auto& eq : equations)
-            eq->updateQ(Q, i);
+        Q.resize(numUnknowns_, numUnknowns_, 0.0);
+        for (auto& eq : equations_)
+            eq->contributeProcessNoiseMatrix(Q, i);
     }
 
-    void EquationComposer::updateW(const IRinex& gData, gnsstk::Matrix<double>& weigthMatrix)
+    void EquationComposer::updateWeightsMatrix(const IRinex& gData, gnsstk::Matrix<double>& weightMatrix)
     {
-        size_t numsv = gData.getBody().size();
+        const size_t numsv = gData.getBody().size();
         // Generate the appropriate weights matrix
         // Try to extract weights from GDS
-        satTypeValueMap dummy(gData.getBody().extractTypeID(TypeID::weight));
+        const satTypeValueMap dummy(gData.getBody().extractTypeID(TypeID::weight));
 
         // prepare identy matrix
-        weigthMatrix.resize(numMeas, numMeas, 0.0);
-        for (size_t i = 0; i < numMeas; i++)
-            weigthMatrix(i, i) = 1.0;
+        weightMatrix.resize(numMeas_, numMeas_, 0.0);
 
         // Check if weights match
         if (dummy.numSats() == numsv)
         {
             auto weigths = gData.getBody().getVectorOfTypeID(TypeID::weight);
             size_t k(0);
-            for (const auto& observable : measTypes())
+            for (const auto& observable : getMeasTypes())
             {
+                const double weightFactor = pod::weighting::weightOf(observable.type);
                 for (size_t i = 0; i < numsv; i++)
-                    weigthMatrix(i + numsv * k, i + numsv * k) =
-                        weigthMatrix(i + numsv * k, i + numsv * k) * weigths(i);
+                {
+                    const size_t idx = i + numsv * k;
+                    weightMatrix(idx, idx) = weigths(i) * weightFactor;
+                }
                 k++;
             }
         }
-
-        size_t n(0);
-        for (const auto& observable : measTypes())
+        else
         {
-            const double weigthFactor = pod::weighting::weightOf(observable.type);
-
-            for (size_t i = 0; i < numsv; i++)
-                weigthMatrix(i + numsv * n, i + numsv * n) *= weigthFactor;
-            n++;
+            GNSSTK_ASSERT_MSG(false, "Weights vector size does not match number of satellites.");
         }
     }
 
     void EquationComposer::updateMeas(const IRinex& gData, gnsstk::Vector<double>& measVector)
     {
-        measVector.resize(numMeas, 0.0);
+        measVector.resize(numMeas_, 0.0);
         int j = 0;
-        for (const auto& it : measTypes())
+        for (const auto& it : getMeasTypes())
         {
             auto meas = gData.getBody().getVectorOfTypeID(it);
             size_t numSat = meas.size();
@@ -138,27 +133,26 @@ namespace pod
     int EquationComposer::getNumUnknowns() const
     {
         int res = 0;
-        for (auto& eq : equations)
+        for (auto& eq : equations_)
             res += eq->getNumUnknowns();
         return res;
     }
 
-    void EquationComposer::updateKfState(gnsstk::Vector<double>& currState,
-                                         gnsstk::Matrix<double>& currErrorCov) const
+    void EquationComposer::updateKfState(gnsstk::Vector<double>& currState, gnsstk::Matrix<double>& currErrorCov) const
     {
         initKfState(currState, currErrorCov);
 
         int row = 0;
 
         // update state and covarince
-        for (const auto& it_row : unknowns)
+        for (const auto& it_row : unknowns_)
         {
-            const auto& typeRow = filterData.find(it_row);
-            if (typeRow != filterData.end())
+            const auto& typeRow = filterData_.find(it_row);
+            if (typeRow != filterData_.end())
             {
-                currState(row) = filterData.at(it_row).value;
+                currState(row) = typeRow->second.value;
                 int col = 0;
-                for (const auto& it_col : unknowns)
+                for (const auto& it_col : unknowns_)
                 {
                     const auto& typeCol = (typeRow->second).valCov.find(it_col);
                     if (typeCol != (typeRow->second).valCov.end())
@@ -174,42 +168,40 @@ namespace pod
                                         const gnsstk::Matrix<double>& currErrorCov)
     {
         int row = 0;
-        for (const auto& it_row : unknowns)
+        for (const auto& it_row : unknowns_)
         {
-            filterData[it_row].value = currState(row);
+            filterData_[it_row].value = currState(row);
 
             int col = 0;
-            for (const auto& it_col : unknowns)
+            for (const auto& it_col : unknowns_)
             {
-                filterData[it_row].valCov[it_col] = currErrorCov(row, col);
+                filterData_[it_row].valCov[it_col] = currErrorCov(row, col);
                 ++col;
             }
             ++row;
         }
     }
 
-    void EquationComposer::initKfState(gnsstk::Vector<double>& state,
-                                       gnsstk::Matrix<double>& cov) const
+    void EquationComposer::initKfState(gnsstk::Vector<double>& state, gnsstk::Matrix<double>& cov) const
     {
-        state.resize(numUnknowns, 0.0);
-        cov.resize(numUnknowns, numUnknowns, 0.0);
+        state.resize(numUnknowns_, 0.0);
+        cov.resize(numUnknowns_, numUnknowns_, 0.0);
 
         int i = 0;
-        for (auto& eq : equations)
+        for (auto& eq : equations_)
             eq->defStateAndCovariance(state, cov, i);
     }
 
-    void EquationComposer::saveResiduals(gnsstk::IRinex& gData,
-                                         const gnsstk::Vector<double>& residuals) const
+    void EquationComposer::saveResiduals(gnsstk::IRinex& gData, const gnsstk::Vector<double>& residuals) const
     {
         int resNum = residuals.size();
         int satNum = gData.getBody().size();
-        int numResTypes = residTypes().size();
+        int numResTypes = getResidTypes().size();
 
         GNSSTK_ASSERT(satNum * numResTypes == resNum);
 
         int i_res = 0;
-        for (auto&& resType : residTypes())
+        for (auto&& resType : getResidTypes())
             for (auto&& itSat : gData.getBody())
                 itSat.second->get_value()[resType] = residuals(i_res++);
     }
@@ -217,7 +209,7 @@ namespace pod
     std::vector<double> EquationComposer::getResiduals(const gnsstk::Vector<double>& residuals,
                                                        const TypeIDSet& types) const
     {
-        size_t numResTypes = residTypes().size();
+        size_t numResTypes = getResidTypes().size();
         if (numResTypes == 0)
             return {};
 
@@ -227,7 +219,7 @@ namespace pod
         res.reserve(types.size() * nsv);
 
         size_t iType(0);
-        for (auto&& resType : residTypes())
+        for (auto&& resType : getResidTypes())
         {
             if (types.find(resType) != types.end())
                 for (size_t j = 0; j < nsv; ++j)
@@ -237,22 +229,94 @@ namespace pod
         return res;
     }
 
+    EquationComposer& EquationComposer::setState(const EquationComposer::FilterState& newState)
+    {
+        filterData_ = newState;
+        return *this;
+    }
+
+    const EquationComposer::FilterState& EquationComposer::getState() const
+    {
+        return filterData_;
+    }
+
+    // get current set unknowns TypeID's
+    ParametersSet& EquationComposer::currentUnknowns()
+    {
+        return unknowns_;
+    }
+
+    TypeIDSet& EquationComposer::getMeasTypes()
+    {
+        return measurementsTypes_;
+    }
+
+    const TypeIDSet& EquationComposer::getMeasTypes() const
+    {
+        return measurementsTypes_;
+    }
+
+    TypeIDSet& EquationComposer::getResidTypes()
+    {
+        return residualsTypes_;
+    }
+
+    const TypeIDSet& EquationComposer::getResidTypes() const
+    {
+        return residualsTypes_;
+    }
+
+    const ParametersSet& EquationComposer::getCurrentAmb() const
+    {
+        return currAmb_;
+    }
+
+    SlnType EquationComposer::getSlnType() const
+    {
+        return slnType_;
+    }
+
+    EquationComposer& EquationComposer::setSlnType(SlnType sType)
+    {
+        slnType_ = sType;
+        return *this;
+    }
+
+    /// add new equation to equation list
+    EquationComposer& EquationComposer::addEquation(std::unique_ptr<EquationBase> eq)
+    {
+        equations_.push_back(std::move(eq));
+        return *this;
+    }
+
+    /// erase equation list
+    void EquationComposer::clearEquations()
+    {
+        equations_.clear();
+    }
+
+    /// erase stored data
+    void EquationComposer::clearData()
+    {
+        filterData_.clear();
+    }
+
     void EquationComposer::keepOnlySv(const SatIDSet& svs)
     {
-        for (auto it = filterData.cbegin(); it != filterData.cend();)
+        for (auto it = filterData_.cbegin(); it != filterData_.cend();)
         {
             if (svs.find(it->first.sv) == svs.end())
-                it = filterData.erase(it);
+                it = filterData_.erase(it);
             else
                 ++it;
         }
     }
     void EquationComposer::clearSvData(const SatIDSet& svs)
     {
-        for (auto it = filterData.cbegin(); it != filterData.cend();)
+        for (auto it = filterData_.cbegin(); it != filterData_.cend();)
         {
             if (svs.find(it->first.sv) != svs.end())
-                it = filterData.erase(it);
+                it = filterData_.erase(it);
             else
                 ++it;
         }
@@ -260,10 +324,10 @@ namespace pod
 
     void EquationComposer::clearSvData()
     {
-        for (auto it = filterData.cbegin(); it != filterData.cend();)
+        for (auto it = filterData_.cbegin(); it != filterData_.cend();)
         {
             if (it->first.sv != SatID::dummy)
-                it = filterData.erase(it);
+                it = filterData_.erase(it);
             else
                 ++it;
         }

@@ -28,7 +28,7 @@ namespace pod
         return ambSet;
     }
 
-    void AmbiguitiesEquations::Prepare(gnsstk::IRinex& gData)
+    void AmbiguitiesEquations::prepare(gnsstk::IRinex& gData)
     {
         svsInView = gData.getBody().getSatID();
 
@@ -45,7 +45,7 @@ namespace pod
         satSet = svsInView;
     }
 
-    void AmbiguitiesEquations::updatePhi(gnsstk::Matrix<double>& Phi, int& index) const
+    void AmbiguitiesEquations::contributeTransitionMartix(gnsstk::Matrix<double>& Phi, int& index) const
     {
         for (auto& it : csFlags)
         {
@@ -55,7 +55,7 @@ namespace pod
         }
     }
 
-    void AmbiguitiesEquations::updateQ(gnsstk::Matrix<double>& Q, int& index) const
+    void AmbiguitiesEquations::contributeProcessNoiseMatrix(gnsstk::Matrix<double>& Q, int& index) const
     {
         for (auto& it : csFlags)
         {
@@ -77,7 +77,7 @@ namespace pod
         }
     }
 
-    void AmbiguitiesEquations::updateH(const gnsstk::IRinex& gData,
+    void AmbiguitiesEquations::contributeDesignMatrix(const gnsstk::IRinex& gData,
                                        const gnsstk::TypeIDSet& types,
                                        gnsstk::Matrix<double>& H,
                                        int& startColumn)

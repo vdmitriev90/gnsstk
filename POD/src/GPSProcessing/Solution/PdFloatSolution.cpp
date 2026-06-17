@@ -28,6 +28,7 @@
 #include "MWCSDetector.hpp"
 #include "NeillTropModel.hpp"
 #include "NumSatFilter.h"
+#include "ObservablesSets.h"
 #include "OceanLoading.hpp"
 #include "PoleTides.hpp"
 #include "PositionEquations.h"
@@ -40,7 +41,6 @@
 #include "SyncObs.h"
 #include "TropoEquations.h"
 #include "UsedInPvtMarker.hpp"
-#include "ObservablesSets.h"
 #include "WinUtils.h"
 
 #include <memory>
@@ -51,10 +51,7 @@ namespace pod
 {
 
     PdFloatSolution::PdFloatSolution(GnssDataStorePtr data_ptr) : GnssSolution(data_ptr, 50.0) {}
-    PdFloatSolution::PdFloatSolution(GnssDataStorePtr data_ptr, double max_sigma)
-        : GnssSolution(data_ptr, max_sigma)
-    {
-    }
+    PdFloatSolution::PdFloatSolution(GnssDataStorePtr data_ptr, double max_sigma) : GnssSolution(data_ptr, max_sigma) {}
     PdFloatSolution::~PdFloatSolution() {}
 
     void PdFloatSolution::process()
@@ -122,7 +119,7 @@ namespace pod
         // check sharp SNR drops
         SNRCatcher snrCatcherL1Base(TypeID::S1, TypeID::CSL1, 901.0, 5, 30);
         SNRCatcher snrCatcherL1Rover(TypeID::S1, TypeID::CSL1, 901.0, 5, 30);
-        PrefitResCatcher resCatcher(equations_->measTypes());
+        PrefitResCatcher resCatcher(equations_->getMeasTypes());
         NumSatFilter minSatFilter(desiredSlnType());
 
         // Object to keep track of satellite arcs
@@ -154,18 +151,15 @@ namespace pod
         corrBase.setMonument(offsetARP);
 
         // for rover
-        const Triple offsetARP_Rover =
-            confReader().getValueListAsTriple("offsetARP", opts().SiteRover);
+        const Triple offsetARP_Rover = confReader().getValueListAsTriple("offsetARP", opts().SiteRover);
         corrRover.setMonument(offsetARP_Rover);
 
-        Antenna baseAnt(
-            antexReader.getAntenna(confReader().getValue("antennaModel", opts().SiteBase)));
+        Antenna baseAnt(antexReader.getAntenna(confReader().getValue("antennaModel", opts().SiteBase)));
         corrBase.setAntenna(baseAnt);
         corrBase.setUsePcv(confReader().getValueAsBoolean("usePCPatterns", opts().SiteBase));
         corrBase.setUseAzimuth(confReader().getValueAsBoolean("useAzim", opts().SiteBase));
 
-        Antenna roverAnt(
-            antexReader.getAntenna(confReader().getValue("antennaModel", opts().SiteRover)));
+        Antenna roverAnt(antexReader.getAntenna(confReader().getValue("antennaModel", opts().SiteRover)));
         corrRover.setAntenna(roverAnt);
         corrRover.setUsePcv(confReader().getValueAsBoolean("usePCPatterns", opts().SiteRover));
         corrRover.setUseAzimuth(confReader().getValueAsBoolean("useAzim", opts().SiteRover));
@@ -178,8 +172,7 @@ namespace pod
         // Configure ocean loading model
         OceanLoading ocean;
         ocean.setFilename(opts().genericFilesDirectory + confReader().getValue("oceanLoadingFile"));
-        const std::string sat_file =
-            opts().genericFilesDirectory + confReader().getValue("satDataFile");
+        const std::string sat_file = opts().genericFilesDirectory + confReader().getValue("satDataFile");
 
         ComputeWindUp windupBase(data_->navLibrary_, ref_base_pos, sat_file);
         ComputeWindUp windupRover(data_->navLibrary_, ref_base_pos, sat_file);
@@ -199,10 +192,7 @@ namespace pod
         UsedInPvtMarker useMarker;
 
         // configure single differences operator with appropriate measurements types
-        TypeIDSet diffTypeSet;
-        for (auto&& it : equations_->measTypes())
-            diffTypeSet.insert(it);
-        delta.setDiffTypeSet(diffTypeSet);
+        delta.setDiffTypeSet(equations_->getMeasTypes());
 
         KalmanSolver solver(equations_);
         solver.setMinSatNumber(5);
@@ -264,9 +254,9 @@ namespace pod
                 {
                     /* if (computeApprPos(rin_epoch, data_->SP3EphList, nominalPos_))
                          continue;*/
-                    nominalPos_ = data_->getNominalPosition(opts().SiteRover);  
-                    std::cout << "Baseline: " << std::setprecision(4)
-                              << (nominalPos_ - ref_base_pos).mag() / 1000 << " km" << std::endl;
+                    nominalPos_ = data_->getNominalPosition(opts().SiteRover);
+                    std::cout << "Baseline: " << std::setprecision(4) << (nominalPos_ - ref_base_pos).mag() / 1000
+                              << " km" << std::endl;
                     firstTime = false;
                 }
 
@@ -287,8 +277,7 @@ namespace pod
 
                 if (rin_epoch.getBody().empty())
                 {
-                    printMsg(rin_epoch.getHeader().epoch,
-                             "Rover receiver: all SV has been rejected.");
+                    printMsg(rin_epoch.getHeader().epoch, "Rover receiver: all SV has been rejected.");
                     continue;
                 }
 
@@ -329,8 +318,7 @@ namespace pod
                     gRef >> grDelayBase;
                     gRef >> svPcenterBase;
 
-                    Triple tides(solid.getSolidTide(t, ref_base_pos)
-                                 + ocean.getOceanLoading(opts().SiteBase, t)
+                    Triple tides(solid.getSolidTide(t, ref_base_pos) + ocean.getOceanLoading(opts().SiteBase, t)
                                  + pole.getPoleTide(t, ref_base_pos));
                     corrBase.setExtraBiases(tides);
 
@@ -359,8 +347,7 @@ namespace pod
                 rin_epoch >> grDelayRover;
                 rin_epoch >> svPcenterRover;
 
-                Triple tides(solid.getSolidTide(t, nominalPos_)
-                             + ocean.getOceanLoading(opts().SiteRover, t)
+                Triple tides(solid.getSolidTide(t, nominalPos_) + ocean.getOceanLoading(opts().SiteRover, t)
                              + pole.getPoleTide(t, nominalPos_));
                 corrRover.setExtraBiases(tides);
                 rin_epoch >> corrRover;
@@ -416,8 +403,6 @@ namespace pod
 
     void PdFloatSolution::updateRequaredObs()
     {
-        LinearCombinations comm;
-
         computeLinear_.add(std::make_unique<PDelta>());
         computeLinear_.add(std::make_unique<MWoubenna>());
 
@@ -433,21 +418,22 @@ namespace pod
             oMinusC_.add(std::make_unique<PrefitC1>(true));
             oMinusC_.add(std::make_unique<PrefitL1>());
 
-            equations_->measTypes().insert(TypeID::prefitC);
-            equations_->measTypes().insert(TypeID::prefitL1);
+            equations_->getMeasTypes().insert(TypeID::prefitC1);
+            equations_->getMeasTypes().insert(TypeID::prefitL1);
 
-            equations_->residTypes().insert(TypeID::postfitC);
-            equations_->residTypes().insert(TypeID::postfitL1);
+            equations_->getResidTypes().insert(TypeID::postfitC1);
+            equations_->getResidTypes().insert(TypeID::postfitL1);
         }
         if (opts().carrierBands.find(CarrierBand::L2) != opts().carrierBands.end())
         {
             oMinusC_.add(std::make_unique<PrefitC2>(true));
             oMinusC_.add(std::make_unique<PrefitL2>());
 
-            equations_->measTypes().insert(TypeID::prefitP2);
-            equations_->measTypes().insert(TypeID::prefitL2);
-            equations_->residTypes().insert(TypeID::postfitP2);
-            equations_->residTypes().insert(TypeID::postfitL2);
+            equations_->getMeasTypes().insert(TypeID::prefitP2);
+            equations_->getMeasTypes().insert(TypeID::prefitL2);
+
+            equations_->getResidTypes().insert(TypeID::postfitP2);
+            equations_->getResidTypes().insert(TypeID::postfitL2);
         }
     }
 
@@ -484,8 +470,7 @@ namespace pod
         // add position equations
         equations_->addEquation(std::move(coord));
 
-        equations_->addEquation(
-            std::make_unique<ClockBiasEquations>(confReader().getValueAsDouble("clkSigma")));
+        equations_->addEquation(std::make_unique<ClockBiasEquations>(confReader().getValueAsDouble("clkSigma")));
 
         if (opts().systems.size() > 1)
             equations_->addEquation(std::make_unique<InterSystemBias>());

@@ -12,14 +12,14 @@ namespace pod
     {
     }
 
-    void TropoGradEquations::Prepare(gnsstk::IRinex& gData)
+    void TropoGradEquations::prepare(gnsstk::IRinex& gData)
     {
         pStochModelZ->Prepare(SatID::dummy, gData);
         pStochModelNorth->Prepare(SatID::dummy, gData);
         pStochModelEast->Prepare(SatID::dummy, gData);
     }
 
-    void TropoGradEquations::updateH(const gnsstk::IRinex& gData,
+    void TropoGradEquations::contributeDesignMatrix(const gnsstk::IRinex& gData,
                                      const gnsstk::TypeIDSet& obsTypes,
                                      gnsstk::Matrix<double>& H,
                                      int& startColumn)
@@ -37,7 +37,7 @@ namespace pod
         }
     }
 
-    void TropoGradEquations::updatePhi(gnsstk::Matrix<double>& Phi, int& index) const
+    void TropoGradEquations::contributeTransitionMartix(gnsstk::Matrix<double>& Phi, int& index) const
     {
         Phi(index, index) = pStochModelZ->getPhi();
         ++index;
@@ -47,7 +47,7 @@ namespace pod
         ++index;
     }
 
-    void TropoGradEquations::updateQ(gnsstk::Matrix<double>& Q, int& index) const
+    void TropoGradEquations::contributeProcessNoiseMatrix(gnsstk::Matrix<double>& Q, int& index) const
     {
         Q(index, index) = pStochModelZ->getQ();
         ++index;

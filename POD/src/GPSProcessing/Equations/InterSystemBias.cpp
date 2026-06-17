@@ -31,7 +31,7 @@ namespace pod
             stochasticModels_[it.first] = std::make_unique<ConstantModel>();
     }
 
-    void InterSystemBias::Prepare(IRinex& gData)
+    void InterSystemBias::prepare(IRinex& gData)
     {
         // update current set of Satellite systems
         params_.clear();
@@ -43,7 +43,7 @@ namespace pod
             stochasticModels_[ss]->Prepare(SatID::dummy, gData);
     }
 
-    void InterSystemBias::updateH(const gnsstk::IRinex& gData,
+    void InterSystemBias::contributeDesignMatrix(const gnsstk::IRinex& gData,
                                   const gnsstk::TypeIDSet& obsTypes,
                                   gnsstk::Matrix<double>& H,
                                   int& startColumn)
@@ -79,7 +79,7 @@ namespace pod
         return *this;
     }
 
-    void InterSystemBias::updatePhi(gnsstk::Matrix<double>& Phi, int& index) const
+    void InterSystemBias::contributeTransitionMartix(gnsstk::Matrix<double>& Phi, int& index) const
     {
         for (const auto& ss : params_)
         {
@@ -88,7 +88,7 @@ namespace pod
         }
     }
 
-    void InterSystemBias::updateQ(gnsstk::Matrix<double>& Q, int& index) const
+    void InterSystemBias::contributeProcessNoiseMatrix(gnsstk::Matrix<double>& Q, int& index) const
     {
         for (const auto& ss : params_)
         {
