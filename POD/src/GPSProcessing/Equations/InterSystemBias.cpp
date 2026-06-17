@@ -4,55 +4,89 @@ using namespace gnsstk;
 
 namespace pod
 {
-    std::map<SatelliteSystem, FilterParameter> InterSystemBias::SatSystemToBiasTypeId;
-    std::map<FilterParameter, SatelliteSystem> InterSystemBias::BiasTypeIdToSatSystem;
 
-    //
-    const TypeIDSet InterSystemBias::kL1ObsTypes{TypeID::prefitC,
-                                                 TypeID::prefitL1,
-                                                 TypeID::prefitPC,
-                                                 TypeID::prefitLC};
+    constexpr std::array<gnsstk::TypeID::ValueType, InterSystemBias::NUM_BIAS> kBiasTypes = {
+        {gnsstk::TypeID::recISB_GLN, gnsstk::TypeID::recISB_GAL, gnsstk::TypeID::recISB_BDS}};
 
-    InterSystemBias::Initilizer InterSystemBias::IsbSingleton;
-
-    InterSystemBias::Initilizer::Initilizer()
+    struct BiasEntry
     {
-        SatSystemToBiasTypeId[SatelliteSystem::Glonass] = FilterParameter(TypeID::recISB_GLN);
-        // SatSystemToBiasTypeId[SatelliteSystem::Galileo] = FilterParameter(TypeID::recISB_GAL);
-        SatSystemToBiasTypeId[SatelliteSystem::BeiDou] = FilterParameter(TypeID::recISB_BDS);
+        SatelliteSystem system;
+        TypeID::ValueType type;
+    };
 
-        for (const auto& it : SatSystemToBiasTypeId)
-            BiasTypeIdToSatSystem[it.second] = it.first;
+    inline int getBiasIndex(gnsstk::SatelliteSystem sys)
+    {
+        switch (sys)
+        {
+        case gnsstk::SatelliteSystem::Glonass:
+            return 0;
+        case gnsstk::SatelliteSystem::Galileo:
+            return 1;
+        case gnsstk::SatelliteSystem::BeiDou:
+            return 2;
+        default:
+            return -1;
+        }
+    }
+
+    constexpr std::array<gnsstk::TypeID::ValueType, 5> kL1ObsTypes = {TypeID::ValueType::prefitC,
+                                                                      TypeID::ValueType::prefitC1,
+                                                                      TypeID::ValueType::prefitL1,
+                                                                      TypeID::ValueType::prefitPC,
+                                                                      TypeID::ValueType::prefitLC};
+
+    constexpr bool isL1ObsType(const gnsstk::TypeID& t)
+    {
+        for (auto v : kL1ObsTypes)
+        {
+            if (v == t.type)
+                return true;
+        }
+        return false;
     }
 
     InterSystemBias::InterSystemBias()
     {
-        for (auto& it : BiasTypeIdToSatSystem)
-            stochasticModels_[it.first] = std::make_unique<ConstantModel>();
+        for (auto& m : stochasticModels_)
+            m = std::make_unique<ConstantModel>();
     }
 
     void InterSystemBias::prepare(IRinex& gData)
     {
-        // update current set of Satellite systems
-        params_.clear();
-        for (const auto& it : gData.getBody())
-            if (it.first.system != SatelliteSystem::GPS)
-                params_.insert(SatSystemToBiasTypeId[it.first.system]);
 
-        for (const auto& ss : params_)
-            stochasticModels_[ss]->Prepare(SatID::dummy, gData);
+        activeMask_.fill(false);
+
+        for (const auto& it : gData.getBody())
+        {
+            int idx = getBiasIndex(it.first.system);
+
+            if (idx >= 0)
+            {
+                activeMask_[idx] = true;
+                stochasticModels_[idx]->Prepare(SatID::dummy, gData);
+            }
+        }
+
+        activeCount_ = 0;
+        for (bool b : activeMask_)
+        {
+            if (b)
+                ++activeCount_;
+        }
     }
 
     void InterSystemBias::contributeDesignMatrix(const gnsstk::IRinex& gData,
-                                  const gnsstk::TypeIDSet& obsTypes,
-                                  gnsstk::Matrix<double>& H,
-                                  int& startColumn)
+                                                 const gnsstk::TypeIDSet& obsTypes,
+                                                 gnsstk::Matrix<double>& H,
+                                                 int& startColumn)
     {
         auto currentSatSet = gData.getBody().getSatID();
         int row(0);
         for (const auto& obs : obsTypes)
         {
-            if (kL1ObsTypes.find(obs) == kL1ObsTypes.end())
+            // contribute partials only for firts frequancies observations (G1, R1, E1, B1),
+            // because biases for different bands are defined by IFB (inter frequency bias) equations.
+            if (!isL1ObsType(obs))
             {
                 row += currentSatSet.size();
                 continue;
@@ -60,53 +94,78 @@ namespace pod
 
             for (const auto& sv : currentSatSet)
             {
+
                 if (sv.system != SatelliteSystem::GPS)
                 {
-                    auto it = params_.find(SatSystemToBiasTypeId[sv.system]);
-                    int j = std::distance(params_.begin(), it);
-                    H(row, startColumn + j) = 1;
+                    int j = getBiasIndex(sv.system);
+
+                    if (j >= 0)
+                    {
+                        H(row, startColumn + j) = 1;
+                    }
                 }
                 row++;
             }
         }
-        startColumn += params_.size();
+        startColumn += activeCount_;
+    }
+
+    ParametersSet InterSystemBias::getParameters() const
+    {
+        ParametersSet res;
+
+        for (int i = 0; i < NUM_BIAS; ++i)
+        {
+            if (!activeMask_[i])
+                continue;
+
+            res.insert(FilterParameter(gnsstk::TypeID(kBiasTypes[i])));
+        }
+
+        return res;
     }
 
     InterSystemBias& InterSystemBias::setStochasicModel(const SatelliteSystem& system,
                                                         StochasticModelUniquePtr newModel)
     {
-        stochasticModels_[SatSystemToBiasTypeId.at(system)] = std::move(newModel);
+        const int idx = getBiasIndex(system);
+
+        if (idx < 0)
+        {
+            GNSSTK_ASSERT_MSG(false, "Unsupported system in ISB");
+            return *this;
+        }
+
+        stochasticModels_[idx] = std::move(newModel);
         return *this;
     }
 
     void InterSystemBias::contributeTransitionMartix(gnsstk::Matrix<double>& Phi, int& index) const
     {
-        for (const auto& ss : params_)
+        for (int i = 0; i < activeCount_; ++i)
         {
-            Phi(index, index) = stochasticModels_.at(ss)->getPhi();
+            Phi(index, index) = stochasticModels_[i]->getPhi();
             ++index;
         }
     }
 
     void InterSystemBias::contributeProcessNoiseMatrix(gnsstk::Matrix<double>& Q, int& index) const
     {
-        for (const auto& ss : params_)
+        for (int i = 0; i < activeCount_; ++i)
         {
-            Q(index, index) = stochasticModels_.at(ss)->getQ();
+            Q(index, index) = stochasticModels_[i]->getQ();
             ++index;
         }
     }
 
     int InterSystemBias::getNumUnknowns() const
     {
-        return params_.size();
+        return activeCount_;
     }
 
-    void InterSystemBias::defStateAndCovariance(gnsstk::Vector<double>& x,
-                                                gnsstk::Matrix<double>& P,
-                                                int& index) const
+    void InterSystemBias::defStateAndCovariance(gnsstk::Vector<double>& x, gnsstk::Matrix<double>& P, int& index) const
     {
-        for (const auto& ss : params_)
+        for (int i = 0; i < activeCount_; ++i)
         {
             x(index) = 0;
             P(index, index) = 1e9;

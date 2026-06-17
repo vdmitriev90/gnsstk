@@ -4,6 +4,8 @@
 
 #include <memory>
 
+#include <array>
+
 namespace pod
 {
 
@@ -22,12 +24,6 @@ namespace pod
      */
     class InterSystemBias : public EquationBase
     {
-      private:
-        static std::map<gnsstk::SatelliteSystem, FilterParameter> SatSystemToBiasTypeId;
-        static std::map<FilterParameter, gnsstk::SatelliteSystem> BiasTypeIdToSatSystem;
-        static const gnsstk::TypeIDSet kL1ObsTypes;
-
-
       public:
         InterSystemBias();
         virtual ~InterSystemBias() {};
@@ -39,10 +35,7 @@ namespace pod
                              gnsstk::Matrix<double>& H,
                              int& startColumn) override;
 
-        virtual ParametersSet getParameters() const override
-        {
-            return params_;
-        }
+        virtual ParametersSet getParameters() const override;
 
         virtual void contributeTransitionMartix(gnsstk::Matrix<double>& Phi, int& index) const override;
 
@@ -57,17 +50,12 @@ namespace pod
         virtual InterSystemBias& setStochasicModel(const gnsstk::SatelliteSystem& system,
                                                    gnsstk::StochasticModelUniquePtr newModel);
 
+        static constexpr int NUM_BIAS = 3;
       private:
-        std::map<FilterParameter, gnsstk::StochasticModelUniquePtr> stochasticModels_;
 
-        // current set of satellite systems
-        ParametersSet params_;
+        std::array<gnsstk::StochasticModelUniquePtr, NUM_BIAS> stochasticModels_;
+        std::array<bool, NUM_BIAS> activeMask_{};
+        int activeCount_{0};
 
-        class Initilizer
-        {
-          public:
-            Initilizer();
-        };
-        static Initilizer IsbSingleton;
     };
 } // namespace pod

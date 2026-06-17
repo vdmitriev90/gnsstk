@@ -261,7 +261,7 @@ namespace gnsstk
          recCdtdot, ///< Receiver Clock offset 1-st derivative
 
          recISB_GLN, ///< GPS L1 - GLONASS L1 intersystem bias
-         //recISB_GAL, ///< GPS L1 - GALILEO E1 intersystem bias
+         
          recISB_BDS, ///< GPS L1 - BEIDOU B1 intersystem bias 
 
          recIFB_GPS_L2, ///< GPS L1 - GPS L2 inter frequency bias
@@ -461,6 +461,8 @@ namespace gnsstk
              postfitWL2,///< Postfit residual, WL2
              postfitWL3,///< Postfit residual, WL3
              postfitWL4,///< Postfit residual, WL4
+             
+             recISB_GAL, ///< GPS L1 - GALILEO E1 intersystem bias
             // Handy dummy types for non-standard processing
          dummy0,    ///< Generic, undefined type #0
 
