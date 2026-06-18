@@ -21,13 +21,20 @@ namespace pod
 
     gnsstk::SatTypePtrMap& UsedInPvtMarker::keepOnlyUsed(gnsstk::SatTypePtrMap& satData) const
     {
+
         SatIDSet rejectedSats;
-        for (auto&& it : satData)
+
+        for (auto&& [sat, data] : satData)
         {
-            auto it2 = it.second->get_value().find(type);
-            if (it2 == it.second->get_value().end() || it2->second == SatUsedStatus::NotUsedInPVT)
-                rejectedSats.insert(it.first);
+            const auto& values = data->get_value();
+            auto it = values.find(type);
+
+            if (it == values.end() || it->second == static_cast<double>(SatUsedStatus::NotUsedInPVT))
+            {
+                rejectedSats.insert(sat);
+            }
         }
+
 
         satData.removeSatID(rejectedSats);
         return satData;
@@ -43,7 +50,7 @@ namespace pod
 
             // reset CS flag, if this sv - epoch already has been rejected by CS catcher
             if (status != it->second->get_value().end()
-                && status->second == SatUsedStatus::NotEnoughData)
+                && static_cast<SatUsedStatus>(status->second) == SatUsedStatus::NotEnoughData)
             {
                 it->second->get_value()[TypeID::CSL1] = it->second->get_value()[TypeID::CSL2] = 0;
                 // status->second = UsedInPVT;

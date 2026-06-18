@@ -1,6 +1,7 @@
 #ifndef POD_CDDIFFSOLUTION_H
 #define POD_CDDIFFSOLUTION_H
 
+#include "DeltaOp.hpp"
 #include "GnssDataStore.hpp"
 #include "SingleSolution.h"
 
@@ -25,6 +26,9 @@ namespace pod
 
         void configureSolver() override;
 
+      private:
+        // Compute single differenceses opreator
+        gnsstk::DeltaOp deltaOp_;
         // code smoothers for Ref. receiver obseravtions
         CodeSmoother2 codeSmootherRef_;
     };

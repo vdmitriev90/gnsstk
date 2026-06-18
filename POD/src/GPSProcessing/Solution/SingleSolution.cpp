@@ -10,10 +10,10 @@
 #include "LinearCombinations.hpp"
 #include "MWCSDetector.hpp"
 #include "NeillTropModel.hpp"
+#include "ObservablesSets.h"
 #include "PositionEquations.h"
 #include "PowerSum.hpp"
 #include "SimpleFilter.hpp"
-#include "ObservablesSets.h"
 #include "WinUtils.h"
 
 #include <memory>
@@ -23,11 +23,7 @@ using namespace gnsstk;
 namespace pod
 {
 
-    SingleSolution::SingleSolution(GnssDataStorePtr data_ptr)
-        : GnssSolution(data_ptr, 50.0)
-        , codeSmWindowSize_(600)
-    {
-    }
+    SingleSolution::SingleSolution(GnssDataStorePtr data_ptr) : GnssSolution(data_ptr, 50.0), codeSmWindowSize_(600) {}
 
     //
     void SingleSolution::process()
@@ -45,14 +41,16 @@ namespace pod
                               confReader().getValueAsDouble("decimationTolerance"),
                               data_->navLibrary_.getInitialTime());
 
+        UsedInPvtMarker useMarker;
+
         // basic model object
         BasicModel model(data_->navLibrary_);
         model.setDefaultObservable(data_->getGpsGloL1CodeType());
         model.setMinElev(confReader().getValueAsInt("ElMask"));
 
         // troposhere modeling object
-        std::unique_ptr<NeillTropModel> uptrTropModel = std::make_unique<NeillTropModel>();
-        ComputeTropModel computeTropo(*uptrTropModel);
+        NeillTropModel tropo_model;
+        ComputeTropModel computeTropo(tropo_model);
 
         //
         ComputeWeightSimple w(2);
@@ -123,9 +121,8 @@ namespace pod
 
                 // update approximate position
                 data_->ionoCorrector.setNominalPosition(nominalPos_);
-                uptrTropModel->setAllParameters(t, nominalPos_);
+                tropo_model.setAllParameters(t, nominalPos_);
                 model.setRxPosition(nominalPos_);
-
 
                 rin_epoch >> PRFilter;
                 rin_epoch >> SNRFilter;
@@ -149,6 +146,8 @@ namespace pod
                 rin_epoch >> data_->ionoCorrector;
                 rin_epoch >> oMinusC_;
                 rin_epoch >> w;
+                rin_epoch >> useMarker;
+
                 const size_t min_sv_num = rin_epoch.getBody().getSatSystems().size() + 3;
                 if (forwardBackwardCycles_ > 0)
                 {
@@ -173,6 +172,7 @@ namespace pod
             solverFb.reProcess();
             RinexEpoch rin_epoch;
             std::cout << "Last process part started" << std::endl;
+
             while (solverFb.lastProcess(rin_epoch))
             {
                 auto ep = opts().fullOutput ? GnssEpoch(rin_epoch.getBody()) : GnssEpoch();
@@ -195,12 +195,9 @@ namespace pod
         Position newPos;
         if (numSats >= 4 && sigma < getMaxSigma())
         {
-            newPos[0] =
-                nominalPos_.X() + solver.getSolution(FilterParameter(TypeID::dx)); // dx    - #4
-            newPos[1] =
-                nominalPos_.Y() + solver.getSolution(FilterParameter(TypeID::dy)); // dy    - #5
-            newPos[2] =
-                nominalPos_.Z() + solver.getSolution(FilterParameter(TypeID::dz)); // dz    - #6
+            newPos[0] = nominalPos_.X() + solver.getSolution(FilterParameter(TypeID::dx)); // dx    - #4
+            newPos[1] = nominalPos_.Y() + solver.getSolution(FilterParameter(TypeID::dy)); // dy    - #5
+            newPos[2] = nominalPos_.Z() + solver.getSolution(FilterParameter(TypeID::dz)); // dz    - #6
 
             nominalPos_ = newPos;
         }
@@ -246,15 +243,9 @@ namespace pod
     {
         configureSolver();
 
-        if (opts().useC1)
-        {
-            oMinusC_.add(std::make_unique<PrefitC1>(false));
-            equations_->getMeasTypes() = TypeIDSet{TypeID::prefitC};
-        }
-        else
-        {
-            equations_->getMeasTypes() = TypeIDSet{TypeID::prefitP1};
-        }
+        oMinusC_.add(std::make_unique<PrefitC1>(false));
+        const TypeID meas_type = opts().useC1 ? TypeID::prefitC1 : TypeID::prefitP1;
+        equations_->getMeasTypes() = {meas_type};
 
         requireObs_ = RequireObservablesBuilder(opts().systems, opts().useC1).build();
 

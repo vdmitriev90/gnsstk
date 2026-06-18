@@ -203,6 +203,10 @@ namespace pod
             solverFb.setCyclesNumber(forwardBackwardCycles_);
             solverFb.setLimits(confReader().getValueListAsDouble("codeLimList"),
                                confReader().getValueListAsDouble("phaseLimList"));
+
+            solverFb.ReProcList().push_back(markCSLI2Rover);
+            solverFb.ReProcList().push_back(markCSMW2Rover);
+            solverFb.ReProcList().push_back(markArcRover);
         }
 
         bool firstTime = true;
@@ -381,6 +385,9 @@ namespace pod
         }
         if (forwardBackwardCycles_ > 0)
         {
+            markCSLI2Rover.setIsReprocess(true);
+            markCSMW2Rover.setIsReprocess(true);
+
             std::cout << "Fw-Bw part started" << std::endl;
             solverFb.reProcess();
             RinexEpoch rin_epoch;

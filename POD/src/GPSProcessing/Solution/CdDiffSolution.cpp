@@ -6,7 +6,6 @@
 #include "ComputeTropModel.hpp"
 #include "ComputeWeightSimple.h"
 #include "Decimate.hpp"
-#include "DeltaOp.hpp"
 #include "InterSystemBias.h"
 #include "LICSDetector.hpp"
 #include "LinearCombinations.hpp"
@@ -41,11 +40,7 @@ namespace pod
 
         SimpleFilter SNRFilter(TypeID::S1, confReader().getValueAsInt("SNRmask"), DBL_MAX);
 
-        Triple pos;
-        int i = 0;
-        for (auto& it : confReader().getValueListAsDouble("nominalPosition", opts().SiteBase))
-            pos[i++] = it;
-        Position refPos(pos);
+        Position refPos = data_->getNominalPosition(opts().SiteBase);
 
         // basic model object for ref. station
         BasicModel modelRef(data_->navLibrary_);
@@ -65,24 +60,18 @@ namespace pod
                               confReader().getValueAsDouble("decimationTolerance"),
                               data_->navLibrary_.getInitialTime());
 
+        UsedInPvtMarker useMarker;
+
         // troposhere modeling objects
         // for base
         NeillTropModel tropo_base;
-
         ComputeTropModel comp_tropo_base(tropo_base);
 
         // for rover
         NeillTropModel tropo_rov;
         ComputeTropModel compute_tropo_rover(tropo_rov);
 
-        //
-        // data_->ionoCorrector.setNominalPosition(refPos);
-
-        //
         ComputeWeightSimple w;
-
-        // Compute single differenceses opreator
-        DeltaOp delta;
 
         KalmanSolver solver(equations_);
         KalmanSolverFB solverFb(equations_);
@@ -189,7 +178,7 @@ namespace pod
 
                     epoch_base >> oMinusC_;
 
-                    delta.setRefData(epoch_base.getBody());
+                    deltaOp_.setRefData(epoch_base.getBody());
                 }
                 catch (SynchronizeException& e)
                 {
@@ -203,8 +192,9 @@ namespace pod
                 epoch_rover >> data_->ionoCorrector;
 
                 epoch_rover >> oMinusC_;
-                epoch_rover >> delta;
+                epoch_rover >> deltaOp_;
                 epoch_rover >> w;
+                epoch_rover >> useMarker;
 
                 if (forwardBackwardCycles_ > 0)
                 {
@@ -279,14 +269,10 @@ namespace pod
         configureSolver();
 
         oMinusC_.add(std::make_unique<PrefitC1>(false));
-        if (opts().useC1)
-        {
-            equations_->getMeasTypes() = {TypeID::prefitC};
-        }
-        else
-        {
-            equations_->getMeasTypes() = {TypeID::prefitP1};
-        }
+
+        const TypeID meas_type = opts().useC1 ? TypeID::prefitC1 : TypeID::prefitP1;
+        deltaOp_.setDiffType(meas_type);
+        equations_->getMeasTypes() = {meas_type};
 
         requireObs_ = RequireObservablesBuilder(opts().systems, opts().useC1).build();
 
