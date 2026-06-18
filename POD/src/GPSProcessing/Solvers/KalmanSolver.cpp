@@ -18,6 +18,8 @@ namespace pod
     // set of all possible TypeID for code pseudorange postfit residuals
     const std::set<gnsstk::TypeID> KalmanSolver::codeResTypes{
         TypeID::postfitC,
+        TypeID::postfitC1,
+        TypeID::postfitC2,
         TypeID::postfitP1,
         TypeID::postfitP2,
         TypeID::postfitPC,

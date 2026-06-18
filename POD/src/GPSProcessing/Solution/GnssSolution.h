@@ -146,9 +146,6 @@ namespace pod
         // observables set
         gnsstk::RequireObservables requireObs_;
 
-        // L1 code measurements used for position computation (typical C1 and P1)
-        gnsstk::TypeID codeL1_;
-
         // object to compute prefit residuals
         ProcessLinear oMinusC_;
 

@@ -19,7 +19,7 @@
 #include "PoleTides.hpp"
 #include "PowerSum.hpp"
 #include "ProcessingList.hpp"
-#include "RequireObservables.hpp"
+#include "ObservablesSets.h"
 #include "SatArcMarker.hpp"
 #include "SimpleFilter.hpp"
 #include "SolidTides.hpp"
@@ -59,7 +59,7 @@ namespace pod
 
         // This object will check that code observations are within
         // reasonable limits
-        SimpleFilter PRFilter(TypeIDSet{codeL1_, TypeID::P2});
+        SimpleFilter PRFilter(TypeIDSet{data_->getGpsGloL1CodeType(), TypeID::P2});
         SimpleFilter SNRFilter(TypeID::S1, confReader().getValueAsInt("SNRmask"), DBL_MAX);
 
         ProcessLinear linear1;
@@ -91,7 +91,7 @@ namespace pod
         // Set the minimum elevation
         basic.setMinElev(opts().maskEl);
 
-        basic.setDefaultObservable(codeL1_);
+        basic.setDefaultObservable(data_->getGpsGloL1CodeType());
 
         // Object to remove eclipsed satellites
         EclipsedSatFilter eclipsedSV;
@@ -394,13 +394,7 @@ namespace pod
 
     void PPPSolution::updateRequaredObs()
     {
-        codeL1_ = confReader().getValueAsBoolean("useC1") ? TypeID::C1 : TypeID::P1;
-
-        requireObs_.addRequiredType(codeL1_);
-        requireObs_.addRequiredType(TypeID::P2);
-        requireObs_.addRequiredType(TypeID::L1);
-        requireObs_.addRequiredType(TypeID::L2);
-        requireObs_.addRequiredType(TypeID::S1);
+        requireObs_ = RequireObservablesBuilder(opts().systems, opts().useC1).build();
     }
 
     void PPPSolution::printSolution(std::ofstream& outfile,

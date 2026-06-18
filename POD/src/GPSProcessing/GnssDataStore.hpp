@@ -77,6 +77,7 @@ public:
   void LoadData(const char* path);
   std::list<std::string> getObsFiles(const std::string& siteID) const;
   gnsstk::Position getNominalPosition(std::string siteId);
+  gnsstk::TypeID getGpsGloL1CodeType() const;
 
 private:
   bool initReader(const char* path);
@@ -177,7 +178,7 @@ public:
             bool useC1 = false;
 
             // S1 (L1 C/No) threshold for position computation
-            unsigned char maskSNR = 0;
+            int maskSNR = 0;
 
             // Elevation mask (degrees) for position computation
             double maskEl = 10;

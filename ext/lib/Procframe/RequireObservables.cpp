@@ -42,94 +42,83 @@
 
 #include "RequireObservables.hpp"
 
-
 namespace gnsstk
 {
 
-      // Returns a string identifying this object.
-   std::string RequireObservables::getClassName() const
-   { return "RequireObservables"; }
+    // Returns a string identifying this object.
+    std::string RequireObservables::getClassName() const
+    {
+        return "RequireObservables";
+    }
 
+    // Returns a satTypeValueMap object, filtering the target observables.
+    //
+    // @param gData     Data object holding the data.
+    //
+    SatTypePtrMap& RequireObservables::Process(SatTypePtrMap& gData)
+    {
+        try
+        {
+            SatIDSet rejected; // can be kept if logging is needed
 
-
-      /* Method to add a set of TypeID's to be required.
-       *
-       * @param typeSet    Set of TypeID's to be required.
-       */
-   RequireObservables& RequireObservables::addRequiredType(TypeIDSet& typeSet)
-   {
-
-      requiredTypeSet.insert( typeSet.begin(),
-                              typeSet.end() );
-
-      return (*this);
-
-   }  // End of method 'RequireObservables::addRequiredType()'
-
-
-
-      // Returns a satTypeValueMap object, filtering the target observables.
-      //
-      // @param gData     Data object holding the data.
-      //
-   SatTypePtrMap& RequireObservables::Process(SatTypePtrMap& gData)
-   {
-
-      try
-      {
-
-         SatIDSet satRejectedSet;
-
-            // Loop through all the satellites
-         for ( auto satIt = gData.begin();
-               satIt != gData.end();
-               ++satIt )
-         {
-
-
-               // Check all the indicated TypeID's
-            for ( TypeIDSet::const_iterator typeIt = requiredTypeSet.begin();
-                  typeIt != requiredTypeSet.end();
-                  ++typeIt )
+            for (auto it = gData.begin(); it != gData.end();)
             {
+                const SatelliteSystem sys = it->first.system;
 
+                auto reqIt = requiredTypes_.find(sys);
 
-                  // Try to find required type
-               typeValueMap::iterator it( (*satIt).second->get_value().find(*typeIt) );
+                // If no requirements defined, skip this satellite
+                if (reqIt == requiredTypes_.end())
+                {
+                    ++it;
+                    continue;
+                }
 
-                  // Now, check if this TypeID exists in this data structure
-               if ( it == (*satIt).second->get_value().end() )
-               {
-                     // If we couldn't find type, then schedule this
-                     // satellite for removal
-                  satRejectedSet.insert( (*satIt).first );
+                const TypeIDSet& required = reqIt->second;
+                auto& tvMap = it->second->get_value();
 
-                     // It is not necessary to keep looking
-                  typeIt = requiredTypeSet.end();
-                  --typeIt;
-               }
+                bool reject = false;
 
+                // 1. Check that all required observation types exist
+                for (const auto& type : required)
+                {
+                    if (tvMap.find(type) == tvMap.end())
+                    {
+                        reject = true;
+                        break;
+                    }
+                }
+
+                if (reject)
+                {
+                    rejected.insert(it->first); // optional, for logging
+                    it = gData.erase(it);       // erase immediately
+                    continue;
+                }
+
+                // 2. Optionally remove non-required observation types in the same pass
+                if (keepOnlyRequiredTypes_)
+                {
+                    for (auto tvIt = tvMap.begin(); tvIt != tvMap.end();)
+                    {
+                        if (required.find(tvIt->first) == required.end())
+                            tvIt = tvMap.erase(tvIt);
+                        else
+                            ++tvIt;
+                    }
+                }
+
+                ++it;
             }
 
-         }
+            rejectedSatsTable[currTime_] = std::move(rejected);
 
-            // Let's remove satellites without all TypeID's
-         gData.removeSatID(satRejectedSet);
-         rejectedSatsTable[t] = satRejectedSet;
-         return gData;
-
-      }
-      catch(Exception& u)
-      {
-            // Throw an exception if something unexpected happens
-         ProcessingException e( getClassName() + ":"
-                                + u.what() );
-
-         GNSSTK_THROW(e);
-
-      }
-
-   }  // End of 'RequireObservables::Process()'
-
-
+            return gData;
+        }
+        catch (Exception& u)
+        {
+            ProcessingException e(getClassName() + ":" + u.what());
+            GNSSTK_THROW(e);
+        }
+    }
 } // End of namespace gnsstk

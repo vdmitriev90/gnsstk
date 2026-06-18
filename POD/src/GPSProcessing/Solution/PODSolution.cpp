@@ -2,7 +2,7 @@
 
 #include "PPPSolverLEO.h"
 #include "PPPSolverLEOFwBw.h"
-#include "RequireObservables.hpp"
+#include "ObservablesSets.h"
 #include "XYZ2NEU.hpp"
 //
 #include "SimpleFilter.hpp"
@@ -430,11 +430,7 @@ namespace pod
     }
     void PODSolution::updateRequaredObs()
     {
-        requireObs_.addRequiredType(TypeID::P1);
-        requireObs_.addRequiredType(TypeID::P2);
-        requireObs_.addRequiredType(TypeID::L1);
-        requireObs_.addRequiredType(TypeID::L2);
-        requireObs_.addRequiredType(TypeID::S1);
+        requireObs_ = RequireObservablesBuilder(opts().systems, false).build();
     }
     void PODSolution::printSolution(std::ofstream& outfile,
                                     const SolverLMS& solver,

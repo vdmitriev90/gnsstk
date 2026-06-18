@@ -25,6 +25,7 @@
 #include "LinearCombinations.hpp"
 #include "MJD.hpp"
 #include "MWCSDetector.hpp"
+#include "ObservablesSets.h"
 #include "OceanLoading.hpp"
 #include "PoleTides.hpp"
 #include "PositionEquations.h"
@@ -62,12 +63,13 @@ namespace pod
         updateRequaredObs();
 
         BasicModel model(data_->navLibrary_);
-        model.setDefaultObservable(codeL1_);
+        model.setDefaultObservable(data_->getGpsGloL1CodeType());
         model.setMinElev(.0);
 
         ElevationMask elMask(opts().maskEl);
 
-        SimpleFilter CodeFilter(TypeIDSet{codeL1_, TypeID::P2, TypeID::L1, TypeID::L2});
+        SimpleFilter CodeFilter(
+            TypeIDSet{data_->getGpsGloL1CodeType(), TypeID::P2, TypeID::L1, TypeID::L2});
         SimpleFilter SNRFilter(TypeID::S1, confReader().getValueAsInt("SNRmask"), DBL_MAX);
         // Object to remove eclipsed satellites
         EclipsedSatFilter eclipsedSV;
@@ -208,8 +210,7 @@ namespace pod
                 // keep only satellites from satellites systems selected for processing
                 rin_epoch.keepOnlySatSystems(opts().systems);
 
-                // keep only types used for processing
-                //  rin_epoch.keepOnlyTypeID(requireObs_.getRequiredType());
+                rin_epoch >> requireObs_;
 
                 // get approximate position
                 if (apprPos().getPosition(rin_epoch, nominalPos_))
@@ -223,7 +224,6 @@ namespace pod
                 svPcenterRover.setNominalPosition(nominalPos_);
                 model.setRxPosition(nominalPos_);
 
-                rin_epoch >> requireObs_;
                 rin_epoch >> CodeFilter;
                 rin_epoch >> SNRFilter;
 
@@ -331,10 +331,7 @@ namespace pod
 
     void PppFloatSolution::updateRequaredObs()
     {
-        bool useC1 = confReader().getValueAsBoolean("useC1");
-
-        codeL1_ = useC1 ? TypeID::C1 : TypeID::P1;
-        computeLinear_.setUseC1(useC1);
+        computeLinear_.setUseC1(opts().useC1);
         computeLinear_.add(std::make_unique<PDelta>());
         computeLinear_.add(std::make_unique<MWoubenna>());
 
@@ -342,15 +339,7 @@ namespace pod
         computeLinear_.add(std::make_unique<LICombimnation>());
 
         configureSolver();
-
-        requireObs_.addRequiredType(codeL1_);
-        requireObs_.addRequiredType(TypeID::P2);
-        requireObs_.addRequiredType(TypeID::L1);
-        requireObs_.addRequiredType(TypeID::L2);
-        requireObs_.addRequiredType(TypeID::LLI1);
-        requireObs_.addRequiredType(TypeID::LLI2);
-
-        requireObs_.addRequiredType(TypeID::S1);
+        requireObs_ = RequireObservablesBuilder(opts().systems, opts().useC1).build();
 
         oMinusC_.add(std::make_unique<PrefitPC>(true));
         oMinusC_.add(std::make_unique<PrefitLC>());
@@ -369,16 +358,18 @@ namespace pod
         double qPrimeHor = confReader().getValueAsDouble("tropoQ2");
 
         if (opts().tropoModelType == TropoModelType::Simple)
+        {
             equations_->addEquation(std::make_unique<TropoEquations>(qPrimeVert));
-
+        }
         else if (opts().tropoModelType == TropoModelType::SimpleWithGradients)
+        {
             equations_->addEquation(
                 std::make_unique<TropoGradEquations>(qPrimeVert, qPrimeHor, qPrimeHor));
-
+        }
         else if (opts().tropoModelType == TropoModelType::Advanced)
+        {
             equations_->addEquation(std::make_unique<TropoEquationsAdv>(qPrimeVert, qPrimeHor));
-
-#pragma region Position stochastic model
+        }
 
         // White noise stochastic models
         auto coord = std::make_unique<PositionEquations>();
@@ -402,7 +393,6 @@ namespace pod
         // add position equations
         equations_->addEquation(std::move(coord));
 
-#pragma endregion
 
         if (confReader().getValueAsBoolean("useAdvClkModel"))
             equations_->addEquation(std::make_unique<AdvClockModel>(

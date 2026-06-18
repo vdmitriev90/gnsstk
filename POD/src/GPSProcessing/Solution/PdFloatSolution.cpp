@@ -40,6 +40,7 @@
 #include "SyncObs.h"
 #include "TropoEquations.h"
 #include "UsedInPvtMarker.hpp"
+#include "ObservablesSets.h"
 #include "WinUtils.h"
 
 #include <memory>
@@ -60,7 +61,7 @@ namespace pod
     {
         updateRequaredObs();
 
-        SimpleFilter CodePhaseFilterBase(TypeIDSet{codeL1_, TypeID::P2, TypeID::L1, TypeID::L2});
+        SimpleFilter CodePhaseFilterBase(TypeIDSet{data_->getGpsGloL1CodeType(), TypeID::P2, TypeID::L1, TypeID::L2});
         SimpleFilter CodePhaseFilterRover(CodePhaseFilterBase);
 
         SimpleFilter SNRFilterBase(TypeID::S1, confReader().getValueAsInt("SNRmask"), DBL_MAX);
@@ -72,11 +73,11 @@ namespace pod
 
         const auto ref_base_pos = data_->getNominalPosition(opts().SiteBase);
         // basic model object for ref. station
-        BasicModel modelRef(ref_base_pos, data_->navLibrary_, codeL1_);
+        BasicModel modelRef(ref_base_pos, data_->navLibrary_, data_->getGpsGloL1CodeType());
         modelRef.setMinElev(opts().maskEl);
 
         BasicModel modelRover(data_->navLibrary_);
-        modelRover.setDefaultObservable(codeL1_);
+        modelRover.setDefaultObservable(data_->getGpsGloL1CodeType());
         modelRover.setMinElev(opts().maskEl);
 
         RinexEpoch rin_epoch, gRef;
@@ -310,9 +311,6 @@ namespace pod
                     // keep only satellites from satellites systems selecyted for processing
                     gRef.keepOnlySatSystems(opts().systems);
 
-                    // keep only types used for processing
-                    gRef.keepOnlyTypeID(requireObs_.getRequiredType());
-
                     gRef >> requireObs_;
                     gRef >> CodePhaseFilterBase;
                     gRef >> SNRFilterBase;
@@ -419,10 +417,8 @@ namespace pod
     void PdFloatSolution::updateRequaredObs()
     {
         LinearCombinations comm;
-        bool useC1 = confReader().getValueAsBoolean("useC1");
 
-        codeL1_ = useC1 ? TypeID::C1 : TypeID::P1;
-        computeLinear_.setUseC1(useC1);
+        computeLinear_.setUseC1(opts().useC1);
         computeLinear_.add(std::make_unique<PDelta>());
         computeLinear_.add(std::make_unique<MWoubenna>());
 
@@ -431,18 +427,11 @@ namespace pod
 
         configureSolver();
 
-        requireObs_.addRequiredType(codeL1_);
-        requireObs_.addRequiredType(TypeID::P2);
-        requireObs_.addRequiredType(TypeID::L1);
-        requireObs_.addRequiredType(TypeID::L2);
-        requireObs_.addRequiredType(TypeID::LLI1);
-        requireObs_.addRequiredType(TypeID::LLI2);
-
-        requireObs_.addRequiredType(TypeID::S1);
+        requireObs_ = RequireObservablesBuilder(opts().systems, opts().useC1).build();
 
         if (opts().carrierBands.find(CarrierBand::L1) != opts().carrierBands.end())
         {
-            if (useC1)
+            if (opts().useC1)
                 oMinusC_.add(std::make_unique<PrefitC1>(true));
             else
                 oMinusC_.add(std::make_unique<PrefitP1>(true));

@@ -151,6 +151,7 @@ namespace pod
             opts.isSpaceborneRcv = confReader->getValueAsBoolean("IsSpaceborneRcv");
 
             opts.isSmoothCode = confReader->getValueAsBoolean("IsSmoothCode");
+            opts.useC1 = confReader->getValueAsBoolean("IsSmoothCode");
 
             opts.computeTropo = confReader->getValueAsBoolean("computeTropo");
 
@@ -569,6 +570,11 @@ namespace pod
     {
         const auto pos = confReader->getValueListAsTriple("nominalPosition", siteId);
         return Position(pos);
+    }
+
+    TypeID GnssDataStore::getGpsGloL1CodeType() const
+    {
+        return opts.useC1 ? TypeID::C1 : TypeID::P1;
     }
 
     std::list<std::string> GnssDataStore::getObsFiles(const std::string& siteID) const

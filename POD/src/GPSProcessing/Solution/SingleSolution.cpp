@@ -13,6 +13,7 @@
 #include "PositionEquations.h"
 #include "PowerSum.hpp"
 #include "SimpleFilter.hpp"
+#include "ObservablesSets.h"
 #include "WinUtils.h"
 
 #include <memory>
@@ -33,7 +34,7 @@ namespace pod
     {
         updateRequaredObs();
 
-        SimpleFilter PRFilter(codeL1_);
+        SimpleFilter PRFilter(data_->getGpsGloL1CodeType());
         if (data_->ionoCorrector.getType() == ComputeIonoModel::DualFreq)
             PRFilter.addFilteredType(TypeID::P2);
 
@@ -46,7 +47,7 @@ namespace pod
 
         // basic model object
         BasicModel model(data_->navLibrary_);
-        model.setDefaultObservable(codeL1_);
+        model.setDefaultObservable(data_->getGpsGloL1CodeType());
         model.setMinElev(confReader().getValueAsInt("ElMask"));
 
         // troposhere modeling object
@@ -106,8 +107,8 @@ namespace pod
                 // keep only satellites from satellites systems selected for processing
                 rin_epoch.keepOnlySatSystems(opts().systems);
 
-                // keep only types used for processing
-                rin_epoch.keepOnlyTypeID(requireObs_.getRequiredType());
+                // filter out satellites with incomplete observables set
+                rin_epoch >> requireObs_;
 
                 // compute approximate position
 
@@ -125,8 +126,7 @@ namespace pod
                 uptrTropModel->setAllParameters(t, nominalPos_);
                 model.setRxPosition(nominalPos_);
 
-                // filter out satellites with incomplete observables set
-                rin_epoch >> requireObs_;
+
                 rin_epoch >> PRFilter;
                 rin_epoch >> SNRFilter;
                 rin_epoch >> computeLinear_;
@@ -244,36 +244,26 @@ namespace pod
 
     void SingleSolution::updateRequaredObs()
     {
-        bool useC1 = confReader().getValueAsBoolean("useC1");
-        computeLinear_.setUseC1(useC1);
+        computeLinear_.setUseC1(opts().useC1);
 
         configureSolver();
 
-        if (useC1)
+        if (opts().useC1)
         {
-            codeL1_ = TypeID::C1;
             oMinusC_.add(std::make_unique<PrefitC1>(false));
             equations_->measTypes() = TypeIDSet{TypeID::prefitC};
         }
         else
         {
-            codeL1_ = TypeID::P1;
             equations_->measTypes() = TypeIDSet{TypeID::prefitP1};
             oMinusC_.add(std::make_unique<PrefitP1>(false));
         }
 
-        requireObs_.addRequiredType(codeL1_);
-        requireObs_.addRequiredType(TypeID::C1);
-        requireObs_.addRequiredType(TypeID::P2);
-        requireObs_.addRequiredType(TypeID::L1);
-        requireObs_.addRequiredType(TypeID::L2);
-        requireObs_.addRequiredType(TypeID::LLI1);
-        requireObs_.addRequiredType(TypeID::LLI2);
-        requireObs_.addRequiredType(TypeID::S1);
+        requireObs_ = RequireObservablesBuilder(opts().systems, opts().useC1).build();
 
         if (opts().isSmoothCode)
         {
-            codeSmoother_.addSmoother(std::make_unique<CodeSmoother>(codeL1_));
+            codeSmoother_.addSmoother(std::make_unique<CodeSmoother>(data_->getGpsGloL1CodeType()));
             codeSmoother_.addSmoother(std::make_unique<CodeSmoother>(TypeID::P2));
 
             // add linear combinations, requared  for CS detections

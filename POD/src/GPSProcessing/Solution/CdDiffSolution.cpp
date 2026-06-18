@@ -17,6 +17,7 @@
 #include "PowerSum.hpp"
 #include "SimpleFilter.hpp"
 #include "SyncObs.h"
+#include "ObservablesSets.h"
 #include "WinUtils.h"
 
 #include <memory>
@@ -34,7 +35,7 @@ namespace pod
     void CdDiffSolution::process()
     {
         updateRequaredObs();
-        SimpleFilter CodeFilter(codeL1_);
+        SimpleFilter CodeFilter(data_->getGpsGloL1CodeType());
         if (data_->ionoCorrector.getType() == ComputeIonoModel::DualFreq)
             CodeFilter.addFilteredType(TypeID::P2);
 
@@ -48,7 +49,7 @@ namespace pod
 
         // basic model object for ref. station
         BasicModel modelRef(data_->navLibrary_);
-        modelRef.setDefaultObservable(codeL1_);
+        modelRef.setDefaultObservable(data_->getGpsGloL1CodeType());
         modelRef.setMinElev(confReader().getValueAsInt("ElMask"));
 
         // basic model object for rover has the same settings as BasicModel for ref. station
@@ -56,8 +57,8 @@ namespace pod
 
         modelRef.setRxPosition(refPos);
 
-        RinexEpoch rin_epoch, gRef;
-        SyncObs sync(data_->getObsFiles(opts().SiteBase), rin_epoch);
+        RinexEpoch epoch_rover, epoch_base;
+        SyncObs sync(data_->getObsFiles(opts().SiteBase), epoch_rover);
 
         // Object to decimate data
         Decimate decimateData(confReader().getValueAsDouble("decimationInterval"),
@@ -66,13 +67,13 @@ namespace pod
 
         // troposhere modeling objects
         // for base
-        NeillTropModel tropoBase;
+        NeillTropModel tropo_base;
 
-        ComputeTropModel computeTropoBase(tropoBase);
+        ComputeTropModel comp_tropo_base(tropo_base);
 
         // for rover
-        NeillTropModel tropoRov;
-        ComputeTropModel computeTropoRover(tropoRov);
+        NeillTropModel tropo_rov;
+        ComputeTropModel compute_tropo_rover(tropo_rov);
 
         //
         // data_->ionoCorrector.setNominalPosition(refPos);
@@ -98,41 +99,38 @@ namespace pod
         {
             std::cout << obsFile << std::endl;
             // Input observation file stream
-            Rinex3ObsStream rin;
+            Rinex3ObsStream rnx_rover;
 
             // Open Rinex observations file in read-only mode
-            rin.open(obsFile, std::ios::in);
+            rnx_rover.open(obsFile, std::ios::in);
 
-            rin.exceptions(std::ios::failbit);
+            rnx_rover.exceptions(std::ios::failbit);
             Rinex3ObsHeader roh;
 
             // read the header
-            rin >> roh;
+            rnx_rover >> roh;
             gMap_.header = roh;
 
             // update code smoothers sampling rate, according to current rinex file sampling rate
             codeSmoother_.setInterval(codeSmWindowSize_ / roh.interval);
 
             // read all epochs
-            while (rin >> rin_epoch)
+            while (rnx_rover >> epoch_rover)
             {
-                if (rin_epoch.getBody().size() == 0)
+                if (epoch_rover.getBody().size() == 0)
                 {
-                    printMsg(rin_epoch.getHeader().epoch, "Empty epoch record in Rinex file");
+                    printMsg(epoch_rover.getHeader().epoch, "Empty epoch record in Rinex file");
                     continue;
                 }
 
-                const auto& t = rin_epoch.getHeader().epoch;
+                const auto& t = epoch_rover.getHeader().epoch;
 
                 // keep only satellites from satellites systems selecyted for processing
-                rin_epoch.keepOnlySatSystems(opts().systems);
-
-                // keep only types used for processing
-                rin_epoch.keepOnlyTypeID(requireObs_.getRequiredType());
+                epoch_rover.keepOnlySatSystems(opts().systems);
 
                 // compute approximate position
 
-                if (apprPos().getPosition(rin_epoch, nominalPos_))
+                if (apprPos().getPosition(epoch_rover, nominalPos_))
                     continue;
 
                 if (firstTime)
@@ -142,31 +140,28 @@ namespace pod
                     firstTime = false;
                 }
 
-                tropoRov.setAllParameters(t, nominalPos_);
-                tropoBase.setAllParameters(t, refPos);
+                tropo_rov.setAllParameters(t, nominalPos_);
+                tropo_base.setAllParameters(t, refPos);
                 modelRover.setRxPosition(nominalPos_);
 
-                rin_epoch >> requireObs_;
-                rin_epoch >> CodeFilter;
-                rin_epoch >> SNRFilter;
-                rin_epoch >> computeLinear_;
+                epoch_rover >> requireObs_;
+                epoch_rover >> CodeFilter;
+                epoch_rover >> SNRFilter;
+                epoch_rover >> computeLinear_;
 
                 if (opts().isSmoothCode)
-                    rin_epoch >> codeSmoother_;
+                    epoch_rover >> codeSmoother_;
 
                 try
                 {
-                    gRef >> sync;
+                    epoch_base >> sync;
                     // keep only satellites from satellites systems selecyted for processing
-                    gRef.keepOnlySatSystems(opts().systems);
+                    epoch_base.keepOnlySatSystems(opts().systems);
 
-                    // keep only types used for processing
-                    gRef.keepOnlyTypeID(requireObs_.getRequiredType());
-
-                    gRef >> requireObs_;
-                    gRef >> CodeFilter;
-                    gRef >> SNRFilter;
-                    gRef >> computeLinear_;
+                    epoch_base >> requireObs_;
+                    epoch_base >> CodeFilter;
+                    epoch_base >> SNRFilter;
+                    epoch_base >> computeLinear_;
 
                     if (opts().isSmoothCode)
                     {
@@ -175,54 +170,54 @@ namespace pod
                                                     / sync.getRefHeader().interval);
 
                         // let's smooth the code
-                        gRef >> codeSmootherRef_;
+                        epoch_base >> codeSmootherRef_;
                     }
 
-                    if (gRef.getBody().size() == 0)
+                    if (epoch_base.getBody().size() == 0)
                     {
-                        printMsg(gRef.getHeader().epoch,
+                        printMsg(epoch_base.getHeader().epoch,
                                  "Reference receiver: all SV has been rejected.");
                         continue;
                     }
 
-                    if (decimateData.check(gRef))
+                    if (decimateData.check(epoch_base))
                         continue;
 
-                    gRef >> modelRef;
-                    gRef >> computeTropoBase;
+                    epoch_base >> modelRef;
+                    epoch_base >> comp_tropo_base;
 
                     data_->ionoCorrector.setNominalPosition(refPos);
-                    gRef >> data_->ionoCorrector;
+                    epoch_base >> data_->ionoCorrector;
 
-                    gRef >> oMinusC_;
+                    epoch_base >> oMinusC_;
 
-                    delta.setRefData(gRef.getBody());
+                    delta.setRefData(epoch_base.getBody());
                 }
                 catch (SynchronizeException& e)
                 {
                     break;
                 }
 
-                rin_epoch >> modelRover;
-                rin_epoch >> computeTropoRover;
+                epoch_rover >> modelRover;
+                epoch_rover >> compute_tropo_rover;
 
                 data_->ionoCorrector.setNominalPosition(nominalPos_);
-                rin_epoch >> data_->ionoCorrector;
+                epoch_rover >> data_->ionoCorrector;
 
-                rin_epoch >> oMinusC_;
-                rin_epoch >> delta;
-                rin_epoch >> w;
+                epoch_rover >> oMinusC_;
+                epoch_rover >> delta;
+                epoch_rover >> w;
 
                 if (forwardBackwardCycles_ > 0)
                 {
-                    solverFb.setMinSatNumber(3 + rin_epoch.getBody().getSatSystems().size());
-                    rin_epoch >> solverFb;
+                    solverFb.setMinSatNumber(3 + epoch_rover.getBody().getSatSystems().size());
+                    epoch_rover >> solverFb;
                 }
                 else
                 {
-                    solver.setMinSatNumber(3 + rin_epoch.getBody().getSatSystems().size());
-                    rin_epoch >> solver;
-                    auto ep = opts().fullOutput ? GnssEpoch(rin_epoch.getBody()) : GnssEpoch();
+                    solver.setMinSatNumber(3 + epoch_rover.getBody().getSatSystems().size());
+                    epoch_rover >> solver;
+                    auto ep = opts().fullOutput ? GnssEpoch(epoch_rover.getBody()) : GnssEpoch();
                     // updateNomPos(solverFB);
                     printSolution(solver, t, ep);
                     gMap_.data.insert(std::make_pair(t, ep));
@@ -284,39 +279,30 @@ namespace pod
     void CdDiffSolution::updateRequaredObs()
     {
         LinearCombinations comm;
-        bool useC1 = confReader().getValueAsBoolean("useC1");
-        computeLinear_.setUseC1(useC1);
+
+        computeLinear_.setUseC1(opts().useC1);
 
         configureSolver();
 
-        if (useC1)
+        if (opts().useC1)
         {
-            codeL1_ = TypeID::C1;
             oMinusC_.add(std::make_unique<PrefitC1>(false));
             equations_->measTypes() = {TypeID::prefitC};
         }
         else
         {
-            codeL1_ = TypeID::P1;
             oMinusC_.add(std::make_unique<PrefitP1>(false));
             equations_->measTypes() = {TypeID::prefitP1};
         }
 
-        requireObs_.addRequiredType(codeL1_);
-        requireObs_.addRequiredType(TypeID::C1);
-        requireObs_.addRequiredType(TypeID::P2);
-        requireObs_.addRequiredType(TypeID::L1);
-        requireObs_.addRequiredType(TypeID::L2);
-        requireObs_.addRequiredType(TypeID::LLI1);
-        requireObs_.addRequiredType(TypeID::LLI2);
-        requireObs_.addRequiredType(TypeID::S1);
+        requireObs_ = RequireObservablesBuilder(opts().systems, opts().useC1).build();
 
         if (opts().isSmoothCode)
         {
-            codeSmoother_.addSmoother(std::make_unique<CodeSmoother>(codeL1_));
+            codeSmoother_.addSmoother(std::make_unique<CodeSmoother>(data_->getGpsGloL1CodeType()));
             codeSmoother_.addSmoother(std::make_unique<CodeSmoother>(TypeID::P2));
 
-            codeSmootherRef_.addSmoother(std::make_unique<CodeSmoother>(codeL1_));
+            codeSmootherRef_.addSmoother(std::make_unique<CodeSmoother>(data_->getGpsGloL1CodeType()));
             codeSmootherRef_.addSmoother(std::make_unique<CodeSmoother>(TypeID::P2));
 
             // add linear combinations, requared  for CS detections
