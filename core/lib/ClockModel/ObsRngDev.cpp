@@ -219,8 +219,11 @@ namespace gnsstk
    {
       DEBUGTRACE_FUNCTION();
       CorrectedEphemerisRange cer;
-      rho = cer.ComputeAtTransmitTime(obstime,obs, rxpos, svid, navLib, order,
+      const auto range = cer.ComputeAtTransmitTime(obstime, obs, rxpos, svid, navLib, order,
                                       xmitHealth, valid);
+      if (range)
+          rho = *range;
+
       azimuth = cer.azimuth;
       elevation = cer.elevation;
       ord = obs - rho;
@@ -258,8 +261,9 @@ namespace gnsstk
    {
       DEBUGTRACE_FUNCTION();
       CorrectedEphemerisRange cer;
-      rho = cer.ComputeAtTransmitSvTime(obstime, obs, rxpos, svid, navLib,
-                                        order, xmitHealth, valid);
+      const auto range = cer.ComputeAtTransmitSvTime(obstime, obs, rxpos, svid, navLib, order, xmitHealth, valid);
+      if (range)
+          rho = *range;
       azimuth = cer.azimuth;
       elevation = cer.elevation;
       ord = obs - rho;

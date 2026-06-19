@@ -86,7 +86,10 @@ testComputeAtReceiveTime()
    gnsstk::CommonTime
       time(gnsstk::CivilTime(2015,7,19,2,0,0.0,gnsstk::TimeSystem::GPS));
    gnsstk::CorrectedEphemerisRange cer;
-   double corrected_range = cer.ComputeAtReceiveTime(time, rxPos, satId, navLib);
+   auto corrected_range_opt = cer.ComputeAtReceiveTime(time, rxPos, satId, navLib);
+
+   TUASSERT(corrected_range_opt.has_value());
+   double corrected_range = corrected_range_opt.value();
 
    TUASSERTFESMRT(22289257.145863413811, cer.rawrange);
    TUASSERTFESMRT(22354137.99468812719, corrected_range);
@@ -104,7 +107,10 @@ testComputeAtTransmitTime()
    gnsstk::CommonTime
       time(gnsstk::CivilTime(2015,7,19,2,0,0.0,gnsstk::TimeSystem::GPS));
    gnsstk::CorrectedEphemerisRange cer;
-   double corrected_range = cer.ComputeAtTransmitTime(time, 2.7e7, rxPos, satId, navLib);
+   auto corrected_range_opt = cer.ComputeAtTransmitTime(time, 2.7e7, rxPos, satId, navLib);
+
+   TUASSERT(corrected_range_opt.has_value());
+   double corrected_range = corrected_range_opt.value();
 
    TUASSERTFESMRT(22289249.959460116923, cer.rawrange);
    TUASSERTFESMRT(22354130.808302134275, corrected_range);
@@ -122,7 +128,10 @@ testComputeAtTransmitTime2()
    gnsstk::CommonTime
       time(gnsstk::CivilTime(2015,7,19,2,0,0.0,gnsstk::TimeSystem::GPS));
    gnsstk::CorrectedEphemerisRange cer;
-   double corrected_range = cer.ComputeAtTransmitTime(time, rxPos, satId, navLib);
+   auto corrected_range_opt = cer.ComputeAtTransmitTime(time, rxPos, satId, navLib);
+
+   TUASSERT(corrected_range_opt.has_value());
+   double corrected_range = corrected_range_opt.value();
 
    TUASSERTFESMRT(22289257.145802032202, cer.rawrange);
    TUASSERTFESMRT(22354137.994626745582, corrected_range);
@@ -140,7 +149,10 @@ testComputeAtTransmitSvTime()
    gnsstk::CommonTime
       time(gnsstk::CivilTime(2015,7,19,2,0,0.0,gnsstk::TimeSystem::GPS));
    gnsstk::CorrectedEphemerisRange cer;
-   double corrected_range = cer.ComputeAtTransmitSvTime(time, 2.7e7, rxPos, satId, navLib);
+   auto corrected_range_opt = cer.ComputeAtTransmitSvTime(time, 2.7e7, rxPos, satId, navLib);
+
+   TUASSERT(corrected_range_opt.has_value());
+   double corrected_range = corrected_range_opt.value();
 
    TUASSERTFESMRT(22289288.75284050405, cer.rawrange);
    TUASSERTFESMRT(22354169.60158220306, corrected_range);

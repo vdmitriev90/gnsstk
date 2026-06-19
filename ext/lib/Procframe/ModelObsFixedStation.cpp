@@ -259,7 +259,7 @@ namespace gnsstk
          for(auto stv = gData.begin(); stv != gData.end(); ++stv)
          {
                // Scalars to hold temporal values
-            double tempPR(0.0);
+            std::optional<double> tempPR;
             double tempTrop(0.0);
             double tempIono(0.0);
             double tempModeledPR(0.0);
@@ -270,24 +270,19 @@ namespace gnsstk
                // A lot of the work is done by a CorrectedEphemerisRange object
             CorrectedEphemerisRange cerange;
 
-            try
-            {
                   // Compute most of the parameters
-               tempPR = cerange.ComputeAtTransmitTime( time,
+            tempPR = cerange.ComputeAtTransmitTime(time,
                                                        observable,
                                                        rxPos,
                                                        (*stv).first,
                                                     *(getDefaultEphemeris()) );
-            }
-            catch(InvalidRequest& e)
+            if (!tempPR)
             {
-
                   // If some problem appears, then schedule this satellite
                   // for removal
                satRejectedSet.insert( (*stv).first );
 
                continue;    // Skip this SV if problems arise
-
             }
 
                // Let's test if satellite has enough elevation over horizon
@@ -329,7 +324,7 @@ namespace gnsstk
             }  // End of 'if( pDefaultIonoModel )...'
 
 
-            tempModeledPR = tempPR + tempTrop + tempIono;
+            tempModeledPR = tempPR.value() + tempTrop + tempIono;
 
 
                // Computing Total Group Delay (TGD - meters) and adding

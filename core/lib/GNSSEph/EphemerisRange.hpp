@@ -112,7 +112,7 @@ namespace gnsstk
           *   or invalid messages, or both.
           * @param[in] ellipsoid Ellipsoid model to provide an ECEF rotation rate.
           * @return The corrected range from rx to sat at trNom. */
-      double ComputeAtReceiveTime(
+      std::optional<double> ComputeAtReceiveTime(
          const CommonTime& trNom,
          const Position& rx,
          const SatID sat,
@@ -162,7 +162,7 @@ namespace gnsstk
           *   or invalid messages, or both.
           * @param[in] ellipsoid Ellipsoid model to provide an ECEF rotation rate.
           * @return The corrected range from rx to sat at trNom. */
-      double ComputeAtTransmitTime(
+      std::optional<double> ComputeAtTransmitTime(
          const CommonTime& trNom,
          const double& pr,
          const Position& rx,
@@ -208,7 +208,7 @@ namespace gnsstk
           *   or invalid messages, or both.
           * @param[in] ellipsoid Ellipsoid model to provide an ECEF rotation rate.
           * @return The corrected range from rx to sat at trNom. */
-      double ComputeAtTransmitTime(
+      std::optional<double> ComputeAtTransmitTime(
          const CommonTime& trNom,
          const Position& rx,
          const SatID sat,
@@ -239,7 +239,7 @@ namespace gnsstk
           *   or invalid messages, or both.
           * @param[in] ellipsoid Ellipsoid model to provide an ECEF rotation rate.
           * @return The corrected range from rx to sat at ttNom. */
-      double ComputeAtTransmitSvTime(
+      std::optional<double> ComputeAtTransmitSvTime(
          const CommonTime& ttNom,
          const double& pr,
          const Position& rx,
