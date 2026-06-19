@@ -1,4 +1,5 @@
 #include "ClockBiasEquations.h"
+#include "StateLayout.h"
 
 using namespace gnsstk;
 
@@ -30,33 +31,32 @@ namespace pod
     void ClockBiasEquations::contributeDesignMatrix(const gnsstk::IRinex& svs,
                                      const gnsstk::TypeIDSet& types,
                                      gnsstk::Matrix<double>& H,
-                                     int& startColumn)
+                                     const StateLayout& layout)
     {
+        int col = layout.index(type);
         for (size_t i = 0; i < H.rows(); i++)
-            H(i, startColumn) = 1.0;
-
-        startColumn++;
+            H(i, col) = 1.0;
     }
 
-    void ClockBiasEquations::contributeTransitionMartix(Matrix<double>& Phi, int& index) const
+    void ClockBiasEquations::contributeTransitionMartix(Matrix<double>& Phi, const StateLayout& layout) const
     {
-        Phi(index, index) = stochModel->getPhi();
-        ++index;
+        int col = layout.index(type);
+        Phi(col, col) = stochModel->getPhi();
     }
 
-    void ClockBiasEquations::contributeProcessNoiseMatrix(Matrix<double>& Q, int& index) const
+    void ClockBiasEquations::contributeProcessNoiseMatrix(Matrix<double>& Q, const StateLayout& layout) const
     {
-        Q(index, index) = stochModel->getQ();
-        ++index;
+        int col = layout.index(type);
+        Q(col, col) = stochModel->getQ();
     }
 
     void ClockBiasEquations::defStateAndCovariance(Vector<double>& x,
                                                    Matrix<double>& P,
-                                                   int& index) const
+                                                   const StateLayout& layout) const
     {
-        x(index) = 0;
-        P(index, index) = 1e9;
-        ++index;
+        int col = layout.index(type);
+        x(col) = 0;
+        P(col, col) = 1e9;
     }
 
     int ClockBiasEquations::getNumUnknowns() const

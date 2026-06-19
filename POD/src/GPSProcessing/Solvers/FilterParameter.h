@@ -63,3 +63,19 @@ namespace pod
 
     typedef std::set<FilterParameter> ParametersSet;
 } // namespace pod
+
+namespace std
+{
+    template <>
+    struct hash<pod::FilterParameter>
+    {
+        size_t operator()(const pod::FilterParameter& p) const noexcept
+        {
+            size_t h1 = std::hash<int>()(static_cast<int>(p.type.type));
+            size_t h2 = std::hash<int>()(p.sv.id);
+            size_t h3 = std::hash<int>()(static_cast<int>(p.sv.system));
+
+            return h1 ^ (h2 << 1) ^ (h3 << 2);
+        }
+    };
+} // namespace std

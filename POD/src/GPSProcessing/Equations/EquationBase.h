@@ -5,6 +5,8 @@
 
 namespace pod
 {
+    class StateLayout;
+
     class EquationBase
     {
       public:
@@ -20,17 +22,17 @@ namespace pod
         /* Put the values in state tarnsition matrix, starting with specific index,
            index will be incremented inside this method
         */
-        virtual void contributeTransitionMartix(gnsstk::Matrix<double>& Phi, int& index) const = 0;
+        virtual void contributeTransitionMartix(gnsstk::Matrix<double>& Phi, const StateLayout& layout) const = 0;
 
         /*Put process noise components into corresponding matrix,
           starting with specific index, index will be incremented inside this method
         */
-        virtual void contributeProcessNoiseMatrix(gnsstk::Matrix<double>& Q, int& index) const = 0;
+        virtual void contributeProcessNoiseMatrix(gnsstk::Matrix<double>& Q, const StateLayout& layout) const = 0;
 
         /* Put default values of state vector and it's covariance into corresponding matrices,
            starting with specific index, index will be incremented inside this method
          */
-        virtual void defStateAndCovariance(gnsstk::Vector<double>& x, gnsstk::Matrix<double>& P, int& index) const = 0;
+        virtual void defStateAndCovariance(gnsstk::Vector<double>& x, gnsstk::Matrix<double>& P, const StateLayout& layout) const = 0;
 
         /* Put  partials of the measurements with respect to the unknowns into the design (geometry)
         matrix starting with specific indices, indices will be incremented inside this method
@@ -38,7 +40,7 @@ namespace pod
         virtual void contributeDesignMatrix(const gnsstk::IRinex& gData,
                              const gnsstk::TypeIDSet& types,
                              gnsstk::Matrix<double>& H,
-                             int& startColumn) = 0;
+                             const StateLayout& layout) = 0;
 
         virtual ParametersSet getAmbSet() const
         {

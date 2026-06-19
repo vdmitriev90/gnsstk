@@ -29,18 +29,17 @@ namespace pod
         // number of measurements are equals number of satellites times observation types number
         numMeas_ = numSVs * numMeasTypes;
 
-        unknowns_.clear();
+        std::vector<FilterParameter> curr_params;
         for (auto&& eq : equations_)
         {
             auto&& params = eq->getParameters();
-            unknowns_.insert(params.cbegin(), params.cend());
+            std::copy(params.cbegin(), params.cend(), std::back_inserter(curr_params));
         }
 
-        numUnknowns_ = getNumUnknowns();
+        layout_.build(curr_params);
 
         // set resize design matrix
-        H.resize(numMeas_, numUnknowns_, 0.0);
-
+        H.resize(numMeas_, getNumUnknowns(), 0.0);
         /*
         form the design martix H:
            | Tropo | dX dY dZ | cdt | cdt(R1) | cdt(G2) | cdt(R2) |   iono delay   |     N1     |     N2     |
@@ -63,25 +62,22 @@ namespace pod
            ---------------------------------------------------------------------------------------------------
         */
 
-        int col(0);
         for (auto& eq : equations_)
-            eq->contributeDesignMatrix(gData, getMeasTypes(), H, col);
+            eq->contributeDesignMatrix(gData, getMeasTypes(), H, layout_);
     }
 
     void EquationComposer::updateTransitionMatrix(Matrix<double>& Phi) const
     {
-        int i = 0;
-        Phi.resize(numUnknowns_, numUnknowns_, 0.0);
+        Phi.resize(getNumUnknowns(), getNumUnknowns(), 0.0);
         for (auto& eq : equations_)
-            eq->contributeTransitionMartix(Phi, i);
+            eq->contributeTransitionMartix(Phi, layout_);
     }
 
     void EquationComposer::updateProcessNoiseMatrix(Matrix<double>& Q) const
     {
-        int i = 0;
-        Q.resize(numUnknowns_, numUnknowns_, 0.0);
+        Q.resize(getNumUnknowns(), getNumUnknowns(), 0.0);
         for (auto& eq : equations_)
-            eq->contributeProcessNoiseMatrix(Q, i);
+            eq->contributeProcessNoiseMatrix(Q, layout_);
     }
 
     void EquationComposer::updateWeightsMatrix(const IRinex& gData, gnsstk::Matrix<double>& weightMatrix)
@@ -132,64 +128,65 @@ namespace pod
 
     int EquationComposer::getNumUnknowns() const
     {
-        int res = 0;
-        for (auto& eq : equations_)
-            res += eq->getNumUnknowns();
-        return res;
+        return static_cast<int>(layout_.size());
+    }
+
+    const StateLayout& EquationComposer::getLayout() const
+    {
+        return layout_;
     }
 
     void EquationComposer::updateKfState(gnsstk::Vector<double>& currState, gnsstk::Matrix<double>& currErrorCov) const
     {
         initKfState(currState, currErrorCov);
 
-        int row = 0;
-
         // update state and covarince
-        for (const auto& it_row : unknowns_)
+        for (size_t row = 0; row < layout_.size(); ++row)
         {
-            const auto& typeRow = filterData_.find(it_row);
-            if (typeRow != filterData_.end())
+            const auto& param_row = layout_.param(row);
+            const auto& type_row = filterData_.find(param_row);
+            if (type_row != filterData_.end())
             {
-                currState(row) = typeRow->second.value;
+                currState(row) = type_row->second.value;
                 int col = 0;
-                for (const auto& it_col : unknowns_)
+
+                for (size_t col = 0; col < layout_.size(); ++col)
                 {
-                    const auto& typeCol = (typeRow->second).valCov.find(it_col);
-                    if (typeCol != (typeRow->second).valCov.end())
-                        currErrorCov(col, row) = currErrorCov(row, col) = typeCol->second;
-                    ++col;
+                    const auto& param_col = layout_.param(col);
+
+                    const auto& type_col = (type_row->second).valCov.find(param_col);
+                    if (type_col != (type_row->second).valCov.end())
+                        currErrorCov(col, row) = currErrorCov(row, col) = type_col->second;
                 }
             }
-            ++row;
         }
     }
 
     void EquationComposer::storeKfState(const gnsstk::Vector<double>& currState,
                                         const gnsstk::Matrix<double>& currErrorCov)
     {
-        int row = 0;
-        for (const auto& it_row : unknowns_)
+        for (int row = 0; row < static_cast<int>(layout_.size()); ++row)
         {
-            filterData_[it_row].value = currState(row);
+            const auto& param_row = layout_.param(row);
 
-            int col = 0;
-            for (const auto& it_col : unknowns_)
+            auto& data = filterData_[param_row];
+            data.value = currState(row);
+
+            for (int col = 0; col < static_cast<int>(layout_.size()); ++col)
             {
-                filterData_[it_row].valCov[it_col] = currErrorCov(row, col);
-                ++col;
+                const auto& param_col = layout_.param(col);
+                data.valCov[param_col] = currErrorCov(row, col);
             }
-            ++row;
         }
     }
 
     void EquationComposer::initKfState(gnsstk::Vector<double>& state, gnsstk::Matrix<double>& cov) const
     {
-        state.resize(numUnknowns_, 0.0);
-        cov.resize(numUnknowns_, numUnknowns_, 0.0);
+        state.resize(getNumUnknowns(), 0.0);
+        cov.resize(getNumUnknowns(), getNumUnknowns(), 0.0);
 
-        int i = 0;
         for (auto& eq : equations_)
-            eq->defStateAndCovariance(state, cov, i);
+            eq->defStateAndCovariance(state, cov, layout_);
     }
 
     void EquationComposer::saveResiduals(gnsstk::IRinex& gData, const gnsstk::Vector<double>& residuals) const
@@ -238,12 +235,6 @@ namespace pod
     const EquationComposer::FilterState& EquationComposer::getState() const
     {
         return filterData_;
-    }
-
-    // get current set unknowns TypeID's
-    ParametersSet& EquationComposer::currentUnknowns()
-    {
-        return unknowns_;
     }
 
     TypeIDSet& EquationComposer::getMeasTypes()

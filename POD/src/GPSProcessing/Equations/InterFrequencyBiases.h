@@ -18,22 +18,22 @@ namespace pod
         virtual void prepare(gnsstk::IRinex& gData);
 
         void contributeDesignMatrix(const gnsstk::IRinex& gData,
-                     const gnsstk::TypeIDSet& types,
-                     gnsstk::Matrix<double>& H,
-                     int& startColumn);
+                                    const gnsstk::TypeIDSet& types,
+                                    gnsstk::Matrix<double>& H,
+                                    const StateLayout& layout);
 
         virtual ParametersSet getParameters() const override
         {
             return types;
         }
 
-        virtual void contributeTransitionMartix(gnsstk::Matrix<double>& Phi, int& index) const override;
+        virtual void contributeTransitionMartix(gnsstk::Matrix<double>& Phi, const StateLayout& layout) const override;
 
-        virtual void contributeProcessNoiseMatrix(gnsstk::Matrix<double>& Q, int& index) const override;
+        virtual void contributeProcessNoiseMatrix(gnsstk::Matrix<double>& Q, const StateLayout& layout) const override;
 
         virtual void defStateAndCovariance(gnsstk::Vector<double>& x,
                                            gnsstk::Matrix<double>& P,
-                                           int& index) const override;
+                                           const StateLayout& layout) const override;
 
         virtual int getNumUnknowns() const override;
 

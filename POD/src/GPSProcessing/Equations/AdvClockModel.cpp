@@ -1,73 +1,93 @@
 #include "AdvClockModel.h"
+#include "StateLayout.h"
 
 using namespace gnsstk;
 
 namespace pod
 {
 
-    void AdvClockModel::prepare(gnsstk::IRinex& gData)
-    {
-        // Update previous epoch
-        setPreviousTime(currentTime);
-        setCurrentTime(gData.getHeader().epoch);
+	void AdvClockModel::prepare(gnsstk::IRinex& gData)
+	{
+		// Update previous epoch
+		setPreviousTime(currentTime);
+		setCurrentTime(gData.getHeader().epoch);
 
-        double d = std::abs(currentTime - previousTime);
-        dt = isFirstTime || d < DBL_EPSILON ? 30.0 : d;
-        isFirstTime = false;
-    }
+		double d = std::abs(currentTime - previousTime);
+		dt = isFirstTime || d < DBL_EPSILON ? 30.0 : d;
+		isFirstTime = false;
+	}
 
-    ParametersSet AdvClockModel::getParameters() const
-    {
-        return types;
-    }
+	ParametersSet AdvClockModel::getParameters() const
+	{
+		return types;
+	}
 
-    void AdvClockModel::contributeTransitionMartix(gnsstk::Matrix<double>& Phi, int& index) const
-    {
-        Phi(index, index) = 1.0;
-        Phi(index, index + 1) = dt;
-        Phi(index + 1, index) = 0;
-        Phi(index, index) = 1.0;
-        index += 2;
-    }
+	void AdvClockModel::contributeTransitionMartix(gnsstk::Matrix<double>& Phi, const StateLayout& layout) const
+	{
+		FilterParameter pCdt(gnsstk::TypeID::recCdt);
+		FilterParameter pDot(gnsstk::TypeID::recCdtdot);
 
-    void AdvClockModel::contributeProcessNoiseMatrix(gnsstk::Matrix<double>& Q, int& index) const
-    {
-        double dt2 = dt * dt;
-        double dt3 = dt2 * dt;
+		int i0 = layout.index(pCdt);
+		int i1 = layout.index(pDot);
 
-        Q(index, index) = q1 * dt + q2 * dt3 / 3.0;
-        Q(index, index + 1) = Q(index + 1, index) = q2 * dt2 / 2.0;
-        Q(index + 1, index + 1) = q2 * dt;
-        index += 2;
-    }
+		Phi(i0, i0) = 1.0;
+		Phi(i0, i1) = dt;
+		Phi(i1, i0) = 0.0;
+		Phi(i1, i1) = 1.0;
+	}
 
-    void AdvClockModel::defStateAndCovariance(gnsstk::Vector<double>& x,
-                                              gnsstk::Matrix<double>& P,
-                                              int& index) const
-    {
-        x(index) = 0;
-        P(index, index) = 1e9;
-        ++index;
-        x(index) = 0;
-        P(index, index) = 1e9;
-        ++index;
-    }
+	void AdvClockModel::contributeProcessNoiseMatrix(gnsstk::Matrix<double>& Q, const StateLayout& layout) const
+	{
+		FilterParameter pCdt(gnsstk::TypeID::recCdt);
+		FilterParameter pDot(gnsstk::TypeID::recCdtdot);
 
-    void AdvClockModel::contributeDesignMatrix(const gnsstk::IRinex& gData,
-                                const gnsstk::TypeIDSet& types,
-                                gnsstk::Matrix<double>& H,
-                                int& startColumn)
-    {
-        for (size_t i = 0; i < H.rows(); i++)
-        {
-            H(i, startColumn) = 1.0;
-            H(i, startColumn + 1) = dt;
-        }
-        startColumn += 2;
-    }
+		int i0 = layout.index(pCdt);
+		int i1 = layout.index(pDot);
 
-    int AdvClockModel::getNumUnknowns() const
-    {
-        return 2;
-    }
+		double dt2 = dt * dt;
+		double dt3 = dt2 * dt;
+
+		Q(i0, i0) = q1 * dt + q2 * dt3 / 3.0;
+		Q(i0, i1) = Q(i1, i0) = q2 * dt2 / 2.0;
+		Q(i1, i1) = q2 * dt;
+	}
+
+	void AdvClockModel::defStateAndCovariance(gnsstk::Vector<double>& x,
+											  gnsstk::Matrix<double>& P,
+											  const StateLayout& layout) const
+	{
+		FilterParameter pCdt(gnsstk::TypeID::recCdt);
+		FilterParameter pDot(gnsstk::TypeID::recCdtdot);
+
+		int i0 = layout.index(pCdt);
+		x(i0) = 0;
+		P(i0, i0) = 1e9;
+
+		int i1 = layout.index(pDot);
+		x(i1) = 0;
+		P(i1, i1) = 1e9;
+	}
+
+	void AdvClockModel::contributeDesignMatrix(const gnsstk::IRinex& gData,
+								const gnsstk::TypeIDSet& types,
+								gnsstk::Matrix<double>& H,
+								const StateLayout& layout)
+	{
+		FilterParameter pCdt(gnsstk::TypeID::recCdt);
+		FilterParameter pDot(gnsstk::TypeID::recCdtdot);
+
+		int colCdt = layout.index(pCdt);
+		int colDot = layout.index(pDot);
+
+		for (size_t i = 0; i < H.rows(); i++)
+		{
+			H(i, colCdt) = 1.0;
+			H(i, colDot) = dt;
+		}
+	}
+
+	int AdvClockModel::getNumUnknowns() const
+	{
+		return 2;
+	}
 } // namespace pod

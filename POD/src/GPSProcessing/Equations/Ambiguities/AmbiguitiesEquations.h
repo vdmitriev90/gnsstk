@@ -17,13 +17,13 @@ namespace pod
         // Inherited via EquationBase
         virtual void prepare(gnsstk::IRinex& gData) override;
 
-        virtual void contributeTransitionMartix(gnsstk::Matrix<double>& Phi, int& index) const override;
+        virtual void contributeTransitionMartix(gnsstk::Matrix<double>& Phi, const StateLayout& layout) const override;
 
-        virtual void contributeProcessNoiseMatrix(gnsstk::Matrix<double>& Q, int& index) const override;
+        virtual void contributeProcessNoiseMatrix(gnsstk::Matrix<double>& Q, const StateLayout& layout) const override;
 
         virtual void defStateAndCovariance(gnsstk::Vector<double>& x,
                                            gnsstk::Matrix<double>& P,
-                                           int& index) const override;
+                                           const StateLayout& layout) const override;
 
         virtual int getNumUnknowns() const override;
 
@@ -32,7 +32,7 @@ namespace pod
         virtual void contributeDesignMatrix(const gnsstk::IRinex& gData,
                              const gnsstk::TypeIDSet& types,
                              gnsstk::Matrix<double>& H,
-                             int& startColumn) override;
+                             const StateLayout& layout) override;
 
         virtual ParametersSet getAmbSet() const override
         {

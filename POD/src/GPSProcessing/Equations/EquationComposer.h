@@ -3,6 +3,7 @@
 #include "EquationBase.h"
 #include "FilterParameter.h"
 #include "GnssDataStore.hpp"
+#include "StateLayout.h"
 
 #include <memory>
 
@@ -13,7 +14,6 @@ namespace pod
 
     class EquationComposer
     {
-
       public:
         /// values and its covariance processed so far
         struct FilterData
@@ -73,8 +73,7 @@ namespace pod
         // get curent number of unknowns
         virtual int getNumUnknowns() const;
 
-        // get current set unknowns TypeID's
-        virtual ParametersSet& currentUnknowns();
+        const StateLayout& getLayout() const;
 
         virtual gnsstk::TypeIDSet& getMeasTypes();
         virtual const gnsstk::TypeIDSet& getMeasTypes() const;
@@ -107,9 +106,6 @@ namespace pod
         /// list of equations
         EquationsList equations_;
 
-        /// current set of unknowns
-        ParametersSet unknowns_;
-
         /// current set of ambiguities
         ParametersSet currAmb_;
 
@@ -119,8 +115,7 @@ namespace pod
         /// type ID of postfit residuals
         gnsstk::TypeIDSet residualsTypes_;
 
-        /// number of unknowns
-        size_t numUnknowns_;
+        StateLayout layout_;
 
         /// number of measurments
         size_t numMeas_;

@@ -1,4 +1,5 @@
 #include "PositionEquations.h"
+#include "StateLayout.h"
 
 using namespace gnsstk;
 
@@ -43,50 +44,51 @@ namespace pod
     void PositionEquations::contributeDesignMatrix(const gnsstk::IRinex& gData,
                                     const gnsstk::TypeIDSet& obsTypes,
                                     gnsstk::Matrix<double>& H,
-                                    int& startColumn)
+                                    const StateLayout& layout)
     {
         int row(0);
 
         for (auto&& obs : obsTypes)
             for (auto&& it : gData.getBody())
             {
-                int j(0);
                 for (auto&& t : types)
-                    H(row, startColumn + j++) = it.second->get_value().at(t.type);
+                {
+                    int col = layout.index(t);
+                    H(row, col) = it.second->get_value().at(t.type);
+                }
                 row++;
             }
-        startColumn += 3;
     }
 
-    void PositionEquations::contributeTransitionMartix(gnsstk::Matrix<double>& Phi, int& index) const
+    void PositionEquations::contributeTransitionMartix(gnsstk::Matrix<double>& Phi, const StateLayout& layout) const
     {
 
         for (const auto& it : types)
         {
-            Phi(index, index) = stochasticModels.at(it)->getPhi();
-            ++index;
+            int col = layout.index(it);
+            Phi(col, col) = stochasticModels.at(it)->getPhi();
         }
     }
 
-    void PositionEquations::contributeProcessNoiseMatrix(gnsstk::Matrix<double>& Q, int& index) const
+    void PositionEquations::contributeProcessNoiseMatrix(gnsstk::Matrix<double>& Q, const StateLayout& layout) const
     {
 
         for (const auto& it : types)
         {
-            Q(index, index) = stochasticModels.at(it)->getQ();
-            ++index;
+            int col = layout.index(it);
+            Q(col, col) = stochasticModels.at(it)->getQ();
         }
     }
 
     void PositionEquations::defStateAndCovariance(gnsstk::Vector<double>& x,
                                                   gnsstk::Matrix<double>& P,
-                                                  int& index) const
+                                                  const StateLayout& layout) const
     {
         for (const auto& it : types)
         {
-            x(index) = 0;
-            P(index, index) = 1e9;
-            ++index;
+            int col = layout.index(it);
+            x(col) = 0;
+            P(col, col) = 1e9;
         }
     }
 

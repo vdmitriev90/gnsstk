@@ -1,5 +1,7 @@
 #include "InterFrequencyBiases.h"
 
+#include "StateLayout.h"
+
 using namespace gnsstk;
 
 namespace pod
@@ -34,47 +36,21 @@ namespace pod
         for (const auto& it : gData.getBody())
             types.insert(ss2ifb[it.first.system]);
 
-        // fill the IFB data
-        // for (auto& it : gData.body)
-        //     for (const auto& t : types)
-        //         if (ss2ifb[it.first.system] == t)
-        //             it.second[t] = 1.0;
-        //         else
-        //             it.second[t] = 0.0;
-
         for (const auto& ss : types)
             stochasticModels[ss]->Prepare(SatID::dummy, gData);
     }
 
     void InterFrequencyBiases::contributeDesignMatrix(const gnsstk::IRinex& gData,
-                                       const gnsstk::TypeIDSet& obsTypes,
-                                       gnsstk::Matrix<double>& H,
-                                       int& startColumn)
+                                                      const gnsstk::TypeIDSet& obsTypes,
+                                                      gnsstk::Matrix<double>& H,
+                                                      const StateLayout& layout)
     {
-        // ParametersSet availableTypes, typeToRemove;
-
-        // find all IFB types which can be estimated from current observations set (gData)
-        // for (const auto& it : svs)
-        //     availableTypes.insert(ss2ifb.at(it.system));
-
-        // than, find the IFB types, which exist in current ISB set, but can't be observable
-        // std::set_difference
-        //(
-        //     types.begin(), types.end(),
-        //     availableTypes.begin(), availableTypes.end(),
-        //     std::inserter(typeToRemove, typeToRemove.begin())
-        //);
-
-        // remove unobservable IFB types from current set of TypeID
-        // for (const auto& it : typeToRemove)
-        //     types.erase(it);
-
         int row(0);
         auto currentSatSet = gData.getBody().getSatID();
 
         /*
-        ... | cdt(G2) | cdt(R2) |...| cdt(B2) |...
-        */
+		... | cdt(G2) | cdt(R2) |...| cdt(B2) |...
+		*/
         for (const auto& type : obsTypes)
         {
             if (l2Types.find(type) == l2Types.end())
@@ -85,12 +61,16 @@ namespace pod
 
             for (const auto& sv : currentSatSet)
             {
-                auto it = types.find(ss2ifb[sv.system]);
-                int j = std::distance(types.begin(), it);
-                H(row++, startColumn + j) = 1;
+                const auto& it = types.find(ss2ifb[sv.system]);
+                if (it == types.end())
+                {
+                    row++;
+                    continue;
+                }
+                int col = layout.index(*it);
+                H(row++, col) = 1;
             }
         }
-        startColumn += types.size();
     }
 
     InterFrequencyBiases& InterFrequencyBiases::setStochasicModel(const SatelliteSystem& system,
@@ -100,21 +80,21 @@ namespace pod
         return *this;
     }
 
-    void InterFrequencyBiases::contributeTransitionMartix(gnsstk::Matrix<double>& Phi, int& index) const
+    void InterFrequencyBiases::contributeTransitionMartix(gnsstk::Matrix<double>& Phi, const StateLayout& layout) const
     {
         for (const auto& ss : types)
         {
-            Phi(index, index) = stochasticModels.at(ss)->getPhi();
-            ++index;
+            int col = layout.index(ss);
+            Phi(col, col) = stochasticModels.at(ss)->getPhi();
         }
     }
 
-    void InterFrequencyBiases::contributeProcessNoiseMatrix(gnsstk::Matrix<double>& Q, int& index) const
+    void InterFrequencyBiases::contributeProcessNoiseMatrix(gnsstk::Matrix<double>& Q, const StateLayout& layout) const
     {
         for (const auto& ss : types)
         {
-            Q(index, index) = stochasticModels.at(ss)->getQ();
-            ++index;
+            int col = layout.index(ss);
+            Q(col, col) = stochasticModels.at(ss)->getQ();
         }
     }
 
@@ -125,13 +105,13 @@ namespace pod
 
     void InterFrequencyBiases::defStateAndCovariance(gnsstk::Vector<double>& x,
                                                      gnsstk::Matrix<double>& P,
-                                                     int& index) const
+                                                     const StateLayout& layout) const
     {
         for (const auto& ss : types)
         {
-            x(index) = 0;
-            P(index, index) = 1e9;
-            ++index;
+            int col = layout.index(ss);
+            x(col) = 0;
+            P(col, col) = 1e9;
         }
     }
 } // namespace pod

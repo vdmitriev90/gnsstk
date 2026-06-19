@@ -27,7 +27,7 @@ namespace pod
         virtual void contributeDesignMatrix(const gnsstk::IRinex& gData,
                              const gnsstk::TypeIDSet& types,
                              gnsstk::Matrix<double>& H,
-                             int& startColumn) override;
+                             const StateLayout& layout) override;
 
         /* return set of TypeID, corresponding unknown parameters  for given equations */
         virtual ParametersSet getParameters() const override
@@ -38,19 +38,19 @@ namespace pod
         /* Put the values in state tarnsition matrix, starting with specific index,
         index will be incremented inside this method
         */
-        virtual void contributeTransitionMartix(gnsstk::Matrix<double>& Phi, int& index) const override;
+        virtual void contributeTransitionMartix(gnsstk::Matrix<double>& Phi, const StateLayout& layout) const override;
 
         /*Put process noise components into corresponding matrix,
         starting with specific index, index will be incremented inside this method
         */
-        virtual void contributeProcessNoiseMatrix(gnsstk::Matrix<double>& Q, int& index) const override;
+        virtual void contributeProcessNoiseMatrix(gnsstk::Matrix<double>& Q, const StateLayout& layout) const override;
 
         /* Put default values of state vector and it's covariance into corresponding matrices,
         starting with specific index, index will be incremented inside this method
         */
         virtual void defStateAndCovariance(gnsstk::Vector<double>& x,
                                            gnsstk::Matrix<double>& P,
-                                           int& index) const override;
+                                           const StateLayout& layout) const override;
 
         /* return number of unknowns
          */

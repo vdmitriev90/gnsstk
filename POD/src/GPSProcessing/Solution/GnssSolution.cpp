@@ -81,8 +81,12 @@ namespace pod
                                      const gnsstk::CommonTime& time,
                                      GnssEpoch& gEpoch) const
     {
-        for (auto&& it : equations_->currentUnknowns())
+        const auto& layout = equations_->getLayout();
+
+        for (size_t i = 0; i < layout.size(); ++i)
         {
+            const auto& it = layout.param(static_cast<int>(i));
+
             if (it.type == TypeID::dx || it.type == TypeID::dy || it.type == TypeID::dz)
                 continue;
 

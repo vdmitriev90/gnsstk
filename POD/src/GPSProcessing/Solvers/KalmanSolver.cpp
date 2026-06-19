@@ -38,12 +38,7 @@ namespace pod
 
     KalmanSolver::KalmanSolver() : firstTime(true), isValid(false) {}
 
-    KalmanSolver::KalmanSolver(EquationComposerPtr eqs)
-        : firstTime(true)
-        , equations(eqs)
-        , isValid(false)
-    {
-    }
+    KalmanSolver::KalmanSolver(EquationComposerPtr eqs) : firstTime(true), equations(eqs), isValid(false) {}
 
     KalmanSolver::~KalmanSolver() {}
 
@@ -260,8 +255,7 @@ namespace pod
             // remove sv
             gData.getBody().removeSatID(maxPhaseResid.sv);
 
-            cout << StringUtils::formatTime(gData.getHeader().epoch) << " : "
-                 << maxPhaseResid.asString() << endl;
+            cout << StringUtils::formatTime(gData.getHeader().epoch) << " : " << maxPhaseResid.asString() << endl;
 
             return 1;
         }
@@ -286,7 +280,7 @@ namespace pod
     {
         if (equations->getSlnType() == SlnType::PdFixed && gData.getBody().size() > 5)
         {
-            int core_num = equations->currentUnknowns().size() - equations->getCurrentAmb().size();
+            int core_num = equations->getLayout().size() - equations->getCurrentAmb().size();
 
             AmbiguityHandler ar(equations->getCurrentAmb(), solution, covMatrix, core_num);
             ar.fixL1L2(gData);
@@ -311,14 +305,12 @@ namespace pod
 
         // get the sv - typeMap pair with largest residual value
 
-        auto svWithMaxResidual =
-            std::max_element(gData.getBody().begin(),
-                             gData.getBody().end(),
-                             [&](const type& it1, const type& it2) -> bool {
-                                 double val1 = std::abs(it1.second->get_value().at(*id));
-                                 double val2 = std::abs(it2.second->get_value().at(*id));
-                                 return (val1 < val2);
-                             });
+        auto svWithMaxResidual = std::max_element(
+            gData.getBody().begin(), gData.getBody().end(), [&](const type& it1, const type& it2) -> bool {
+                double val1 = std::abs(it1.second->get_value().at(*id));
+                double val2 = std::abs(it2.second->get_value().at(*id));
+                return (val1 < val2);
+            });
 
         // report detection
         cout << "Removed SV: " << svWithMaxResidual->first;
@@ -335,15 +327,7 @@ namespace pod
 
     int KalmanSolver::getUnknownIndex(const FilterParameter& parameter) const
     {
-        const auto& unknowns = equations->currentUnknowns();
-        auto it = unknowns.find(parameter);
-        if (it == equations->currentUnknowns().end())
-        {
-            InvalidRequest e("Type: '" + parameter.toString()
-                             + "' not found in  current set of unknowns.");
-            GNSSTK_THROW(e);
-        }
-        return std::distance(unknowns.begin(), it);
+        return equations->getLayout().index(parameter);
     }
 
     double KalmanSolver::getSolution(const FilterParameter& parameter) const
@@ -360,8 +344,7 @@ namespace pod
 
     } // End of method 'SolverLMS::getVariance()'
 
-    bool KalmanSolver::ResetIfRequared(const gnsstk::CommonTime& t,
-                                       const KalmanSolver::filterHistory& data)
+    bool KalmanSolver::ResetIfRequared(const gnsstk::CommonTime& t, const KalmanSolver::filterHistory& data)
     {
         double dt = t - t_pre;
 

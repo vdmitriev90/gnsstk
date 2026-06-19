@@ -1,4 +1,5 @@
 #include "TropoEquationsAdv.hpp"
+#include "StateLayout.h"
 
 #include "WinUtils.h"
 
@@ -7,67 +8,84 @@ using namespace gnsstk;
 namespace pod
 {
 
-    void TropoEquationsAdv::contributeDesignMatrix(const gnsstk::IRinex& gData,
-                                    const gnsstk::TypeIDSet& obsTypes,
-                                    gnsstk::Matrix<double>& H,
-                                    int& startColumn)
-    {
+	void TropoEquationsAdv::contributeDesignMatrix(const gnsstk::IRinex& gData,
+									const gnsstk::TypeIDSet& obsTypes,
+									gnsstk::Matrix<double>& H,
+									const StateLayout& layout)
+	{
+		FilterParameter pMap(gnsstk::TypeID::wetMap);
+		FilterParameter pDot(gnsstk::TypeID::wetMapDot);
 
-        int row(0);
-        for (const auto& t : obsTypes)
-        {
-            for (const auto& it : gData.getBody())
-            {
-                double mf = it.second->get_value().at(typeId);
-                H(row, startColumn) = mf;
-                H(row++, startColumn + 1) = mf * dt;
-            }
-        }
-        startColumn += 2;
-    }
+		int colMap = layout.index(pMap);
+		int colDot = layout.index(pDot);
 
-    void TropoEquationsAdv::contributeTransitionMartix(gnsstk::Matrix<double>& Phi, int& index) const
-    {
-        Phi(index, index) = 1.0;
-        Phi(index, index + 1) = dt;
-        Phi(index + 1, index) = 0;
-        Phi(index, index) = 1.0;
-        index += 2;
-    }
+		int row(0);
+		for (const auto& t : obsTypes)
+		{
+			for (const auto& it : gData.getBody())
+			{
+				double mf = it.second->get_value().at(typeId);
+				H(row, colMap) = mf;
+				H(row++, colDot) = mf * dt;
+			}
+		}
+	}
 
-    void TropoEquationsAdv::contributeProcessNoiseMatrix(gnsstk::Matrix<double>& Q, int& index) const
-    {
+	void TropoEquationsAdv::contributeTransitionMartix(gnsstk::Matrix<double>& Phi, const StateLayout& layout) const
+	{
+		FilterParameter pMap(gnsstk::TypeID::wetMap);
+		FilterParameter pDot(gnsstk::TypeID::wetMapDot);
 
-        double dt2 = dt * dt;
-        // double dt3 = dt2 * dt;
+		int i0 = layout.index(pMap);
+		int i1 = layout.index(pDot);
 
-        Q(index, index) = q1 * dt; //+ q2 * dt3 / 3.0;
-        Q(index, index + 1) = Q(index + 1, index) = q2 * dt2 / 2.0;
-        Q(index + 1, index + 1) = q2 * dt;
-        index += 2;
-    }
+		Phi(i0, i0) = 1.0;
+		Phi(i0, i1) = dt;
+		Phi(i1, i0) = 0.0;
+		Phi(i1, i1) = 1.0;
+	}
 
-    void TropoEquationsAdv::defStateAndCovariance(gnsstk::Vector<double>& x,
-                                                  gnsstk::Matrix<double>& P,
-                                                  int& index) const
-    {
-        x(index) = 5.000e-02;
-        P(index, index) = 5e-5;
-        ++index;
-        x(index) = 0;
-        P(index, index) = 1.667e-06;
-        ++index;
-    }
+	void TropoEquationsAdv::contributeProcessNoiseMatrix(gnsstk::Matrix<double>& Q, const StateLayout& layout) const
+	{
+		FilterParameter pMap(gnsstk::TypeID::wetMap);
+		FilterParameter pDot(gnsstk::TypeID::wetMapDot);
 
-    void TropoEquationsAdv::prepare(IRinex& gData)
-    {
-        // Update previous epoch
-        setPreviousTime(currentTime);
+		int i0 = layout.index(pMap);
+		int i1 = layout.index(pDot);
 
-        setCurrentTime(gData.getHeader().epoch);
+		double dt2 = dt * dt;
+		// double dt3 = dt2 * dt;
 
-        double d = std::abs(currentTime - previousTime);
-        dt = isFirstTime || d < DBL_EPSILON ? 30.0 : d;
-        isFirstTime = false;
-    }
+		Q(i0, i0) = q1 * dt; //+ q2 * dt3 / 3.0;
+		Q(i0, i1) = Q(i1, i0) = q2 * dt2 / 2.0;
+		Q(i1, i1) = q2 * dt;
+	}
+
+	void TropoEquationsAdv::defStateAndCovariance(gnsstk::Vector<double>& x,
+												  gnsstk::Matrix<double>& P,
+												  const StateLayout& layout) const
+	{
+		FilterParameter pMap(gnsstk::TypeID::wetMap);
+		FilterParameter pDot(gnsstk::TypeID::wetMapDot);
+
+		int i0 = layout.index(pMap);
+		x(i0) = 5.000e-02;
+		P(i0, i0) = 5e-5;
+
+		int i1 = layout.index(pDot);
+		x(i1) = 0;
+		P(i1, i1) = 1.667e-06;
+	}
+
+	void TropoEquationsAdv::prepare(IRinex& gData)
+	{
+		// Update previous epoch
+		setPreviousTime(currentTime);
+
+		setCurrentTime(gData.getHeader().epoch);
+
+		double d = std::abs(currentTime - previousTime);
+		dt = isFirstTime || d < DBL_EPSILON ? 30.0 : d;
+		isFirstTime = false;
+	}
 } // namespace pod

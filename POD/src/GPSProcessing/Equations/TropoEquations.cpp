@@ -1,4 +1,5 @@
 #include "TropoEquations.h"
+#include "StateLayout.h"
 using namespace gnsstk;
 
 namespace pod
@@ -24,35 +25,34 @@ namespace pod
     void TropoEquations::contributeDesignMatrix(const gnsstk::IRinex& gData,
                                  const gnsstk::TypeIDSet& obsTypes,
                                  gnsstk::Matrix<double>& H,
-                                 int& startColumn)
+                                 const StateLayout& layout)
     {
         int row(0);
+        int col = layout.index(paramType_);
         for (const auto& t : obsTypes)
             for (const auto& it : gData.getBody())
-                H(row++, startColumn) = it.second->get_value().at(paramType_.type);
-        startColumn++;
+                H(row++, col) = it.second->get_value().at(paramType_.type);
     }
 
-    void TropoEquations::contributeTransitionMartix(gnsstk::Matrix<double>& Phi, int& index) const
+    void TropoEquations::contributeTransitionMartix(gnsstk::Matrix<double>& Phi, const StateLayout& layout) const
     {
-        Phi(index, index) = pStochasticModel_->getPhi();
-        ++index;
+        int col = layout.index(paramType_);
+        Phi(col, col) = pStochasticModel_->getPhi();
     }
 
-    void TropoEquations::contributeProcessNoiseMatrix(gnsstk::Matrix<double>& Q, int& index) const
+    void TropoEquations::contributeProcessNoiseMatrix(gnsstk::Matrix<double>& Q, const StateLayout& layout) const
     {
-        Q(index, index) = pStochasticModel_->getQ();
-        ++index;
+        int col = layout.index(paramType_);
+        Q(col, col) = pStochasticModel_->getQ();
     }
 
     void TropoEquations::defStateAndCovariance(gnsstk::Vector<double>& x,
                                                gnsstk::Matrix<double>& P,
-                                               int& index) const
+                                               const StateLayout& layout) const
     {
-        x(index) = 0.0;
-        P(index, index) = 0.25;
-
-        ++index;
+        int col = layout.index(paramType_);
+        x(col) = 0.0;
+        P(col, col) = 0.25;
     }
 
     int TropoEquations::getNumUnknowns() const
