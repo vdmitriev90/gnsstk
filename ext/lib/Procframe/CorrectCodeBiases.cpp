@@ -122,8 +122,8 @@ namespace gnsstk
          for (auto it = gData.begin(); it != gData.end(); ++it)
          {
             SatID sat = it->first;
-            for(typeValueMap::iterator itt = it->second->get_value().begin();
-                itt != it->second->get_value().end();
+            for(typeValueMap::iterator itt = it->second->begin();
+                itt != it->second->end();
                 ++itt)
             {
                TypeID type = itt->first;
@@ -131,12 +131,12 @@ namespace gnsstk
                   
                if( (type == TypeID::C1) || (type == TypeID::P1))
                {
-                  gData[sat]->get_value()[TypeID::instC1] = getDCBCorrection(receiverName,
+                  (*gData[sat])[TypeID::instC1] = getDCBCorrection(receiverName,
                                                                 sat, type, usingC1);
                }
                else if(type == TypeID::P2)
                {
-                  gData[sat]->get_value()[TypeID::instC2] = getDCBCorrection(receiverName,
+                  (*gData[sat])[TypeID::instC2] = getDCBCorrection(receiverName,
                                                                 sat, type, usingC1);
                }
 

@@ -84,9 +84,9 @@ namespace gnsstk
 
                   TypeID type(iter->first);
 
-                  if( (*it).second->get_value().find(type) != (*it).second->get_value().end() )
+                  if( (*it).second->find(type) != (*it).second->end() )
                   {
-                     temp = (*it).second->get_value()[type];
+                     temp = (*it->second)[type];
                   }
                   else
                   {
@@ -97,7 +97,7 @@ namespace gnsstk
                }
 
                   // Store the result in the proper place
-               (*it).second->get_value()[pos->header] = result;
+               (*it->second)[pos->header] = result;
 
             }
 

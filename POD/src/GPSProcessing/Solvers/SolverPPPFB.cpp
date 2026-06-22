@@ -370,12 +370,12 @@ namespace pod
         {
 
             // Check postfit values and mark satellites as rejected
-            if (std::abs((*it).second->get_value()(TypeID::postfitC)) > codeLimit)
+            if (std::abs((*it->second)(TypeID::postfitC)) > codeLimit)
             {
                 satRejectedSet.insert((*it).first);
             }
 
-            if (std::abs((*it).second->get_value()(TypeID::postfitL)) > phaseLimit)
+            if (std::abs((*it->second)(TypeID::postfitL)) > phaseLimit)
             {
                 satRejectedSet.insert((*it).first);
             }

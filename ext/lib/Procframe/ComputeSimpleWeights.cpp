@@ -111,7 +111,7 @@ namespace gnsstk
 
             double weight( 1.0 / ( scaleFact*( mt*mt*tropoVar + multiVar ) ) );
 
-            (*it).second->get_value()[TypeID::weight] = weight;
+            (*it->second)[TypeID::weight] = weight;
 
          }
 

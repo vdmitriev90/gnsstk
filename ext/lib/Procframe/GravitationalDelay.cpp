@@ -84,9 +84,9 @@ namespace gnsstk
          for (auto it = gData.begin(); it != gData.end(); ++it)
          {
                // Check if satellite position is not already computed
-            if( ( (*it).second->get_value().find(TypeID::satX) == (*it).second->get_value().end() ) ||
-                ( (*it).second->get_value().find(TypeID::satY) == (*it).second->get_value().end() ) ||
-                ( (*it).second->get_value().find(TypeID::satZ) == (*it).second->get_value().end() ) )
+            if( ( (*it).second->find(TypeID::satX) == (*it).second->end() ) ||
+                ( (*it).second->find(TypeID::satY) == (*it).second->end() ) ||
+                ( (*it).second->find(TypeID::satZ) == (*it).second->end() ) )
             {
 
                   // If satellite position is missing, then schedule this 
@@ -100,9 +100,9 @@ namespace gnsstk
             {
 
                   // Get satellite position out of GDS
-               svPos[0] = (*it).second->get_value()[TypeID::satX];
-               svPos[1] = (*it).second->get_value()[TypeID::satY];
-               svPos[2] = (*it).second->get_value()[TypeID::satZ];
+               svPos[0] = (*it->second)[TypeID::satX];
+               svPos[1] = (*it->second)[TypeID::satY];
+               svPos[2] = (*it->second)[TypeID::satZ];
 
             }  // End of 'if( ( (*it).second.find(TypeID::satX) == ...'
 
@@ -126,7 +126,7 @@ namespace gnsstk
             double gravDel( K*std::log( (r1+r2+r12)/(r1+r2-r12) ) );
 
                // Get the correction into the GDS
-            (*it).second->get_value()[TypeID::gravDelay] = gravDel;
+            (*it->second)[TypeID::gravDelay] = gravDel;
 
          }  // End of 'for (it = gData.begin(); it != gData.end(); ++it)'
 

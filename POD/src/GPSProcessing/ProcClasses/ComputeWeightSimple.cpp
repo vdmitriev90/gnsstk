@@ -25,8 +25,8 @@ namespace pod
         SatIDSet rejSatSet;
         for (auto& it : gData)
         {
-            auto el = it.second->get_value().find(TypeID::elevation);
-            if (el != it.second->get_value().end() && el->second > 0)
+            auto el = it.second->find(TypeID::elevation);
+            if (el != it.second->end() && el->second > 0)
             {
 
                 double invsig = 1.0;
@@ -36,7 +36,7 @@ namespace pod
 
                 double factor = (it.first.system == SatelliteSystem::Glonass) ? glnSigmaFactor : 1;
 
-                it.second->get_value()[TypeID::weight] = invsig * invsig / factor;
+                (*it.second)[TypeID::weight] = invsig * invsig / factor;
             }
             else
             {

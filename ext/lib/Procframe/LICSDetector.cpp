@@ -98,7 +98,7 @@ namespace gnsstk
             try
             {
                   // Try to extract the values
-               value1 = (*it).second->get_value()(obsType);
+               value1 = (*it->second)(obsType);
             }
             catch(...)
             {
@@ -113,7 +113,7 @@ namespace gnsstk
                try
                {
                      // Try to get the LLI1 index
-                  lli1  = (*it).second->get_value()(lliType1);
+                  lli1  = (*it->second)(lliType1);
                }
                catch(...)
                {
@@ -125,7 +125,7 @@ namespace gnsstk
                try
                {
                      // Try to get the LLI2 index
-                  lli2  = (*it).second->get_value()(lliType2);
+                  lli2  = (*it->second)(lliType2);
                }
                catch(...)
                {
@@ -138,21 +138,21 @@ namespace gnsstk
                // If everything is OK, then get the new values inside the
                // structure. This way of computing it allows concatenation of
                // several different cycle slip detectors
-            (*it).second->get_value()[resultType1] += getDetection( epoch,
+            (*it->second)[resultType1] += getDetection( epoch,
                                                        (*it).first,
-                                                       (*it).second->get_value(),
+                                                       (*it->second),
                                                        epochflag,
                                                        value1,
                                                        lli1,
                                                        lli2 );
 
-            if ( (*it).second->get_value()[resultType1] > 1.0 )
+            if ( (*it->second)[resultType1] > 1.0 )
             {
-               (*it).second->get_value()[resultType1] = 1.0;
+               (*it->second)[resultType1] = 1.0;
             }
 
                // We will mark both cycle slip flags
-            (*it).second->get_value()[resultType2] = (*it).second->get_value()[resultType1];
+            (*it->second)[resultType2] = (*it->second)[resultType1];
 
          }
 

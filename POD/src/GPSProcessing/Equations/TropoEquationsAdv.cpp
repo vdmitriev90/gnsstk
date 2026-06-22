@@ -24,7 +24,7 @@ namespace pod
 		{
 			for (const auto& it : gData.getBody())
 			{
-				double mf = it.second->get_value().at(typeId);
+				double mf = it.second->at(typeId);
 				H(row, colMap) = mf;
 				H(row++, colDot) = mf * dt;
 			}

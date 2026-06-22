@@ -78,11 +78,11 @@ namespace pod
     bool IonoEstimator::feed(const gnsstk::SatID& sv, IRinex& rin_epoch)
     {
         double ionoCode(.0);
-        if (!lcIonoCode.getCombination(sv, rin_epoch.getBody()[sv]->get_value(), ionoCode))
+        if (!lcIonoCode.getCombination(sv, *rin_epoch.getBody()[sv], ionoCode))
             return false;
 
         double ionoPhase(.0);
-        if (!lcIonoPhase.getCombination(sv, rin_epoch.getBody()[sv]->get_value(), ionoPhase))
+        if (!lcIonoPhase.getCombination(sv, *rin_epoch.getBody()[sv], ionoPhase))
             return false;
 
         // get reference to current sv data
@@ -139,7 +139,7 @@ namespace pod
         data.state.delay = state(0);
         data.state.bias = state(1);
 
-        rin_epoch.getBody()[sv]->get_value()[TypeID::ionoL1] = data.state.delay;
+        (*rin_epoch.getBody()[sv])[TypeID::ionoL1] = data.state.delay;
 
         return true;
     }

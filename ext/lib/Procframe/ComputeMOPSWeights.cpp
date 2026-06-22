@@ -80,7 +80,7 @@ namespace gnsstk
 
             try
             {
-               weight = getWeight( ((*it).first), (*it).second->get_value() );
+               weight = getWeight( ((*it).first), (*it->second) );
             }
             catch(...)
             {
@@ -95,7 +95,7 @@ namespace gnsstk
 
                // If everything is OK, then get the new value inside
                // the GDS structure
-            (*it).second->get_value()[TypeID::weight] = weight;
+            (*it->second)[TypeID::weight] = weight;
 
          }
 

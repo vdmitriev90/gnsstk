@@ -1,5 +1,6 @@
 #include "SatTypePtrMap.h"
-#include<algorithm>
+
+#include <algorithm>
 
 using namespace std;
 namespace gnsstk
@@ -11,46 +12,42 @@ namespace gnsstk
     size_t SatTypePtrMap::numElements() const
     {
         size_t numEle(0);
-        for (auto &&it : *this)
-            numEle += it.second->get_value().size();
+        for (auto&& it : data_)
+            numEle += it.second->size();
         return numEle;
 
-    }  // End of method 'SatTypePtrMap::numElements()'
+    } // End of method 'SatTypePtrMap::numElements()'
 
-
-
-       // Returns a SatIDSet with all the satellites present in this object.
+    // Returns a SatIDSet with all the satellites present in this object.
     SatIDSet SatTypePtrMap::getSatID() const
     {
 
         SatIDSet satSet;
 
-        for (auto &&it : *this)
+        for (auto&& it : data_)
             satSet.insert(it.first);
 
         return satSet;
 
-    }  // End of method 'SatTypePtrMap::getSatID()'
+    } // End of method 'SatTypePtrMap::getSatID()'
 
+    // Returns a getSatSystems with only this satellite.
+    // @param satellite Satellite to be extracted.
+    SatSystSet SatTypePtrMap::getSatSystems() const
+    {
+        SatSystSet res;
+        for (auto&& it : data_)
+            res.insert(it.first.system);
+        return res;
+    }
 
-	  // Returns a getSatSystems with only this satellite.
-	  // @param satellite Satellite to be extracted.
-	SatSystSet SatTypePtrMap::getSatSystems() const
-	{	
-		SatSystSet res;
-		for (auto && it:*this)
-			res.insert(it.first.system);
-		return res;
-	}
-
-
-       // Returns a Vector with all the satellites present in this object.
+    // Returns a Vector with all the satellites present in this object.
     Vector<SatID> SatTypePtrMap::getVectorOfSatID() const
     {
 
         std::vector<SatID> temp;
 
-        for (auto &&it : *this)
+        for (auto&& it : data_)
             temp.push_back(it.first);
 
         Vector<SatID> result;
@@ -58,28 +55,24 @@ namespace gnsstk
 
         return result;
 
-    }  // End of method 'SatTypePtrMap::getVectorOfSatID()'
+    } // End of method 'SatTypePtrMap::getVectorOfSatID()'
 
-
-
-       // Returns a TypeIDSet with all the data types present in
-       // this object. This does not imply that all satellites have these types.
+    // Returns a TypeIDSet with all the data types present in
+    // this object. This does not imply that all satellites have these types.
     TypeIDSet SatTypePtrMap::getTypeID() const
     {
 
         TypeIDSet typeSet;
 
-        for (auto &&it : *this)
-            for (auto &&it1 : it.second->get_value())
+        for (auto&& it : data_)
+            for (auto&& it1 : *it.second)
                 typeSet.insert(it1.first);
         return typeSet;
 
-    }  // End of method 'SatTypePtrMap::getTypeID()'
+    } // End of method 'SatTypePtrMap::getTypeID()'
 
-
-
-       // Returns a SatTypePtrMap with only this satellite.
-       // @param satellite Satellite to be extracted.
+    // Returns a SatTypePtrMap with only this satellite.
+    // @param satellite Satellite to be extracted.
     SatTypePtrMap SatTypePtrMap::extractSatID(const SatID& satellite) const
     {
 
@@ -88,49 +81,44 @@ namespace gnsstk
 
         return extractSatID(satSet);
 
-    }  // End of method 'SatTypePtrMap::extractSatID()'
+    } // End of method 'SatTypePtrMap::extractSatID()'
 
-
-
-       // Returns a SatTypePtrMap with only one satellite, identified
-       // by the given parameters.
-       // @param p Satellite PRN number.
-       // @param p System the satellite belongs to.
-    SatTypePtrMap SatTypePtrMap::extractSatID(const int& p,
-        SatelliteSystem s) const
+    // Returns a SatTypePtrMap with only one satellite, identified
+    // by the given parameters.
+    // @param p Satellite PRN number.
+    // @param p System the satellite belongs to.
+    SatTypePtrMap SatTypePtrMap::extractSatID(const int& p, SatelliteSystem s) const
     {
 
-        SatID tempSatellite(p, s);  // We build a temporary SatID object
+        SatID tempSatellite(p, s); // We build a temporary SatID object
 
         return extractSatID(tempSatellite);
 
-    }  // End of method 'SatTypePtrMap::extractSatID()'
+    } // End of method 'SatTypePtrMap::extractSatID()'
 
-
-
-       // Returns a SatTypePtrMap with only these satellites.
-       // @param satSet Set (SatIDSet) containing the satellites to
-       //               be extracted.
+    // Returns a SatTypePtrMap with only these satellites.
+    // @param satSet Set (SatIDSet) containing the satellites to
+    //               be extracted.
     SatTypePtrMap SatTypePtrMap::extractSatID(const SatIDSet& satSet) const
     {
         SatTypePtrMap stvMap;
 
         for (auto&& sv : satSet)
         {
-            auto itObs = find(sv);
-            if (itObs != end())
+            auto itObs = data_.find(sv);
+            if (itObs != data_.end())
                 stvMap.emplace(sv, itObs->second);
         }
 
         return stvMap;
 
-    }  // End of method 'SatTypePtrMap::extractSatID()'
+    } // End of method 'SatTypePtrMap::extractSatID()'
 
     SatTypePtrMap SatTypePtrMap::extractSatSyst(const SatSystSet& systSet) const
     {
         SatTypePtrMap stvMap;
 
-        for (auto it = begin(); it != end(); ++it)
+        for (auto it = data_.begin(); it != data_.end(); ++it)
         {
 
             if (systSet.find(it->first.system) != systSet.end())
@@ -139,33 +127,31 @@ namespace gnsstk
 
         return stvMap;
 
-    }  // End of method 'SatTypePtrMap::extractSatID()'
+    } // End of method 'SatTypePtrMap::extractSatID()'
 
-	SatTypePtrMap SatTypePtrMap::extractSatSyst(SatelliteSystem ss) const
-	{
-		SatSystSet sset{ ss };
-		return extractSatSyst(sset);
-	}
+    SatTypePtrMap SatTypePtrMap::extractSatSyst(SatelliteSystem ss) const
+    {
+        SatSystSet sset{ss};
+        return extractSatSyst(sset);
+    }
 
+    SatTypePtrMap& SatTypePtrMap::keepOnlySatSyst(const SatSystSet& satSystSet)
+    {
+        SatTypePtrMap stvMap(extractSatSyst(satSystSet));
+        (*this) = stvMap;
 
-	SatTypePtrMap& SatTypePtrMap::keepOnlySatSyst(const SatSystSet& satSystSet)
-	{
-		SatTypePtrMap stvMap(extractSatSyst(satSystSet));
-		(*this) = stvMap;
+        return (*this);
+    }
 
-		return (*this);
+    SatTypePtrMap& SatTypePtrMap::keepOnlySatSyst(SatelliteSystem ss)
+    {
+        SatSystSet sset{ss};
+        keepOnlySatSyst(sset);
+        return *this;
+    }
 
-	}
-
-	SatTypePtrMap& SatTypePtrMap::keepOnlySatSyst(SatelliteSystem ss) 
-	{
-		SatSystSet sset{ ss };
-		keepOnlySatSyst(sset);
-		return *this;
-	}
-
-       // Modifies this object, keeping only this satellite.
-       // @param satellite Satellite to be kept.
+    // Modifies this object, keeping only this satellite.
+    // @param satellite Satellite to be kept.
     SatTypePtrMap& SatTypePtrMap::keepOnlySatID(const SatID& satellite)
     {
 
@@ -174,27 +160,22 @@ namespace gnsstk
 
         return keepOnlySatID(satSet);
 
-    }  // End of method 'SatTypePtrMap::keepOnlySatID()'
+    } // End of method 'SatTypePtrMap::keepOnlySatID()'
 
-
-
-       // Modifies this object, keeping only this satellite.
-       // @param p Satellite PRN number.
-       // @param p System the satellite belongs to.
-    SatTypePtrMap& SatTypePtrMap::keepOnlySatID(const int& p,
-        SatelliteSystem s)
+    // Modifies this object, keeping only this satellite.
+    // @param p Satellite PRN number.
+    // @param p System the satellite belongs to.
+    SatTypePtrMap& SatTypePtrMap::keepOnlySatID(const int& p, SatelliteSystem s)
     {
 
-        SatID tempSatellite(p, s);  // We build a temporary SatID object
+        SatID tempSatellite(p, s); // We build a temporary SatID object
 
         return keepOnlySatID(tempSatellite);
 
-    }  // End of method 'SatTypePtrMap::keepOnlySatID()'
+    } // End of method 'SatTypePtrMap::keepOnlySatID()'
 
-
-
-       // Modifies this object, keeping only these satellites.
-       // @param satSet Set (SatIDSet) containing the satellites to be kept.
+    // Modifies this object, keeping only these satellites.
+    // @param satSet Set (SatIDSet) containing the satellites to be kept.
     SatTypePtrMap& SatTypePtrMap::keepOnlySatID(const SatIDSet& satSet)
     {
 
@@ -203,13 +184,11 @@ namespace gnsstk
 
         return (*this);
 
-    }  // End of method 'SatTypePtrMap::keepOnlySatID()'
+    } // End of method 'SatTypePtrMap::keepOnlySatID()'
 
-
-
-       // Returns a SatTypePtrMap with only this type of value.
-       // @param type Type of value to be extracted.
-	satTypeValueMap SatTypePtrMap::extractTypeID(const TypeID& type) const
+    // Returns a SatTypePtrMap with only this type of value.
+    // @param type Type of value to be extracted.
+    satTypeValueMap SatTypePtrMap::extractTypeID(const TypeID& type) const
     {
 
         TypeIDSet typeSet;
@@ -217,34 +196,29 @@ namespace gnsstk
 
         return extractTypeID(typeSet);
 
-    }  // End of method 'SatTypePtrMap::extractTypeID()'
+    } // End of method 'SatTypePtrMap::extractTypeID()'
 
-
-
-       // Returns a SatTypePtrMap with only these types of data.
-       // @param typeSet Set (TypeIDSet) containing the types of data
-       //                to be extracted.
+    // Returns a SatTypePtrMap with only these types of data.
+    // @param typeSet Set (TypeIDSet) containing the types of data
+    //                to be extracted.
     satTypeValueMap SatTypePtrMap::extractTypeID(const TypeIDSet& typeSet) const
     {
 
-		satTypeValueMap theMap;
+        satTypeValueMap theMap;
 
-		for (auto&& it: *this)
-		{
-			auto tvMap = it.second->get_value().extractTypeID(typeSet);
-			if (tvMap.size() > 0)
-				theMap[it.first] = tvMap;
-
-		}
+        for (auto&& it : data_)
+        {
+            auto tvMap = it.second->extractTypeID(typeSet);
+            if (tvMap.size() > 0)
+                theMap[it.first] = tvMap;
+        }
 
         return theMap;
 
-    }  // End of method 'SatTypePtrMap::extractTypeID()'
+    } // End of method 'SatTypePtrMap::extractTypeID()'
 
-
-
-       // Modifies this object, keeping only this type of data.
-       // @param type Type of value to be kept.
+    // Modifies this object, keeping only this type of data.
+    // @param type Type of value to be kept.
     SatTypePtrMap& SatTypePtrMap::keepOnlyTypeID(const TypeID& type)
     {
 
@@ -253,18 +227,16 @@ namespace gnsstk
 
         return keepOnlyTypeID(typeSet);
 
-    }  // End of method 'SatTypePtrMap::keepOnlyTypeID()'
+    } // End of method 'SatTypePtrMap::keepOnlyTypeID()'
 
-
-
-       // Modifies this object, keeping only these types of data.
-       // @param typeSet Set (TypeIDSet) containing the types of data
-       //                to be kept.
+    // Modifies this object, keeping only these types of data.
+    // @param typeSet Set (TypeIDSet) containing the types of data
+    //                to be kept.
     SatTypePtrMap& SatTypePtrMap::keepOnlyTypeID(const TypeIDSet& typeSet)
     {
-        for (auto it = begin(); it != end(); ++it)
+        for (auto it = data_.begin(); it != data_.end(); ++it)
         {
-            it->second->get_value().keepOnlyTypeID(typeSet);
+            it->second->keepOnlyTypeID(typeSet);
             /*auto typeMap = it->second->get_value();
             for (auto typeIt = typeMap.cbegin(); typeIt != typeMap.cend();)
             {
@@ -277,49 +249,44 @@ namespace gnsstk
 
         return (*this);
 
-    }  // End of method 'SatTypePtrMap::keepOnlyTypeID()'
+    } // End of method 'SatTypePtrMap::keepOnlyTypeID()'
 
+    SatTypePtrMap& SatTypePtrMap::removeSatID(const SatID& satellite)
+    {
+        return removeSatID(SatIDSet{satellite});
+    }
 
+    SatTypePtrMap& SatTypePtrMap::removeSatID(int id, SatelliteSystem system)
+    {
+        SatID sv(id, system);
+        return removeSatID(sv);
+    }
 
-	SatTypePtrMap& SatTypePtrMap::
-		removeSatID(const SatID& satellite)
-	{
-		return removeSatID(SatIDSet{ satellite });
-	}
-
-	SatTypePtrMap& SatTypePtrMap::
-		removeSatID(int id,SatelliteSystem system)
-	{
-		SatID sv(id, system);
-		return removeSatID(sv);
-	}
-
-       // Modifies this object, removing these satellites.
-       // @param satSet Set (SatIDSet) containing the satellites
-       // to be removed.
-    SatTypePtrMap& SatTypePtrMap::
-		removeSatID(const SatIDSet& satSet)
+    // Modifies this object, removing these satellites.
+    // @param satSet Set (SatIDSet) containing the satellites
+    // to be removed.
+    SatTypePtrMap& SatTypePtrMap::removeSatID(const SatIDSet& satSet)
     {
         for (auto&& it : satSet)
-            (*this).erase(it);
+            data_.erase(it);
 
         return (*this);
 
-    }  // End of method 'SatTypePtrMap::removeSatID()'
+    } // End of method 'SatTypePtrMap::removeSatID()'
 
     SatTypePtrMap& SatTypePtrMap::removeSatSyst(const SatSystSet& satSystSet)
     {
-        for (auto it = begin(); it != end();)
+        for (auto it = data_.begin(); it != data_.end();)
         {
             if (satSystSet.find(it->first.system) != satSystSet.end())
-                (*this).erase(it++);
+                data_.erase(it++);
             else
                 ++it;
         }
 
         return (*this);
 
-    }  // End of method 'SatTypePtrMap::removeSatSyst()'
+    } // End of method 'SatTypePtrMap::removeSatSyst()'
 
     SatTypePtrMap& SatTypePtrMap::removeSatSyst(SatelliteSystem syst)
     {
@@ -328,73 +295,65 @@ namespace gnsstk
         return removeSatSyst(ssset);
     }
 
-	
     // Modifies this object, removing this type of data.
     // @param type Type of value to be removed.
     SatTypePtrMap& SatTypePtrMap::removeTypeID(const TypeID& type)
     {
-        TypeIDSet typeSet{ type };
+        TypeIDSet typeSet{type};
         removeTypeID(typeSet);
 
         return (*this);
 
-    }  // End of method 'SatTypePtrMap::removeTypeID()'
+    } // End of method 'SatTypePtrMap::removeTypeID()'
 
-
-
-       // Modifies this object, removing these types of data.
-       // @param typeSet Set (TypeIDSet) containing the types of data
-       //                to be kept.
+    // Modifies this object, removing these types of data.
+    // @param typeSet Set (TypeIDSet) containing the types of data
+    //                to be kept.
     SatTypePtrMap& SatTypePtrMap::removeTypeID(const TypeIDSet& typeSet)
     {
-        for (auto it = begin(); it != end(); ++it)
-            (*it).second->get_value().removeTypeID(typeSet);
+        for (auto it = data_.begin(); it != data_.end(); ++it)
+            (*it).second->removeTypeID(typeSet);
 
         return (*this);
 
-    }  // End of method 'SatTypePtrMap::removeTypeID()'
+    } // End of method 'SatTypePtrMap::removeTypeID()'
 
-
-
-       // Returns a gnsstk::Vector containing the data values with this type.
-       // @param type Type of value to be returned.
-       // This method returns zero if a given satellite does not have this type.
+    // Returns a gnsstk::Vector containing the data values with this type.
+    // @param type Type of value to be returned.
+    // This method returns zero if a given satellite does not have this type.
     Vector<double> SatTypePtrMap::getVectorOfTypeID(const TypeID& type) const
     {
-        Vector<double> result(this->size());
+        Vector<double> result(data_.size());
         int i = 0;
-        for (auto&& it : *this)
+        for (auto&& it : data_)
         {
-            auto itObs = it.second->get_value().find(type);
-            result[i] = (itObs != it.second->get_value().end()) ? (*itObs).second : 0.0;
+            auto itObs = it.second->find(type);
+            result[i] = (itObs != it.second->end()) ? (*itObs).second : 0.0;
             ++i;
         }
 
         return result;
 
-    }  // End of method 'SatTypePtrMap::getVectorOfTypeID()'
+    } // End of method 'SatTypePtrMap::getVectorOfTypeID()'
 
-
-
-       // Returns a gnsstk::Matrix containing the data values in this set.
-       // @param typeSet  TypeIDSet of values to be returned.
-    Matrix<double> SatTypePtrMap::getMatrixOfTypes(const TypeIDSet& typeSet)
-        const
+    // Returns a gnsstk::Matrix containing the data values in this set.
+    // @param typeSet  TypeIDSet of values to be returned.
+    Matrix<double> SatTypePtrMap::getMatrixOfTypes(const TypeIDSet& typeSet) const
     {
 
         // First, let's create a Matrix<double> of the proper size
-        Matrix<double> tempMat((*this).numSats(), typeSet.size(), 0.0);
+        Matrix<double> tempMat(data_.size(), typeSet.size(), 0.0);
 
         size_t numRow(0), numCol(0);
 
-        for (auto&& it : *this)
+        for (auto&& it : data_)
         {
             numCol = 0;
 
             for (auto pos = typeSet.begin(); pos != typeSet.end(); ++pos)
             {
-                auto itObs = it.second->get_value().find(*pos);
-                if (itObs != it.second->get_value().end())
+                auto itObs = it.second->find(*pos);
+                if (itObs != it.second->end())
                     tempMat(numRow, numCol) = (*itObs).second;
 
                 ++numCol;
@@ -404,11 +363,9 @@ namespace gnsstk
 
         return tempMat;
 
-    }  // End of method 'SatTypePtrMap::getMatrixOfTypes()'
+    } // End of method 'SatTypePtrMap::getMatrixOfTypes()'
 
-
-
-       /* Modifies this object, adding one vector of data with this type,
+    /* Modifies this object, adding one vector of data with this type,
         * one value per satellite.
         *
         * If type already exists, data is overwritten. If the number of
@@ -423,24 +380,20 @@ namespace gnsstk
         * @param type          Type of data to be added.
         * @param dataVector    GPSTk Vector containing the data to be added.
         */
-    SatTypePtrMap& SatTypePtrMap::insertTypeIDVector(const TypeID& type,
-        const Vector<double> dataVector)
+    SatTypePtrMap& SatTypePtrMap::insertTypeIDVector(const TypeID& type, const Vector<double> dataVector)
     {
 
         if (dataVector.size() == (*this).numSats())
         {
             size_t pos = 0;
 
-            for (SatTypePtrMap::iterator it = (*this).begin();
-                it != (*this).end();
-                ++it)
+            for (SatTypePtrMap::iterator it = data_.begin(); it != data_.end(); ++it)
             {
-                (*it).second->get_value()[type] = dataVector[pos];
+                (*it).second->operator[](type) = dataVector[pos];
                 ++pos;
             }
 
             return (*this);
-
         }
         else
         {
@@ -448,11 +401,9 @@ namespace gnsstk
 and number of satellites do not match"));
         }
 
-    }  // End of method 'SatTypePtrMap::insertTypeIDVector()'
+    } // End of method 'SatTypePtrMap::insertTypeIDVector()'
 
-
-
-       /* Modifies this object, adding a matrix of data, one vector
+    /* Modifies this object, adding a matrix of data, one vector
         * per satellite.
         *
         * If types already exists, data is overwritten. If the number of
@@ -471,8 +422,7 @@ and number of satellites do not match"));
         *                      to be added.
         * @param dataMatrix    GPSTk Matrix containing the data to be added.
         */
-    SatTypePtrMap& SatTypePtrMap::insertMatrix(const TypeIDSet& typeSet,
-        const Matrix<double> dataMatrix)
+    SatTypePtrMap& SatTypePtrMap::insertMatrix(const TypeIDSet& typeSet, const Matrix<double> dataMatrix)
     {
 
         if (dataMatrix.rows() != (*this).numSats())
@@ -486,27 +436,21 @@ number of satellites do not match"));
 
             size_t pos(0);
 
-            for (SatTypePtrMap::iterator it = (*this).begin();
-                it != (*this).end();
-                ++it)
+            for (SatTypePtrMap::iterator it = (*this).begin(); it != (*this).end(); ++it)
             {
 
                 size_t idx(0);
 
-                for (TypeIDSet::const_iterator itSet = typeSet.begin();
-                    itSet != typeSet.end();
-                    ++itSet)
+                for (TypeIDSet::const_iterator itSet = typeSet.begin(); itSet != typeSet.end(); ++itSet)
                 {
-                    (*it).second->get_value()[(*itSet)] = dataMatrix(pos, idx);
+                    (*it).second->operator[](*itSet) = dataMatrix(pos, idx);
                     ++idx;
                 }
 
                 ++pos;
-
             }
 
             return (*this);
-
         }
         else
         {
@@ -514,89 +458,79 @@ number of satellites do not match"));
 in matrix and number of types do not match"));
         }
 
-    }  // End of method 'SatTypePtrMap::insertMatrix()'
+    } // End of method 'SatTypePtrMap::insertMatrix()'
 
-
-
-       /* Returns the data value (double) corresponding to provided SatID
+    /* Returns the data value (double) corresponding to provided SatID
         * and TypeID.
         *
         * @param satellite     Satellite to be looked for.
         * @param type          Type to be looked for.
         */
-    double SatTypePtrMap::getValue(const SatID& satellite,
-        const TypeID& type) const
+    double SatTypePtrMap::getValue(const SatID& satellite, const TypeID& type) const
     {
 
-        SatTypePtrMap::const_iterator itObs((*this).find(satellite));
-        if (itObs != (*this).end())
+        SatTypePtrMap::const_iterator itObs(data_.find(satellite));
+        if (itObs != data_.end())
         {
-            return (*itObs).second->get_value().getValue(type);
+            return (*itObs).second->getValue(type);
         }
         else
         {
             GNSSTK_THROW(SatIDNotFound("SatID not found in map"));
         }
 
-    }  // End of method 'SatTypePtrMap::getValue()'
+    } // End of method 'SatTypePtrMap::getValue()'
 
-
-
-       // Returns a reference to the typeValueMap with corresponding SatID.
-       // @param type Type of value to be looked for.
+    // Returns a reference to the typeValueMap with corresponding SatID.
+    // @param type Type of value to be looked for.
     typeValueMap& SatTypePtrMap::operator()(const SatID& satellite)
     {
 
-        SatTypePtrMap::iterator itObs((*this).find(satellite));
-        if (itObs != (*this).end())
+        SatTypePtrMap::iterator itObs(data_.find(satellite));
+        if (itObs != data_.end())
         {
-            return (*itObs).second->get_value();
+            return *(*itObs).second;
         }
         else
         {
             GNSSTK_THROW(SatIDNotFound("SatID not found in map"));
         }
 
-    }  // End of method 'SatTypePtrMap::operator()'
-	std::ostream& operator<<(std::ostream& s, const SatTypePtrMap& obj) 
-	{
-		obj.dump(s, 1);
-		return s;
-	}
+    } // End of method 'SatTypePtrMap::operator()'
+    std::ostream& operator<<(std::ostream& s, const SatTypePtrMap& obj)
+    {
+        obj.dump(s, 1);
+        return s;
+    }
 
-	// Convenience output method for structure satTypeValueMap
-	std::ostream& SatTypePtrMap::dump(std::ostream& s,
-		int mode) const
-	{
+    // Convenience output method for structure satTypeValueMap
+    std::ostream& SatTypePtrMap::dump(std::ostream& s, int mode) const
+    {
 
-		for (auto it = (*this).begin();
-			it != (*this).end();
-			it++)
-		{
+        for (auto it = data_.begin(); it != data_.end(); it++)
+        {
 
-			// First, print satellite (system and PRN)
-			s << (*it).first << " ";
+            // First, print satellite (system and PRN)
+            s << (*it).first << " ";
 
-			for (auto itObs = (*it).second->get_value().begin();
-				itObs != (*it).second->get_value().end();
-				itObs++)
-			{
+            for (auto itObs = (*it).second->begin(); itObs != (*it).second->end(); itObs++)
+            {
 
-				if (mode == 1)
-				{
-					s << (*itObs).first << " ";
-				}
+                if (mode == 1)
+                {
+                    s << (*itObs).first << " ";
+                }
 
-				s << (*itObs).second << " ";
+                s << (*itObs).second << " ";
 
-			}  // End of 'for( typeValueMap::const_iterator itObs = ...'
+            } // End of 'for( typeValueMap::const_iterator itObs = ...'
 
-			s << endl;
+            s << endl;
 
-		}  // End of 'for( satTypeValueMap::const_iterator it = ...'
+        } // End of 'for( satTypeValueMap::const_iterator it = ...'
 
-		   // Let's return the 'std::ostream'
-		return s;
+        // Let's return the 'std::ostream'
+        return s;
 
-	}  // End of method 'satTypeValueMap::dump()'
-}
+    } // End of method 'satTypeValueMap::dump()'
+} // namespace gnsstk

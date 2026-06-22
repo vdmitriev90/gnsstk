@@ -14,8 +14,8 @@ namespace pod
             for (const auto& lc : this->combs)
             {
                 double value;
-                if (lc->getCombination(sv.first, sv.second->get_value(), value))
-                    sv.second->get_value().emplace(lc->getType(sv.first.system), value);
+                if (lc->getCombination(sv.first, *sv.second, value))
+                    (*sv.second)[lc->getType(sv.first.system)] = value;
             }
         }
         return gData;

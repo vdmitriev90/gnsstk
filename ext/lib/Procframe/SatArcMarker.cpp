@@ -140,7 +140,7 @@ namespace gnsstk
             try
             {
                   // Try to extract the CS flag value
-               flag = (*it).second->get_value()(watchCSFlag);
+               flag = (*it->second)(watchCSFlag);
             }
             catch(...)
             {
@@ -211,7 +211,7 @@ namespace gnsstk
             }
 
                // We will insert satellite arc number
-            (*it).second->get_value()[TypeID::satArc] = satArcMap[ (*it).first ];
+            (*it->second)[TypeID::satArc] = satArcMap[ (*it).first ];
 
          }
 		

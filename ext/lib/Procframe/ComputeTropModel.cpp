@@ -82,7 +82,7 @@ namespace gnsstk
             }
 
                // If satellite elevation is missing, remove satellite
-            if( (*stv).second->get_value().find(TypeID::elevation) == (*stv).second->get_value().end() )
+            if( (*stv).second->find(TypeID::elevation) == (*stv).second->end() )
             {
                satRejectedSet.insert( (*stv).first );
                continue;
@@ -91,8 +91,8 @@ namespace gnsstk
             {
 
                   // Scalar to hold satellite elevation
-               double elevation( (*stv).second->get_value()(TypeID::elevation) );
-               double azimuth( (*stv).second->get_value()(TypeID::azimuth) );
+               double elevation( (*stv->second)[TypeID::elevation] );
+               double azimuth( (*stv->second)[TypeID::azimuth] );
                double tropoCorr(0.0), dryZDelay(0.0), wetZDelay(0.0);
                double dryMap(0.0), wetMap(0.0), gradientMap(0.0);
 
@@ -127,16 +127,16 @@ namespace gnsstk
                };
 
                   // Now we have to add the new values to the data structure
-               (*stv).second->get_value()[TypeID::tropoSlant] = tropoCorr;
-               (*stv).second->get_value()[TypeID::dryTropo] = dryZDelay;
-               (*stv).second->get_value()[TypeID::wetTropo] = wetZDelay;
-               (*stv).second->get_value()[TypeID::dryMap] = dryMap;
-               (*stv).second->get_value()[TypeID::wetMap] = wetMap;
+               (*stv->second)[TypeID::tropoSlant] = tropoCorr;
+               (*stv->second)[TypeID::dryTropo] = dryZDelay;
+               (*stv->second)[TypeID::wetTropo] = wetZDelay;
+               (*stv->second)[TypeID::dryMap] = dryMap;
+               (*stv->second)[TypeID::wetMap] = wetMap;
 			   
 			   if (useGraients)
 			   {
-				   (*stv).second->get_value()[TypeID::wetMapNorth] = gradientMap* ::cos(azimuth*DEG_TO_RAD);
-				   (*stv).second->get_value()[TypeID::wetMapEast] = gradientMap * ::sin(azimuth*DEG_TO_RAD);
+				   (*stv->second)[TypeID::wetMapNorth] = gradientMap* ::cos(azimuth*DEG_TO_RAD);
+				   (*stv->second)[TypeID::wetMapEast] = gradientMap * ::sin(azimuth*DEG_TO_RAD);
 			   }
 
             }

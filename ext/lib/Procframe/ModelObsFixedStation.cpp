@@ -265,7 +265,7 @@ namespace gnsstk
             double tempModeledPR(0.0);
             double tempTGD(0.0);
             double tempPrefit(0.0);
-            double observable( (*stv).second->get_value()(defaultObservable) );
+            double observable( (*stv->second)[defaultObservable] );
 
                // A lot of the work is done by a CorrectedEphemerisRange object
             CorrectedEphemerisRange cerange;
@@ -303,12 +303,12 @@ namespace gnsstk
                tempTrop = getTropoCorrections( pDefaultTropoModel,
                                                cerange.elevationGeodetic );
 
-               (*stv).second->get_value()[TypeID::tropoSlant] = tempTrop;
+               (*stv->second)[TypeID::tropoSlant] = tempTrop;
 
             }
             else
             {
-               (*stv).second->get_value()[TypeID::tropoSlant] = 0.0;
+               (*stv->second)[TypeID::tropoSlant] = 0.0;
             }
 
                // If given, computes ionospheric model
@@ -345,21 +345,21 @@ namespace gnsstk
 
 
                // Now we have to add the new values to the data structure
-            (*stv).second->get_value()[TypeID::prefitC] = tempPrefit;
-            (*stv).second->get_value()[TypeID::dtSat] = cerange.svclkbias;
+            (*stv->second)[TypeID::prefitC] = tempPrefit;
+            (*stv->second)[TypeID::dtSat] = cerange.svclkbias;
 
                // Now, lets insert the geometry matrix
-            (*stv).second->get_value()[TypeID::dx] = cerange.cosines[0];
-            (*stv).second->get_value()[TypeID::dy] = cerange.cosines[1];
-            (*stv).second->get_value()[TypeID::dz] = cerange.cosines[2];
+            (*stv->second)[TypeID::dx] = cerange.cosines[0];
+            (*stv->second)[TypeID::dy] = cerange.cosines[1];
+            (*stv->second)[TypeID::dz] = cerange.cosines[2];
                // When using pseudorange method, this is 1.0
-            (*stv).second->get_value()[TypeID::cdt] = 1.0;
+            (*stv->second)[TypeID::cdt] = 1.0;
 
                // Now we have to add the new values to the data structure
-            (*stv).second->get_value()[TypeID::rho] = cerange.rawrange;
-            (*stv).second->get_value()[TypeID::rel] = -cerange.relativity;
-            (*stv).second->get_value()[TypeID::elevation] = cerange.elevationGeodetic;
-            (*stv).second->get_value()[TypeID::azimuth] = cerange.azimuthGeodetic;
+            (*stv->second)[TypeID::rho] = cerange.rawrange;
+            (*stv->second)[TypeID::rel] = -cerange.relativity;
+            (*stv->second)[TypeID::elevation] = cerange.elevationGeodetic;
+            (*stv->second)[TypeID::azimuth] = cerange.azimuthGeodetic;
 
 
                // Get iono and instrumental delays right
@@ -409,12 +409,12 @@ namespace gnsstk
 
             if( pDefaultIonoModel )
             {
-               (*stv).second->get_value()[ionoDelayType] = tempIono;
+               (*stv->second)[ionoDelayType] = tempIono;
             }
 
             if( useTGD )
             {
-               (*stv).second->get_value()[instDelayType] = tempTGD;
+               (*stv->second)[instDelayType] = tempTGD;
             }
 
 

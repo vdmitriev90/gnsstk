@@ -11,8 +11,8 @@ namespace pod
         SatIDSet svRejSet;
         for (auto&& it : gData.getBody())
         {
-            auto it2 = it.second->get_value().find(TypeID::elevation);
-            if (it2 != it.second->get_value().end())
+            auto it2 = it.second->find(TypeID::elevation);
+            if (it2 != it.second->end())
             {
                 if (it2->second < elevation)
                     svRejSet.insert(it.first);

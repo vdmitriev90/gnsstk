@@ -77,7 +77,7 @@ namespace gnsstk
                try
                {
                      // Try to extract the values
-                  value = (*it).second->get_value()(*pos);
+                  value = (*it->second)(*pos);
 
                      // Now, check that the value is within bounds
                   if ( !( checkValue(value) ) )

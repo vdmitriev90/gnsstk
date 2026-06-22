@@ -79,8 +79,8 @@ namespace gnsstk
             {
 
                   // Try to extract the values
-               codeObs  = (*it).second->get_value()(codeType);
-               phaseObs = (*it).second->get_value()(phaseType);
+               codeObs  = (*it->second)(codeType);
+               phaseObs = (*it->second)(phaseType);
 
             }
             catch(...)
@@ -98,7 +98,7 @@ namespace gnsstk
             {
 
                   // Try to get the first cycle slip flag
-               flagObs1  = (*it).second->get_value()(csFlag1);
+               flagObs1  = (*it->second)(csFlag1);
 
             }
             catch(...)
@@ -114,7 +114,7 @@ namespace gnsstk
             {
 
                   // Try to get the second cycle slip flag
-               flagObs2  = (*it).second->get_value()(csFlag2);
+               flagObs2  = (*it->second)(csFlag2);
 
             }
             catch(...)
@@ -127,7 +127,7 @@ namespace gnsstk
             }
 
                // Get the smoothed PC.
-            (*it).second->get_value()[resultType] = getSmoothing( (*it).first,
+            (*it->second)[resultType] = getSmoothing( (*it).first,
                                                      codeObs,
                                                      phaseObs,
                                                      flagObs1,

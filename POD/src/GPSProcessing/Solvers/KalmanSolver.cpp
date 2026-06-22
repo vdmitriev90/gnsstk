@@ -307,15 +307,15 @@ namespace pod
 
         auto svWithMaxResidual = std::max_element(
             gData.getBody().begin(), gData.getBody().end(), [&](const type& it1, const type& it2) -> bool {
-                double val1 = std::abs(it1.second->get_value().at(*id));
-                double val2 = std::abs(it2.second->get_value().at(*id));
+                double val1 = std::abs(it1.second->at(*id));
+                double val2 = std::abs(it2.second->at(*id));
                 return (val1 < val2);
             });
 
         // report detection
         cout << "Removed SV: " << svWithMaxResidual->first;
         cout << " with " << TypeID::tStrings[id->type] << " = ";
-        cout << svWithMaxResidual->second->get_value()[*id] << endl;
+        cout << (*svWithMaxResidual->second)[*id] << endl;
 
         // remove sv
         rejSat.insert(svWithMaxResidual->first);

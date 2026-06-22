@@ -64,7 +64,7 @@ namespace pod
                 try
                 {
                     // Try to extract the values
-                    value1 = it.second->get_value()(obsType);
+                    value1 = (*it.second)(obsType);
                 }
                 catch (...)
                 {
@@ -74,7 +74,7 @@ namespace pod
                     continue;
                 }
 
-                if (getDetection(epoch, it.first, it.second->get_value(), value1) > .0)
+                if (getDetection(epoch, it.first, (*it.second), value1) > .0)
                     affectedSatSet.insert(it.first);
             }
 
@@ -89,9 +89,9 @@ namespace pod
                 {
                     rejTableItem.insert(sv);
                     auto& it = gData[sv];
-                    it->get_value()[resultType1] += 1.0;
-                    if (it->get_value()[resultType1] > 1.0)
-                        it->get_value()[resultType1] = 1.0;
+                    (*it)[resultType1] += 1.0;
+                    if ((*it)[resultType1] > 1.0)
+                        (*it)[resultType1] = 1.0;
                 }
 
             return gData;

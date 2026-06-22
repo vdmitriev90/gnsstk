@@ -91,11 +91,11 @@ namespace gnsstk
                // Then, check both if there is arc information, and if current
                // arc number is different from arc number in storage (which
                // means a cycle slip happened)
-            if ( (*it).second->get_value().find(TypeID::satArc) != (*it).second->get_value().end() &&
-                 (*it).second->get_value()(TypeID::satArc) != satArcMap[ (*it).first ] )
+            if ( (*it).second->find(TypeID::satArc) != (*it).second->end() &&
+                 (*(*it).second)[TypeID::satArc] != satArcMap[ (*it).first ] )
             {
                   // If different, update satellite arc in storage
-               satArcMap[ (*it).first ] =(*it).second->get_value()(TypeID::satArc);
+               satArcMap[ (*it).first ] =(*(*it).second)[TypeID::satArc];
 
                   // Reset phase information
                phase_satellite[ (*it).first ].previousPhase = 0.0;
@@ -105,9 +105,9 @@ namespace gnsstk
 
 
                // Use ephemeris if satellite position is not already computed
-            if (((*it).second->get_value().find(TypeID::satX) == (*it).second->get_value().end()) ||
-                ((*it).second->get_value().find(TypeID::satY) == (*it).second->get_value().end()) ||
-                ((*it).second->get_value().find(TypeID::satZ) == (*it).second->get_value().end()))
+            if (((*it).second->find(TypeID::satX) == (*it).second->end()) ||
+                ((*it).second->find(TypeID::satY) == (*it).second->end()) ||
+                ((*it).second->find(TypeID::satZ) == (*it).second->end()))
             {
 
                 // Try to get satellite position
@@ -136,16 +136,16 @@ namespace gnsstk
             {
 
                   // Get satellite position out of GDS
-               svPos[0] = (*it).second->get_value()[TypeID::satX];
-               svPos[1] = (*it).second->get_value()[TypeID::satY];
-               svPos[2] = (*it).second->get_value()[TypeID::satZ];
+               svPos[0] = (*(*it).second)[TypeID::satX];
+               svPos[1] = (*(*it).second)[TypeID::satY];
+               svPos[2] = (*(*it).second)[TypeID::satZ];
 
             }  // End of 'if( ( (*it).second.find(TypeID::satX) == ...'
 
 
                // Let's get wind-up value in radians, and insert it
                // into GNSS data structure.
-            (*it).second->get_value()[TypeID::windUp] =
+            (*(*it).second)[TypeID::windUp] =
                getWindUp((*it).first, time, svPos, sunPos);
 
          }  // End of 'for (it = gData.begin(); it != gData.end(); ++it)'

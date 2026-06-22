@@ -158,9 +158,9 @@ namespace pod
             if (it != gData.getBody().end())
             {
                 if (refSVs.find(amb.sv) == refSVs.end())
-                    gData.getBody()[amb.sv]->get_value()[amb.type] = ddFixedAmb(i++);
+                    (*gData.getBody()[amb.sv])[amb.type] = ddFixedAmb(i++);
                 else
-                    gData.getBody()[amb.sv]->get_value()[amb.type] = 0.0;
+                    (*gData.getBody()[amb.sv])[amb.type] = 0.0;
             }
         }
     }

@@ -54,7 +54,7 @@ namespace pod
                 for (auto&& t : types)
                 {
                     int col = layout.index(t);
-                    H(row, col) = it.second->get_value().at(t.type);
+                    H(row, col) = it.second->at(t.type);
                 }
                 row++;
             }

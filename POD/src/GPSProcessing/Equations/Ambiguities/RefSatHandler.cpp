@@ -22,7 +22,7 @@ namespace pod
             for (const auto& sv : gData.getBody())
                 if (sv.first.system == ss)
                 {
-                    double ei = sv.second->get_value().at(TypeID::elevation);
+                    double ei = sv.second->at(TypeID::elevation);
                     if (ei > maxEl)
                     {
                         maxEl = ei;

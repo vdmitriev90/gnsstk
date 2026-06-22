@@ -59,7 +59,7 @@ namespace gnsstk
 				try
 				{
 					// Try to extract the values
-					value1 = it.second->get_value()(obsType);
+					value1 = (*it.second)(obsType);
 				}
 				catch (...)
 				{
@@ -74,7 +74,7 @@ namespace gnsstk
 					try
 					{
 						// Try to get the LLI1 index
-						lli1 = it.second->get_value()(lliType1);
+						lli1 = (*it.second)(lliType1);
 					}
 					catch (...)
 					{
@@ -86,7 +86,7 @@ namespace gnsstk
 					try
 					{
 						// Try to get the LLI2 index
-						lli2 = it.second->get_value()(lliType2);
+						lli2 = (*it.second)(lliType2);
 					}
 					catch (...)
 					{
@@ -101,7 +101,7 @@ namespace gnsstk
 				// several different cycle slip detectors
 				auto res = getDetection(epoch,
 					it.first,
-					it.second->get_value(),
+					(*it.second),
 					epochflag,
 					value1,
 					lli1,
@@ -115,41 +115,41 @@ namespace gnsstk
 				}
 
 				auto st = SatUsedStatus::Unknown;
-				auto it1 = it.second->get_value().find(TypeID::satStatus);
-				if (it1 != it.second->get_value().end())
+				auto it1 = it.second->find(TypeID::satStatus);
+				if (it1 != it.second->end())
 					st = static_cast<SatUsedStatus>((int)it1->second);
 
 				if (res == DetectionResult::NotEnoughData)
-					it.second->get_value()[TypeID::satStatus] = SatUsedStatus::NotEnoughData;
+					(*it.second)[TypeID::satStatus] = SatUsedStatus::NotEnoughData;
 				else if (res == DetectionResult::CsDetected)
-					it.second->get_value()[TypeID::satStatus] = SatUsedStatus::RejectedByCsDetector;
+					(*it.second)[TypeID::satStatus] = SatUsedStatus::RejectedByCsDetector;
 				else if (res == DetectionResult::CsDetectedByMW)
 				{
 					if (st == SatUsedStatus::RejectedByLIDetector)
-						it.second->get_value()[TypeID::satStatus] = SatUsedStatus::RejectedByCsDetector;
+						(*it.second)[TypeID::satStatus] = SatUsedStatus::RejectedByCsDetector;
 					else
-						it.second->get_value()[TypeID::satStatus] = SatUsedStatus::RejectedByMWDetector;
+						(*it.second)[TypeID::satStatus] = SatUsedStatus::RejectedByMWDetector;
 				}
 				else if (res == DetectionResult::CsDetectedByLI2)
 				{
 					if (st == SatUsedStatus::RejectedByMWDetector)
-						it.second->get_value()[TypeID::satStatus] = SatUsedStatus::RejectedByCsDetector;
+						(*it.second)[TypeID::satStatus] = SatUsedStatus::RejectedByCsDetector;
 					else
-						it.second->get_value()[TypeID::satStatus] = SatUsedStatus::RejectedByLIDetector;
+						(*it.second)[TypeID::satStatus] = SatUsedStatus::RejectedByLIDetector;
 				}
 
-				it.second->get_value()[resultType1] += res;
+				(*it.second)[resultType1] += res;
 
 				if (res > 0)
 					rejTableItem.insert(it.first);
 				
 
-				if (it.second->get_value()[resultType1] > 1.0)
-					it.second->get_value()[resultType1] = 1.0;
+				if ((*it.second)[resultType1] > 1.0)
+					(*it.second)[resultType1] = 1.0;
 
 
 				// We will mark both cycle slip flags
-				it.second->get_value()[resultType2] = it.second->get_value()[resultType1];
+				(*it.second)[resultType2] = (*it.second)[resultType1];
 
 			}
 

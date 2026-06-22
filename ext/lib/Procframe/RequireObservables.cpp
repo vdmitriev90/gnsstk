@@ -75,7 +75,7 @@ namespace gnsstk
                 }
 
                 const TypeIDSet& required = reqIt->second;
-                auto& tvMap = it->second->get_value();
+                auto& tvMap = *it->second;
 
                 bool reject = false;
 

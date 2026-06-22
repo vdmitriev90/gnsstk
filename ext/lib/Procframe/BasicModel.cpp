@@ -125,7 +125,7 @@ namespace gnsstk
          for(auto stv = gData.begin(); stv != gData.end(); ++stv )
          {
                // Scalar to hold temporal value
-            double observable( (*stv).second->get_value()(defaultObservable) );
+            double observable( (*(*stv).second)(defaultObservable) );
 
                // A lot of the work is done by a CorrectedEphemerisRange object
             CorrectedEphemerisRange cerange;
@@ -167,19 +167,19 @@ namespace gnsstk
            
 
                // Now we have to add the new values to the data structure
-            (*stv).second->get_value()[TypeID::dtSat] = cerange.svclkbias;
+            (*(*stv).second)[TypeID::dtSat] = cerange.svclkbias;
 
                // Now, lets insert the geometry matrix
-            (*stv).second->get_value()[TypeID::dx] = cerange.cosines[0];
-            (*stv).second->get_value()[TypeID::dy] = cerange.cosines[1];
-            (*stv).second->get_value()[TypeID::dz] = cerange.cosines[2];
+            (*(*stv).second)[TypeID::dx] = cerange.cosines[0];
+            (*(*stv).second)[TypeID::dy] = cerange.cosines[1];
+            (*(*stv).second)[TypeID::dz] = cerange.cosines[2];
 
-            (*stv).second->get_value()[TypeID::dSatX] = -cerange.cosines[0];
-            (*stv).second->get_value()[TypeID::dSatY] = -cerange.cosines[1];
-            (*stv).second->get_value()[TypeID::dSatZ] = -cerange.cosines[2];
+            (*(*stv).second)[TypeID::dSatX] = -cerange.cosines[0];
+            (*(*stv).second)[TypeID::dSatY] = -cerange.cosines[1];
+            (*(*stv).second)[TypeID::dSatZ] = -cerange.cosines[2];
 
                // When using pseudorange method, this is 1.0
-            (*stv).second->get_value()[TypeID::cdt] = 1.0;
+            (*(*stv).second)[TypeID::cdt] = 1.0;
 
             //Glonass-spacific bias(ISB)
             double cdtGLO (0.0);
@@ -190,34 +190,34 @@ namespace gnsstk
                 numGLN++;
             }
             if (useCdtDot)
-                (*stv).second->get_value()[TypeID::recCdtdot] = dt;
+                (*(*stv).second)[TypeID::recCdtdot] = dt;
 
-            (*stv).second->get_value()[TypeID::recISB_GLN] = cdtGLO;
+            (*(*stv).second)[TypeID::recISB_GLN] = cdtGLO;
                // Now we have to add the new values to the data structure
-            (*stv).second->get_value()[TypeID::rho] = cerange.rawrange;
-            (*stv).second->get_value()[TypeID::rel] = -cerange.relativity;
-            (*stv).second->get_value()[TypeID::elevation] = cerange.elevationGeodetic;
-            (*stv).second->get_value()[TypeID::azimuth] = cerange.azimuthGeodetic;
+            (*(*stv).second)[TypeID::rho] = cerange.rawrange;
+            (*(*stv).second)[TypeID::rel] = -cerange.relativity;
+            (*(*stv).second)[TypeID::elevation] = cerange.elevationGeodetic;
+            (*(*stv).second)[TypeID::azimuth] = cerange.azimuthGeodetic;
 
                // Let's insert satellite position at transmission time
-            (*stv).second->get_value()[TypeID::satX] = cerange.svPosVel.x[0];
-            (*stv).second->get_value()[TypeID::satY] = cerange.svPosVel.x[1];
-            (*stv).second->get_value()[TypeID::satZ] = cerange.svPosVel.x[2];
+            (*(*stv).second)[TypeID::satX] = cerange.svPosVel.x[0];
+            (*(*stv).second)[TypeID::satY] = cerange.svPosVel.x[1];
+            (*(*stv).second)[TypeID::satZ] = cerange.svPosVel.x[2];
 
                // Let's insert satellite velocity at transmission time
-            (*stv).second->get_value()[TypeID::satVX] = cerange.svPosVel.v[0];
-            (*stv).second->get_value()[TypeID::satVY] = cerange.svPosVel.v[1];
-            (*stv).second->get_value()[TypeID::satVZ] = cerange.svPosVel.v[2];
+            (*(*stv).second)[TypeID::satVX] = cerange.svPosVel.v[0];
+            (*(*stv).second)[TypeID::satVY] = cerange.svPosVel.v[1];
+            (*(*stv).second)[TypeID::satVZ] = cerange.svPosVel.v[2];
 
                // Let's insert receiver position 
-            (*stv).second->get_value()[TypeID::recX] = rxPos.X();
-            (*stv).second->get_value()[TypeID::recY] = rxPos.Y();
-            (*stv).second->get_value()[TypeID::recZ] = rxPos.Z();
+            (*(*stv).second)[TypeID::recX] = rxPos.X();
+            (*(*stv).second)[TypeID::recY] = rxPos.Y();
+            (*(*stv).second)[TypeID::recZ] = rxPos.Z();
 
                // Let's insert receiver velocity 
-            (*stv).second->get_value()[TypeID::recVX] = 0.0;
-            (*stv).second->get_value()[TypeID::recVY] = 0.0;
-            (*stv).second->get_value()[TypeID::recVZ] = 0.0;
+            (*(*stv).second)[TypeID::recVX] = 0.0;
+            (*(*stv).second)[TypeID::recVY] = 0.0;
+            (*(*stv).second)[TypeID::recVZ] = 0.0;
 
             if (addTGD)
             {
@@ -228,14 +228,14 @@ namespace gnsstk
                 if (useTGD)
                 {
                     // Look for C1
-                    if ((*stv).second->get_value().find(TypeID::C1) != (*stv).second->get_value().end())
+                    if ((*stv).second->find(TypeID::C1) != (*stv).second->end())
                     {
-                        (*stv).second->get_value()[TypeID::C1] =
-                            (*stv).second->get_value()[TypeID::C1] - tempTGD;
+                        (*(*stv).second)[TypeID::C1] =
+                            (*(*stv).second)[TypeID::C1] - tempTGD;
                     };
                 };
 
-                (*stv).second->get_value()[TypeID::instC1] = tempTGD;
+                (*(*stv).second)[TypeID::instC1] = tempTGD;
             }
          } // End of loop for(stv = gData.begin()...
 

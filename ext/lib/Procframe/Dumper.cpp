@@ -72,7 +72,7 @@ namespace gnsstk
             *outStr << (*it).first << " ";
 
                // Now, print TypeIDs
-            printTypeID( (*it).second->get_value() );
+            printTypeID( (*it->second) );
 
                // Print end of line
             *outStr << std::endl;
@@ -133,7 +133,7 @@ namespace gnsstk
             *outStr << (*it).first << " ";
 
                // Now, print TypeIDs
-            printTypeID( (*it).second->get_value() );
+            printTypeID( (*it->second) );
 
                // Print end of line
             *outStr << std::endl;

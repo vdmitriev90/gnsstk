@@ -31,7 +31,7 @@ namespace pod
         int col = layout.index(paramType_);
         for (const auto& t : obsTypes)
             for (const auto& it : gData.getBody())
-                H(row++, col) = it.second->get_value().at(paramType_.type);
+                H(row++, col) = it.second->at(paramType_.type);
     }
 
     void TropoEquations::contributeTransitionMartix(gnsstk::Matrix<double>& Phi, const StateLayout& layout) const

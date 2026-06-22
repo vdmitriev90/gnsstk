@@ -193,7 +193,7 @@ namespace gnsstk
             try
             {
                   // Try to extract value
-               value = (*it).second->get_value().getValue(inputType);
+               value = (*it).second->getValue(inputType);
             }
             catch(...)
             {
@@ -235,7 +235,7 @@ namespace gnsstk
                {
 
                      // Try to extract satellite's arc value
-                  arcN = (*it).second->get_value().getValue(TypeID::satArc);
+                  arcN = (*it).second->getValue(TypeID::satArc);
 
                }
                catch(...)
@@ -268,7 +268,7 @@ namespace gnsstk
                {
 
                      // Try to extract satellite's cycle slip flag
-                  flag = (*it).second->get_value().getValue(watchCSFlag);
+                  flag = (*it).second->getValue(watchCSFlag);
 
                }
                catch(...)

@@ -77,8 +77,8 @@ namespace gnsstk
             try
             {
                   // Try to extract the values
-               value1 = it.second->get_value()(type1);
-               value2 = it.second->get_value()(type2);
+               value1 = (*it.second)(type1);
+               value2 = (*it.second)(type2);
             }
             catch(...)
             {
@@ -90,7 +90,7 @@ namespace gnsstk
 
                // If everything is OK, then get the new value inside
                // the structure
-             it.second->get_value()[resultType] = getCombination(value1, value2);
+             (*it.second)[resultType] = getCombination(value1, value2);
 
          }
 

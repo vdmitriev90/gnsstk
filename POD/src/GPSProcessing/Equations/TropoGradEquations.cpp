@@ -32,7 +32,7 @@ namespace pod
 			int row(0);
 			for (const auto& t : obsTypes)
 				for (const auto& it : gData.getBody())
-					H(row++, col) = it.second->get_value().at(type.type);
+					H(row++, col) = it.second->at(type.type);
 		}
 	}
 

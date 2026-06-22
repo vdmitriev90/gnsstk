@@ -79,7 +79,7 @@ namespace pod
                 for (auto& it1 : csList)
                 {
                     auto csType = it1.getResultType();
-                    double CS = it.second->get_value().getValue(csType);
+                    double CS = it.second->getValue(csType);
                     if (CS > 0)
                     {
                         if (isEpochFirstTime)

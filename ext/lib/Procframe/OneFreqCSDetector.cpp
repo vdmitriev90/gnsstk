@@ -159,8 +159,8 @@ namespace gnsstk
             try
             {
                   // Try to extract the values
-               value1 = (*it).second->get_value()(codeType);
-               value2 = (*it).second->get_value()(phaseType);
+               value1 = (*it->second)(codeType);
+               value2 = (*it->second)(phaseType);
             }
             catch(...)
             {
@@ -174,16 +174,16 @@ namespace gnsstk
                // the structure.
                // This way of doing it allows concatenation of several
                // different cycle slip detectors
-            (*it).second->get_value()[resultType] += getDetection( epoch,
+            (*it->second)[resultType] += getDetection( epoch,
                                                       (*it).first,
-                                                      (*it).second->get_value(),
+                                                      (*it->second),
                                                       epochflag,
                                                       value1,
                                                       value2 );
 
-            if ( (*it).second->get_value()[resultType] > 1.0 )
+            if ( (*it->second)[resultType] > 1.0 )
             {
-               (*it).second->get_value()[resultType] = 1.0;
+               (*it->second)[resultType] = 1.0;
             }
 
          }

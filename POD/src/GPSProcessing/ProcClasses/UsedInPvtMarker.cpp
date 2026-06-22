@@ -14,7 +14,7 @@ namespace pod
     gnsstk::SatTypePtrMap& UsedInPvtMarker::markAsUsed(gnsstk::SatTypePtrMap& satData) const
     {
         for (auto&& it : satData)
-            it.second->get_value()[type] = SatUsedStatus::UsedInPVT;
+            (*it.second)[type] = SatUsedStatus::UsedInPVT;
 
         return satData;
     }
@@ -26,7 +26,7 @@ namespace pod
 
         for (auto&& [sat, data] : satData)
         {
-            const auto& values = data->get_value();
+            const auto& values = *data;
             auto it = values.find(type);
 
             if (it == values.end() || it->second == static_cast<double>(SatUsedStatus::NotUsedInPVT))
@@ -44,15 +44,15 @@ namespace pod
     {
         for (auto it = satData.begin(); it != satData.end(); ++it)
         {
-            auto status = it->second->get_value().find(TypeID::satStatus);
+            auto status = it->second->find(TypeID::satStatus);
             // if (preEpochSats.find(it->first) == preEpochSats.end())
             //	it->second->get_value()[TypeID::CSL1] = it->second->get_value()[TypeID::CSL2] = 1;
 
             // reset CS flag, if this sv - epoch already has been rejected by CS catcher
-            if (status != it->second->get_value().end()
+            if (status != it->second->end()
                 && static_cast<SatUsedStatus>(status->second) == SatUsedStatus::NotEnoughData)
             {
-                it->second->get_value()[TypeID::CSL1] = it->second->get_value()[TypeID::CSL2] = 0;
+                (*it->second)[TypeID::CSL1] = (*it->second)[TypeID::CSL2] = 0;
                 // status->second = UsedInPVT;
             }
         }
@@ -62,7 +62,7 @@ namespace pod
     gnsstk::SatTypePtrMap& UsedInPvtMarker::CleanSatArcFlags(gnsstk::SatTypePtrMap& satData) const
     {
         for (auto&& it : satData)
-            it.second->get_value()[TypeID::satArc] = 0;
+            (*it.second)[TypeID::satArc] = 0;
 
         return satData;
     }

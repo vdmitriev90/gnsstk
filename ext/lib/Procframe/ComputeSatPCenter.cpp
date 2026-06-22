@@ -79,9 +79,9 @@ namespace gnsstk
          {
 
                // Use ephemeris if satellite position is not already computed
-            if( ( (*it).second->get_value().find(TypeID::satX) == (*it).second->get_value().end() ) ||
-                ( (*it).second->get_value().find(TypeID::satY) == (*it).second->get_value().end() ) ||
-                ( (*it).second->get_value().find(TypeID::satZ) == (*it).second->get_value().end() ) )
+            if( ( (*it).second->find(TypeID::satX) == (*it).second->end() ) ||
+                ( (*it).second->find(TypeID::satY) == (*it).second->end() ) ||
+                ( (*it).second->find(TypeID::satZ) == (*it).second->end() ) )
             {
 
                if(pEphemeris==NULL)
@@ -123,16 +123,16 @@ namespace gnsstk
             {
 
                   // Get satellite position out of GDS
-               svPos[0] = (*it).second->get_value()[TypeID::satX];
-               svPos[1] = (*it).second->get_value()[TypeID::satY];
-               svPos[2] = (*it).second->get_value()[TypeID::satZ];
+               svPos[0] = (*it->second)[TypeID::satX];
+               svPos[1] = (*it->second)[TypeID::satY];
+               svPos[2] = (*it->second)[TypeID::satZ];
 
-            }  // End of 'if( ( (*it).second->get_value().find(TypeID::satX) == ...'
+            }  // End of 'if( ( (*it).second->find(TypeID::satX) == ...'
 
 
                // Let's get the satellite antenna phase correction value in
                // meters, and insert it in the GNSS data structure.
-            (*it).second->get_value()[TypeID::satPCenter] =
+            (*it->second)[TypeID::satPCenter] =
                getSatPCenter((*it).first, time, svPos, sunPos);
 
          }  // End of 'for (it = gData.begin(); it != gData.end(); ++it)'

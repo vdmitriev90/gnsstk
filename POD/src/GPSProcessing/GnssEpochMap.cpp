@@ -14,7 +14,7 @@ namespace pod
     GnssEpoch::GnssEpoch(const gnsstk::SatTypePtrMap& stpMap)
     {
         for (auto&& it : stpMap)
-            satData.emplace(it.first, it.second->get_value());
+            satData.emplace(it.first, (*it.second));
     }
 
     GnssEpoch::~GnssEpoch() {}

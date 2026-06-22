@@ -1,21 +1,84 @@
 #pragma once
-#include"ITypeValueMap.h"
-#include"Matrix.hpp"
-#include"satTypeValueMap.hpp"
+#include "Matrix.hpp"
+#include "satTypeValueMap.hpp"
 
 namespace gnsstk
-{   
+{
 
-
-    class SatTypePtrMap : public std::map<SatID,  std::shared_ptr<ITypeValueMap> >
+    class SatTypePtrMap
     {
+      public:
+        using MapType = std::map<SatID, typeValueMap*>;
+        using iterator = MapType::iterator;
+        using const_iterator = MapType::const_iterator;
+        using value_type = MapType::value_type;
 
-    public:
+        iterator begin()
+        {
+            return data_.begin();
+        }
+        const_iterator begin() const
+        {
+            return data_.begin();
+        }
+        iterator end()
+        {
+            return data_.end();
+        }
+        const_iterator end() const
+        {
+            return data_.end();
+        }
+        iterator find(const SatID& key)
+        {
+            return data_.find(key);
+        }
+        const_iterator find(const SatID& key) const
+        {
+            return data_.find(key);
+        }
+        iterator erase(iterator it)
+        {
+            return data_.erase(it);
+        }
+        size_t erase(const SatID& key)
+        {
+            return data_.erase(key);
+        }
+        template <typename... Args>
+        auto emplace(Args&&... args)
+        {
+            return data_.emplace(std::forward<Args>(args)...);
+        }
+        typeValueMap*& operator[](const SatID& key)
+        {
+            return data_[key];
+        }
+        size_t size() const
+        {
+            return data_.size();
+        }
+        bool empty() const
+        {
+            return data_.empty();
+        }
+        void clear()
+        {
+            data_.clear();
+        }
 
         /// Returns the number of available satellites.
         size_t numSats() const
         {
-            return (*this).size();
+            return data_.size();
+        }
+
+        SatTypePtrMap() = default;
+        
+        SatTypePtrMap(std::map<SatID, typeValueMap>& src)
+        {
+            for (auto& [k, v] : src)
+                data_[k] = &v;
         }
 
         /** Returns the total number of data elements in the map.
@@ -24,35 +87,29 @@ namespace gnsstk
          */
         size_t numElements() const;
 
-
         /// Returns a SatIDSet with all the satellites present in this object.
         SatIDSet getSatID() const;
 
-		/// Returns a SatIDSet with all the satellites present in this object.
-		SatSystSet getSatSystems() const;
+        /// Returns a SatIDSet with all the satellites present in this object.
+        SatSystSet getSatSystems() const;
 
         /// Returns a Vector with all the satellites present in this object.
         Vector<SatID> getVectorOfSatID() const;
-
 
         /// Returns a TypeIDSet with all the data types present in
         /// this object.  This does not imply that all satellites have
         /// these types.
         TypeIDSet getTypeID() const;
 
-
         /// Returns a SatTypePtrMap with only this satellite.
         /// @param satellite Satellite to be extracted.
         SatTypePtrMap extractSatID(const SatID& satellite) const;
-
 
         /// Returns a SatTypePtrMap with only one satellite, identified
         /// by the given parameters.
         /// @param p Satellite PRN number.
         /// @param p System the satellite belongs to.
-        SatTypePtrMap extractSatID(const int& p,
-            SatelliteSystem s) const;
-
+        SatTypePtrMap extractSatID(const int& p, SatelliteSystem s) const;
 
         /// Returns a SatTypePtrMap with only these satellites.
         /// @param satSet Set (SatIDSet) containing the satellites to
@@ -65,54 +122,46 @@ namespace gnsstk
         SatTypePtrMap extractSatSyst(const SatSystSet& sustSet) const;
         SatTypePtrMap extractSatSyst(SatelliteSystem s) const;
 
-		SatTypePtrMap& keepOnlySatSyst(const SatSystSet& satSystSet);
-		SatTypePtrMap& keepOnlySatSyst(SatelliteSystem s);
+        SatTypePtrMap& keepOnlySatSyst(const SatSystSet& satSystSet);
+        SatTypePtrMap& keepOnlySatSyst(SatelliteSystem s);
 
         /// Modifies this object, keeping only this satellite.
         /// @param satellite Satellite to be kept.
         SatTypePtrMap& keepOnlySatID(const SatID& satellite);
 
-
         /// Modifies this object, keeping only this satellite.
         /// @param p Satellite PRN number.
         /// @param p System the satellite belongs to.
-        SatTypePtrMap& keepOnlySatID(const int& p,
-            SatelliteSystem s);
-
+        SatTypePtrMap& keepOnlySatID(const int& p, SatelliteSystem s);
 
         /// Modifies this object, keeping only these satellites.
         /// @param satSet Set (SatIDSet) containing the satellites to be kept.
         SatTypePtrMap& keepOnlySatID(const SatIDSet& satSet);
 
-
         /// Returns a SatTypePtrMap with only this type of value.
         /// @param type Type of value to be extracted.
-		satTypeValueMap extractTypeID(const TypeID & typeSet) const;
+        satTypeValueMap extractTypeID(const TypeID& typeSet) const;
 
         /// Returns a SatTypePtrMap with only these types of data.
         /// @param typeSet Set (TypeIDSet) containing the types of data
         ///                to be extracted.
-		satTypeValueMap extractTypeID(const TypeIDSet& typeSet) const;
-
+        satTypeValueMap extractTypeID(const TypeIDSet& typeSet) const;
 
         /// Modifies this object, keeping only this type of data.
         /// @param type Type of value to be kept.
         SatTypePtrMap& keepOnlyTypeID(const TypeID& type);
-
 
         /// Modifies this object, keeping only these types of data.
         /// @param typeSet Set (TypeIDSet) containing the types of data
         ///                to be kept.
         SatTypePtrMap& keepOnlyTypeID(const TypeIDSet& typeSet);
 
-
         /// Modifies this object, removing this satellite.
         /// @param satellite Satellite to be removed.
 
-		SatTypePtrMap& removeSatID(int id,SatelliteSystem system);
+        SatTypePtrMap& removeSatID(int id, SatelliteSystem system);
 
-		SatTypePtrMap& removeSatID(const SatID& satellite);
-
+        SatTypePtrMap& removeSatID(const SatID& satellite);
 
         /// Modifies this object, removing these satellites.
         /// @param satSet Set (SatIDSet) containing the satellites
@@ -127,12 +176,10 @@ namespace gnsstk
         /// @param type Type of value to be removed.
         SatTypePtrMap& removeTypeID(const TypeID& type);
 
-
         /// Modifies this object, removing these types of data.
         /// @param typeSet Set (TypeIDSet) containing the types of data
         ///                to be kept.
         SatTypePtrMap& removeTypeID(const TypeIDSet& typeSet);
-
 
         /// Returns a GPSTk::Vector containing the data values with this type.
         /// @param type Type of value to be returned.
@@ -140,11 +187,9 @@ namespace gnsstk
         /// this type.
         Vector<double> getVectorOfTypeID(const TypeID& type) const;
 
-
         /// Returns a GPSTk::Matrix containing the data values in this set.
         /// @param typeSet  TypeIDSet of values to be returned.
         Matrix<double> getMatrixOfTypes(const TypeIDSet& typeSet) const;
-
 
         /** Modifies this object, adding one vector of data with this type,
          *  one value per satellite.
@@ -161,9 +206,7 @@ namespace gnsstk
          * @param type          Type of data to be added.
          * @param dataVector    GPSTk Vector containing the data to be added.
          */
-        SatTypePtrMap& insertTypeIDVector(const TypeID& type,
-            const Vector<double> dataVector);
-
+        SatTypePtrMap& insertTypeIDVector(const TypeID& type, const Vector<double> dataVector);
 
         /** Modifies this object, adding a matrix of data, one vector
          *  per satellite.
@@ -184,9 +227,7 @@ namespace gnsstk
          *                      to be added.
          * @param dataMatrix    GPSTk Matrix containing the data to be added.
          */
-        SatTypePtrMap& insertMatrix(const TypeIDSet& typeSet,
-            const Matrix<double> dataMatrix);
-
+        SatTypePtrMap& insertMatrix(const TypeIDSet& typeSet, const Matrix<double> dataMatrix);
 
         /** Returns the data value (double) corresponding to provided SatID
          *  and TypeID.
@@ -194,26 +235,21 @@ namespace gnsstk
          * @param satellite     Satellite to be looked for.
          * @param type          Type to be looked for.
          */
-        double getValue(const SatID& satellite,
-            const TypeID& type) const;
-
+        double getValue(const SatID& satellite, const TypeID& type) const;
 
         /// Returns a reference to the typeValueMap with corresponding SatID.
         /// @param type Type of value to be look for.
         typeValueMap& operator()(const SatID& satellite);
 
-
         /// Convenience output method
-        virtual std::ostream& dump(std::ostream& s,
-            int mode = 0) const;
-
+        virtual std::ostream& dump(std::ostream& s, int mode = 0) const;
 
         /// Destructor.
         virtual ~SatTypePtrMap() {};
-        
+
+      private:
+        MapType data_;
     };
-	std::ostream& operator<<(std::ostream& s, const gnsstk::SatTypePtrMap& obj);
+    std::ostream& operator<<(std::ostream& s, const gnsstk::SatTypePtrMap& obj);
 
-
-}
-
+} // namespace gnsstk

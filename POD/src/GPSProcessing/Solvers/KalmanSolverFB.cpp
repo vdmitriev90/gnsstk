@@ -167,10 +167,10 @@ namespace pod
             for (auto&& it : gData.getBody())
             {
                 // Check postfit values and mark satellites as rejected
-                auto itRes = it.second->get_value().find(type);
-                if (itRes != it.second->get_value().end() && std::abs(itRes->second) > limit)
+                auto itRes = it.second->find(type);
+                if (itRes != it.second->end() && std::abs(itRes->second) > limit)
                 {
-                    it.second->get_value().erase(type);
+                    it.second->erase(type);
                     satRejectedSet.insert(it.first);
                 }
             }

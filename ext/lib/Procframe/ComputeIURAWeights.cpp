@@ -103,7 +103,7 @@ namespace gnsstk
                 const SatID& sat_id = (*it).first;
                 std::optional<double> weight = getURAWeight(sat_id, time, navLib_);
                 if (weight.has_value())
-                    (*it).second->get_value()[TypeID::weight] = weight.value();
+                    (*it->second)[TypeID::weight] = weight.value();
                 else
                     satRejectedSet.insert((*it).first);
             }

@@ -200,7 +200,7 @@ namespace pod
         int i_res = 0;
         for (auto&& resType : getResidTypes())
             for (auto&& itSat : gData.getBody())
-                itSat.second->get_value()[resType] = residuals(i_res++);
+                (*itSat.second)[resType] = residuals(i_res++);
     }
 
     std::vector<double> EquationComposer::getResiduals(const gnsstk::Vector<double>& residuals,

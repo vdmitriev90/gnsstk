@@ -159,9 +159,9 @@ namespace gnsstk
             {
 
                   // Try to extract the values
-               codeObs  = (*it).second->get_value()(codeType);
-               phaseObs = (*it).second->get_value()(phaseType);
-               flagObs  = (*it).second->get_value()(csFlag);
+               codeObs  = (*it->second)(codeType);
+               phaseObs = (*it->second)(phaseType);
+               flagObs  = (*it->second)(csFlag);
 
                if(codeObs==0.0 ||phaseObs==0.0 )
                {
@@ -181,7 +181,7 @@ namespace gnsstk
             }
 
                // If everything is OK, then call smoothing function
-            (*it).second->get_value()[resultType] = getSmoothing( (*it).first,
+            (*it->second)[resultType] = getSmoothing( (*it).first,
                                                      codeObs,
                                                      phaseObs,
                                                      flagObs );

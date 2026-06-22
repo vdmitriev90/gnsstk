@@ -143,7 +143,7 @@ namespace gnsstk
                {
 
                      // Try to extract the satellite arc value
-                  arcN = (*it).second->get_value()(TypeID::satArc);
+                  arcN = (*it->second)(TypeID::satArc);
 
                }
                catch(...)
@@ -179,7 +179,7 @@ namespace gnsstk
                {
 
                      // Try to extract the CS flag value
-                  flag = (*it).second->get_value()(watchCSFlag);
+                  flag = (*it->second)(watchCSFlag);
 
                }
                catch(...)
@@ -209,7 +209,7 @@ namespace gnsstk
             {
 
                   // Compute difference between code and phase measurements
-               double diff( (*it).second->get_value()(codeType) - (*it).second->get_value()(phaseType) );
+               double diff( (*it->second)(codeType) - (*it->second)(phaseType) );
 
                   // Convert 'diff' to cycles
                diff = diff/phaseWavelength;
@@ -224,7 +224,7 @@ namespace gnsstk
 
                // Let's align the phase measurement using the
                // corresponding offset
-            (*it).second->get_value()[phaseType] = (*it).second->get_value()[phaseType]
+            (*it->second)[phaseType] = (*it->second)[phaseType]
                                       + svData[(*it).first].offset;
 
          }
