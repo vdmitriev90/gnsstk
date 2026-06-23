@@ -9,31 +9,32 @@ namespace gnsstk
 	class IRinex;
 	typedef SatelliteSystem GpstkSatSystem;
 	typedef std::unique_ptr<IRinex> irinex_uptr;
-    class IRinex
-    {
-    public:
+	class IRinex
+	{
+	public:
+		virtual ~IRinex() = default;
+
 		friend std::istream&  operator>>(std::istream& i, IRinex& f)
 		{
 			return f.read(i);
 		}
-		
-		friend std::ostream&  operator<<(std::ostream& i, IRinex& f)
+
+		friend std::ostream&  operator<<(std::ostream& o, const IRinex& f)
 		{
-			return f.print(i);
+			return f.print(o);
 		}
 		virtual IRinex& operator=(const IRinex & other) { return *this; };
 
 		virtual irinex_uptr clone() const =0;
-		
+
 		virtual std::istream& read(std::istream&) = 0;
-		virtual std::ostream& print(std::ostream&) = 0;
+		virtual std::ostream& print(std::ostream&) const = 0;
         
 		virtual sourceEpochRinexHeader& getHeader() = 0;
         virtual const sourceEpochRinexHeader& getHeader() const = 0;
 
         virtual SatTypePtrMap& getBody() = 0;
 		virtual const SatTypePtrMap& getBody() const = 0;
-		virtual void addSv(const SatID& sv, const typeValueMap& data) = 0;
 		virtual  void resetCurrData() = 0;
     };
 
@@ -42,11 +43,9 @@ namespace gnsstk
 
     public:
 
-        RinexEpoch( ); 
+        RinexEpoch( ) = default; 
 		RinexEpoch(const RinexEpoch & other);
         RinexEpoch(const gnssRinex & gRin);
-
-        virtual ~RinexEpoch();
 
         void resetCurrData();
 
@@ -55,9 +54,9 @@ namespace gnsstk
             return currData;
         };
 
-		virtual IRinex& operator=(const RinexEpoch & other);
+		virtual RinexEpoch& operator=(const RinexEpoch & other);
 
-		virtual IRinex& operator=(const IRinex & other) override;
+		virtual RinexEpoch& operator=(const IRinex & other) override;
 		
 		virtual irinex_uptr clone() const override
 		{
@@ -81,12 +80,10 @@ namespace gnsstk
 
 		std::istream& read(std::istream& i);
 
-
-		std::ostream& print(std::ostream& i)
+		std::ostream& print(std::ostream& i) const
 		{
 			return i << rinex;
 		}
-		void addSv(const SatID& sv, const typeValueMap& data) override;
 
         RinexEpoch extractSatID(const SatID& satellite) const;
 
@@ -114,16 +111,11 @@ namespace gnsstk
 
         RinexEpoch& keepOnlyTypeID(const TypeIDSet& typeSet);
 
-
 		RinexEpoch& removeSatID(int id,SatelliteSystem system);
 
 		RinexEpoch& removeSatID(const SatID & satSet);
 
 		RinexEpoch& removeSatID(const SatIDSet& satSet);
-
-		//RinexEpoch& removeSatSyst(const SatSystSet& satSet);
-
-		//RinexEpoch& removeSatSyst(SatelliteSystem syst);
 
     protected:
         SatTypePtrMap currData;

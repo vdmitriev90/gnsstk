@@ -37,7 +37,7 @@ namespace pod
             s << std::endl;
         }
         s << "Solution Data" << std::endl;
-        for (auto& itObs : this->slnData)
+        for (const auto& itObs : this->slnData)
         {
             // Print type names and values
             s << (itObs).first << " ";

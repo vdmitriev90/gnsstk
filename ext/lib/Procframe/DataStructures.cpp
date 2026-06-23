@@ -2147,7 +2147,7 @@ namespace gnsstk
 
    // Stream output for gnssRinex
    std::ostream& operator<<( std::ostream& s,
-                             gnssRinex& f )
+                             const gnssRinex& f )
    {
       FFStream* ffs = dynamic_cast<FFStream*>(&s);
       if(ffs)
@@ -2172,6 +2172,12 @@ namespace gnsstk
                itSat != satSet.end();
                ++itSat)
             {
+               const typeValueMap& satData = f.body.at(*itSat);
+               auto getVal = [&satData](const TypeID& t) -> double {
+                  auto it = satData.find(t);
+                  return it != satData.end() ? it->second : 0.0;
+               };
+
                vector<RinexObsType>::iterator obsTypeItr =
                   hdr.obsTypeList.begin();
 
@@ -2181,7 +2187,7 @@ namespace gnsstk
                      RinexSatID(itSat->id,itSat->system));
 
                   RinexDatum data;
-                  data.data = f.body[*itSat][type];
+                  data.data = getVal(type);
                   data.ssi = 0;
                   data.lli = 0;
 
@@ -2190,10 +2196,10 @@ namespace gnsstk
                      if(type == TypeID::L1)
                      {
                         data.data /= L1_WAVELENGTH_GAL;
-                        data.ssi = f.body[*itSat][TypeID::SSI1];
+                        data.ssi = getVal(TypeID::SSI1);
                      }
 
-                     data.lli = f.body[*itSat][TypeID::LLI1];
+                     data.lli = getVal(TypeID::LLI1);
                   }
 
                   if( (type == TypeID::P2) || (type == TypeID::L2))
@@ -2201,10 +2207,10 @@ namespace gnsstk
                      if(type == TypeID::L2)
                      {
                         data.data /= L2_WAVELENGTH_GPS;
-                        data.ssi = f.body[*itSat][TypeID::SSI2];
+                        data.ssi = getVal(TypeID::SSI2);
                      }
 
-                     data.lli = f.body[*itSat][TypeID::LLI2];
+                     data.lli = getVal(TypeID::LLI2);
                   }
 
                   if( (type == TypeID::C5) || (type == TypeID::L5))
@@ -2212,10 +2218,10 @@ namespace gnsstk
                      if(type == TypeID::L5)
                      {
                         data.data /= L5_WAVELENGTH_GAL;
-                        data.ssi = f.body[*itSat][TypeID::SSI5];
+                        data.ssi = getVal(TypeID::SSI5);
                      }
 
-                     data.lli = f.body[*itSat][TypeID::LLI5];
+                     data.lli = getVal(TypeID::LLI5);
                   }
 
                   if( (type == TypeID::C6) || (type == TypeID::L6) )
@@ -2223,10 +2229,10 @@ namespace gnsstk
                      if(type == TypeID::L6)
                      {
                         data.data /= L6_WAVELENGTH_GAL;
-                        data.ssi = f.body[*itSat][TypeID::SSI6];
+                        data.ssi = getVal(TypeID::SSI6);
                      }
 
-                     data.lli = f.body[*itSat][TypeID::LLI6];
+                     data.lli = getVal(TypeID::LLI6);
                   }
 
                   if( (type == TypeID::C7) || (type == TypeID::L7) )
@@ -2234,10 +2240,10 @@ namespace gnsstk
                      if(type == TypeID::L7)
                      {
                         data.data /= L7_WAVELENGTH_GAL;
-                        data.ssi = f.body[*itSat][TypeID::SSI7];
+                        data.ssi = getVal(TypeID::SSI7);
                      }
 
-                     data.lli = f.body[*itSat][TypeID::LLI7];
+                     data.lli = getVal(TypeID::LLI7);
                   }
 
                   if( (type == TypeID::C8) || (type == TypeID::L8))
@@ -2245,22 +2251,22 @@ namespace gnsstk
                      if(type == TypeID::L8)
                      {
                         data.data /= L8_WAVELENGTH_GAL;
-                        data.ssi = f.body[*itSat][TypeID::SSI8];
+                        data.ssi = getVal(TypeID::SSI8);
                      }
 
-                     data.lli = f.body[*itSat][TypeID::LLI8];
+                     data.lli = getVal(TypeID::LLI8);
                   }
 
                   if( (type == TypeID::D1) ||
                       (type == TypeID::S1) ||
                       (type == TypeID::C1) )
                   {
-                     data.lli = f.body[*itSat][TypeID::LLI1];
+                     data.lli = getVal(TypeID::LLI1);
                   }
 
                   if( (type == TypeID::D2) || (type == TypeID::S2) )
                   {
-                     data.lli = f.body[*itSat][TypeID::LLI2];
+                     data.lli = getVal(TypeID::LLI2);
                   }
 
 

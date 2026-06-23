@@ -1,10 +1,8 @@
 #include "RinexEpoch.h"
+#include <typeinfo>
 using namespace std;
 namespace gnsstk
 {
-
-    RinexEpoch::RinexEpoch() {}
-
     RinexEpoch::RinexEpoch(const RinexEpoch& other) : rinex(other.rinex)
     {
         resetCurrData();
@@ -15,9 +13,7 @@ namespace gnsstk
         resetCurrData();
     }
 
-    RinexEpoch::~RinexEpoch() {}
-
-    IRinex& RinexEpoch::operator=(const RinexEpoch& other)
+    RinexEpoch& RinexEpoch::operator=(const RinexEpoch& other)
     {
         this->rinex = other.rinex;
         resetCurrData();
@@ -25,18 +21,18 @@ namespace gnsstk
         return *this;
     }
 
-    IRinex& RinexEpoch::operator=(const IRinex& other)
+    RinexEpoch& RinexEpoch::operator=(const IRinex& other)
     {
-        const RinexEpoch& ep = dynamic_cast<const RinexEpoch&>(other);
+        if (this == &other)
+            return *this;
+        const RinexEpoch* ep = dynamic_cast<const RinexEpoch*>(&other);
+        if (!ep)
+            throw std::bad_cast();
 
-        this->rinex = ep.rinex;
+        this->rinex = ep->rinex;
         resetCurrData();
 
         return *this;
-    }
-    void RinexEpoch::addSv(const SatID& sv, const typeValueMap& data)
-    {
-        rinex.body.emplace(sv, data);
     }
 
     void RinexEpoch::resetCurrData()
@@ -126,22 +122,22 @@ namespace gnsstk
     RinexEpoch& RinexEpoch::removeSatID(int id, SatelliteSystem system)
     {
         SatID sv(id, system);
-        (*this).rinex.removeSatID(sv);
-
+        rinex.removeSatID(sv);
+        resetCurrData();
         return (*this);
     }
 
     RinexEpoch& RinexEpoch::removeSatID(const SatIDSet& satSet)
     {
-        (*this).rinex.removeSatID(satSet);
-
+        rinex.removeSatID(satSet);
+        resetCurrData();
         return (*this);
     }
 
     RinexEpoch& RinexEpoch::removeSatID(const SatID& sv)
     {
-        (*this).rinex.removeSatID(sv);
-
+        rinex.removeSatID(sv);
+        resetCurrData();
         return (*this);
     }
 } // namespace gnsstk

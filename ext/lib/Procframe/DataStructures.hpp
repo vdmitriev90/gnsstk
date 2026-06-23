@@ -1303,7 +1303,7 @@ namespace gnsstk
        *   }
        * @endcode
        */
-   std::ostream& operator<<( std::ostream& s, gnssRinex& f );
+   std::ostream& operator<<( std::ostream& s, const gnssRinex& f );
 
       //@}
 
