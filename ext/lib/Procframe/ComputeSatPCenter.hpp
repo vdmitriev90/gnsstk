@@ -152,6 +152,20 @@ namespace gnsstk
            fileData(filename), pAntexReader(NULL)
       { };
 
+      /** Common constructor
+          *
+          * @param filename  Name of "PRN_GPS"-like file containing
+          *                  satellite data.
+          *
+          * @warning If filename is not given, this class will look for a
+          * file named "PRN_GPS" in the current directory.
+          */
+      ComputeSatPCenter( const std::string& filename)
+          : pEphemeris(NULL)
+          , satData(filename)
+          , fileData(filename)
+          , pAntexReader(NULL) 
+      { };
 
          /** Common constructor. Uses satellite antenna data from an Antex file.
           *

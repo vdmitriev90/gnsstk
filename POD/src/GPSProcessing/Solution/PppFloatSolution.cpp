@@ -68,8 +68,7 @@ namespace pod
 
         ElevationMask elMask(opts().maskEl);
 
-        SimpleFilter CodeFilter(
-            TypeIDSet{data_->getGpsGloL1CodeType(), TypeID::P2, TypeID::L1, TypeID::L2});
+        SimpleFilter CodeFilter(TypeIDSet{data_->getGpsGloL1CodeType(), TypeID::P2, TypeID::L1, TypeID::L2});
         SimpleFilter SNRFilter(TypeID::S1, confReader().getValueAsInt("SNRmask"), DBL_MAX);
         // Object to remove eclipsed satellites
         EclipsedSatFilter eclipsedSV;
@@ -125,8 +124,7 @@ namespace pod
         const Triple offsetARP = confReader().getValueListAsTriple("offsetARP", opts().SiteRover);
         corrRover.setMonument(offsetARP);
 
-        Antenna roverAnt(
-            antexReader.getAntenna(confReader().getValue("antennaModel", opts().SiteRover)));
+        Antenna roverAnt(antexReader.getAntenna(confReader().getValue("antennaModel", opts().SiteRover)));
         corrRover.setUsePcv(confReader().getValueAsBoolean("usePCPatterns", opts().SiteRover));
         corrRover.setAntenna(roverAnt);
         corrRover.setUseAzimuth(confReader().getValueAsBoolean("useAzim", opts().SiteRover));
@@ -138,14 +136,13 @@ namespace pod
         SolidTides solid;
         PoleTides pole;
         // Configure ocean loading model
-        OceanLoading ocean;
-        ocean.setFilename(opts().genericFilesDirectory + confReader().getValue("oceanLoadingFile"));
+        // OceanLoading ocean;
+        // ocean.setFilename(opts().genericFilesDirectory + confReader().getValue("oceanLoadingFile"));
+        const std::string sat_file = opts().genericFilesDirectory + confReader().getValue("satDataFile");
 
-        ComputeWindUp windupRover(data_->navLibrary_,
-                                  opts().genericFilesDirectory
-                                      + confReader().getValue("satDataFile"));
+        ComputeWindUp windupRover(data_->navLibrary_, sat_file);
 
-        ComputeSatPCenter svPcenterRover;
+        ComputeSatPCenter svPcenterRover(sat_file);
         svPcenterRover.setAntexReader(antexReader);
 
         ProcessLinear linearIonoFree;
@@ -229,8 +226,7 @@ namespace pod
 
                 if (rin_epoch.getBody().empty())
                 {
-                    printMsg(rin_epoch.getHeader().epoch,
-                             "Rover receiver: all SV has been rejected.");
+                    printMsg(rin_epoch.getHeader().epoch, "Rover receiver: all SV has been rejected.");
                     continue;
                 }
                 rin_epoch >> computeLinear_;
@@ -243,8 +239,7 @@ namespace pod
                 rin_epoch >> grDelayRover;
                 rin_epoch >> svPcenterRover;
 
-                Triple tides(solid.getSolidTide(t, nominalPos_)
-                             + ocean.getOceanLoading(opts().SiteRover, t)
+                Triple tides(solid.getSolidTide(t, nominalPos_) /*+ ocean.getOceanLoading(opts().SiteRover, t)*/
                              + pole.getPoleTide(t, nominalPos_));
                 corrRover.setExtraBiases(tides);
                 rin_epoch >> corrRover;
@@ -316,9 +311,8 @@ namespace pod
 
         if (param.type == TypeID::wetMap)
         {
-            const double total_z_delay = tropoRover_.dry_zenith_delay()
-                                         + tropoRover_.wet_zenith_delay()
-                                         + solver.getSolution(param);
+            const double total_z_delay =
+                tropoRover_.dry_zenith_delay() + tropoRover_.wet_zenith_delay() + solver.getSolution(param);
 
             ep.slnData[TypeID::recZTropo] = total_z_delay;
 
@@ -363,8 +357,7 @@ namespace pod
         }
         else if (opts().tropoModelType == TropoModelType::SimpleWithGradients)
         {
-            equations_->addEquation(
-                std::make_unique<TropoGradEquations>(qPrimeVert, qPrimeHor, qPrimeHor));
+            equations_->addEquation(std::make_unique<TropoGradEquations>(qPrimeVert, qPrimeHor, qPrimeHor));
         }
         else if (opts().tropoModelType == TropoModelType::Advanced)
         {
@@ -393,10 +386,9 @@ namespace pod
         // add position equations
         equations_->addEquation(std::move(coord));
 
-
         if (confReader().getValueAsBoolean("useAdvClkModel"))
-            equations_->addEquation(std::make_unique<AdvClockModel>(
-                confReader().getValueAsDouble("q1Clk"), confReader().getValueAsDouble("q2Clk")));
+            equations_->addEquation(std::make_unique<AdvClockModel>(confReader().getValueAsDouble("q1Clk"),
+                                                                    confReader().getValueAsDouble("q2Clk")));
         else
             equations_->addEquation(std::make_unique<ClockBiasEquations>());
 

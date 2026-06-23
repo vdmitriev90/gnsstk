@@ -170,17 +170,17 @@ namespace pod
         SolidTides solid;
         PoleTides pole;
         // Configure ocean loading model
-        OceanLoading ocean;
-        ocean.setFilename(opts().genericFilesDirectory + confReader().getValue("oceanLoadingFile"));
+        //OceanLoading ocean;
+        //ocean.setFilename(opts().genericFilesDirectory + confReader().getValue("oceanLoadingFile"));
         const std::string sat_file = opts().genericFilesDirectory + confReader().getValue("satDataFile");
 
         ComputeWindUp windupBase(data_->navLibrary_, ref_base_pos, sat_file);
         ComputeWindUp windupRover(data_->navLibrary_, ref_base_pos, sat_file);
 
-        ComputeSatPCenter svPcenterBase(ref_base_pos);
+        ComputeSatPCenter svPcenterBase(ref_base_pos, sat_file);
         svPcenterBase.setAntexReader(antexReader);
 
-        ComputeSatPCenter svPcenterRover(ref_base_pos);
+        ComputeSatPCenter svPcenterRover(ref_base_pos, sat_file);
         svPcenterRover.setAntexReader(antexReader);
 
         ProcessLinear linearIonoFree;
@@ -322,7 +322,7 @@ namespace pod
                     gRef >> grDelayBase;
                     gRef >> svPcenterBase;
 
-                    Triple tides(solid.getSolidTide(t, ref_base_pos) + ocean.getOceanLoading(opts().SiteBase, t)
+                    Triple tides(solid.getSolidTide(t, ref_base_pos) /*+ ocean.getOceanLoading(opts().SiteBase, t)*/
                                  + pole.getPoleTide(t, ref_base_pos));
                     corrBase.setExtraBiases(tides);
 
@@ -351,7 +351,7 @@ namespace pod
                 rin_epoch >> grDelayRover;
                 rin_epoch >> svPcenterRover;
 
-                Triple tides(solid.getSolidTide(t, nominalPos_) + ocean.getOceanLoading(opts().SiteRover, t)
+                Triple tides(solid.getSolidTide(t, nominalPos_) /*+ ocean.getOceanLoading(opts().SiteRover, t)*/
                              + pole.getPoleTide(t, nominalPos_));
                 corrRover.setExtraBiases(tides);
                 rin_epoch >> corrRover;
