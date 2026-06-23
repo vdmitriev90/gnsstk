@@ -4,6 +4,7 @@
 #include "FilterParameter.h"
 #include "GnssDataStore.hpp"
 #include "StateLayout.h"
+#include "SatObservationBlocks.h"
 
 #include <memory>
 
@@ -36,20 +37,13 @@ namespace pod
         // prepare equations according current data set 'gData'
         virtual void prepare(gnsstk::IRinex& gData);
 
-        // compose design matrix
-        virtual void updateDesignMatrix(gnsstk::IRinex& gData, gnsstk::Matrix<double>& H);
-
-        /// compose state transition matrix
-        virtual void updateTransitionMatrix(gnsstk::Matrix<double>& Phi) const;
-
-        // compose process noise matrix
-        virtual void updateProcessNoiseMatrix(gnsstk::Matrix<double>& Q) const;
-
-        // compose measurments errors matrix
-        virtual void updateWeightsMatrix(const gnsstk::IRinex& gData, gnsstk::Matrix<double>& W);
-
-        // compose vector of measurements (prefit residuals)
-        virtual void updateMeas(const gnsstk::IRinex& gData, gnsstk::Vector<double>& prefitResiduals);
+        // compose all system matrices in one call
+        virtual void updateSystemMatrices(gnsstk::IRinex& gData,
+                                          gnsstk::Matrix<double>& H,
+                                          gnsstk::Vector<double>& prefitResiduals,
+                                          gnsstk::Matrix<double>& W,
+                                          gnsstk::Matrix<double>& Phi,
+                                          gnsstk::Matrix<double>& Q);
 
         // compose current state vector and covariance matrix
         virtual void updateKfState(gnsstk::Vector<double>& state, gnsstk::Matrix<double>& cov) const;
@@ -116,6 +110,8 @@ namespace pod
         gnsstk::TypeIDSet residualsTypes_;
 
         StateLayout layout_;
+
+        SatObservationBlocks satBlocks_;
 
         /// number of measurments
         size_t numMeas_;

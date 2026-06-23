@@ -21,108 +21,66 @@ namespace pod
         }
     }
 
-    void EquationComposer::updateDesignMatrix(gnsstk::IRinex& gData, gnsstk::Matrix<double>& H)
+    void EquationComposer::updateSystemMatrices(gnsstk::IRinex& gData,
+                                                gnsstk::Matrix<double>& H,
+                                                gnsstk::Vector<double>& prefitResiduals,
+                                                gnsstk::Matrix<double>& W,
+                                                gnsstk::Matrix<double>& Phi,
+                                                gnsstk::Matrix<double>& Q)
     {
-        int numSVs = gData.getBody().size();
-        int numMeasTypes = getMeasTypes().size();
+        const auto& body = gData.getBody();
+        const auto& measTypes = getMeasTypes();
+        const size_t numSVs = body.size();
 
-        // number of measurements are equals number of satellites times observation types number
-        numMeas_ = numSVs * numMeasTypes;
+        auto& provider = *ObservationTypesProvider::instance();
+        buildObservationBlocks(gData, provider, satBlocks_);
+
+        numMeas_ = numSVs * measTypes.size();
+        //GNSSTK_ASSERT_MSG(numMeas_ == satBlocks_.totalMeasurements(), "Number of measurements is zero.");
 
         std::vector<FilterParameter> curr_params;
-        for (auto&& eq : equations_)
+        for (auto& eq : equations_)
         {
-            auto&& params = eq->getParameters();
+            const auto& params = eq->getParameters();
             std::copy(params.cbegin(), params.cend(), std::back_inserter(curr_params));
         }
 
         layout_.build(curr_params);
 
-        // set resize design matrix
-        H.resize(numMeas_, getNumUnknowns(), 0.0);
-        /*
-        form the design martix H:
-           | Tropo | dX dY dZ | cdt | cdt(R1) | cdt(G2) | cdt(R2) |   iono delay   |     N1     |     N2     |
-           ---------------------------------------------------------------------------------------------------
-           |       |          |     |         |         |         |                |            |            |
-        P1 |   m   | ax,ay,az |  1  |  R?1:0  |    0    |    0    |   dI/dr1*E     |     0      |     0      |
-           |       |          |     |         |         |         |                |            |            |
-           ---------------------------------------------------------------------------------------------------
-           |       |          |     |         |         |         |                |            |            |
-        P2 |   m   | ax,ay,az |  1  |    0    |  G?1:0  |  R?1:0  |   dI/dr2*E     |     0      |     0      |
-           |       |          |     |         |         |         |                |            |            |
-           ---------------------------------------------------------------------------------------------------
-           |       |          |     |         |         |         |                |            |            |
-        L1 |   m   | ax,ay,az |  1  |  R?1:0  |    0    |    0    |  -dI/dr1*E     | lambda_1*E |     0      |
-           |       |          |     |         |         |         |                |            |            | 
-           ---------------------------------------------------------------------------------------------------
-           |       |          |     |         |         |         |                |            |            |
-        L2 |   m   | ax,ay,az |  1  |    0    |  G?1:0  |  R?1:0  |  -dI/dr2*E     |     0      | lambda_2*E |
-           |       |          |     |         |         |         |                |            |            |
-           ---------------------------------------------------------------------------------------------------
-        */
+        const int numUnknowns = getNumUnknowns();
+        H.resize(numMeas_, numUnknowns, 0.0);
+        Phi.resize(numUnknowns, numUnknowns, 0.0);
+        Q.resize(numUnknowns, numUnknowns, 0.0);
 
         for (auto& eq : equations_)
-            eq->contributeDesignMatrix(gData, getMeasTypes(), H, layout_);
-    }
-
-    void EquationComposer::updateTransitionMatrix(Matrix<double>& Phi) const
-    {
-        Phi.resize(getNumUnknowns(), getNumUnknowns(), 0.0);
-        for (auto& eq : equations_)
+        {
+            eq->contributeDesignMatrix(gData, measTypes, H, layout_);
             eq->contributeTransitionMartix(Phi, layout_);
-    }
-
-    void EquationComposer::updateProcessNoiseMatrix(Matrix<double>& Q) const
-    {
-        Q.resize(getNumUnknowns(), getNumUnknowns(), 0.0);
-        for (auto& eq : equations_)
             eq->contributeProcessNoiseMatrix(Q, layout_);
-    }
-
-    void EquationComposer::updateWeightsMatrix(const IRinex& gData, gnsstk::Matrix<double>& weightMatrix)
-    {
-        const size_t numsv = gData.getBody().size();
-        // Generate the appropriate weights matrix
-        // Try to extract weights from GDS
-        const satTypeValueMap dummy(gData.getBody().extractTypeID(TypeID::weight));
-
-        // prepare identy matrix
-        weightMatrix.resize(numMeas_, numMeas_, 0.0);
-
-        // Check if weights match
-        if (dummy.numSats() == numsv)
-        {
-            auto weigths = gData.getBody().getVectorOfTypeID(TypeID::weight);
-            size_t k(0);
-            for (const auto& observable : getMeasTypes())
-            {
-                const double weightFactor = pod::weighting::weightOf(observable.type);
-                for (size_t i = 0; i < numsv; i++)
-                {
-                    const size_t idx = i + numsv * k;
-                    weightMatrix(idx, idx) = weigths(i) * weightFactor;
-                }
-                k++;
-            }
         }
-        else
-        {
-            GNSSTK_ASSERT_MSG(false, "Weights vector size does not match number of satellites.");
-        }
-    }
 
-    void EquationComposer::updateMeas(const IRinex& gData, gnsstk::Vector<double>& measVector)
-    {
-        measVector.resize(numMeas_, 0.0);
-        int j = 0;
-        for (const auto& it : getMeasTypes())
+        prefitResiduals.resize(numMeas_, 0.0);
+        size_t j = 0;
+        for (const auto& measType : measTypes)
         {
-            auto meas = gData.getBody().getVectorOfTypeID(it);
-            size_t numSat = meas.size();
-            for (size_t i = 0; i < numSat; i++)
-                measVector(i + j * numSat) = meas(i);
+            const auto meas = body.getVectorOfTypeID(measType);
+            for (size_t i = 0; i < numSVs; i++)
+                prefitResiduals(i + j * numSVs) = meas(i);
             j++;
+        }
+
+        const satTypeValueMap weightMap(body.extractTypeID(TypeID::weight));
+        GNSSTK_ASSERT_MSG(weightMap.numSats() == numSVs, "Weights vector size does not match number of satellites.");
+
+        W.resize(numMeas_, numMeas_, 0.0);
+        const auto weights = body.getVectorOfTypeID(TypeID::weight);
+        size_t k = 0;
+        for (const auto& measType : measTypes)
+        {
+            const double weightFactor = pod::weighting::weightOf(measType.type);
+            for (size_t i = 0; i < numSVs; i++)
+                W(i + k * numSVs, i + k * numSVs) = weights(i) * weightFactor;
+            k++;
         }
     }
 

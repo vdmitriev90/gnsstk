@@ -75,12 +75,7 @@ namespace pod
             return gData;
         }
 
-        equations->updateDesignMatrix(gData, hMatrix);
-        equations->updateMeas(gData, measVector);
-        equations->updateWeightsMatrix(gData, weightMatrix);
-
-        equations->updateTransitionMatrix(phiMatrix);
-        equations->updateProcessNoiseMatrix(qMatrix);
+        equations->updateSystemMatrices(gData, hMatrix, measVector, weightMatrix, phiMatrix, qMatrix);
 
         if (dt > maxGap)
             equations->initKfState(solution, covMatrix);
