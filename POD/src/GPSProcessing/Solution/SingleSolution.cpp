@@ -210,15 +210,15 @@ namespace pod
         auto coord = std::make_unique<PositionEquations>();
 
         double sigma = confReader().getValueAsDouble("posSigma");
-        if (opts().dynamics == GnssDataStore::Dynamics::Static)
+        if (opts().dynamics == Dynamics::Static)
         {
             coord->setStochasicModel(std::make_shared<ConstantModel>());
         }
-        else if (opts().dynamics == GnssDataStore::Dynamics::Kinematic)
+        else if (opts().dynamics == Dynamics::Kinematic)
         {
             coord->setStochasicModel(std::make_shared<WhiteNoiseModel>(sigma));
         }
-        else if (opts().dynamics == GnssDataStore::Dynamics::RandomWalk)
+        else if (opts().dynamics == Dynamics::RandomWalk)
         {
 
             for (const auto& it : coord->getParameters())

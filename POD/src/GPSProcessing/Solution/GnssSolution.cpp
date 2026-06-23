@@ -25,7 +25,7 @@ namespace pod
     {
         if (!solver.getValid())
         {
-            gEpoch.slnData.insert(std::make_pair(TypeID::recSlnType, SlnType::None));
+            gEpoch.slnData.insert(std::make_pair(TypeID::recSlnType, static_cast<int>(SlnType::None)));
             return;
         }
 
@@ -48,7 +48,7 @@ namespace pod
         int num_used_sats = solver.PostfitResiduals().size() / equations_->getMeasTypes().size();
         gEpoch.slnData.insert(std::make_pair(TypeID::recUsedSV, num_used_sats));
 
-        gEpoch.slnData.insert(std::make_pair(TypeID::recSlnType, desiredSlnType()));
+        gEpoch.slnData.insert(std::make_pair(TypeID::recSlnType, static_cast<int>(desiredSlnType())));
         gEpoch.slnData.insert(std::make_pair(TypeID::sigma, solver.getPhaseSigma()));
     }
 

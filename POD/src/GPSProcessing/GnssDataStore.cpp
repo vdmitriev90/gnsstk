@@ -92,7 +92,7 @@ namespace pod
 
     bool isDifferential(SlnType slnType)
     {
-        if (slnType == CodeDiff || slnType == PdFloat || slnType == PdFixed)
+        if (slnType == SlnType::CodeDiff || slnType == SlnType::PdFloat || slnType == SlnType::PdFixed)
             return true;
         return false;
     }

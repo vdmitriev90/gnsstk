@@ -15,22 +15,22 @@ namespace pod
     {
         switch (dataStore->opts.slnType)
         {
-        case pod::Standalone:
+        case pod::SlnType::Standalone:
             return std::make_unique<SingleSolution>(dataStore);
-        case pod::CodeDiff:
+        case pod::SlnType::CodeDiff:
             return std::make_unique<CdDiffSolution>(dataStore);
-        case pod::PdFloat:
+        case pod::SlnType::PdFloat:
             return std::make_unique<PdFloatSolution>(dataStore);
-        case pod::PdFixed:
+        case pod::SlnType::PdFixed:
             return std::make_unique<PdFixedSolution>(dataStore);
-        case pod::PppFloat:
+        case pod::SlnType::PppFloat:
             if (dataStore->opts.isSpaceborneRcv)
                 return std::make_unique<PODSolution>(dataStore);
             else
                 // return std::make_unique<PPPSolution>(dataStore);
                 return std::make_unique<PppFloatSolution>(dataStore);
             break;
-        case pod::PppFixed:
+        case pod::SlnType::PppFixed:
             break;
         default:
             break;

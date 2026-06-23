@@ -83,7 +83,7 @@ namespace pod
         for (auto x : sln)
             wrt << std::fixed << std::setw(13) << std::setprecision(4) << std::setfill(' ') << x
                 << sep;
-        wrt << solver.desiredSlnType() << sep;
+        wrt << static_cast<int>(solver.desiredSlnType()) << sep;
 
         // number of good solutions
         wrt << summ << sep << gnss_data.size() << sep << std::setprecision(1) << avgSvInView / summ

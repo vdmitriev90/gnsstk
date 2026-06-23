@@ -369,15 +369,15 @@ namespace pod
 
         double posSigma = confReader().getValueAsDouble("posSigma");
 
-        if (opts().dynamics == GnssDataStore::Dynamics::Static)
+        if (opts().dynamics == Dynamics::Static)
         {
             coord->setStochasicModel(std::make_shared<ConstantModel>());
         }
-        else if (opts().dynamics == GnssDataStore::Dynamics::Kinematic)
+        else if (opts().dynamics == Dynamics::Kinematic)
         {
             coord->setStochasicModel(std::make_shared<WhiteNoiseModel>(posSigma));
         }
-        else if (opts().dynamics == GnssDataStore::Dynamics::RandomWalk)
+        else if (opts().dynamics == Dynamics::RandomWalk)
         {
             for (const auto& it : coord->getParameters())
                 coord->setStochasicModel(it, std::make_shared<RandomWalkModel>(posSigma));

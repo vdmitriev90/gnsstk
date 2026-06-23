@@ -27,28 +27,31 @@ SiteBase         = FFMJ
 #PD_float = 3,    ///< Phase Differntial solution with float ambiguities 
 #PD_fixed = 4,    ///< Phase Differntial solution with fixed ambiguities 
 #PPP_float = 16,  ///< PPP with float ambiguities 
-slnType = 16
+slnType = 2
 
 useC1 = true
 
-satSystems = GPS GLO
+satSystems = GPS GLO # GAL
 carrierBands = 1 2
+
+UseRinexClock = false
 
 #'computeTropo' for differeintial solutions only
 computeTropo = false 
+tropoQVertical =  1e-9
 
-UseRinexClock = TRUE
-
+# tropoModelType for PPP solution only
 tropoModelType = 1
 tropoQ1 = 1e-10
-tropoQ2= 1e-12
+tropoQ2 = 1e-12
+
 
 # advansed clock model parameters
 useAdvClkModel = false
 q1Clk = 5e-9
 q2Clk = 5e-9
 
-computeIono = false
+computeIono = true
 
 #stochastic model for ionospheric delay  
 #white noise = 0
@@ -70,8 +73,9 @@ IsSmoothCode = true
 IsSpaceborneRcv = FALSE
 
 #Dynamic mode 
-#0 == Static
+
 #1 == Kinamatic
+#2 == Static
 Dynamics = 1
 
 #masks
@@ -79,7 +83,7 @@ ElMask =  7.5, deg
 SNRmask = 29,  dB*Hz
 
 #fw-bw processing
-forwardBackwardCycles = 1
+forwardBackwardCycles = 0
 phaseLimList = 0.02 
 codeLimList = 20.0 
 

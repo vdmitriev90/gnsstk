@@ -205,7 +205,7 @@ namespace pod
         // White noise stochastic models
         WhiteNoiseModel wnM(100.0);
 
-        if (opts().dynamics == GnssDataStore::Dynamics::Kinematic)
+        if (opts().dynamics == Dynamics::Kinematic)
         {
             fbpppSolver.setCoordinatesModel(&wnM);
             pppSolver.setCoordinatesModel(&wnM);
@@ -463,7 +463,7 @@ namespace pod
         gEpoch.slnData.insert(std::pair<TypeID, double>(TypeID::sigma, sigma));
         outfile << std::setprecision(6) << wetMap << "  " << sigma << "  ";
 
-        gEpoch.slnData.insert(std::pair<TypeID, double>(TypeID::recSlnType, desiredSlnType()));
+        gEpoch.slnData.insert(std::pair<TypeID, double>(TypeID::recSlnType, static_cast<int>(desiredSlnType())));
 
         outfile << gEpoch.satData.size() << std::endl;
     }

@@ -1,5 +1,6 @@
 #ifndef POD_GNSS_SOLUTION_H
 #define POD_GNSS_SOLUTION_H
+
 #include "ComputeLinear.hpp"
 #include "EquationComposer.h"
 #include "GnssDataStore.hpp"
@@ -9,6 +10,7 @@
 #include "RequireObservables.hpp"
 #include "SQLiteAdapter.h"
 #include "SatelliteSystem.hpp"
+#include "CommonEnums.h"
 
 #define CATCH_TIME(t, Y, m, d, hh, mm, ss, flag)                                                   \
     static auto desiredTime =                                                                      \

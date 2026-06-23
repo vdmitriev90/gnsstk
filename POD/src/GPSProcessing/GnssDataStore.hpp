@@ -2,6 +2,7 @@
 #define POD_GNSSDATA_STORE_H
 
 #include "ApprPosProvider.hpp"
+#include "CommonEnums.h"
 #include "CommonTime.hpp"
 #include "ComputeIonoModel.hpp"
 #include "ConfDataReader.hpp"
@@ -11,40 +12,14 @@
 #include "IonoModelStore.hpp"
 #include "NavLibrary.hpp"
 
+#include <filesystem>
 #include <map>
 #include <memory>
 #include <string>
-#include <filesystem>
 
 namespace pod
 {
     typedef gnsstk::ComputeIonoModel::IonoModelType IonoModelType;
-
-    //
-    enum CarrierBand
-    {
-        L1 = 1,
-        L2,
-        L5
-    };
-    enum TropoModelType
-    {
-        Simple = 1,
-        SimpleWithGradients,
-        Advanced
-    };
-
-    // Desired type of GNSS solution
-    enum SlnType
-    {
-        None = 0,
-        Standalone = 1,
-        CodeDiff = 2,
-        PdFloat = 3,
-        PdFixed = 4,
-        PppFloat = 16,
-        PppFixed = 17,
-    };
 
     bool isDifferential(SlnType slnType);
 
@@ -72,68 +47,59 @@ namespace pod
 
 #pragma region Methods
 
-public:
-  void checkObservable();
-  void LoadData(const char* path);
-  std::list<std::string> getObsFiles(const std::string& siteID) const;
-  gnsstk::Position getNominalPosition(std::string siteId);
-  gnsstk::TypeID getGpsGloL1CodeType() const;
+      public:
+        void checkObservable();
+        void LoadData(const char* path);
+        std::list<std::string> getObsFiles(const std::string& siteID) const;
+        gnsstk::Position getNominalPosition(std::string siteId);
+        gnsstk::TypeID getGpsGloL1CodeType() const;
 
-private:
-  bool initReader(const char* path);
-  bool loadIono();
-  bool loadBceIonoModel();
-  bool loadIonoMap();
-  bool loadEphemeris();
-  bool loadFcn();
-  bool loadClocks();
-  bool loadEOPData();
-  bool loadCodeBiases();
-  bool createPosProvider();
+      private:
+        bool initReader(const char* path);
+        bool loadIono();
+        bool loadBceIonoModel();
+        bool loadIonoMap();
+        bool loadEphemeris();
+        bool loadFcn();
+        bool loadClocks();
+        bool loadEOPData();
+        bool loadCodeBiases();
+        bool createPosProvider();
 
 #pragma endregion
 
 #pragma region Fields
 
-public:
-  // pointer to  configuration file reader
-  gnsstk::ConfDataReader* confReader;
+      public:
+        // pointer to  configuration file reader
+        gnsstk::ConfDataReader* confReader;
 
-  gnsstk::NavDataFactoryPtr sp3NavFactory_;
+        gnsstk::NavDataFactoryPtr sp3NavFactory_;
 
-  // object to handle precise ephemeris and clocks
-  gnsstk::NavLibrary navLibrary_;
+        // object to handle precise ephemeris and clocks
+        gnsstk::NavLibrary navLibrary_;
 
-  // Earth orintation parameters store
-  gnsstk::EOPStore eopStore;
+        // Earth orintation parameters store
+        gnsstk::EOPStore eopStore;
 
-  // GPS Navigation Message based ionospheric models store
-  gnsstk::IonoModelStore bceIonoStore;
+        // GPS Navigation Message based ionospheric models store
+        gnsstk::IonoModelStore bceIonoStore;
 
-  // ionosphere map store
-  gnsstk::IonexStore ionexStore;
+        // ionosphere map store
+        gnsstk::IonexStore ionexStore;
 
-  // compute the  values related to a given GNSS ionospheric model.
-  gnsstk::ComputeIonoModel ionoCorrector;
+        // compute the  values related to a given GNSS ionospheric model.
+        gnsstk::ComputeIonoModel ionoCorrector;
 
-  // path to approximate position and code clock bias file
-  std::string apprPosFile;
+        // path to approximate position and code clock bias file
+        std::string apprPosFile;
 
-  // store of  approximate position and code clock bias
-  // std::map<gnsstk::CommonTime, gnsstk::Xvt, std::less<gnsstk::CommonTime>> apprPos;
-  PosProviderUPtr apprPos;
+        // store of  approximate position and code clock bias
+        // std::map<gnsstk::CommonTime, gnsstk::Xvt, std::less<gnsstk::CommonTime>> apprPos;
+        PosProviderUPtr apprPos;
 
-  // class to corrects observables from differential code biases
+        // class to corrects observables from differential code biases
         gnsstk::CorrectCodeBiases DCBData;
-
-        // receiver dynamic mode
-        enum Dynamics
-        {
-            Static = 0,
-            Kinematic,
-            RandomWalk,
-            Spaceborne,
-        };
 
         // pocessing-spacific options
         struct ProcessOpts
@@ -184,7 +150,7 @@ public:
             double maskEl = 10;
 
             // Receiver dynamic mode
-            Dynamics dynamics = Kinematic;
+            Dynamics dynamics = Dynamics::Kinematic;
 
             // Desired type of GNSS solution
             SlnType slnType = SlnType::Standalone;

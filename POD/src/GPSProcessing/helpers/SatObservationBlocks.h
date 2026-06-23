@@ -7,6 +7,7 @@
 #include "GnssObsMapping.h"
 #include "Weighting.h"
 #include "RinexEpoch.h"
+#include "CommonEnums.h"
 
 #include <vector>
 namespace gnsstk
