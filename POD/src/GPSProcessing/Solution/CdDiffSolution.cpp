@@ -42,7 +42,7 @@ namespace pod
 
         // basic model object for ref. station
         BasicModel modelRef(data_->navLibrary_);
-        modelRef.setDefaultObservable(data_->getGpsGloL1CodeType());
+        modelRef.setDefaultObservable(TypeID::C1);
         modelRef.setMinElev(confReader().getValueAsInt("ElMask"));
 
         // basic model object for rover has the same settings as BasicModel for ref. station
@@ -270,14 +270,14 @@ namespace pod
         PrefitSlotProvider::instance().setSlots(ObsSlot::FirstBandCode);
         deltaOp_.setSlotProvider(&PrefitSlotProvider::instance());
 
-        requireObs_ = RequireObservablesBuilder(opts().systems, opts().useC1).build();
+        requireObs_ = RequireObservablesBuilder(opts().systems).build();
 
         if (opts().isSmoothCode)
         {
-            codeSmoother_.addSmoother(std::make_unique<CodeSmoother>(data_->getGpsGloL1CodeType()));
+            codeSmoother_.addSmoother(std::make_unique<CodeSmoother>(TypeID::C1));
             codeSmoother_.addSmoother(std::make_unique<CodeSmoother>(TypeID::P2));
 
-            codeSmootherRef_.addSmoother(std::make_unique<CodeSmoother>(data_->getGpsGloL1CodeType()));
+            codeSmootherRef_.addSmoother(std::make_unique<CodeSmoother>(TypeID::C1));
             codeSmootherRef_.addSmoother(std::make_unique<CodeSmoother>(TypeID::P2));
 
             // add linear combinations, requared  for CS detections

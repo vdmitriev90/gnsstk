@@ -63,7 +63,7 @@ namespace pod
         updateRequaredObs();
 
         BasicModel model(data_->navLibrary_);
-        model.setDefaultObservable(data_->getGpsGloL1CodeType());
+        model.setDefaultObservable(TypeID::C1);
         model.setMinElev(.0);
 
         ElevationMask elMask(opts().maskEl);
@@ -333,7 +333,7 @@ namespace pod
         computeLinear_.add(std::make_unique<LICombimnation>());
 
         configureSolver();
-        requireObs_ = RequireObservablesBuilder(opts().systems, opts().useC1).build();
+        requireObs_ = RequireObservablesBuilder(opts().systems).build();
 
         oMinusC_.add(std::make_unique<PrefitPC>(true));
         oMinusC_.add(std::make_unique<PrefitLC>());

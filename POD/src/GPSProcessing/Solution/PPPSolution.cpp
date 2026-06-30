@@ -91,7 +91,7 @@ namespace pod
         // Set the minimum elevation
         basic.setMinElev(opts().maskEl);
 
-        basic.setDefaultObservable(data_->getGpsGloL1CodeType());
+        basic.setDefaultObservable(TypeID::C1);
 
         // Object to remove eclipsed satellites
         EclipsedSatFilter eclipsedSV;
@@ -394,7 +394,7 @@ namespace pod
 
     void PPPSolution::updateRequaredObs()
     {
-        requireObs_ = RequireObservablesBuilder(opts().systems, opts().useC1).build();
+        requireObs_ = RequireObservablesBuilder(opts().systems).build();
     }
 
     void PPPSolution::printSolution(std::ofstream& outfile,

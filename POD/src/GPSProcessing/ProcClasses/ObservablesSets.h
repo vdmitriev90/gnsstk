@@ -17,14 +17,12 @@ namespace pod
     class RequireObservablesBuilder
     {
       public:
-        RequireObservablesBuilder(const gnsstk::SatSystSet& systems, bool useC1,
-                                   bool keepOnlyRequiredTypes  = true);
+        RequireObservablesBuilder(const gnsstk::SatSystSet& systems, bool keepOnlyRequiredTypes = true);
 
         gnsstk::RequireObservables build() const;
 
       private:
         const gnsstk::SatSystSet& systems_;
-        bool useGpsGloC1_;
         bool keepOnlyRequiredTypes_;
     };
 

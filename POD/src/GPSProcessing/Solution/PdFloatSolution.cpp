@@ -70,11 +70,11 @@ namespace pod
 
         const auto ref_base_pos = data_->getNominalPosition(opts().SiteBase);
         // basic model object for ref. station
-        BasicModel modelRef(ref_base_pos, data_->navLibrary_, data_->getGpsGloL1CodeType());
+        BasicModel modelRef(ref_base_pos, data_->navLibrary_, TypeID::C1);
         modelRef.setMinElev(opts().maskEl);
 
         BasicModel modelRover(data_->navLibrary_);
-        modelRover.setDefaultObservable(data_->getGpsGloL1CodeType());
+        modelRover.setDefaultObservable(TypeID::C1);
         modelRover.setMinElev(opts().maskEl);
 
         RinexEpoch rin_epoch, gRef;
@@ -415,7 +415,7 @@ namespace pod
 
         configureSolver();
 
-        requireObs_ = RequireObservablesBuilder(opts().systems, opts().useC1).build();
+        requireObs_ = RequireObservablesBuilder(opts().systems).build();
         
         PrefitSlotProvider::instance().clearSlots();
 

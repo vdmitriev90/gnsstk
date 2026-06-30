@@ -18,18 +18,12 @@ namespace pod
       public:
         static std::shared_ptr<ObservationTypesProvider> instance();
 
-        ObservationTypesProvider(bool useCaForGpsGlo = true) : useCaForGpsGlo_(useCaForGpsGlo) {};
-
-        void setGpsGloL1CodeType(bool useCaForGpsGlo);
-        TypeID getGpsGloL1CodeType() const;
+        ObservationTypesProvider() = default;
 
         TypeID getFirstCodeType(SatelliteSystem ss) const;
         TypeID getSecondCodeType(SatelliteSystem ss) const;
         TypeID getFirstPhaseType(SatelliteSystem ss) const;
         TypeID getSecondPhaseType(SatelliteSystem ss) const;
-
-      private:
-        bool useCaForGpsGlo_ = true;
     };
 
     class LinearCombination

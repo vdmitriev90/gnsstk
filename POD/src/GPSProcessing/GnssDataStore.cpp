@@ -154,9 +154,6 @@ namespace pod
 
             opts.isSmoothCode = confReader->getValueAsBoolean("IsSmoothCode");
 
-            opts.useC1 = confReader->getValueAsBoolean("UseC1");
-            ObservationTypesProvider::instance()->setGpsGloL1CodeType(opts.useC1);
-
             opts.computeTropo = confReader->getValueAsBoolean("computeTropo");
 
             opts.tropoModelType = (TropoModelType)confReader->getValueAsInt("tropoModelType");
@@ -575,11 +572,6 @@ namespace pod
     {
         const auto pos = confReader->getValueListAsTriple("nominalPosition", siteId);
         return Position(pos);
-    }
-
-    TypeID GnssDataStore::getGpsGloL1CodeType() const
-    {
-        return opts.useC1 ? TypeID::C1 : TypeID::P1;
     }
 
     std::list<std::string> GnssDataStore::getObsFiles(const std::string& siteID) const

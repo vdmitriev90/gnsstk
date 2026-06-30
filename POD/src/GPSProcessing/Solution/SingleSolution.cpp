@@ -45,7 +45,7 @@ namespace pod
 
         // basic model object
         BasicModel model(data_->navLibrary_);
-        model.setDefaultObservable(data_->getGpsGloL1CodeType());
+        model.setDefaultObservable(TypeID::C1);
         model.setMinElev(confReader().getValueAsInt("ElMask"));
 
         // troposhere modeling object
@@ -245,11 +245,11 @@ namespace pod
         oMinusC_.add(std::make_unique<PrefitC1>(false));
         PrefitSlotProvider::instance().setSlots(ObsSlot::FirstBandCode);
 
-        requireObs_ = RequireObservablesBuilder(opts().systems, opts().useC1).build();
+        requireObs_ = RequireObservablesBuilder(opts().systems).build();
 
         if (opts().isSmoothCode)
         {
-            codeSmoother_.addSmoother(std::make_unique<CodeSmoother>(data_->getGpsGloL1CodeType()));
+            codeSmoother_.addSmoother(std::make_unique<CodeSmoother>(TypeID::C1));
             codeSmoother_.addSmoother(std::make_unique<CodeSmoother>(TypeID::P2));
 
             // add linear combinations, requared  for CS detections

@@ -15,10 +15,6 @@ namespace pod
 
     TypeID ObservationTypesProvider::getFirstCodeType(SatelliteSystem ss) const
     {
-
-        if (ss == SatelliteSystem::GPS || ss == SatelliteSystem::Glonass)
-            return getGpsGloL1CodeType();
-
         const auto* cfg = obs_mapping::findConfig(ss);
         if (!cfg)
         {
@@ -64,16 +60,6 @@ namespace pod
         }
 
         return obs_mapping::getOrAssert(cfg->secondPhase, ss, "getSecondPhaseType");
-    }
-
-    void ObservationTypesProvider::setGpsGloL1CodeType(bool useCaForGpsGlo)
-    {
-        useCaForGpsGlo_ = useCaForGpsGlo;
-    }
-
-    inline TypeID ObservationTypesProvider::getGpsGloL1CodeType() const
-    {
-        return useCaForGpsGlo_ ? TypeID::C1 : TypeID::P1;
     }
 
     /* Iono-Free wavelength according to equation 20.47 (pg. 591) in

@@ -52,7 +52,6 @@ namespace pod
         void LoadData(const char* path);
         std::list<std::string> getObsFiles(const std::string& siteID) const;
         gnsstk::Position getNominalPosition(std::string siteId);
-        gnsstk::TypeID getGpsGloL1CodeType() const;
 
       private:
         bool initReader(const char* path);
@@ -139,9 +138,6 @@ namespace pod
 
             // Satellite systems used for position computation
             std::set<CarrierBand> carrierBands;
-
-            // Use C1 pseudoranges  for position computation instead of P1
-            bool useC1 = false;
 
             // S1 (L1 C/No) threshold for position computation
             int maskSNR = 0;
