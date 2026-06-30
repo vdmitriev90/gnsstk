@@ -8,15 +8,16 @@ namespace pod
     {
       public:
         TropoEquationsAdv()
-            : typeSet{FilterParameter(gnsstk::TypeID::wetMap),
-                      FilterParameter(gnsstk::TypeID::wetMapDot)}
+            : typeSet{FilterParameter(gnsstk::TypeID::wetMap), FilterParameter(gnsstk::TypeID::wetMapDot)}
             , previousTime(gnsstk::CommonTime::BEGINNING_OF_TIME)
             , currentTime(gnsstk::CommonTime::END_OF_TIME)
             , dt(DBL_MAX)
-            , isFirstTime(true) {};
+            , isFirstTime(true)
+            , q1(0.0)
+            , q2(0.0) {};
+
         TropoEquationsAdv(double q_1, double q_2)
-            : typeSet{FilterParameter(gnsstk::TypeID::wetMap),
-                      FilterParameter(gnsstk::TypeID::wetMapDot)}
+            : typeSet{FilterParameter(gnsstk::TypeID::wetMap), FilterParameter(gnsstk::TypeID::wetMapDot)}
             , previousTime(gnsstk::CommonTime::BEGINNING_OF_TIME)
             , currentTime(gnsstk::CommonTime::END_OF_TIME)
             , dt(DBL_MAX)
@@ -28,27 +29,24 @@ namespace pod
 
 #pragma region Inherited via EquationBase
 
-        virtual void prepare(gnsstk::IRinex& gData) override;
+        void prepare(gnsstk::IRinex& gData) override;
 
-        virtual void contributeDesignMatrix(const gnsstk::IRinex& gData,
-                             const gnsstk::TypeIDSet& types,
-                             gnsstk::Matrix<double>& H,
-                             const StateLayout& layout) override;
+        void fillRow(const RowContext& ctx, const StateLayout& layout, gnsstk::Matrix<double>& H) const override;
 
-        virtual ParametersSet getParameters() const override
+        ParametersSet getParameters() const override
         {
             return typeSet;
         }
 
-        virtual void contributeTransitionMartix(gnsstk::Matrix<double>& Phi, const StateLayout& layout) const override;
+        void contributeTransitionMartix(gnsstk::Matrix<double>& Phi, const StateLayout& layout) const override;
 
-        virtual void contributeProcessNoiseMatrix(gnsstk::Matrix<double>& Q, const StateLayout& layout) const override;
+        void contributeProcessNoiseMatrix(gnsstk::Matrix<double>& Q, const StateLayout& layout) const override;
 
-        virtual void defStateAndCovariance(gnsstk::Vector<double>& x,
-                                           gnsstk::Matrix<double>& P,
-                                           const StateLayout& layout) const override;
+        void defStateAndCovariance(gnsstk::Vector<double>& x,
+                                   gnsstk::Matrix<double>& P,
+                                   const StateLayout& layout) const override;
 
-        virtual int getNumUnknowns() const override
+        int getNumUnknowns() const override
         {
             return typeSet.size();
         }
@@ -79,11 +77,11 @@ namespace pod
         ParametersSet typeSet;
 
         /// the diffusion coefficients, denoting the impact
-        ///  of white frequency noise
+        /// of white frequency noise
         double q1;
 
         /// the diffusion coefficients, denoting the impact
-        ///  of random walk frequency noise
+        /// of random walk frequency noise
         double q2;
 
         /// Epoch of previous measurement

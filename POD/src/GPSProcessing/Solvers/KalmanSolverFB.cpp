@@ -1,7 +1,9 @@
 #include "KalmanSolverFB.h"
 
+#include "GnssObsMapping.h"
 #include "GnssSolution.h"
 #include "PowerSum.hpp"
+#include "SatObservationBlocks.h"
 #include "StringUtils.h"
 #include "WinUtils.h"
 using namespace gnsstk;
@@ -160,18 +162,40 @@ namespace pod
         // Set to store rejected satellites
         SatIDSet satRejectedSet;
 
-        // Let's check limits
-        for (auto&& type : solver.eqComposer().getResidTypes())
+        // Build per-satellite measurement blocks (slot-driven).
+        SatObservationBlocks blocks;
+        buildObservationBlocks(gData, blocks);
+
+        for (const auto& block : blocks)
         {
-            double limit = getLimit(type, cycleNumber);
-            for (auto&& it : gData.getBody())
+            auto it = gData.getBody().find(block.sat);
+            if (it == gData.getBody().end() || !it->second)
+                continue;
+
+            auto& values = *it->second;
+
+            for (const auto& m : block.measurements)
             {
-                // Check postfit values and mark satellites as rejected
-                auto itRes = it.second->find(type);
-                if (itRes != it.second->end() && std::abs(itRes->second) > limit)
+                // measurement (prefit) type -> postfit residual type
+                const auto postfit = obs_mapping::prefitToPostfit(m.type);
+                if (postfit == TypeID::Unknown)
+                    continue;
+
+                const TypeID postfitType(postfit);
+
+                // only code/phase residuals have configured limits
+                if (!codeResTypes.count(postfitType) && !phaseResTypes.count(postfitType))
+                    continue;
+
+                auto itRes = values.find(postfitType);
+                if (itRes == values.end())
+                    continue;
+
+                // Check postfit residual against the per-cycle limit
+                if (std::abs(itRes->second) > getLimit(postfitType, cycleNumber))
                 {
-                    it.second->erase(type);
-                    satRejectedSet.insert(it.first);
+                    values.erase(postfitType);
+                    satRejectedSet.insert(block.sat);
                 }
             }
         }

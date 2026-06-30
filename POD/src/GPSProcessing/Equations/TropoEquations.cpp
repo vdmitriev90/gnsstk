@@ -22,27 +22,23 @@ namespace pod
         pStochasticModel_->Prepare(SatID::dummy, gData);
     }
 
-    void TropoEquations::contributeDesignMatrix(const gnsstk::IRinex& gData,
-                                 const gnsstk::TypeIDSet& obsTypes,
-                                 gnsstk::Matrix<double>& H,
-                                 const StateLayout& layout)
+    void TropoEquations::fillRow(const RowContext& ctx,
+                                 const StateLayout& layout,
+                                 gnsstk::Matrix<double>& H) const
     {
-        int row(0);
-        int col = layout.index(paramType_);
-        for (const auto& t : obsTypes)
-            for (const auto& it : gData.getBody())
-                H(row++, col) = it.second->at(paramType_.type);
+        const int col = layout.index(paramType_);
+        H(ctx.row, col) = ctx.data->at(paramType_.type);
     }
 
     void TropoEquations::contributeTransitionMartix(gnsstk::Matrix<double>& Phi, const StateLayout& layout) const
     {
-        int col = layout.index(paramType_);
+        const int col = layout.index(paramType_);
         Phi(col, col) = pStochasticModel_->getPhi();
     }
 
     void TropoEquations::contributeProcessNoiseMatrix(gnsstk::Matrix<double>& Q, const StateLayout& layout) const
     {
-        int col = layout.index(paramType_);
+        const int col = layout.index(paramType_);
         Q(col, col) = pStochasticModel_->getQ();
     }
 
@@ -50,7 +46,7 @@ namespace pod
                                                gnsstk::Matrix<double>& P,
                                                const StateLayout& layout) const
     {
-        int col = layout.index(paramType_);
+        const int col = layout.index(paramType_);
         x(col) = 0.0;
         P(col, col) = 0.25;
     }

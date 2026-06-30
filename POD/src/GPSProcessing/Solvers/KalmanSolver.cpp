@@ -168,97 +168,54 @@ namespace pod
         return gData;
     }
 
-    struct resid
-    {
-        resid() : type(TypeID::dummy0), sv(SatID::dummy), value(0) {};
-
-        TypeID type;
-        SatID sv;
-        double value;
-
-        std::string asString()
-        {
-            std::stringstream ss;
-            ss << TypeID::tStrings[type.type] << " " << sv << " value: " << value;
-            return ss.str();
-        }
-    };
-
     int KalmanSolver::checkPhase(IRinex& gData)
     {
-        static const double codeLim(DBL_MAX);
-        static const double phaseLim(0.1);
+        constexpr double phaseLim = 0.1; //meters
 
-        auto svSet = gData.getBody().getSatID();
-        resid maxPhaseResid;
+        const ResidualInfo worst = equations->findMaxResidual(postfitResiduals, phaseResTypes);
 
-        int i_res = 0;
-        for (const auto& type : equations->getResidTypes())
-        {
-            if (phaseResTypes.find(type) == phaseResTypes.end())
-            {
-                i_res += svSet.size();
-                continue;
-            }
-            for (auto&& sv : svSet)
-            {
-                double vali = std::abs(postfitResiduals(i_res));
-                if (maxPhaseResid.value < vali)
-                {
-                    maxPhaseResid.value = vali;
-                    maxPhaseResid.sv = sv;
-                    maxPhaseResid.type = type;
-                }
-                i_res++;
-            }
-        }
-        if (maxPhaseResid.value < phaseLim)
-        {
+        if (worst.row < 0 || worst.value < phaseLim)
             return 0;
-        }
-        else
+
+        // drop the offending satellite's (contiguous) rows from H, l and W
+        const std::set<int> rows = equations->getSatRows(worst.sat);
+
+        // update H
+        MatrixExtensions::removeRows(hMatrix, rows);
+
+        // update observations
+        MatrixExtensions::removeElms(measVector, rows);
+
+        // update weigths
+        MatrixExtensions::removeRows(weightMatrix, rows);
+        MatrixExtensions::removeColumns(weightMatrix, rows);
+
+        // reset Phi and Q only for THIS satellite's ambiguities, via the layout
+        for (const auto& amb : equations->getCurrentAmb())
         {
-            auto dist = std::distance(svSet.begin(), svSet.find(maxPhaseResid.sv));
+            if (amb.sv != worst.sat)
+                continue;
 
-            std::set<int> indeces;
-            for (size_t i = 0; i < equations->getResidTypes().size(); i++)
-                indeces.insert(i * svSet.size() + dist);
+            const int ind = getUnknownIndex(amb);
+            if (ind < 0)
+                continue;
 
-            // update H
-            MatrixExtensions::removeRows(hMatrix, indeces);
-
-            // update observations
-            MatrixExtensions::removeElms(measVector, indeces);
-
-            // update weigths
-            MatrixExtensions::removeRows(weightMatrix, indeces);
-            MatrixExtensions::removeColumns(weightMatrix, indeces);
-
-            auto ambSet = equations->getCurrentAmb();
-            auto typeSet = FilterParameter::get_all_types(ambSet);
-
-            int corParNum = equations->getNumUnknowns() - ambSet.size();
-
-            // update Phi and Q marices
-            for (size_t i = 0; i < typeSet.size(); i++)
-            {
-                int ind = corParNum + i * svSet.size();
-                phiMatrix(ind, ind) = 0;
-                qMatrix(ind, ind) = 4e14;
-            }
-
-            // remove sv
-            gData.getBody().removeSatID(maxPhaseResid.sv);
-
-            cout << StringUtils::formatTime(gData.getHeader().epoch) << " : " << maxPhaseResid.asString() << endl;
-
-            return 1;
+            phiMatrix(ind, ind) = 0;
+            qMatrix(ind, ind) = 4e14;
         }
+
+        // remove sv
+        gData.getBody().removeSatID(worst.sat);
+
+        cout << StringUtils::formatTime(gData.getHeader().epoch) << " : " << worst.sat << " "
+             << TypeID::tStrings[worst.type.type] << " value: " << worst.value << endl;
+
+        return 1;
     }
 
     double KalmanSolver::getSigma(const TypeIDSet& types) const
     {
-        auto phaseRes = equations->getResiduals(PostfitResiduals(), types);
+        std::vector<double> phaseRes = equations->getResiduals(PostfitResiduals(), types);
         Matrix<double> res(phaseRes.size(), 1, 0.0);
 
         for (size_t i = 0; i < phaseRes.size(); ++i)

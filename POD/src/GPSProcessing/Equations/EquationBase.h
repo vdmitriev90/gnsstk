@@ -7,6 +7,21 @@ namespace pod
 {
     class StateLayout;
 
+    struct RowContext
+    {
+        /// Satellite identifier
+        const gnsstk::SatID& sat;
+
+        /// Pointer to full satellite data
+        const gnsstk::typeValueMap* data;
+
+        /// Measurement type (prefit TypeID, e.g. prefitL1, prefitC1)
+        gnsstk::TypeID type;
+
+        /// Row index in system matrices (H, z, W)
+        int row;
+    };
+
     class EquationBase
     {
       public:
@@ -32,15 +47,16 @@ namespace pod
         /* Put default values of state vector and it's covariance into corresponding matrices,
            starting with specific index, index will be incremented inside this method
          */
-        virtual void defStateAndCovariance(gnsstk::Vector<double>& x, gnsstk::Matrix<double>& P, const StateLayout& layout) const = 0;
+        virtual void defStateAndCovariance(gnsstk::Vector<double>& x,
+                                           gnsstk::Matrix<double>& P,
+                                           const StateLayout& layout) const = 0;
 
         /* Put  partials of the measurements with respect to the unknowns into the design (geometry)
         matrix starting with specific indices, indices will be incremented inside this method
         */
-        virtual void contributeDesignMatrix(const gnsstk::IRinex& gData,
-                             const gnsstk::TypeIDSet& types,
-                             gnsstk::Matrix<double>& H,
-                             const StateLayout& layout) = 0;
+        /// Fill ONE row of the design matrix
+        virtual void fillRow(const RowContext& ctx, const StateLayout& layout, gnsstk::Matrix<double>& H) const = 0;
+
 
         virtual ParametersSet getAmbSet() const
         {

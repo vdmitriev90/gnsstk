@@ -28,8 +28,6 @@ namespace pod
 
     CdDiffSolution::CdDiffSolution(GnssDataStorePtr data_ptr) : SingleSolution(data_ptr) {}
 
-    CdDiffSolution::~CdDiffSolution() {}
-
     ///
     void CdDiffSolution::process()
     {
@@ -259,7 +257,6 @@ namespace pod
         if (opts().systems.size() > 1)
             equations_->addEquation(/*std::move(bias)*/ std::make_unique<InterSystemBias>());
 
-        equations_->getResidTypes() = TypeIDSet{TypeID::postfitC};
         forwardBackwardCycles_ = confReader().getValueAsInt("forwardBackwardCycles");
     }
 
@@ -269,10 +266,9 @@ namespace pod
         configureSolver();
 
         oMinusC_.add(std::make_unique<PrefitC1>(false));
-
-        const TypeID meas_type = opts().useC1 ? TypeID::prefitC1 : TypeID::prefitP1;
-        deltaOp_.setDiffType(meas_type);
-        equations_->getMeasTypes() = {meas_type};
+        
+        PrefitSlotProvider::instance().setSlots(ObsSlot::FirstBandCode);
+        deltaOp_.setSlotProvider(&PrefitSlotProvider::instance());
 
         requireObs_ = RequireObservablesBuilder(opts().systems, opts().useC1).build();
 

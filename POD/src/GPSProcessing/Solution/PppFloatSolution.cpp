@@ -99,7 +99,7 @@ namespace pod
 
         // check sharp SNR drops
         SNRCatcher snrCatcherL1Rover;
-        PrefitResCatcher resCatcher(equations_->getMeasTypes());
+        PrefitResCatcher resCatcher(&PrefitSlotProvider::instance());
 
         // Object to keep track of satellite arcs
         SatArcMarker markArcRover(TypeID::CSL1, true, 31.0);
@@ -338,10 +338,7 @@ namespace pod
         oMinusC_.add(std::make_unique<PrefitPC>(true));
         oMinusC_.add(std::make_unique<PrefitLC>());
 
-        equations_->getMeasTypes().insert(TypeID::prefitPC);
-        equations_->getMeasTypes().insert(TypeID::prefitLC);
-        equations_->getResidTypes().insert(TypeID::postfitPC);
-        equations_->getResidTypes().insert(TypeID::postfitLC);
+        PrefitSlotProvider::instance().setSlots({ObsSlot::CodeIonoFree, ObsSlot::PhaseIonoFree});
     }
 
     void PppFloatSolution::configureSolver()

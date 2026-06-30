@@ -14,25 +14,24 @@ namespace pod
         virtual ClockBiasEquations& setStochasicModel(gnsstk::StochasticModel_sptr newModel);
 
         // Inherited via EquationBase
-        virtual void prepare(gnsstk::IRinex& gData) override;
-        virtual void contributeDesignMatrix(const gnsstk::IRinex& gData,
-                             const gnsstk::TypeIDSet& types,
-                             gnsstk::Matrix<double>& H,
-                             const StateLayout& layout) override;
+        void prepare(gnsstk::IRinex& gData) override;
+        void fillRow(const RowContext& ctx,
+                     const StateLayout& layout,
+                     gnsstk::Matrix<double>& H) const override;
 
-        virtual ParametersSet getParameters() const override
+        ParametersSet getParameters() const override
         {
             return ParametersSet({type});
         }
-        virtual void contributeTransitionMartix(gnsstk::Matrix<double>& Phi, const StateLayout& layout) const override;
+        void contributeTransitionMartix(gnsstk::Matrix<double>& Phi, const StateLayout& layout) const override;
 
-        virtual void contributeProcessNoiseMatrix(gnsstk::Matrix<double>& Q, const StateLayout& layout) const override;
+        void contributeProcessNoiseMatrix(gnsstk::Matrix<double>& Q, const StateLayout& layout) const override;
 
-        virtual void defStateAndCovariance(gnsstk::Vector<double>& x,
-                                           gnsstk::Matrix<double>& P,
-                                           const StateLayout& layout) const override;
+        void defStateAndCovariance(gnsstk::Vector<double>& x,
+                                   gnsstk::Matrix<double>& P,
+                                   const StateLayout& layout) const override;
 
-        virtual int getNumUnknowns() const override;
+        int getNumUnknowns() const override;
 
       protected:
         FilterParameter type;

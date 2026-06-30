@@ -35,64 +35,69 @@ namespace pod
         virtual ~EquationComposer() = default;
 
         // prepare equations according current data set 'gData'
-        virtual void prepare(gnsstk::IRinex& gData);
+        void prepare(gnsstk::IRinex& gData);
 
         // compose all system matrices in one call
-        virtual void updateSystemMatrices(gnsstk::IRinex& gData,
-                                          gnsstk::Matrix<double>& H,
-                                          gnsstk::Vector<double>& prefitResiduals,
-                                          gnsstk::Matrix<double>& W,
-                                          gnsstk::Matrix<double>& Phi,
-                                          gnsstk::Matrix<double>& Q);
+        void updateSystemMatrices(gnsstk::IRinex& gData,
+                                  gnsstk::Matrix<double>& H,
+                                  gnsstk::Vector<double>& prefitResiduals,
+                                  gnsstk::Matrix<double>& W,
+                                  gnsstk::Matrix<double>& Phi,
+                                  gnsstk::Matrix<double>& Q);
 
         // compose current state vector and covariance matrix
-        virtual void updateKfState(gnsstk::Vector<double>& state, gnsstk::Matrix<double>& cov) const;
+        void updateKfState(gnsstk::Vector<double>& state, gnsstk::Matrix<double>& cov) const;
 
         // store current state vector and covariance matrix
-        virtual void storeKfState(const gnsstk::Vector<double>& state, const gnsstk::Matrix<double>& cov);
+        void storeKfState(const gnsstk::Vector<double>& state, const gnsstk::Matrix<double>& cov);
 
         // compose current state vector and covariance matrix with default values
-        virtual void initKfState(gnsstk::Vector<double>& state, gnsstk::Matrix<double>& cov) const;
+        void initKfState(gnsstk::Vector<double>& state, gnsstk::Matrix<double>& cov) const;
 
         // insert current residuals vector into GNSS data structure
-        virtual void saveResiduals(gnsstk::IRinex& gData, const gnsstk::Vector<double>& residuals) const;
+        void saveResiduals(gnsstk::IRinex& gData, const gnsstk::Vector<double>& residuals) const;
 
         // return postfit residuals as gnsstk::satTypeValueMap structure
-        virtual std::vector<double> getResiduals(const gnsstk::Vector<double>& residuals,
-                                                 const gnsstk::TypeIDSet& types) const;
+        std::vector<double> getResiduals(const gnsstk::Vector<double>& residuals,
+                                         const gnsstk::TypeIDSet& types) const;
 
-        virtual const FilterState& getState() const;
-        virtual EquationComposer& setState(const FilterState& newState);
+        // find the row with the largest |residual| among the given postfit types
+        ResidualInfo findMaxResidual(const gnsstk::Vector<double>& residuals,
+                                     const gnsstk::TypeIDSet& postfitTypes) const;
+
+        // collect the residual rows contributed by a single satellite
+        std::set<int> getSatRows(const gnsstk::SatID& sat) const;
+
+        const FilterState& getState() const;
+        EquationComposer& setState(const FilterState& newState);
 
         // get curent number of unknowns
-        virtual int getNumUnknowns() const;
+        int getNumUnknowns() const;
 
         const StateLayout& getLayout() const;
 
-        virtual gnsstk::TypeIDSet& getMeasTypes();
-        virtual const gnsstk::TypeIDSet& getMeasTypes() const;
+        const ParametersSet& getCurrentAmb() const;
 
-        virtual gnsstk::TypeIDSet& getResidTypes();
-        virtual const gnsstk::TypeIDSet& getResidTypes() const;
+        SlnType getSlnType() const;
 
-        virtual const ParametersSet& getCurrentAmb() const;
-
-        virtual SlnType getSlnType() const;
-
-        virtual EquationComposer& setSlnType(SlnType sType);
+        EquationComposer& setSlnType(SlnType sType);
 
         /// add new equation to equation list
-        virtual EquationComposer& addEquation(std::unique_ptr<EquationBase> eq);
+        EquationComposer& addEquation(std::unique_ptr<EquationBase> eq);
 
         /// erase equation list
-        virtual void clearEquations();
+        void clearEquations();
         /// erase stored data
-        virtual void clearData();
+        void clearData();
         /// manage satellite-specific data
-        virtual void keepOnlySv(const gnsstk::SatIDSet& svs);
-        virtual void clearSvData(const gnsstk::SatIDSet& svs);
-        virtual void clearSvData();
+        void keepOnlySv(const gnsstk::SatIDSet& svs);
+        void clearSvData(const gnsstk::SatIDSet& svs);
+        void clearSvData();
 
+        size_t getNumSv() const
+        {
+            return satBlocks_.size();
+        }
       private:
         /// Map holding the information regarding every variable
         FilterState filterData_;
@@ -100,21 +105,12 @@ namespace pod
         /// list of equations
         EquationsList equations_;
 
-        /// current set of ambiguities
-        ParametersSet currAmb_;
-
-        /// type of measurements
-        gnsstk::TypeIDSet measurementsTypes_;
-
-        /// type ID of postfit residuals
-        gnsstk::TypeIDSet residualsTypes_;
-
         StateLayout layout_;
 
         SatObservationBlocks satBlocks_;
 
-        /// number of measurments
-        size_t numMeas_;
+        /// current set of ambiguities
+        ParametersSet currAmb_;
 
         // desired solution type
         SlnType slnType_;

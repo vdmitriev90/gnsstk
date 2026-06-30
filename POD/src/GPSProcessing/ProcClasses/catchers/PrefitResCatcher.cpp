@@ -31,11 +31,25 @@ namespace pod
     {
         auto& rejSatItem = rejectedSatsTable[gData.getHeader().epoch];
 
-        for (auto&& tid : resTypes)
+        const auto& slots = slotProvider_->getSlots();
+
+        // Collect unique TypeIDs resolved for all slots × all systems in data
+        TypeIDSet resolvedTypes;
+        for (const auto& [sat, tvPtr] : gData.getBody())
         {
-            int s = gData.getBody().size();
-            auto svs = gData.getBody().getVectorOfSatID();
+            for (const auto& slot : slots)
+            {
+                const TypeID tid = slotProvider_->resolve(slot, sat.system);
+                if (tid != TypeID::Unknown)
+                    resolvedTypes.insert(tid);
+            }
+        }
+
+        for (const auto& tid : resolvedTypes)
+        {
+            auto svs    = gData.getBody().getVectorOfSatID();
             auto values = gData.getBody().getVectorOfTypeID(tid);
+
             double ratio(0);
             for (size_t i = 0; i < values.size(); i++)
             {
@@ -51,7 +65,7 @@ namespace pod
         return gData;
     }
 
-    std::string PrefitResCatcher::getClassName(void) const
+    std::string PrefitResCatcher::getClassName() const
     {
         return "pod::PrefitResCatcher";
     }

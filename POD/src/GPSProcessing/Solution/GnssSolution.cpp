@@ -44,9 +44,7 @@ namespace pod
         gEpoch.slnData.insert(std::make_pair(TypeID::recZ, new_pos.Z()));
         gEpoch.slnData.insert(std::make_pair(TypeID::recStDev3D, st_dev3_d));
 
-        // number of used sats = number of residuals/number of measurement types
-        int num_used_sats = solver.PostfitResiduals().size() / equations_->getMeasTypes().size();
-        gEpoch.slnData.insert(std::make_pair(TypeID::recUsedSV, num_used_sats));
+        gEpoch.slnData.insert(std::make_pair(TypeID::recUsedSV, equations_->getNumSv()));
 
         gEpoch.slnData.insert(std::make_pair(TypeID::recSlnType, static_cast<int>(desiredSlnType())));
         gEpoch.slnData.insert(std::make_pair(TypeID::sigma, solver.getPhaseSigma()));

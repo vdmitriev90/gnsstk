@@ -2,9 +2,8 @@
 #include "EquationBase.h"
 #include "StochasticModel.hpp"
 
-#include <memory>
-
 #include <array>
+#include <memory>
 
 namespace pod
 {
@@ -28,34 +27,30 @@ namespace pod
         InterSystemBias();
         virtual ~InterSystemBias() {};
 
-        virtual void prepare(gnsstk::IRinex& gData);
+        void prepare(gnsstk::IRinex& gData) override;
 
-        virtual void contributeDesignMatrix(const gnsstk::IRinex& gData,
-                             const gnsstk::TypeIDSet& types,
-                             gnsstk::Matrix<double>& H,
-                             const StateLayout& layout) override;
+        void fillRow(const RowContext& ctx, const StateLayout& state1, gnsstk::Matrix<double>& H) const override;
 
-        virtual ParametersSet getParameters() const override;
+        ParametersSet getParameters() const override;
 
-        virtual void contributeTransitionMartix(gnsstk::Matrix<double>& Phi, const StateLayout& layout) const override;
+        void contributeTransitionMartix(gnsstk::Matrix<double>& Phi, const StateLayout& layout) const override;
 
-        virtual void contributeProcessNoiseMatrix(gnsstk::Matrix<double>& Q, const StateLayout& layout) const override;
+        void contributeProcessNoiseMatrix(gnsstk::Matrix<double>& Q, const StateLayout& layout) const override;
 
-        virtual void defStateAndCovariance(gnsstk::Vector<double>& x,
-                                           gnsstk::Matrix<double>& P,
-                                           const StateLayout& layout) const override;
+        void defStateAndCovariance(gnsstk::Vector<double>& x,
+                                   gnsstk::Matrix<double>& P,
+                                   const StateLayout& layout) const override;
 
-        virtual int getNumUnknowns() const override;
+        int getNumUnknowns() const override;
 
         virtual InterSystemBias& setStochasicModel(const gnsstk::SatelliteSystem& system,
                                                    gnsstk::StochasticModelUniquePtr newModel);
 
         static constexpr int NUM_BIAS = 3;
-      private:
 
+      private:
         std::array<gnsstk::StochasticModelUniquePtr, NUM_BIAS> stochasticModels_;
         std::array<bool, NUM_BIAS> activeMask_{};
         int activeCount_{0};
-
     };
 } // namespace pod

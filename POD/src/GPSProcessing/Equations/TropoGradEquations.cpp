@@ -21,19 +21,15 @@ namespace pod
 		pStochModelEast->Prepare(SatID::dummy, gData);
 	}
 
-	void TropoGradEquations::contributeDesignMatrix(const gnsstk::IRinex& gData,
-									 const gnsstk::TypeIDSet& obsTypes,
-									 gnsstk::Matrix<double>& H,
-									 const StateLayout& layout)
+	void TropoGradEquations::fillRow(const RowContext& ctx,
+									 const StateLayout& layout,
+									 gnsstk::Matrix<double>& H) const
 	{
-		for (auto&& type : types)
-		{
-			int col = layout.index(type);
-			int row(0);
-			for (const auto& t : obsTypes)
-				for (const auto& it : gData.getBody())
-					H(row++, col) = it.second->at(type.type);
-		}
+        for (const auto& type : types)
+        {
+            int col = layout.index(type);
+            H(ctx.row, col) = ctx.data->at(type.type);
+        }
 	}
 
 	void TropoGradEquations::contributeTransitionMartix(gnsstk::Matrix<double>& Phi, const StateLayout& layout) const

@@ -1,6 +1,6 @@
-#include "GnssObsMapping.h"
-
 #include "IonoEquations.h"
+
+#include "GnssObsMapping.h"
 #include "StateLayout.h"
 
 using namespace gnsstk;
@@ -61,31 +61,25 @@ namespace pod
         }
     }
 
-    void IonoEquations::contributeDesignMatrix(const gnsstk::IRinex& gData,
-                                const gnsstk::TypeIDSet& types,
-                                gnsstk::Matrix<double>& H,
-                                const StateLayout& layout)
+    void IonoEquations::fillRow(const RowContext& ctx, const StateLayout& layout, gnsstk::Matrix<double>& H) const
     {
-        int row(0);
-        for (const auto& it : types)
+        const auto attr = obs_mapping::findObsAttr(ctx.type.type);
+        if (!attr.valid())
         {
-            const auto attr = obs_mapping::findObsAttr(it.type);
-            if (!attr.valid())
-            {
-                GNSSTK_ASSERT_MSG(false, "Unknown observation type in IonoEquations");
-                continue;
-            }
-
-            for (const auto& sv : currParameters)
-            {
-                int col = layout.index(sv);
-                int fcn = sv.sv.getGloFcn();
-                double wl = getWavelength(sv.sv.system, attr.band, fcn);
-                wl *= wl;
-                H(row, col) = attr.sign * wl / SQR_L1_WL_GPS;
-                row++;
-            }
+            GNSSTK_ASSERT_MSG(false, "Unknown observation type in IonoEquations");
         }
+
+        FilterParameter param(eqType, ctx.sat);
+        auto it = currParameters.find(param);
+        if (it == currParameters.end())
+            return;
+
+        const int col = layout.index(param);
+        const int fcn = ctx.sat.getGloFcn();
+        double wl = getWavelength(ctx.sat.system, attr.band, fcn);
+        wl *= wl;
+
+        H(ctx.row, col) = attr.sign * wl / SQR_L1_WL_GPS;
     }
 
     void IonoEquations::contributeTransitionMartix(gnsstk::Matrix<double>& Phi, const StateLayout& layout) const

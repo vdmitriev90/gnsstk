@@ -73,6 +73,17 @@ namespace pod::obs_mapping
         return convertObs(in, ObsFlavor::Postfit);
     }
 
+    /// prefit TypeID -> postfit TypeID
+    constexpr TypeID::ValueType prefitToPostfit(const TypeID& prefit)
+    {
+        for (const auto& e : obsConversionTable)
+        {
+            if (e.prefit == prefit.type)
+                return e.postfit;
+        }
+        return TypeID::ValueType::Unknown;
+    }
+
     //==============================================================
     // Band mapping (RINEX3-like abstraction)
     //==============================================================

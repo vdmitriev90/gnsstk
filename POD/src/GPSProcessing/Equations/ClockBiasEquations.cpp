@@ -1,15 +1,12 @@
 #include "ClockBiasEquations.h"
+
 #include "StateLayout.h"
 
 using namespace gnsstk;
 
 namespace pod
 {
-    ClockBiasEquations::ClockBiasEquations()
-        : type(TypeID::cdt)
-        , stochModel(std::make_unique<WhiteNoiseModel>())
-    {
-    }
+    ClockBiasEquations::ClockBiasEquations() : type(TypeID::cdt), stochModel(std::make_unique<WhiteNoiseModel>()) {}
 
     ClockBiasEquations::ClockBiasEquations(double sigma)
         : type(TypeID::cdt)
@@ -28,14 +25,11 @@ namespace pod
         stochModel->Prepare(SatID::dummy, gData);
     }
 
-    void ClockBiasEquations::contributeDesignMatrix(const gnsstk::IRinex& svs,
-                                     const gnsstk::TypeIDSet& types,
-                                     gnsstk::Matrix<double>& H,
-                                     const StateLayout& layout)
+    void ClockBiasEquations::fillRow(const RowContext& ctx, const StateLayout& layout, gnsstk::Matrix<double>& H) const
     {
-        int col = layout.index(type);
-        for (size_t i = 0; i < H.rows(); i++)
-            H(i, col) = 1.0;
+        const int col = layout.index(type);
+
+        H(ctx.row, col) = 1.0;
     }
 
     void ClockBiasEquations::contributeTransitionMartix(Matrix<double>& Phi, const StateLayout& layout) const

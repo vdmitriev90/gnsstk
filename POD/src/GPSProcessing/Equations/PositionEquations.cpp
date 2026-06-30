@@ -1,4 +1,5 @@
 #include "PositionEquations.h"
+
 #include "StateLayout.h"
 
 using namespace gnsstk;
@@ -13,9 +14,7 @@ namespace pod
     //        stochasticModels[it] = std::make_unique<WhiteNoiseModel>(100);
     //}
     PositionEquations::PositionEquations(double sigma)
-        : types({FilterParameter(TypeID::dx),
-                 FilterParameter(TypeID::dy),
-                 FilterParameter(TypeID::dz)})
+        : types({FilterParameter(TypeID::dx), FilterParameter(TypeID::dy), FilterParameter(TypeID::dz)})
     {
         for (const auto& it : types)
             stochasticModels[it] = std::make_unique<WhiteNoiseModel>(sigma);
@@ -28,8 +27,7 @@ namespace pod
         return *this;
     }
 
-    PositionEquations& PositionEquations::setStochasicModel(FilterParameter param,
-                                                            StochasticModel_sptr newModel)
+    PositionEquations& PositionEquations::setStochasicModel(FilterParameter param, StochasticModel_sptr newModel)
     {
         stochasticModels[param] = newModel;
         return *this;
@@ -41,23 +39,13 @@ namespace pod
             it.second->Prepare(SatID::dummy, gData);
     }
 
-    void PositionEquations::contributeDesignMatrix(const gnsstk::IRinex& gData,
-                                    const gnsstk::TypeIDSet& obsTypes,
-                                    gnsstk::Matrix<double>& H,
-                                    const StateLayout& layout)
+    void PositionEquations::fillRow(const RowContext& ctx, const StateLayout& layout, gnsstk::Matrix<double>& H) const
     {
-        int row(0);
-
-        for (auto&& obs : obsTypes)
-            for (auto&& it : gData.getBody())
-            {
-                for (auto&& t : types)
-                {
-                    int col = layout.index(t);
-                    H(row, col) = it.second->at(t.type);
-                }
-                row++;
-            }
+        for (const auto& t : types)
+        {
+            const int col = layout.index(t);
+            H(ctx.row, col) = ctx.data->at(t.type);
+        }
     }
 
     void PositionEquations::contributeTransitionMartix(gnsstk::Matrix<double>& Phi, const StateLayout& layout) const
@@ -65,7 +53,7 @@ namespace pod
 
         for (const auto& it : types)
         {
-            int col = layout.index(it);
+            const int col = layout.index(it);
             Phi(col, col) = stochasticModels.at(it)->getPhi();
         }
     }
@@ -75,7 +63,7 @@ namespace pod
 
         for (const auto& it : types)
         {
-            int col = layout.index(it);
+            const int col = layout.index(it);
             Q(col, col) = stochasticModels.at(it)->getQ();
         }
     }
@@ -86,7 +74,7 @@ namespace pod
     {
         for (const auto& it : types)
         {
-            int col = layout.index(it);
+            const int col = layout.index(it);
             x(col) = 0;
             P(col, col) = 1e9;
         }

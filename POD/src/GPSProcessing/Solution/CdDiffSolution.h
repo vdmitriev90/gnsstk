@@ -1,20 +1,19 @@
 #ifndef POD_CDDIFFSOLUTION_H
 #define POD_CDDIFFSOLUTION_H
 
-#include "DeltaOp.hpp"
+#include "SingleDiffOp.h"
 #include "GnssDataStore.hpp"
 #include "SingleSolution.h"
 
 namespace pod
 {
+    
     class CdDiffSolution : public SingleSolution
     {
       public:
         CdDiffSolution(GnssDataStorePtr prt);
 
-        virtual ~CdDiffSolution();
-
-        virtual SlnType desiredSlnType() const override
+        SlnType desiredSlnType() const override
         {
             return SlnType::CodeDiff;
         }
@@ -22,13 +21,13 @@ namespace pod
         virtual void process() override;
 
       protected:
-        virtual void updateRequaredObs() override;
+        void updateRequaredObs() override;
 
         void configureSolver() override;
 
       private:
         // Compute single differenceses opreator
-        gnsstk::DeltaOp deltaOp_;
+        SingleDifferenceOp deltaOp_;
         // code smoothers for Ref. receiver obseravtions
         CodeSmoother2 codeSmootherRef_;
     };

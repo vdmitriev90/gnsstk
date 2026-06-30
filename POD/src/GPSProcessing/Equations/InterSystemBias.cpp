@@ -1,4 +1,5 @@
 #include "InterSystemBias.h"
+
 #include "StateLayout.h"
 
 using namespace gnsstk;
@@ -76,40 +77,20 @@ namespace pod
         }
     }
 
-    void InterSystemBias::contributeDesignMatrix(const gnsstk::IRinex& gData,
-                                                 const gnsstk::TypeIDSet& obsTypes,
-                                                 gnsstk::Matrix<double>& H,
-                                                 const StateLayout& layout)
+    void InterSystemBias::fillRow(const RowContext& ctx, const StateLayout& layout, gnsstk::Matrix<double>& H) const
     {
-        auto currentSatSet = gData.getBody().getSatID();
-        int row(0);
-        for (const auto& obs : obsTypes)
-        {
-            // contribute partials only for firts frequancies observations (G1, R1, E1, B1),
-            // because biases for different bands are defined by IFB (inter frequency bias) equations.
-            if (!isL1ObsType(obs))
-            {
-                row += currentSatSet.size();
-                continue;
-            }
+        if (!isL1ObsType(ctx.type))
+            return;
 
-            for (const auto& sv : currentSatSet)
-            {
+        if (ctx.sat.system == SatelliteSystem::GPS)
+            return;
 
-                if (sv.system != SatelliteSystem::GPS)
-                {
-                    int j = getBiasIndex(sv.system);
+        const int j = getBiasIndex(ctx.sat.system);
+        if (j < 0 || !activeMask_[j])
+            return;
 
-                    if (j >= 0)
-                    {
-                        int col = layout.index(FilterParameter(gnsstk::TypeID(kBiasTypes[j])));
-                        H(row, col) = 1;
-                    }
-                }
-                row++;
-            }
-        }
-
+        const int col = layout.index(FilterParameter(gnsstk::TypeID(kBiasTypes[j])));
+        H(ctx.row, col) = 1.0;
     }
 
     ParametersSet InterSystemBias::getParameters() const
@@ -159,7 +140,7 @@ namespace pod
         {
             if (!activeMask_[i])
                 continue;
-            int col = layout.index(FilterParameter(gnsstk::TypeID(kBiasTypes[i])));
+            const int col = layout.index(FilterParameter(gnsstk::TypeID(kBiasTypes[i])));
             Q(col, col) = stochasticModels_[i]->getQ();
         }
     }
@@ -169,13 +150,15 @@ namespace pod
         return activeCount_;
     }
 
-    void InterSystemBias::defStateAndCovariance(gnsstk::Vector<double>& x, gnsstk::Matrix<double>& P, const StateLayout& layout) const
+    void InterSystemBias::defStateAndCovariance(gnsstk::Vector<double>& x,
+                                                gnsstk::Matrix<double>& P,
+                                                const StateLayout& layout) const
     {
         for (int i = 0; i < NUM_BIAS; ++i)
         {
             if (!activeMask_[i])
                 continue;
-            int col = layout.index(FilterParameter(gnsstk::TypeID(kBiasTypes[i])));
+            const int col = layout.index(FilterParameter(gnsstk::TypeID(kBiasTypes[i])));
             x(col) = 0;
             P(col, col) = 1e9;
         }

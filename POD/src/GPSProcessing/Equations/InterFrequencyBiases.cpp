@@ -40,37 +40,26 @@ namespace pod
             stochasticModels[ss]->Prepare(SatID::dummy, gData);
     }
 
-    void InterFrequencyBiases::contributeDesignMatrix(const gnsstk::IRinex& gData,
-                                                      const gnsstk::TypeIDSet& obsTypes,
-                                                      gnsstk::Matrix<double>& H,
-                                                      const StateLayout& layout)
+    void InterFrequencyBiases::fillRow(const RowContext& ctx,
+                                                      const StateLayout& layout,
+                                                      gnsstk::Matrix<double>& H) const
     {
-        int row(0);
-        auto currentSatSet = gData.getBody().getSatID();
-
         /*
 		... | cdt(G2) | cdt(R2) |...| cdt(B2) |...
 		*/
-        for (const auto& type : obsTypes)
-        {
-            if (l2Types.find(type) == l2Types.end())
-            {
-                row += currentSatSet.size();
-                continue;
-            }
+        if (l2Types.find(ctx.type) == l2Types.end())
+            return;
 
-            for (const auto& sv : currentSatSet)
-            {
-                const auto& it = types.find(ss2ifb[sv.system]);
-                if (it == types.end())
-                {
-                    row++;
-                    continue;
-                }
-                int col = layout.index(*it);
-                H(row++, col) = 1;
-            }
-        }
+        const auto& ifbParam = ss2ifb.find(ctx.sat.system);
+        if (ifbParam == ss2ifb.end())
+            return;
+
+        const auto& it = types.find(ifbParam->second);
+        if (it == types.end())
+            return;
+
+        int col = layout.index(*it);
+        H(ctx.row, col) = 1.0;
     }
 
     InterFrequencyBiases& InterFrequencyBiases::setStochasicModel(const SatelliteSystem& system,

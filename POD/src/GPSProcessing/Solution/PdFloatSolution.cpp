@@ -11,7 +11,7 @@
 #include "ComputeWindUp.hpp"
 #include "CorrectObservables.hpp"
 #include "Decimate.hpp"
-#include "DeltaOp.hpp"
+#include "SingleDiffOp.h"
 #include "EclipsedSatFilter.hpp"
 #include "GravitationalDelay.hpp"
 #include "InterFrequencyBiases.h"
@@ -119,7 +119,7 @@ namespace pod
         // check sharp SNR drops
         SNRCatcher snrCatcherL1Base(TypeID::S1, TypeID::CSL1, 901.0, 5, 30);
         SNRCatcher snrCatcherL1Rover(TypeID::S1, TypeID::CSL1, 901.0, 5, 30);
-        PrefitResCatcher resCatcher(equations_->getMeasTypes());
+        PrefitResCatcher resCatcher(&PrefitSlotProvider::instance());
         NumSatFilter minSatFilter(desiredSlnType());
 
         // Object to keep track of satellite arcs
@@ -187,12 +187,9 @@ namespace pod
         linearIonoFree.add(std::make_unique<PCCombination>());
         linearIonoFree.add(std::make_unique<LCCombimnation>());
 
-        // Compute single differences opreator
-        DeltaOp delta;
+        // Compute single differences opreator with appropriate measurements types
+        SingleDifferenceOp delta(&PrefitSlotProvider::instance());
         UsedInPvtMarker useMarker;
-
-        // configure single differences operator with appropriate measurements types
-        delta.setDiffTypeSet(equations_->getMeasTypes());
 
         KalmanSolver solver(equations_);
         solver.setMinSatNumber(5);
@@ -419,28 +416,24 @@ namespace pod
         configureSolver();
 
         requireObs_ = RequireObservablesBuilder(opts().systems, opts().useC1).build();
+        
+        PrefitSlotProvider::instance().clearSlots();
 
         if (opts().carrierBands.find(CarrierBand::L1) != opts().carrierBands.end())
         {
             oMinusC_.add(std::make_unique<PrefitC1>(true));
             oMinusC_.add(std::make_unique<PrefitL1>());
 
-            equations_->getMeasTypes().insert(TypeID::prefitC1);
-            equations_->getMeasTypes().insert(TypeID::prefitL1);
-
-            equations_->getResidTypes().insert(TypeID::postfitC1);
-            equations_->getResidTypes().insert(TypeID::postfitL1);
+            PrefitSlotProvider::instance().addSlot(ObsSlot::FirstBandCode);
+            PrefitSlotProvider::instance().addSlot(ObsSlot::FirstBandPhase);
         }
         if (opts().carrierBands.find(CarrierBand::L2) != opts().carrierBands.end())
         {
             oMinusC_.add(std::make_unique<PrefitC2>(true));
             oMinusC_.add(std::make_unique<PrefitL2>());
 
-            equations_->getMeasTypes().insert(TypeID::prefitP2);
-            equations_->getMeasTypes().insert(TypeID::prefitL2);
-
-            equations_->getResidTypes().insert(TypeID::postfitP2);
-            equations_->getResidTypes().insert(TypeID::postfitL2);
+            PrefitSlotProvider::instance().addSlot(ObsSlot::SecondBandCode);
+            PrefitSlotProvider::instance().addSlot(ObsSlot::SecondBandPhase);
         }
     }
 

@@ -15,8 +15,7 @@ namespace pod
             , q2(1e-30)
             , previousTime(gnsstk::CommonTime::BEGINNING_OF_TIME)
             , currentTime(gnsstk::CommonTime::END_OF_TIME)
-            , types(ParametersSet{FilterParameter(gnsstk::TypeID::recCdt),
-                                  FilterParameter(gnsstk::TypeID::recCdtdot)})
+            , types(ParametersSet{FilterParameter(gnsstk::TypeID::recCdt), FilterParameter(gnsstk::TypeID::recCdtdot)})
             , isFirstTime(true)
             , dt(DBL_MAX) {};
 
@@ -25,79 +24,43 @@ namespace pod
             , q2(q2_)
             , previousTime(gnsstk::CommonTime::BEGINNING_OF_TIME)
             , currentTime(gnsstk::CommonTime::END_OF_TIME)
-            , types(ParametersSet{FilterParameter(gnsstk::TypeID::recCdt),
-                                  FilterParameter(gnsstk::TypeID::recCdtdot)})
+            , types(ParametersSet{FilterParameter(gnsstk::TypeID::recCdt), FilterParameter(gnsstk::TypeID::recCdtdot)})
             , isFirstTime(true)
             , dt(DBL_MAX) {};
 
-        AdvClockModel(double q1_,
-                      double q2_,
-                      const gnsstk::CommonTime& t1,
-                      const gnsstk::CommonTime& t2)
+        AdvClockModel(double q1_, double q2_, const gnsstk::CommonTime& t1, const gnsstk::CommonTime& t2)
             : q1(q1_)
             , q2(q2_)
             , previousTime(t1)
             , currentTime(t2)
-            , types(ParametersSet{FilterParameter(gnsstk::TypeID::recCdt),
-                                  FilterParameter(gnsstk::TypeID::recCdtdot)})
+            , types(ParametersSet{FilterParameter(gnsstk::TypeID::recCdt), FilterParameter(gnsstk::TypeID::recCdtdot)})
             , isFirstTime(true)
             , dt(DBL_MAX) {};
 
-        virtual ~AdvClockModel() {};
+        virtual AdvClockModel& setPreviousTime(const gnsstk::CommonTime& prevTime);
 
-        /** Set the value of previous epoch
-         *
-         * @param prevTime   Value of previous epoch
-         *
-         */
-        virtual AdvClockModel& setPreviousTime(const gnsstk::CommonTime& prevTime)
-        {
-            previousTime = prevTime;
-            return (*this);
-        }
+        virtual AdvClockModel& setCurrentTime(const gnsstk::CommonTime& currTime);
 
-        /** Set the value of current epoch
-         *
-         * @param currTime   Value of current epoch
-         *
-         */
-        virtual AdvClockModel& setCurrentTime(const gnsstk::CommonTime& currTime)
-        {
-            currentTime = currTime;
-            return (*this);
-        }
+        virtual AdvClockModel& setQ1(double q1_);
 
-        virtual AdvClockModel& setQ1(double q1_)
-        {
-            q1 = q1_;
-            return (*this);
-        }
-
-        virtual AdvClockModel& setQ2(double q2_)
-        {
-            q2 = q2_;
-            return (*this);
-        }
+        virtual AdvClockModel& setQ2(double q2_);
 
         // Inherited via EquationBase
-        virtual void prepare(gnsstk::IRinex& gData) override;
+        void prepare(gnsstk::IRinex& gData) override;
 
-        virtual ParametersSet getParameters() const override;
+        ParametersSet getParameters() const override;
 
-        virtual void contributeTransitionMartix(gnsstk::Matrix<double>& Phi, const StateLayout& layout) const override;
+        void fillRow(const RowContext& ctx, const StateLayout& layout, gnsstk::Matrix<double>& H) const override;
 
-        virtual void contributeProcessNoiseMatrix(gnsstk::Matrix<double>& Q, const StateLayout& layout) const override;
+        void contributeTransitionMartix(gnsstk::Matrix<double>& Phi, const StateLayout& layout) const override;
 
-        virtual void defStateAndCovariance(gnsstk::Vector<double>& x,
-                                           gnsstk::Matrix<double>& P,
-                                           const StateLayout& layout) const override;
+        void contributeProcessNoiseMatrix(gnsstk::Matrix<double>& Q, const StateLayout& layout) const override;
 
-        virtual void contributeDesignMatrix(const gnsstk::IRinex& gData,
-                             const gnsstk::TypeIDSet& types,
-                             gnsstk::Matrix<double>& H,
-                             const StateLayout& layout) override;
+        void defStateAndCovariance(gnsstk::Vector<double>& x,
+                                   gnsstk::Matrix<double>& P,
+                                   const StateLayout& layout) const override;
 
-        virtual int getNumUnknowns() const override;
+        int getNumUnknowns() const override;
 
       private:
         ParametersSet types;

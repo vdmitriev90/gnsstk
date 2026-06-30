@@ -1,5 +1,6 @@
 #include "EquationComposer.h"
 
+#include "GnssObsMapping.h"
 #include "Weighting.h"
 
 using namespace gnsstk;
@@ -21,23 +22,20 @@ namespace pod
         }
     }
 
-    void EquationComposer::updateSystemMatrices(gnsstk::IRinex& gData,
+ 
+void EquationComposer::updateSystemMatrices(gnsstk::IRinex& gData,
                                                 gnsstk::Matrix<double>& H,
                                                 gnsstk::Vector<double>& prefitResiduals,
                                                 gnsstk::Matrix<double>& W,
                                                 gnsstk::Matrix<double>& Phi,
                                                 gnsstk::Matrix<double>& Q)
     {
-        const auto& body = gData.getBody();
-        const auto& measTypes = getMeasTypes();
-        const size_t numSVs = body.size();
+        // --- 1. Build measurement blocks (single source of truth for rows) ---
+        buildObservationBlocks(gData, satBlocks_);
 
-        auto& provider = *ObservationTypesProvider::instance();
-        buildObservationBlocks(gData, provider, satBlocks_);
+        const size_t num_meas = satBlocks_.totalMeasurements();
 
-        numMeas_ = numSVs * measTypes.size();
-        //GNSSTK_ASSERT_MSG(numMeas_ == satBlocks_.totalMeasurements(), "Number of measurements is zero.");
-
+        // --- 2. Build state layout ---
         std::vector<FilterParameter> curr_params;
         for (auto& eq : equations_)
         {
@@ -48,41 +46,45 @@ namespace pod
         layout_.build(curr_params);
 
         const int numUnknowns = getNumUnknowns();
-        H.resize(numMeas_, numUnknowns, 0.0);
+
+        // --- 3. Resize matrices ---
+        H.resize(num_meas, numUnknowns, 0.0);
+        prefitResiduals.resize(num_meas, 0.0);
+        W.resize(num_meas, num_meas, 0.0);
         Phi.resize(numUnknowns, numUnknowns, 0.0);
         Q.resize(numUnknowns, numUnknowns, 0.0);
 
+        // --- 4. Fill H, z (prefit), and W in ONE pass ---
+        int row = 0;
+
+        for (const auto& block : satBlocks_)
+        {
+            for (const auto& m : block.measurements)
+            {
+                RowContext ctx{block.sat, block.data, m.type, row};
+
+                // --- H: design matrix ---
+                for (auto& eq : equations_)
+                    eq->fillRow(ctx, layout_, H);
+
+                // --- Measurement vector (prefit residuals) ---
+                prefitResiduals(row) = m.prefitResidual;
+
+                // --- Weight matrix (diagonal) ---
+                W(row, row) = m.weight;
+
+                ++row;
+            }
+        }
+
+        // --- 5. Transition and process noise (independent of measurements) ---
         for (auto& eq : equations_)
         {
-            eq->contributeDesignMatrix(gData, measTypes, H, layout_);
             eq->contributeTransitionMartix(Phi, layout_);
             eq->contributeProcessNoiseMatrix(Q, layout_);
         }
-
-        prefitResiduals.resize(numMeas_, 0.0);
-        size_t j = 0;
-        for (const auto& measType : measTypes)
-        {
-            const auto meas = body.getVectorOfTypeID(measType);
-            for (size_t i = 0; i < numSVs; i++)
-                prefitResiduals(i + j * numSVs) = meas(i);
-            j++;
-        }
-
-        const satTypeValueMap weightMap(body.extractTypeID(TypeID::weight));
-        GNSSTK_ASSERT_MSG(weightMap.numSats() == numSVs, "Weights vector size does not match number of satellites.");
-
-        W.resize(numMeas_, numMeas_, 0.0);
-        const auto weights = body.getVectorOfTypeID(TypeID::weight);
-        size_t k = 0;
-        for (const auto& measType : measTypes)
-        {
-            const double weightFactor = pod::weighting::weightOf(measType.type);
-            for (size_t i = 0; i < numSVs; i++)
-                W(i + k * numSVs, i + k * numSVs) = weights(i) * weightFactor;
-            k++;
-        }
     }
+
 
     int EquationComposer::getNumUnknowns() const
     {
@@ -149,39 +151,55 @@ namespace pod
 
     void EquationComposer::saveResiduals(gnsstk::IRinex& gData, const gnsstk::Vector<double>& residuals) const
     {
-        int resNum = residuals.size();
-        int satNum = gData.getBody().size();
-        int numResTypes = getResidTypes().size();
+        int row = 0;
+        for (const auto& block : satBlocks_)
+        {
+            auto it = gData.getBody().find(block.sat);
+            if (it == gData.getBody().end() || !it->second)
+            {
+                row += static_cast<int>(block.size());
+                continue;
+            }
 
-        GNSSTK_ASSERT(satNum * numResTypes == resNum);
-
-        int i_res = 0;
-        for (auto&& resType : getResidTypes())
-            for (auto&& itSat : gData.getBody())
-                (*itSat.second)[resType] = residuals(i_res++);
+            for (const auto& m : block.measurements)
+            {
+                const auto postfit = obs_mapping::prefitToPostfit(m.type);
+                if (postfit != TypeID::Unknown)
+                    (*it->second)[TypeID(postfit)] = residuals(row);
+                ++row;
+            }
+        }
     }
 
     std::vector<double> EquationComposer::getResiduals(const gnsstk::Vector<double>& residuals,
                                                        const TypeIDSet& types) const
     {
-        size_t numResTypes = getResidTypes().size();
-        if (numResTypes == 0)
-            return {};
-
-        size_t nsv = residuals.size() / numResTypes;
-
         std::vector<double> res;
-        res.reserve(types.size() * nsv);
+        res.reserve(residuals.size());
 
-        size_t iType(0);
-        for (auto&& resType : getResidTypes())
+        int row = 0;
+        for (const auto& block : satBlocks_)
         {
-            if (types.find(resType) != types.end())
-                for (size_t j = 0; j < nsv; ++j)
-                    res.push_back(residuals(iType * nsv + j));
-            iType++;
+            for (const auto& m : block.measurements)
+            {
+                const auto postfit = obs_mapping::prefitToPostfit(m.type);
+                if (postfit != TypeID::Unknown && types.find(TypeID(postfit)) != types.end())
+                    res.push_back(residuals(row));
+                ++row;
+            }
         }
         return res;
+    }
+
+    ResidualInfo EquationComposer::findMaxResidual(const gnsstk::Vector<double>& residuals,
+                                                   const TypeIDSet& postfitTypes) const
+    {
+        return pod::findMaxResidual(satBlocks_, residuals, postfitTypes);
+    }
+
+    std::set<int> EquationComposer::getSatRows(const SatID& sat) const
+    {
+        return pod::getSatRows(satBlocks_, sat);
     }
 
     EquationComposer& EquationComposer::setState(const EquationComposer::FilterState& newState)
@@ -193,26 +211,6 @@ namespace pod
     const EquationComposer::FilterState& EquationComposer::getState() const
     {
         return filterData_;
-    }
-
-    TypeIDSet& EquationComposer::getMeasTypes()
-    {
-        return measurementsTypes_;
-    }
-
-    const TypeIDSet& EquationComposer::getMeasTypes() const
-    {
-        return measurementsTypes_;
-    }
-
-    TypeIDSet& EquationComposer::getResidTypes()
-    {
-        return residualsTypes_;
-    }
-
-    const TypeIDSet& EquationComposer::getResidTypes() const
-    {
-        return residualsTypes_;
     }
 
     const ParametersSet& EquationComposer::getCurrentAmb() const

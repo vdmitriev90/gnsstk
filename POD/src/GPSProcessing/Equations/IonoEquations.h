@@ -19,42 +19,26 @@ namespace pod
         ~IonoEquations() {};
 
         /* update state of equations with new observational data */
-        virtual void prepare(gnsstk::IRinex& gData) override;
+        void prepare(gnsstk::IRinex& gData) override;
 
-        /*Check, if unknown parameters currently observable, if so,
-        put the corresponding TypeID into 'TypeIDSet'
-        */
-        virtual void contributeDesignMatrix(const gnsstk::IRinex& gData,
-                             const gnsstk::TypeIDSet& types,
-                             gnsstk::Matrix<double>& H,
-                             const StateLayout& layout) override;
+        /// Fill ONE row of the design matrix
+        void fillRow(const RowContext& ctx, const StateLayout& layout, gnsstk::Matrix<double>& H) const override;
 
-        /* return set of TypeID, corresponding unknown parameters  for given equations */
         virtual ParametersSet getParameters() const override
         {
             return currParameters;
         }
 
-        /* Put the values in state tarnsition matrix, starting with specific index,
-        index will be incremented inside this method
-        */
-        virtual void contributeTransitionMartix(gnsstk::Matrix<double>& Phi, const StateLayout& layout) const override;
+        void contributeTransitionMartix(gnsstk::Matrix<double>& Phi, const StateLayout& layout) const override;
 
-        /*Put process noise components into corresponding matrix,
-        starting with specific index, index will be incremented inside this method
-        */
-        virtual void contributeProcessNoiseMatrix(gnsstk::Matrix<double>& Q, const StateLayout& layout) const override;
+        void contributeProcessNoiseMatrix(gnsstk::Matrix<double>& Q, const StateLayout& layout) const override;
 
-        /* Put default values of state vector and it's covariance into corresponding matrices,
-        starting with specific index, index will be incremented inside this method
-        */
-        virtual void defStateAndCovariance(gnsstk::Vector<double>& x,
-                                           gnsstk::Matrix<double>& P,
-                                           const StateLayout& layout) const override;
+        void defStateAndCovariance(gnsstk::Vector<double>& x,
+                                   gnsstk::Matrix<double>& P,
+                                   const StateLayout& layout) const override;
 
-        /* return number of unknowns
-         */
-        virtual int getNumUnknowns() const override;
+
+        int getNumUnknowns() const override;
 
         template <class T,
                   typename = std::enable_if_t<std::is_base_of<gnsstk::IStochasticModel, T>::value>>
