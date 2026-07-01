@@ -5,7 +5,7 @@
 #include "ObservablesSets.h"
 #include "XYZ2NEU.hpp"
 //
-#include "SimpleFilter.hpp"
+#include "ObsRangeFilter.h"
 // Class to detect cycle slips using LI combination
 #include "LICSDetector2.hpp"
 
@@ -80,11 +80,11 @@ namespace pod
 
         // This object will check that code observations are within
         // reasonable limits
-        SimpleFilter PRFilter;
-        PRFilter.addFilteredType(TypeID::P1);
-        PRFilter.setFilteredType(TypeID::P2);
+        ObsRangeFilter PRFilter;
+        PRFilter.addFilteredType(ObsRangeType::FirstCode);
+        PRFilter.setFilteredType(ObsRangeType::SecondCode);
 
-        SimpleFilter SNRFilter(TypeID::S1, (double)opts().maskSNR, 1e7);
+        ObsRangeFilter SNRFilter(ObsRangeType::Snr, (double)opts().maskSNR, 1e7);
 
         // This object defines several handy linear combinations
         LinearCombinations comb;
@@ -199,12 +199,12 @@ namespace pod
 
         // Add to processing list
         // Declare a simple filter object to screen PC
-        SimpleFilter pcFilter;
-        pcFilter.setFilteredType(TypeID::PC);
+        ObsRangeFilter pcFilter;
+        pcFilter.setFilteredType(ObsRangeType::IonoFreeCode);
 
         // IMPORTANT NOTE:
         // Like in the "filterCode" case, the "filterPC" option allows you to
-        // deactivate the "SimpleFilter" object that filters out PC, in case
+        // deactivate the "ObsRangeFilter" object that filters out PC, in case
         // you need to.
 
         // Object to align phase with code measurements

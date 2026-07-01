@@ -33,7 +33,7 @@
 #include "PrefitResCatcher.h"
 #include "SNRCatcher.h"
 #include "SatArcMarker.hpp"
-#include "SimpleFilter.hpp"
+#include "ObsRangeFilter.h"
 #include "SolidTides.hpp"
 #include "StringUtils.h"
 #include "TropoEquations.h"
@@ -68,8 +68,8 @@ namespace pod
 
         ElevationMask elMask(opts().maskEl);
 
-        SimpleFilter CodeFilter(TypeIDSet{data_->getGpsGloL1CodeType(), TypeID::P2, TypeID::L1, TypeID::L2});
-        SimpleFilter SNRFilter(TypeID::S1, confReader().getValueAsInt("SNRmask"), DBL_MAX);
+        ObsRangeFilter CodeFilter({ObsRangeType::FirstCode, ObsRangeType::SecondCode, ObsRangeType::FirstPhase, ObsRangeType::SecondPhase});
+        ObsRangeFilter SNRFilter(ObsRangeType::Snr, confReader().getValueAsInt("SNRmask"), DBL_MAX);
         // Object to remove eclipsed satellites
         EclipsedSatFilter eclipsedSV;
 
@@ -99,7 +99,7 @@ namespace pod
 
         // check sharp SNR drops
         SNRCatcher snrCatcherL1Rover;
-        PrefitResCatcher resCatcher(&PrefitSlotProvider::instance());
+        PrefitResCatcher resCatcher(config_.slots_);
 
         // Object to keep track of satellite arcs
         SatArcMarker markArcRover(TypeID::CSL1, true, 31.0);
@@ -325,7 +325,6 @@ namespace pod
 
     void PppFloatSolution::updateRequaredObs()
     {
-
         computeLinear_.add(std::make_unique<PDelta>());
         computeLinear_.add(std::make_unique<MWoubenna>());
 
@@ -338,7 +337,7 @@ namespace pod
         oMinusC_.add(std::make_unique<PrefitPC>(true));
         oMinusC_.add(std::make_unique<PrefitLC>());
 
-        PrefitSlotProvider::instance().setSlots({ObsSlot::CodeIonoFree, ObsSlot::PhaseIonoFree});
+        config_.slots_ = { ObsSlot::CodeIonoFree, ObsSlot::PhaseIonoFree };
     }
 
     void PppFloatSolution::configureSolver()

@@ -14,7 +14,7 @@ namespace pod
 
     GnssSolution::GnssSolution(GnssDataStorePtr gnssData, double sigma = 50.0)
         : data_(gnssData)
-        , equations_(std::make_shared<EquationComposer>())
+        , equations_(std::make_shared<EquationComposer>(config_))
         , maxSigma_(sigma)
     {
     }

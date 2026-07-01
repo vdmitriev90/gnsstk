@@ -6,7 +6,7 @@ namespace pod
 {
     gnsstk::SatTypePtrMap& SingleDifferenceOp::Process(gnsstk::SatTypePtrMap& gData)
     {
-        const auto& slots = slotProvider_->getSlots();
+        const auto& slots = slots_;
 
         gnsstk::SatIDSet satRejectedSet;
 
@@ -30,7 +30,7 @@ namespace pod
             // Resolve slots -> TypeIDs per satellite system and difference them
             for (const auto& slot : slots)
             {
-                const gnsstk::TypeID type = slotProvider_->resolve(slot, sat.system);
+                const gnsstk::TypeID type = resolver_.resolvePrefit(slot, sat.system);
                 if (type == gnsstk::TypeID::Unknown)
                     continue;
 

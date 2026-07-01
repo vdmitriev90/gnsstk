@@ -35,13 +35,6 @@ namespace pod
             return (*this);
         }
 
-        ProcessLinear& setObsTypesProvider(ObsTypesProviderPtr provider)
-        {
-            for (auto& comb : combs)
-                comb->setObsTypesProvider(provider);
-            return (*this);
-        }
-
       protected:
         std::vector<linear_ptr> combs;
 

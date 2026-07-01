@@ -7,61 +7,6 @@
 
 namespace pod
 {
-    ObsTypesProviderPtr ObservationTypesProvider::instance()
-    {
-        static auto inst = std::make_shared<ObservationTypesProvider>();
-        return inst;
-    }
-
-    TypeID ObservationTypesProvider::getFirstCodeType(SatelliteSystem ss) const
-    {
-        const auto* cfg = obs_mapping::findConfig(ss);
-        if (!cfg)
-        {
-            GNSSTK_ASSERT_MSG(false, "Unknown satellite system in getFirstCodeType");
-            return TypeID::Unknown;
-        }
-
-        return obs_mapping::getOrAssert(cfg->firstCode, ss, "getFirstCodeType");
-    }
-    TypeID ObservationTypesProvider::getSecondCodeType(SatelliteSystem ss) const
-    {
-
-        const auto* cfg = obs_mapping::findConfig(ss);
-        if (!cfg)
-        {
-            GNSSTK_ASSERT_MSG(false, "Unknown satellite system in getSecondCodeType");
-            return TypeID::Unknown;
-        }
-
-        return obs_mapping::getOrAssert(cfg->secondCode, ss, "getSecondCodeType");
-    }
-
-    TypeID ObservationTypesProvider::getFirstPhaseType(SatelliteSystem ss) const
-    {
-
-        const auto* cfg = obs_mapping::findConfig(ss);
-        if (!cfg)
-        {
-            GNSSTK_ASSERT_MSG(false, "Unknown satellite system in getFirstPhaseType");
-            return TypeID::Unknown;
-        }
-
-        return obs_mapping::getOrAssert(cfg->firstPhase, ss, "getFirstPhaseType");
-    }
-    TypeID ObservationTypesProvider::getSecondPhaseType(SatelliteSystem ss) const
-    {
-
-        const auto* cfg = obs_mapping::findConfig(ss);
-        if (!cfg)
-        {
-            GNSSTK_ASSERT_MSG(false, "Unknown satellite system in getSecondPhaseType");
-            return TypeID::Unknown;
-        }
-
-        return obs_mapping::getOrAssert(cfg->secondPhase, ss, "getSecondPhaseType");
-    }
-
     /* Iono-Free wavelength according to equation 20.47 (pg. 591) in
        "Peter J.G. Teunissen, Oliver Montenbruck (Eds.)
        Springer Handbook of Global Navigation Satellite Systems"
@@ -78,8 +23,8 @@ namespace pod
 
     std::optional<double> LinearCombination::getIonoFreePhaseWaveLength(const SatID& sv) const
     {
-        auto type1 = obsTypesProvider_->getFirstPhaseType(sv.system);
-        auto type2 = obsTypesProvider_->getSecondPhaseType(sv.system);
+        const auto type1 = resolver_.firstPhase(sv.system);
+        const auto type2 = resolver_.secondPhase(sv.system);
 
         const int band1 = obs_mapping::getBand(sv.system, type1);
         const int band2 = obs_mapping::getBand(sv.system, type2);
@@ -92,7 +37,7 @@ namespace pod
 
     std::optional<double> LinearCombination::getFirstFreqWaveLength(const SatID& sv) const
     {
-        auto type = obsTypesProvider_->getFirstPhaseType(sv.system);
+        const auto type = resolver_.firstPhase(sv.system);
         const int band1 = obs_mapping::getBand(sv.system, type);
         if (band1 < 0)
             return std::nullopt;
@@ -103,7 +48,7 @@ namespace pod
 
     std::optional<double> LinearCombination::getSecondFreqWaveLength(const SatID& sv) const
     {
-        auto type = obsTypesProvider_->getSecondPhaseType(sv.system);
+        const auto type = resolver_.secondPhase(sv.system);
         const int band = obs_mapping::getBand(sv.system, type);
         if (band < 0)
             return std::nullopt;
@@ -116,22 +61,22 @@ namespace pod
     bool MWoubenna::getCombination(const SatID& sv, const typeValueMap& tvMap, double& value) const
     {
         value = NAN;
-        const TypeID first_code_type = obsTypesProvider_->getFirstCodeType(sv.system);
+        const TypeID first_code_type = resolver_.firstCode(sv.system);
         const auto& itC1 = tvMap.find(first_code_type);
         if (itC1 == tvMap.end())
             return false;
 
-        const TypeID second_code_type = obsTypesProvider_->getSecondCodeType(sv.system);
+        const TypeID second_code_type = resolver_.secondCode(sv.system);
         const auto& itC2 = tvMap.find(second_code_type);
         if (itC2 == tvMap.end())
             return false;
 
-        const TypeID first_phase_type = obsTypesProvider_->getFirstPhaseType(sv.system);
+        const TypeID first_phase_type = resolver_.firstPhase(sv.system);
         const auto& itL1 = tvMap.find(first_phase_type);
         if (itL1 == tvMap.end())
             return false;
 
-        const TypeID second_phase_type = obsTypesProvider_->getSecondPhaseType(sv.system);
+        const TypeID second_phase_type = resolver_.secondPhase(sv.system);
         const auto& itL2 = tvMap.find(second_phase_type);
         if (itL2 == tvMap.end())
             return false;
@@ -143,7 +88,7 @@ namespace pod
         if (band2 < 0)
             return false;
 
-        int fcn = sv.getGloFcn();
+        const int fcn = sv.getGloFcn();
         double F1 = C_MPS / getWavelength(sv.system, band1, fcn);
         double F2 = C_MPS / getWavelength(sv.system, band2, fcn);
 
@@ -164,18 +109,18 @@ namespace pod
     {
         value = NAN;
 
-        const TypeID first_code_type = obsTypesProvider_->getFirstCodeType(sv.system);
+        const TypeID first_code_type = resolver_.firstCode(sv.system);
         const auto& itC1 = tvMap.find(first_code_type);
         if (itC1 == tvMap.end())
             return false;
 
-        const TypeID second_code_type = obsTypesProvider_->getSecondCodeType(sv.system);
+        const TypeID second_code_type = resolver_.secondCode(sv.system);
         const auto& itC2 = tvMap.find(second_code_type);
         if (itC2 == tvMap.end())
             return false;
 
-        const TypeID first_phase_type = obsTypesProvider_->getFirstPhaseType(sv.system);
-        const TypeID second_phase_type = obsTypesProvider_->getSecondPhaseType(sv.system);
+        const TypeID first_phase_type = resolver_.firstPhase(sv.system);
+        const TypeID second_phase_type = resolver_.secondPhase(sv.system);
 
         const int band1 = obs_mapping::getBand(sv.system, first_phase_type);
         if (band1 < 0)
@@ -184,12 +129,12 @@ namespace pod
         if (band2 < 0)
             return false;
 
-        int fcn = sv.getGloFcn();
+        const int fcn = sv.getGloFcn();
         double F1 = C_MPS / getWavelength(sv.system, band1, fcn);
         double F2 = C_MPS / getWavelength(sv.system, band2, fcn);
 
-        double c = F1 / (F1 + F2);
-        double d = F2 / (F1 + F2);
+        const double c = F1 / (F1 + F2);
+        const double d = F2 / (F1 + F2);
 
         value = c * itC1->second + d * itC2->second;
 
@@ -207,12 +152,12 @@ namespace pod
     {
         value = NAN;
 
-        const TypeID first_phase_type = obsTypesProvider_->getFirstPhaseType(sv.system);
+        const TypeID first_phase_type = resolver_.firstPhase(sv.system);
         const auto& itL1 = tvMap.find(first_phase_type);
         if (itL1 == tvMap.end())
             return false;
 
-        const TypeID second_phase_type = obsTypesProvider_->getSecondPhaseType(sv.system);
+        const TypeID second_phase_type = resolver_.secondPhase(sv.system);
         const auto& itL2 = tvMap.find(second_phase_type);
         if (itL2 == tvMap.end())
             return false;
@@ -224,12 +169,12 @@ namespace pod
         if (band2 < 0)
             return false;
 
-        int fcn = sv.getGloFcn();
+        const int fcn = sv.getGloFcn();
         double F1 = C_MPS / getWavelength(sv.system, band1, fcn);
         double F2 = C_MPS / getWavelength(sv.system, band2, fcn);
 
-        double e = F1 / (F1 - F2);
-        double f = F2 / (F1 - F2);
+        const double e = F1 / (F1 - F2);
+        const double f = F2 / (F1 - F2);
 
         value = e * itL1->second + f * itL2->second;
 
@@ -247,23 +192,23 @@ namespace pod
     {
         value = NAN;
 
-        const TypeID first_code_type = obsTypesProvider_->getFirstCodeType(sv.system);
+        const TypeID first_code_type = resolver_.firstCode(sv.system);
         const auto& itC1 = tvMap.find(first_code_type);
         if (itC1 == tvMap.end())
             return false;
 
-        const TypeID second_code_type = obsTypesProvider_->getSecondCodeType(sv.system);
+        const TypeID second_code_type = resolver_.secondCode(sv.system);
         const auto& itC2 = tvMap.find(second_code_type);
         if (itC2 == tvMap.end())
             return false;
 
-        const TypeID first_phase_type = obsTypesProvider_->getFirstPhaseType(sv.system);
-        const TypeID second_phase_type = obsTypesProvider_->getSecondPhaseType(sv.system);
+        const TypeID first_phase_type = resolver_.firstPhase(sv.system);
+        const TypeID second_phase_type = resolver_.secondPhase(sv.system);
 
-        const int band1 = obs_mapping::getBand(sv.system, first_phase_type.type);
+        const int band1 = obs_mapping::getBand(sv.system, first_phase_type);
         if (band1 < 0)
             return false;
-        const int band2 = obs_mapping::getBand(sv.system, second_phase_type.type);
+        const int band2 = obs_mapping::getBand(sv.system, second_phase_type);
         if (band2 < 0)
             return false;
 
@@ -290,20 +235,20 @@ namespace pod
     {
         value = NAN;
 
-        const TypeID first_phase_type = obsTypesProvider_->getFirstPhaseType(sv.system);
+        const TypeID first_phase_type = resolver_.firstPhase(sv.system);
         const auto& itL1 = tvMap.find(first_phase_type);
         if (itL1 == tvMap.end())
             return false;
 
-        const TypeID second_phase_type = obsTypesProvider_->getSecondPhaseType(sv.system);
+        const TypeID second_phase_type = resolver_.secondPhase(sv.system);
         const auto& itL2 = tvMap.find(second_phase_type);
         if (itL2 == tvMap.end())
             return false;
 
-        const int band1 = obs_mapping::getBand(sv.system, first_phase_type.type);
+        const int band1 = obs_mapping::getBand(sv.system, first_phase_type);
         if (band1 < 0)
             return false;
-        const int band2 = obs_mapping::getBand(sv.system, second_phase_type.type);
+        const int band2 = obs_mapping::getBand(sv.system, second_phase_type);
         if (band2 < 0)
             return false;
 
@@ -330,11 +275,11 @@ namespace pod
     {
         value = NAN;
 
-        const TypeID first_phase_type = obsTypesProvider_->getFirstPhaseType(sv.system);
+        const TypeID first_phase_type = resolver_.firstPhase(sv.system);
         const auto& itL1 = tvMap.find(first_phase_type);
         if (itL1 == tvMap.end())
             return false;
-        const TypeID second_phase_type = obsTypesProvider_->getSecondPhaseType(sv.system);
+        const TypeID second_phase_type = resolver_.secondPhase(sv.system);
         const auto& itL2 = tvMap.find(second_phase_type);
         if (itL2 == tvMap.end())
             return false;
@@ -354,8 +299,8 @@ namespace pod
     {
         value = NAN;
 
-        // C1 or P1 code pseudorange, depending on ObservationTypesProvider settings
-        const TypeID firstCodeType = obsTypesProvider_->getFirstCodeType(sv.system);
+        // C1 or P1 code pseudorange
+        const TypeID firstCodeType = resolver_.firstCode(sv.system);
         auto it = tvMap.find(firstCodeType);
         if (it == tvMap.end())
             return false;
@@ -425,7 +370,7 @@ namespace pod
 
     TypeID PrefitC1::getType(SatelliteSystem ss) const
     {
-        const TypeID firstCodeType = obsTypesProvider_->getFirstCodeType(ss);
+        const TypeID firstCodeType = resolver_.firstCode(ss);
         return obs_mapping::getPrefitObs(firstCodeType);
     }
 #pragma endregion
@@ -436,8 +381,8 @@ namespace pod
     {
         value = NAN;
 
-        // P2 or C2 code pseudorange, depending on ObservationTypesProvider settings
-        const TypeID secondCodeType = obsTypesProvider_->getSecondCodeType(sv.system);
+        // P2 or C2 code pseudorange
+        const TypeID secondCodeType = resolver_.secondCode(sv.system);
         auto it = tvMap.find(secondCodeType);
         if (it == tvMap.end())
             return false;
@@ -507,7 +452,7 @@ namespace pod
 
     TypeID PrefitC2::getType(SatelliteSystem ss) const
     {
-        const TypeID secondCodeType = obsTypesProvider_->getSecondCodeType(ss);
+        const TypeID secondCodeType = resolver_.secondCode(ss);
         return obs_mapping::getPrefitObs(secondCodeType);
     }
 
@@ -598,7 +543,7 @@ namespace pod
         value = NAN;
 
         // L1 phase pseudorange
-        const TypeID type = obsTypesProvider_->getFirstPhaseType(sv.system);
+        const TypeID type = resolver_.firstPhase(sv.system);
         auto it = tvMap.find(type);
         if (it == tvMap.end())
             return false;
@@ -676,7 +621,7 @@ namespace pod
 
     TypeID PrefitL1::getType(SatelliteSystem ss) const
     {
-        const TypeID type = obsTypesProvider_->getFirstPhaseType(ss);
+        const TypeID type = resolver_.firstPhase(ss);
         return obs_mapping::getPrefitObs(type);
     }
 #pragma endregion
@@ -687,7 +632,7 @@ namespace pod
         value = NAN;
 
         // L2 phase pseudorange
-        const TypeID type = obsTypesProvider_->getSecondPhaseType(sv.system);
+        const TypeID type = resolver_.secondPhase(sv.system);
         auto it = tvMap.find(type);
         if (it == tvMap.end())
             return false;
@@ -765,7 +710,7 @@ namespace pod
 
     TypeID PrefitL2::getType(SatelliteSystem ss) const
     {
-        const TypeID type = obsTypesProvider_->getSecondPhaseType(ss);
+        const TypeID type = resolver_.secondPhase(ss);
         return obs_mapping::getPrefitObs(type);
     }
 
@@ -854,18 +799,18 @@ namespace pod
     {
         value = NAN;
 
-        const TypeID first_code_type = obsTypesProvider_->getFirstCodeType(sv.system);
+        const TypeID first_code_type = resolver_.firstCode(sv.system);
         const auto& itC1 = tvMap.find(first_code_type);
         if (itC1 == tvMap.end())
             return false;
 
-        const TypeID second_code_type = obsTypesProvider_->getSecondCodeType(sv.system);
+        const TypeID second_code_type = resolver_.secondCode(sv.system);
         const auto& itP2 = tvMap.find(second_code_type);
         if (itP2 == tvMap.end())
             return false;
 
-        const TypeID first_phase_type = obsTypesProvider_->getFirstPhaseType(sv.system);
-        const TypeID second_phase_type = obsTypesProvider_->getSecondPhaseType(sv.system);
+        const TypeID first_phase_type = resolver_.firstPhase(sv.system);
+        const TypeID second_phase_type = resolver_.secondPhase(sv.system);
 
         const int band1 = obs_mapping::getBand(sv.system, first_phase_type);
         if (band1 < 0)
@@ -899,12 +844,12 @@ namespace pod
     {
         value = NAN;
 
-        const TypeID first_phase_type = obsTypesProvider_->getFirstPhaseType(sv.system);
+        const TypeID first_phase_type = resolver_.firstPhase(sv.system);
         const auto& itC1 = tvMap.find(first_phase_type);
         if (itC1 == tvMap.end())
             return false;
 
-        const TypeID second_phase_type = obsTypesProvider_->getSecondPhaseType(sv.system);
+        const TypeID second_phase_type = resolver_.secondPhase(sv.system);
         const auto& itP2 = tvMap.find(second_phase_type);
         if (itP2 == tvMap.end())
             return false;

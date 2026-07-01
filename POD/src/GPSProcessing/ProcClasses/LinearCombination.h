@@ -1,37 +1,21 @@
 #ifndef POD_LINEAR_COMBINATIONS_H
 #define POD_LINEAR_COMBINATIONS_H
-#include "DataStructures.hpp"
 
-#include <iostream>
-#include <memory>
+#include "DataStructures.hpp"
+#include "ObservationResolver.h"
 
 using namespace gnsstk;
 
 namespace pod
 {
-    class ObservationTypesProvider;
-    using ObsTypesProviderPtr = std::shared_ptr<ObservationTypesProvider>;
     TypeID getPrefitObsTypeByObsType(const TypeID& originalType);
-
-    class ObservationTypesProvider
-    {
-      public:
-        static std::shared_ptr<ObservationTypesProvider> instance();
-
-        ObservationTypesProvider() = default;
-
-        TypeID getFirstCodeType(SatelliteSystem ss) const;
-        TypeID getSecondCodeType(SatelliteSystem ss) const;
-        TypeID getFirstPhaseType(SatelliteSystem ss) const;
-        TypeID getSecondPhaseType(SatelliteSystem ss) const;
-    };
 
     class LinearCombination
     {
       public:
         static double getIonoFreeWaveLength(const gnsstk::SatID& sv, int band1, int band2);
 
-        LinearCombination() : obsTypesProvider_(ObservationTypesProvider::instance()) {};
+        LinearCombination() = default;
         virtual ~LinearCombination() = default;
         bool getCombination(const SatID& sv, const gnssRinex& rin_epoch, double& value) const
         {
@@ -54,22 +38,12 @@ namespace pod
 
         virtual TypeID getType(SatelliteSystem ss) const = 0;
 
-        ObsTypesProviderPtr getObsTypesProvider() const
-        {
-            return obsTypesProvider_;
-        }
-
-        void setObsTypesProvider(ObsTypesProviderPtr provider)
-        {
-            obsTypesProvider_ = provider;
-        }
-
       protected:
+        ObservationResolver resolver_;
+
         std::optional<double> getIonoFreePhaseWaveLength(const SatID& sv) const;
         std::optional<double> getFirstFreqWaveLength(const SatID& sv) const;
         std::optional<double> getSecondFreqWaveLength(const SatID& sv) const;
-
-        ObsTypesProviderPtr obsTypesProvider_;
     };
 
     class MWoubenna : public LinearCombination

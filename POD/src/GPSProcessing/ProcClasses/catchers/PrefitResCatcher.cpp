@@ -1,4 +1,5 @@
 #include "PrefitResCatcher.h"
+#include "ObservationResolver.h"
 
 #include "WinUtils.h"
 
@@ -31,7 +32,8 @@ namespace pod
     {
         auto& rejSatItem = rejectedSatsTable[gData.getHeader().epoch];
 
-        const auto& slots = slotProvider_->getSlots();
+        const auto& slots = slots_;
+        const ObservationResolver resolver;
 
         // Collect unique TypeIDs resolved for all slots × all systems in data
         TypeIDSet resolvedTypes;
@@ -39,7 +41,7 @@ namespace pod
         {
             for (const auto& slot : slots)
             {
-                const TypeID tid = slotProvider_->resolve(slot, sat.system);
+                const TypeID tid = resolver.resolvePrefit(slot, sat.system);
                 if (tid != TypeID::Unknown)
                     resolvedTypes.insert(tid);
             }

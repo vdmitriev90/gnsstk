@@ -39,4 +39,15 @@ namespace pod {
         RandomWalk,
         Spaceborne,
     };
+
+    enum class ObsSlot
+    {
+        Undefined = 0,
+        FirstBandCode,
+        FirstBandPhase,
+        SecondBandCode,
+        SecondBandPhase,
+        CodeIonoFree, // iono-free code
+        PhaseIonoFree // iono-free phase
+    };
 }

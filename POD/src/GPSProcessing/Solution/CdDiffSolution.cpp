@@ -11,11 +11,11 @@
 #include "LinearCombinations.hpp"
 #include "MWCSDetector.hpp"
 #include "NeillTropModel.hpp"
+#include "ObsRangeFilter.h"
 #include "ObservablesSets.h"
 #include "OneFreqCSDetector.hpp"
 #include "PositionEquations.h"
 #include "PowerSum.hpp"
-#include "SimpleFilter.hpp"
 #include "SyncObs.h"
 #include "WinUtils.h"
 
@@ -32,11 +32,11 @@ namespace pod
     void CdDiffSolution::process()
     {
         updateRequaredObs();
-        SimpleFilter CodeFilter(data_->getGpsGloL1CodeType());
+        ObsRangeFilter CodeFilter(ObsRangeType::FirstCode);
         if (data_->ionoCorrector.getType() == ComputeIonoModel::DualFreq)
-            CodeFilter.addFilteredType(TypeID::P2);
+            CodeFilter.addFilteredType(ObsRangeType::SecondCode);
 
-        SimpleFilter SNRFilter(TypeID::S1, confReader().getValueAsInt("SNRmask"), DBL_MAX);
+        ObsRangeFilter SNRFilter(ObsRangeType::Snr, confReader().getValueAsInt("SNRmask"), DBL_MAX);
 
         Position refPos = data_->getNominalPosition(opts().SiteBase);
 
@@ -266,9 +266,8 @@ namespace pod
         configureSolver();
 
         oMinusC_.add(std::make_unique<PrefitC1>(false));
-        
-        PrefitSlotProvider::instance().setSlots(ObsSlot::FirstBandCode);
-        deltaOp_.setSlotProvider(&PrefitSlotProvider::instance());
+        config_.slots_ = {ObsSlot::FirstBandCode};
+        deltaOp_.setSlots(config_.slots_);
 
         requireObs_ = RequireObservablesBuilder(opts().systems).build();
 

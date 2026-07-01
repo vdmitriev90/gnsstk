@@ -10,6 +10,7 @@
 
 namespace pod
 {
+    
     typedef std::unique_ptr<EquationBase> eq_uptr;
     typedef std::vector<eq_uptr> EquationsList;
 
@@ -28,9 +29,9 @@ namespace pod
         };
         typedef std::map<FilterParameter, FilterData> FilterState;
 
-        EquationComposer() {};
+        EquationComposer(const ProcessingConfig& config) : config_(config) {};
 
-        EquationComposer(SlnType st) : slnType_(st) {};
+        EquationComposer(const ProcessingConfig& config, SlnType st) : config_(config), slnType_(st) {};
 
         virtual ~EquationComposer() = default;
 
@@ -98,6 +99,13 @@ namespace pod
         {
             return satBlocks_.size();
         }
+      public:
+
+        const ProcessingConfig& getConfig() const
+        {
+            return config_;
+        }
+
       private:
         /// Map holding the information regarding every variable
         FilterState filterData_;
@@ -114,6 +122,8 @@ namespace pod
 
         // desired solution type
         SlnType slnType_;
+
+        const ProcessingConfig& config_;
     };
 
     typedef std::shared_ptr<pod::EquationComposer> EquationComposerPtr;

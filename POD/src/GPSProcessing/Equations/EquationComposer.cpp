@@ -31,7 +31,7 @@ void EquationComposer::updateSystemMatrices(gnsstk::IRinex& gData,
                                                 gnsstk::Matrix<double>& Q)
     {
         // --- 1. Build measurement blocks (single source of truth for rows) ---
-        buildObservationBlocks(gData, satBlocks_);
+        buildObservationBlocks(gData, config_, satBlocks_);
 
         const size_t num_meas = satBlocks_.totalMeasurements();
 

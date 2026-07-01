@@ -36,7 +36,7 @@
 #include "PrefitResCatcher.h"
 #include "SNRCatcher.h"
 #include "SatArcMarker.hpp"
-#include "SimpleFilter.hpp"
+#include "ObsRangeFilter.h"
 #include "SolidTides.hpp"
 #include "SyncObs.h"
 #include "TropoEquations.h"
@@ -58,11 +58,11 @@ namespace pod
     {
         updateRequaredObs();
 
-        SimpleFilter CodePhaseFilterBase(TypeIDSet{data_->getGpsGloL1CodeType(), TypeID::P2, TypeID::L1, TypeID::L2});
-        SimpleFilter CodePhaseFilterRover(CodePhaseFilterBase);
+        ObsRangeFilter CodePhaseFilterBase({ObsRangeType::FirstCode, ObsRangeType::SecondCode, ObsRangeType::FirstPhase, ObsRangeType::SecondPhase});
+        ObsRangeFilter CodePhaseFilterRover(CodePhaseFilterBase);
 
-        SimpleFilter SNRFilterBase(TypeID::S1, confReader().getValueAsInt("SNRmask"), DBL_MAX);
-        SimpleFilter SNRFilterRover(SNRFilterBase);
+        ObsRangeFilter SNRFilterBase(ObsRangeType::Snr, confReader().getValueAsInt("SNRmask"), DBL_MAX);
+        ObsRangeFilter SNRFilterRover(SNRFilterBase);
 
         // Object to remove eclipsed satellites
         EclipsedSatFilter eclipsedSV;
@@ -119,7 +119,7 @@ namespace pod
         // check sharp SNR drops
         SNRCatcher snrCatcherL1Base(TypeID::S1, TypeID::CSL1, 901.0, 5, 30);
         SNRCatcher snrCatcherL1Rover(TypeID::S1, TypeID::CSL1, 901.0, 5, 30);
-        PrefitResCatcher resCatcher(&PrefitSlotProvider::instance());
+        PrefitResCatcher resCatcher(config_.slots_);
         NumSatFilter minSatFilter(desiredSlnType());
 
         // Object to keep track of satellite arcs
@@ -187,8 +187,8 @@ namespace pod
         linearIonoFree.add(std::make_unique<PCCombination>());
         linearIonoFree.add(std::make_unique<LCCombimnation>());
 
-        // Compute single differences opreator with appropriate measurements types
-        SingleDifferenceOp delta(&PrefitSlotProvider::instance());
+        // Compute single differences operator with appropriate measurements types
+        SingleDifferenceOp delta{config_.slots_};
         UsedInPvtMarker useMarker;
 
         KalmanSolver solver(equations_);
@@ -416,24 +416,22 @@ namespace pod
         configureSolver();
 
         requireObs_ = RequireObservablesBuilder(opts().systems).build();
-        
-        PrefitSlotProvider::instance().clearSlots();
 
         if (opts().carrierBands.find(CarrierBand::L1) != opts().carrierBands.end())
         {
             oMinusC_.add(std::make_unique<PrefitC1>(true));
             oMinusC_.add(std::make_unique<PrefitL1>());
 
-            PrefitSlotProvider::instance().addSlot(ObsSlot::FirstBandCode);
-            PrefitSlotProvider::instance().addSlot(ObsSlot::FirstBandPhase);
+            config_.slots_.push_back(ObsSlot::FirstBandCode);
+            config_.slots_.push_back(ObsSlot::FirstBandPhase);
         }
         if (opts().carrierBands.find(CarrierBand::L2) != opts().carrierBands.end())
         {
             oMinusC_.add(std::make_unique<PrefitC2>(true));
             oMinusC_.add(std::make_unique<PrefitL2>());
 
-            PrefitSlotProvider::instance().addSlot(ObsSlot::SecondBandCode);
-            PrefitSlotProvider::instance().addSlot(ObsSlot::SecondBandPhase);
+            config_.slots_.push_back(ObsSlot::SecondBandCode);
+            config_.slots_.push_back(ObsSlot::SecondBandPhase);
         }
     }
 

@@ -13,7 +13,7 @@
 #include "ObservablesSets.h"
 #include "PositionEquations.h"
 #include "PowerSum.hpp"
-#include "SimpleFilter.hpp"
+#include "ObsRangeFilter.h"
 #include "WinUtils.h"
 
 #include <memory>
@@ -30,11 +30,11 @@ namespace pod
     {
         updateRequaredObs();
 
-        SimpleFilter PRFilter(data_->getGpsGloL1CodeType());
+        ObsRangeFilter PRFilter(ObsRangeType::FirstCode);
         if (data_->ionoCorrector.getType() == ComputeIonoModel::DualFreq)
-            PRFilter.addFilteredType(TypeID::P2);
+            PRFilter.addFilteredType(ObsRangeType::SecondCode);
 
-        SimpleFilter SNRFilter(TypeID::S1, 30, DBL_MAX);
+        ObsRangeFilter SNRFilter(ObsRangeType::Snr, 30, DBL_MAX);
 
         // Object to decimate data
         Decimate decimateData(confReader().getValueAsDouble("decimationInterval"),
@@ -243,8 +243,7 @@ namespace pod
         configureSolver();
 
         oMinusC_.add(std::make_unique<PrefitC1>(false));
-        PrefitSlotProvider::instance().setSlots(ObsSlot::FirstBandCode);
-
+        config_.slots_ = {ObsSlot::FirstBandCode};
         requireObs_ = RequireObservablesBuilder(opts().systems).build();
 
         if (opts().isSmoothCode)

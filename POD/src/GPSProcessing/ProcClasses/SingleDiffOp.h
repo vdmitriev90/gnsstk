@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ObservationResolver.h"
 #include "ProcessingClass.hpp"
 #include "SatObservationBlocks.h"
 
@@ -8,7 +9,7 @@ namespace pod
     /**
      * Applies single-difference operator to GNSS data.
      *
-     * Uses PrefitSlotProvider to resolve which TypeIDs to difference
+     * Uses ObservationResolver to resolve which TypeIDs to difference
      * instead of a hardcoded TypeIDSet.
      *
      * Belongs to pod:: namespace to avoid inverse dependency
@@ -17,14 +18,17 @@ namespace pod
     class SingleDifferenceOp : public gnsstk::ProcessingClass
     {
       public:
-        SingleDifferenceOp() : slotProvider_(&PrefitSlotProvider::instance()) {}
+        SingleDifferenceOp() = default;
 
-        explicit SingleDifferenceOp(const PrefitSlotProvider* provider) : slotProvider_(provider) {}
+        explicit SingleDifferenceOp(const std::vector<ObsSlot>& slots)
+            : slots_(slots)
+        {
+        }
 
         explicit SingleDifferenceOp(const gnsstk::SatTypePtrMap& refData,
                                     bool deleteMissingSats = true,
-                                    const PrefitSlotProvider* provider = &PrefitSlotProvider::instance())
-            : slotProvider_(provider)
+                                    const std::vector<ObsSlot>& slots = {})
+            : slots_(slots)
             , refData_(refData)
             , deleteMissingSats_(deleteMissingSats)
         {
@@ -32,16 +36,16 @@ namespace pod
 
         explicit SingleDifferenceOp(const gnsstk::IRinex& gData,
                                     bool deleteMissingSats = true,
-                                    const PrefitSlotProvider* provider = &PrefitSlotProvider::instance())
-            : slotProvider_(provider)
+                                    const std::vector<ObsSlot>& slots = {})
+            : slots_(slots)
             , refData_(gData.getBody())
             , deleteMissingSats_(deleteMissingSats)
         {
         }
 
-        SingleDifferenceOp& setSlotProvider(const PrefitSlotProvider* provider)
+        SingleDifferenceOp& setSlots(const std::vector<ObsSlot>& slots)
         {
-            slotProvider_ = provider;
+            slots_ = slots;
             return *this;
         }
 
@@ -91,7 +95,8 @@ namespace pod
         }
 
       private:
-        const PrefitSlotProvider* slotProvider_;
+        ObservationResolver resolver_;
+        std::vector<ObsSlot> slots_;
         gnsstk::SatTypePtrMap refData_;
         bool deleteMissingSats_ = true;
         bool updateCSFlag_ = true;

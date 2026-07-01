@@ -163,6 +163,8 @@ namespace pod
         // max sigma
         double maxSigma_;
 
+        ProcessingConfig config_;
+
 #pragma endregion
     };
     typedef std::unique_ptr<GnssSolution> GnssSolutionUPtr;

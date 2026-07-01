@@ -21,7 +21,7 @@
 #include "ProcessingList.hpp"
 #include "ObservablesSets.h"
 #include "SatArcMarker.hpp"
-#include "SimpleFilter.hpp"
+#include "ObsRangeFilter.h"
 #include "SolidTides.hpp"
 #include "XYZ2NEU.hpp"
 
@@ -59,8 +59,8 @@ namespace pod
 
         // This object will check that code observations are within
         // reasonable limits
-        SimpleFilter PRFilter(TypeIDSet{data_->getGpsGloL1CodeType(), TypeID::P2});
-        SimpleFilter SNRFilter(TypeID::S1, confReader().getValueAsInt("SNRmask"), DBL_MAX);
+        ObsRangeFilter PRFilter({ObsRangeType::FirstCode, ObsRangeType::SecondCode});
+        ObsRangeFilter SNRFilter(ObsRangeType::Snr, confReader().getValueAsInt("SNRmask"), DBL_MAX);
 
         ProcessLinear linear1;
         linear1.add(std::make_unique<PDelta>());
@@ -151,12 +151,12 @@ namespace pod
 
         // Add to processing list
         // Declare a simple filter object to screen PC
-        SimpleFilter pcFilter;
-        pcFilter.setFilteredType(TypeID::PC);
+        ObsRangeFilter pcFilter;
+        pcFilter.setFilteredType(ObsRangeType::IonoFreeCode);
 
         // IMPORTANT NOTE:
         // Like in the "filterCode" case, the "filterPC" option allows you to
-        // deactivate the "SimpleFilter" object that filters out PC, in case
+        // deactivate the "ObsRangeFilter" object that filters out PC, in case
         // you need to.
 
         // Object to align phase with code measurements

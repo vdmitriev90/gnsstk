@@ -1,4 +1,5 @@
 #pragma once
+#include "CommonEnums.h"
 #include "ProcessingClass.hpp"
 #include "SatObservationBlocks.h"
 
@@ -7,23 +8,13 @@ namespace pod
     class PrefitResCatcher : public gnsstk::ProcessingClass
     {
       public:
-        PrefitResCatcher()
-            : slotProvider_(&PrefitSlotProvider::instance()) {}
-
-        explicit PrefitResCatcher(const PrefitSlotProvider* provider)
-            : slotProvider_(provider) {}
-
-        PrefitResCatcher& setSlotProvider(const PrefitSlotProvider* provider)
-        {
-            slotProvider_ = provider;
-            return *this;
-        }
+        explicit PrefitResCatcher(const std::vector<ObsSlot>& slots) : slots_(slots) {}
 
         gnsstk::IRinex& Process(gnsstk::IRinex& gData) override;
 
         std::string getClassName() const override;
 
       private:
-        const PrefitSlotProvider* slotProvider_;
+        const std::vector<ObsSlot> slots_;
     };
 } // namespace pod

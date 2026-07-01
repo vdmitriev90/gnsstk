@@ -164,7 +164,7 @@ namespace pod
 
         // Build per-satellite measurement blocks (slot-driven).
         SatObservationBlocks blocks;
-        buildObservationBlocks(gData, blocks);
+        buildObservationBlocks(gData, solver.eqComposer().getConfig(), blocks);
 
         for (const auto& block : blocks)
         {

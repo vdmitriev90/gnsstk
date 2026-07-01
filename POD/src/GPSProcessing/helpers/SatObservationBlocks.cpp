@@ -1,5 +1,6 @@
 ﻿#include "SatObservationBlocks.h"
 
+#include "ObservationResolver.h"
 #include "RinexEpoch.h"
 #include "Vector.hpp"
 
@@ -7,15 +8,17 @@
 
 namespace pod
 {
-    void buildObservationBlocks(const gnsstk::IRinex& gData, SatObservationBlocks& blocks)
+    void buildObservationBlocks(const gnsstk::IRinex& gData,
+                                const ProcessingConfig& config,
+                                SatObservationBlocks& blocks)
     {
         using gnsstk::TypeID;
 
         blocks.clear();
         blocks.reserve(gData.getBody().size());
 
-        auto& slotProvider = PrefitSlotProvider::instance();
-        const auto& slots = slotProvider.getSlots();
+        const ObservationResolver resolver;
+        const auto& slots = config.slots_;
 
         for (const auto& [sat, tvPtr] : gData.getBody())
         {
@@ -40,7 +43,7 @@ namespace pod
 
             for (const auto& slot : slots)
             {
-                const TypeID type = slotProvider.resolve(slot, sat.system);
+                const TypeID type = resolver.resolvePrefit(slot, sat.system);
 
                 if (type == TypeID::Unknown)
                     continue;
@@ -60,77 +63,6 @@ namespace pod
 
             if (!block.empty())
                 blocks.push_back(std::move(block));
-        }
-    }
-
-    /// Remove all configured slots
-    void PrefitSlotProvider::clearSlots()
-    {
-        slots_.clear();
-    }
-
-    /// Set single measurement slot
-    void PrefitSlotProvider::setSlots(ObsSlot slot)
-    {
-        slots_.clear();
-        slots_.push_back(slot);
-    }
-
-    /// Set multiple measurement slots
-    void PrefitSlotProvider::setSlots(const std::vector<ObsSlot>& slots)
-    {
-        slots_ = slots;
-    }
-
-    /// Add single measurement slot
-    void PrefitSlotProvider::addSlot(ObsSlot slot)
-    {
-        slots_.push_back(slot);
-    }
-
-    /// Get current slots
-    const std::vector<ObsSlot>& PrefitSlotProvider::getSlots() const
-    {
-        return slots_;
-    }
-
-    /// Resolve slot -> actual prefit TypeID for given system
-    gnsstk::TypeID PrefitSlotProvider::resolve(ObsSlot slot, gnsstk::SatelliteSystem ss) const
-    {
-        using namespace gnsstk;
-        using namespace pod::obs_mapping;
-
-        const ObsConfig* cfg = findConfig(ss);
-        if (!cfg)
-            return TypeID::Unknown;
-
-        auto toPrefit = [](const TypeID::ValueType t) {
-            auto p = getPrefitObs(TypeID(t));
-            return (p == TypeID::ValueType::Unknown) ? TypeID::Unknown : TypeID(p);
-        };
-
-        switch (slot)
-        {
-        case ObsSlot::FirstBandCode:
-            return toPrefit(cfg->firstCode);
-
-        case ObsSlot::SecondBandCode:
-            return toPrefit(cfg->secondCode);
-
-        case ObsSlot::FirstBandPhase:
-            return toPrefit(cfg->firstPhase);
-
-        case ObsSlot::SecondBandPhase:
-            return toPrefit(cfg->secondPhase);
-
-        case ObsSlot::CodeIonoFree:
-            return TypeID::prefitPC;
-
-        case ObsSlot::PhaseIonoFree:
-            return TypeID::prefitLC;
-
-        default:
-            return TypeID::Unknown;
         }
     }
 
