@@ -99,7 +99,7 @@ namespace pod
                 try
                 {
                     // Try to extract the values
-                    value1 = (*it->second)(resolver_.firstCode(it->first.system));
+                    value1 = (*it->second)(obsType);
                 }
                 catch (...)
                 {

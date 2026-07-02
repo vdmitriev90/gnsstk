@@ -212,6 +212,9 @@ namespace pod
       private:
         ObservationResolver resolver_;
 
+        /// Type of observable.
+        gnsstk::TypeID obsType { gnsstk::TypeID::LI };
+
         /// Maximum interval of time allowed between two successive epochs,
         /// in seconds.
         double deltaTMax;
