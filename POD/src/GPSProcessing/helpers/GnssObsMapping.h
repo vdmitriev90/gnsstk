@@ -163,31 +163,56 @@ namespace pod::obs_mapping
 
     struct ObsConfig
     {
-        SatelliteSystem sys;
+        SatelliteSystem   sys;
         TypeID::ValueType firstCode;
         TypeID::ValueType secondCode;
         TypeID::ValueType firstPhase;
         TypeID::ValueType secondPhase;
+        TypeID::ValueType firstCsFlag;
+        TypeID::ValueType secondCsFlag;
+        TypeID::ValueType firstPrefitCode;
+        TypeID::ValueType secondPrefitCode;
+        TypeID::ValueType firstPrefitPhase;
+        TypeID::ValueType secondPrefitPhase;
     };
 
     constexpr std::array<ObsConfig, 6> obsConfigTable = {{
-        {SatelliteSystem::GPS, TypeID::C1, TypeID::P2, TypeID::L1, TypeID::L2},
-        {SatelliteSystem::Glonass, TypeID::C1, TypeID::P2, TypeID::L1, TypeID::L2},
-        {SatelliteSystem::Galileo, TypeID::C1, TypeID::C5, TypeID::L1, TypeID::L5},
-        {SatelliteSystem::QZSS, TypeID::C1, TypeID::C2, TypeID::L1, TypeID::L2},
-        {SatelliteSystem::Geosync, TypeID::C1, TypeID::C2, TypeID::L1, TypeID::L5},
-        {SatelliteSystem::BeiDou, TypeID::C1, TypeID::Unknown, TypeID::L1, TypeID::Unknown},
+        // sys                      code1       code2            phase1      phase2           cs1           cs2           pCode1           pCode2           pPhase1          pPhase2
+        {SatelliteSystem::GPS,     TypeID::C1, TypeID::P2,      TypeID::L1, TypeID::L2,      TypeID::CSL1, TypeID::CSL2, TypeID::prefitC1, TypeID::prefitP2, TypeID::prefitL1, TypeID::prefitL2},
+        {SatelliteSystem::Glonass, TypeID::C1, TypeID::P2,      TypeID::L1, TypeID::L2,      TypeID::CSL1, TypeID::CSL2, TypeID::prefitC1, TypeID::prefitP2, TypeID::prefitL1, TypeID::prefitL2},
+        {SatelliteSystem::Galileo, TypeID::C1, TypeID::C5,      TypeID::L1, TypeID::L5,      TypeID::CSL1, TypeID::CSL5, TypeID::prefitC1, TypeID::prefitC5, TypeID::prefitL1, TypeID::prefitL5},
+        {SatelliteSystem::QZSS,    TypeID::C1, TypeID::C2,      TypeID::L1, TypeID::L2,      TypeID::CSL1, TypeID::CSL2, TypeID::prefitC1, TypeID::prefitC2, TypeID::prefitL1, TypeID::prefitL2},
+        {SatelliteSystem::Geosync, TypeID::C1, TypeID::C2,      TypeID::L1, TypeID::L5,      TypeID::CSL1, TypeID::CSL5, TypeID::prefitC1, TypeID::prefitC2, TypeID::prefitL1, TypeID::prefitL5},
+        {SatelliteSystem::BeiDou,  TypeID::C1, TypeID::Unknown, TypeID::L1, TypeID::Unknown, TypeID::CSL1, TypeID::Unknown, TypeID::prefitC1, TypeID::Unknown, TypeID::prefitL1, TypeID::Unknown},
     }};
+
+    constexpr int toIndex(SatelliteSystem ss)
+    {
+        switch (ss)
+        {
+        case SatelliteSystem::GPS:     return 0;
+        case SatelliteSystem::Glonass: return 1;
+        case SatelliteSystem::Galileo: return 2;
+        case SatelliteSystem::QZSS:    return 3;
+        case SatelliteSystem::Geosync: return 4;
+        case SatelliteSystem::BeiDou:  return 5;
+        default:                       return -1;
+        }
+    }
 
     constexpr const ObsConfig* findConfig(SatelliteSystem ss)
     {
-        for (const auto& e : obsConfigTable)
-        {
-            if (e.sys == ss)
-                return &e;
-        }
-        return nullptr;
+        const int idx = toIndex(ss);
+        return (idx >= 0) ? &obsConfigTable[idx] : nullptr;
     }
+
+    // Verify table order matches toIndex() at compile time
+    static_assert(obsConfigTable[0].sys == SatelliteSystem::GPS);
+    static_assert(obsConfigTable[1].sys == SatelliteSystem::Glonass);
+    static_assert(obsConfigTable[2].sys == SatelliteSystem::Galileo);
+    static_assert(obsConfigTable[3].sys == SatelliteSystem::QZSS);
+    static_assert(obsConfigTable[4].sys == SatelliteSystem::Geosync);
+    static_assert(obsConfigTable[5].sys == SatelliteSystem::BeiDou);
 
     //==============================================================
     // Runtime helper (assert + conversion)
