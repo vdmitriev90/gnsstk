@@ -151,7 +151,7 @@ namespace pod
         // Reprocess the data stored during a previous 'Process()' call.
         void reProcess(void);
 
-        void setCSDetRef(gnsstk::LICSDetector2& li, gnsstk::MWCSDetector& mw)
+        void setCSDetRef(LICSDetector2& li, MWCSDetector& mw)
         {
             LiCsDetector_ = &li;
             MwCsDetector_ = &mw;
@@ -184,8 +184,8 @@ namespace pod
         // observations data to be reprocessed
         std::list<gnsstk::irinex_uptr> ObsData;
 
-        std::map<gnsstk::CommonTime, gnsstk::LICSDetector2> LIDetMap;
-        std::map<gnsstk::CommonTime, gnsstk::MWCSDetector> MWDetMap;
+        std::map<gnsstk::CommonTime, pod::LICSDetector2> LIDetMap;
+        std::map<gnsstk::CommonTime, pod::MWCSDetector> MWDetMap;
 
         // internal kalman solver object, which do main part of real work
         KalmanSolver solver;
@@ -202,8 +202,8 @@ namespace pod
         //
         UsedInPvtMarker usedSvMarker;
 
-        gnsstk::LICSDetector2* LiCsDetector_;
-        gnsstk::MWCSDetector* MwCsDetector_;
+        LICSDetector2* LiCsDetector_;
+        MWCSDetector* MwCsDetector_;
 
 #pragma endregion
     };

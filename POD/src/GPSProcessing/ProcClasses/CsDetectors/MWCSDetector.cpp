@@ -44,8 +44,9 @@
 #include "MWCSDetector.hpp"
 
 
-namespace gnsstk
+namespace pod
 {
+   using namespace gnsstk;
 
 
       // Returns a string identifying this object.
@@ -154,18 +155,20 @@ namespace gnsstk
          // has elapsed
          // Note: If tvMap(lliType1) or tvMap(lliType2) don't exist, then 0
          // will be used and those tests will pass
-      if ( (tvMap(lliType1)==1.0) ||
-           (tvMap(lliType1)==3.0) ||
-           (tvMap(lliType1)==5.0) ||
-           (tvMap(lliType1)==7.0) )
+      const auto first_lli = resolver_.firstLLI(sat.system);
+      if ( (tvMap(first_lli)==1.0) ||
+           (tvMap(first_lli)==3.0) ||
+           (tvMap(first_lli)==5.0) ||
+           (tvMap(first_lli)==7.0) )
       {
          tempLLI1 = 1.0;
       }
 
-      if ( (tvMap(lliType2)==1.0) ||
-           (tvMap(lliType2)==3.0) ||
-           (tvMap(lliType2)==5.0) ||
-           (tvMap(lliType2)==7.0) )
+      const auto second_lli = resolver_.secondLLI(sat.system);
+      if ( (tvMap(second_lli)==1.0) ||
+           (tvMap(second_lli)==3.0) ||
+           (tvMap(second_lli)==5.0) ||
+           (tvMap(second_lli)==7.0) )
       {
          tempLLI2 = 1.0;
       }
@@ -218,4 +221,4 @@ namespace gnsstk
    }  // End of method 'MWCSDetector::getDetection()'
 
 
-}  // End of namespace gnsstk
+}  // End of namespace pod

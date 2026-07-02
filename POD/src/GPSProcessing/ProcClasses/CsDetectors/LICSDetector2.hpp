@@ -15,7 +15,7 @@
 //  You should have received a copy of the GNU Lesser General Public
 //  License along with GPSTk; if not, write to the Free Software Foundation,
 //  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
-//  
+//
 //  Copyright 2004, The University of Texas at Austin
 //  Dagoberto Salazar - gAGE ( http://www.gage.es ). 2008, 2011
 //
@@ -24,13 +24,13 @@
 //============================================================================
 //
 //This software developed by Applied Research Laboratories at the University of
-//Texas at Austin, under contract to an agency or agencies within the U.S. 
+//Texas at Austin, under contract to an agency or agencies within the U.S.
 //Department of Defense. The U.S. Government retains all rights to use,
-//duplicate, distribute, disclose, or release this software. 
+//duplicate, distribute, disclose, or release this software.
 //
-//Pursuant to DoD Directive 523024 
+//Pursuant to DoD Directive 523024
 //
-// DISTRIBUTION STATEMENT A: This software has been approved for public 
+// DISTRIBUTION STATEMENT A: This software has been approved for public
 //                           release, distribution is unlimited.
 //
 //=============================================================================
@@ -44,19 +44,16 @@
 #ifndef GPSTK_LICSDETECTOR2_HPP
 #define GPSTK_LICSDETECTOR2_HPP
 
-#include <deque>
 #include "CycleSlipDetector.hpp"
 
+#include <deque>
 
-
-namespace gnsstk
+namespace pod
 {
+    /// @ingroup GPSsolutions
+    //@{
 
-      /// @ingroup GPSsolutions 
-      //@{
-
-
-      /** This is a class to detect cycle slips using LI observables and a
+    /** This is a class to detect cycle slips using LI observables and a
        *  2nd order fitting curve.
        *
        * This class is meant to be used with the GNSS data structures objects
@@ -135,17 +132,17 @@ namespace gnsstk
        * streams.
        *
        */
-   class LICSDetector2 : public CycleSlipDetector
-   {
-   public:
+    class LICSDetector2 : public CycleSlipDetector
+    {
+      public:
+        /// Default constructor, setting default parameters.
+        LICSDetector2()
+            : CycleSlipDetector(gnsstk::TypeID::LI)
+            , satThreshold(0.08)
+            , timeConst(60.0)
+            , maxBufferSize(12) {};
 
-         /// Default constructor, setting default parameters.
-      LICSDetector2() : CycleSlipDetector(TypeID::LI), satThreshold(0.08), 
-						timeConst(60.0), maxBufferSize(12)
-      { };
-
-
-         /** Common constructor
+        /** Common constructor
           *
           * @param satThr  Saturation threshold to declare cycle slip, in
           *                meters.
@@ -153,21 +150,17 @@ namespace gnsstk
           * @param dtMax   Maximum interval of time allowed between two
           *                successive epochs, in seconds.
           */
-      LICSDetector2( double satThr,
-                     double tc,
-                     double dtMax = 61.0,
-                     bool use = true );
+        LICSDetector2(double satThr, double tc, double dtMax = 61.0, bool use = true);
 
-
-
-         /** Method to get the saturation threshold for cycle slip detection,
+        /** Method to get the saturation threshold for cycle slip detection,
           *  in meters.
           */
-      virtual double getSatThreshold() const
-      { return satThreshold; };
+        virtual double getSatThreshold() const
+        {
+            return satThreshold;
+        };
 
-
-         /** Method to set the saturation threshold for cycle slip detection,
+        /** Method to set the saturation threshold for cycle slip detection,
           *  in meters.
           *
           * @param satThr  Saturation threshold for cycle slip detection, in
@@ -175,88 +168,71 @@ namespace gnsstk
           *
           * \warning Be sure you have a very good reason to change this value.
           */
-      virtual LICSDetector2& setSatThreshold(const double& satThr);
+        virtual LICSDetector2& setSatThreshold(const double& satThr);
 
+        /// Method to get threshold time constant, in seconds
+        virtual double getTimeConst() const
+        {
+            return timeConst;
+        };
 
-         /// Method to get threshold time constant, in seconds
-      virtual double getTimeConst() const
-      { return timeConst; };
-
-
-         /** Method to set threshold time constant, in seconds
+        /** Method to set threshold time constant, in seconds
           *
           * @param tc      Threshold time constant, in seconds.
           *
           * \warning Be sure you have a very good reason to change this value.
           */
-      virtual LICSDetector2& setTimeConst(const double& tc);
+        virtual LICSDetector2& setTimeConst(const double& tc);
 
-
-         /** Method to get the maximum buffer size for data, in samples.
+        /** Method to get the maximum buffer size for data, in samples.
           */
-      virtual double getMaxBufferSize() const
-      { return maxBufferSize; };
+        virtual double getMaxBufferSize() const
+        {
+            return maxBufferSize;
+        };
 
-
-         /** Method to set the maximum buffer size for data, in samples.
+        /** Method to set the maximum buffer size for data, in samples.
           *
           * @param maxBufSize      Maximum buffer size for data, in samples.
           *
           * \warning You must not set a value under minBufferSize, which
           * usually is 5.
           */
-      virtual LICSDetector2& setMaxBufferSize( int maxBufSize);
+        virtual LICSDetector2& setMaxBufferSize(int maxBufSize);
 
+        /// Returns a string identifying this object.
+        virtual std::string getClassName(void) const;
 
+        /// Destructor
+        virtual ~LICSDetector2() {};
 
-         /// Returns a string identifying this object.
-      virtual std::string getClassName(void) const;
+      private:
+        /// Saturation threshold to declare cycle slip, in meters.
+        double satThreshold;
 
+        /// Threshold time constant, in seconds.
+        double timeConst;
 
-         /// Destructor
-      virtual ~LICSDetector2() {};
+        /// Maximum buffer size.
+        int maxBufferSize;
 
+        /// Minimum size of buffer. It is always set to 5
+        static const int minBufferSize;
 
-   private:
-
-
-
-
-         /// Saturation threshold to declare cycle slip, in meters.
-      double satThreshold;
-
-
-         /// Threshold time constant, in seconds.
-      double timeConst;
-
-
-
-
-         /// Maximum buffer size.
-      int maxBufferSize;
-
-
-         /// Minimum size of buffer. It is always set to 5
-      static const int minBufferSize;
-
-
-         /// A structure used to store filter data for a SV.
-      struct filterData
-      {
+        /// A structure used to store filter data for a SV.
+        struct filterData
+        {
             // Default constructor initializing the data in the structure
-         filterData()
-         {};
+            filterData() {};
 
-         std::deque<CommonTime> LIEpoch; ///< Epochs of previous LI observables.
-         std::deque<double> LIBuffer;  ///< Values of previous LI observables.
-      };
+            std::deque<gnsstk::CommonTime> LIEpoch; ///< Epochs of previous LI observables.
+            std::deque<double> LIBuffer;            ///< Values of previous LI observables.
+        };
 
+        /// Map holding the information regarding every satellite
+        std::map<gnsstk::SatID, filterData> LIData;
 
-         /// Map holding the information regarding every satellite
-      std::map<SatID, filterData> LIData;
-
-
-         /** Method that implements the LI cycle slip detection algorithm
+        /** Method that implements the LI cycle slip detection algorithm
           *
           * @param epoch     Time of observations.
           * @param sat       SatID.
@@ -266,19 +242,18 @@ namespace gnsstk
           * @param lli1      LLI1 index.
           * @param lli2      LLI2 index.
           */
-      virtual DetectionResult getDetection( const CommonTime& epoch,
-                                   const SatID& sat,
-                                   typeValueMap& tvMap,
-                                   const short& epochflag,
-                                   const double& li,
-                                   const double& lli1,
-                                   const double& lli2 );
+        virtual DetectionResult getDetection(const gnsstk::CommonTime& epoch,
+                                             const gnsstk::SatID& sat,
+                                             gnsstk::typeValueMap& tvMap,
+                                             const short& epochflag,
+                                             const double& li,
+                                             const double& lli1,
+                                             const double& lli2);
 
+    }; // End of class 'LICSDetector2'
 
-   }; // End of class 'LICSDetector2'
+    //@}
 
-      //@}
+} // End of namespace pod
 
-}  // End of namespace gnsstk
-
-#endif   // GPSTK_LICSDETECTOR2_HPP
+#endif // GPSTK_LICSDETECTOR2_HPP

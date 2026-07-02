@@ -206,4 +206,40 @@ namespace pod::obs_mapping
         return TypeID(t);
     }
 
+    //==============================================================
+    // LLI mapping
+    //==============================================================
+
+    constexpr TypeID::ValueType firstLLI(SatelliteSystem ss)
+    {
+        switch (ss)
+        {
+        case SatelliteSystem::GPS:
+        case SatelliteSystem::Glonass:
+        case SatelliteSystem::Galileo:
+        case SatelliteSystem::QZSS:
+        case SatelliteSystem::Geosync:
+        case SatelliteSystem::BeiDou:
+            return TypeID::LLI1;
+        default:
+            return TypeID::Unknown;
+        }
+    }
+
+    constexpr TypeID::ValueType secondLLI(SatelliteSystem ss)
+    {
+        switch (ss)
+        {
+        case SatelliteSystem::GPS:
+        case SatelliteSystem::Glonass:
+        case SatelliteSystem::QZSS:
+            return TypeID::LLI2;
+        case SatelliteSystem::Galileo:
+        case SatelliteSystem::Geosync:
+            return TypeID::LLI5;
+        default:
+            return TypeID::Unknown;
+        }
+    }
+
 } // namespace pod::obs_mapping

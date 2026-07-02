@@ -48,7 +48,7 @@
 #include <list>
 
 
-namespace gnsstk
+namespace pod
 {
 
       /// @ingroup GPSsolutions 
@@ -137,7 +137,7 @@ namespace gnsstk
    public:
 
          /// Default constructor, setting default parameters.
-      MWCSDetector() : CycleSlipDetector(TypeID::MWubbena),  maxNumLambdas(10.0)
+      MWCSDetector() : CycleSlipDetector(gnsstk::TypeID::MWubbena), maxNumLambdas(10.0)
       { };
 
 
@@ -193,17 +193,17 @@ namespace gnsstk
       struct filterData
       {
             // Default constructor initializing the data in the structure
-         filterData() : formerEpoch(CommonTime::BEGINNING_OF_TIME),
+         filterData() : formerEpoch(gnsstk::CommonTime::BEGINNING_OF_TIME),
                         windowSize(0), meanMW(0.0) {};
 
-         CommonTime formerEpoch;    ///< The previous epoch time stamp.
+         gnsstk::CommonTime formerEpoch;
          int windowSize;         ///< Size of current window, in samples.
          double meanMW;          ///< Accumulated mean value of combination.
       };
 
 
          /// Map holding the information regarding every satellite
-      std::map<SatID, filterData> MWData;
+      std::map<gnsstk::SatID, filterData> MWData;
 
 
          /** Method that implements the Melbourne-Wubbena cycle slip
@@ -217,19 +217,19 @@ namespace gnsstk
           * @param lli1      LLI1 index.
           * @param lli2      LLI2 index.
           */
-      virtual DetectionResult getDetection( const CommonTime& epoch,
-                                   const SatID& sat,
-                                   typeValueMap& tvMap,
-                                   const short& epochflag,
-                                   const double& mw,
-                                   const double& lli1,
-                                   const double& lli2 );
+      virtual DetectionResult getDetection(const gnsstk::CommonTime& epoch,
+                                           const gnsstk::SatID& sat,
+                                           gnsstk::typeValueMap& tvMap,
+                                           const short& epochflag,
+                                           const double& mw,
+                                           const double& lli1,
+                                           const double& lli2);
 
 
    }; // End of class 'MWCSDetector'
 
       //@}
 
-}  // End of namespace gnsstk
+}  // End of namespace pod
 
 #endif   // GPSTK_MWCSDETECTOR_HPP

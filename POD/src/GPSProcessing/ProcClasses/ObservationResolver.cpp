@@ -91,6 +91,16 @@ namespace pod
         return resolve(ObsSlot::SecondBandPhase, ss);
     }
 
+    gnsstk::TypeID ObservationResolver::firstLLI(gnsstk::SatelliteSystem ss) const
+    {
+        return gnsstk::TypeID(pod::obs_mapping::firstLLI(ss));
+    }
+
+    gnsstk::TypeID ObservationResolver::secondLLI(gnsstk::SatelliteSystem ss) const
+    {
+        return gnsstk::TypeID(pod::obs_mapping::secondLLI(ss));
+    }
+
     bool ObservationResolver::isSupported(ObsSlot slot, gnsstk::SatelliteSystem ss) const
     {
         return resolve(slot, ss) != gnsstk::TypeID::Unknown;

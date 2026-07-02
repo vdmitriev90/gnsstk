@@ -22,8 +22,12 @@ namespace pod
 
         gnsstk::TypeID firstCode(gnsstk::SatelliteSystem ss) const;
         gnsstk::TypeID secondCode(gnsstk::SatelliteSystem ss) const;
+
         gnsstk::TypeID firstPhase(gnsstk::SatelliteSystem ss) const;
         gnsstk::TypeID secondPhase(gnsstk::SatelliteSystem ss) const;
+
+        gnsstk::TypeID firstLLI(gnsstk::SatelliteSystem ss) const;
+        gnsstk::TypeID secondLLI(gnsstk::SatelliteSystem ss) const;
 
         /// optional helper
         bool isSupported(ObsSlot slot, gnsstk::SatelliteSystem ss) const;

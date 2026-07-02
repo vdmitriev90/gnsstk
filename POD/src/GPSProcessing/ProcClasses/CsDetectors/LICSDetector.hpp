@@ -15,7 +15,7 @@
 //  You should have received a copy of the GNU Lesser General Public
 //  License along with GPSTk; if not, write to the Free Software Foundation,
 //  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110, USA
-//  
+//
 //  Copyright 2004, The University of Texas at Austin
 //  Dagoberto Salazar - gAGE ( http://www.gage.es ). 2007, 2008, 2011
 //
@@ -24,13 +24,13 @@
 //============================================================================
 //
 //This software developed by Applied Research Laboratories at the University of
-//Texas at Austin, under contract to an agency or agencies within the U.S. 
+//Texas at Austin, under contract to an agency or agencies within the U.S.
 //Department of Defense. The U.S. Government retains all rights to use,
-//duplicate, distribute, disclose, or release this software. 
+//duplicate, distribute, disclose, or release this software.
 //
-//Pursuant to DoD Directive 523024 
+//Pursuant to DoD Directive 523024
 //
-// DISTRIBUTION STATEMENT A: This software has been approved for public 
+// DISTRIBUTION STATEMENT A: This software has been approved for public
 //                           release, distribution is unlimited.
 //
 //=============================================================================
@@ -43,18 +43,16 @@
 #ifndef GPSTK_LICSDETECTOR_HPP
 #define GPSTK_LICSDETECTOR_HPP
 
+#include "ObservationResolver.h"
 #include "ProcessingClass.hpp"
 
-
-
-namespace gnsstk
+namespace pod
 {
 
-      /// @ingroup GPSsolutions 
-      //@{
+    /// @ingroup GPSsolutions
+    //@{
 
-
-      /** This is a class to detect cycle slips using LI observables.
+    /** This is a class to detect cycle slips using LI observables.
        *
        * This class is meant to be used with the GNSS data structures objects
        * found in "DataStructures" class.
@@ -111,182 +109,145 @@ namespace gnsstk
        * streams.
        *
        */
-   class LICSDetector : public ProcessingClass
-   {
-   public:
+    class LICSDetector : public gnsstk::ProcessingClass
+    {
+      public:
+        /// Default constructor, setting default parameters.
+        LICSDetector();
+        ;
 
-         /// Default constructor, setting default parameters.
-      LICSDetector() : obsType(TypeID::LI), lliType1(TypeID::LLI1),
-                       lliType2(TypeID::LLI2), resultType1(TypeID::CSL1),
-                       resultType2(TypeID::CSL2), deltaTMax(61.0),
-                       minThreshold(0.04), LIDrift(0.002), useLLI(true)
-      { };
-
-
-         /** Common constructor
+        /** Common constructor
           *
           * @param mThr    Minimum threshold to declare cycle slip, in meters.
           * @param drift   LI combination limit drift, in meters/second.
           * @param dtMax   Maximum interval of time allowed between two
           *                successive epochs, in seconds.
           */
-      LICSDetector( const double& mThr,
-                    const double& drift,
-                    const double& dtMax = 61.0,
-                    const bool& use = true);
+        LICSDetector(const double& mThr, const double& drift, const double& dtMax = 61.0, const bool& use = true);
 
-
-         /** Returns a satTypeValueMap object, adding the new data generated
+        /** Returns a satTypeValueMap object, adding the new data generated
           *  when calling this object.
           *
           * @param epoch     Time of observations.
           * @param gData     Data object holding the data.
           * @param epochflag Epoch flag.
           */
-      virtual SatTypePtrMap& Process( const CommonTime& epoch,
-                                        SatTypePtrMap& gData,
-                                        const short& epochflag = 0 );
+        virtual gnsstk::SatTypePtrMap& Process(const gnsstk::CommonTime& epoch,
+                                               gnsstk::SatTypePtrMap& gData,
+                                               const short& epochflag = 0);
 
-
-
-         /** Method to get the maximum interval of time allowed between two
+        /** Method to get the maximum interval of time allowed between two
           *  successive epochs, in seconds.
           */
-      virtual double getDeltaTMax() const
-      { return deltaTMax; };
+        virtual double getDeltaTMax() const
+        {
+            return deltaTMax;
+        };
 
-
-         /** Method to set the maximum interval of time allowed between two
+        /** Method to set the maximum interval of time allowed between two
           *  successive epochs.
           *
           * @param maxDelta      Maximum interval of time, in seconds
           */
-      virtual LICSDetector& setDeltaTMax(const double& maxDelta);
+        virtual LICSDetector& setDeltaTMax(const double& maxDelta);
 
-
-         /** Method to get the minimum threshold for cycle slip detection, in
+        /** Method to get the minimum threshold for cycle slip detection, in
           *  meters.
           */
-      virtual double getMinThreshold() const
-      { return minThreshold; };
+        virtual double getMinThreshold() const
+        {
+            return minThreshold;
+        };
 
-
-         /** Method to set the minimum threshold for cycle slip detection, in
+        /** Method to set the minimum threshold for cycle slip detection, in
           *  meters.
           *
           * @param mThr    Minimum threshold for cycle slip detection, in
           *                meters.
           */
-      virtual LICSDetector& setMinThreshold(const double& mThr);
+        virtual LICSDetector& setMinThreshold(const double& mThr);
 
+        /// Method to get the LI combination limit drift, in meters/second
+        virtual double getLIDrift() const
+        {
+            return LIDrift;
+        };
 
-         /// Method to get the LI combination limit drift, in meters/second
-      virtual double getLIDrift() const
-      { return LIDrift; };
-
-
-         /** Method to set the LI combination limit drift, in meters/second
+        /** Method to set the LI combination limit drift, in meters/second
           *
           * @param drift     LI combination limit drift, in meters/second.
           */
-      virtual LICSDetector& setLIDrift(const double& drift);
+        virtual LICSDetector& setLIDrift(const double& drift);
 
+        /// Method to know if the LLI check is enabled or disabled.
+        virtual bool getUseLLI() const
+        {
+            return useLLI;
+        };
 
-         /// Method to know if the LLI check is enabled or disabled.
-      virtual bool getUseLLI() const
-      { return useLLI; };
-
-
-         /** Method to set whether the LLI indexes will be used as an aid
+        /** Method to set whether the LLI indexes will be used as an aid
           *  or not.
           *
           * @param use   Boolean value enabling/disabling LLI check
           */
-      virtual LICSDetector& setUseLLI(const bool& use)
-      { useLLI = use; return (*this); };
+        virtual LICSDetector& setUseLLI(const bool& use)
+        {
+            useLLI = use;
+            return (*this);
+        };
 
-
-
-
-         /** Returns a gnnsRinex object, adding the new data generated when
+        /** Returns a gnnsRinex object, adding the new data generated when
           *  calling this object.
           *
           * @param gData    Data object holding the data.
           */
-      virtual IRinex& Process(IRinex& gData);
+        virtual gnsstk::IRinex& Process(gnsstk::IRinex& gData);
 
+        /// Returns a string identifying this object.
+        virtual std::string getClassName(void) const;
 
-         /// Returns a string identifying this object.
-      virtual std::string getClassName(void) const;
+        /// Destructor
+        virtual ~LICSDetector() {};
 
+      private:
+        ObservationResolver resolver_;
 
-         /// Destructor
-      virtual ~LICSDetector() {};
+        /// Maximum interval of time allowed between two successive epochs,
+        /// in seconds.
+        double deltaTMax;
 
+        /// Minimum threshold to declare cycle slip, in meters.
+        double minThreshold;
 
-   private:
+        /// LI combination limit drift, in meters/second.
+        double LIDrift;
 
+        /// This field tells whether to use or ignore the LLI indexes as
+        /// an aid.
+        bool useLLI;
 
-         /// Type of observable.
-      TypeID obsType;
-
-
-         /// Type of LLI1 record.
-      TypeID lliType1;
-
-
-         /// Type of LLI2 record.
-      TypeID lliType2;
-
-
-         /// Type of result #1.
-      TypeID resultType1;
-
-
-         /// Type of result #2.
-      TypeID resultType2;
-
-
-         /// Maximum interval of time allowed between two successive epochs,
-         /// in seconds.
-      double deltaTMax;
-
-
-         /// Minimum threshold to declare cycle slip, in meters.
-      double minThreshold;
-
-
-         /// LI combination limit drift, in meters/second.
-      double LIDrift;
-
-
-         /// This field tells whether to use or ignore the LLI indexes as
-         /// an aid.
-      bool useLLI;
-
-
-         /// A structure used to store filter data for a SV.
-      struct filterData
-      {
+        /// A structure used to store filter data for a SV.
+        struct filterData
+        {
             // Default constructor initializing the data in the structure
-         filterData() : formerEpoch(CommonTime::BEGINNING_OF_TIME),
-                        windowSize(0), formerLI(0.0), formerBias(0.0),
-                        formerDeltaT(1.0)
-         {};
+            filterData()
+                : formerEpoch(gnsstk::CommonTime::BEGINNING_OF_TIME)
+                , windowSize(0)
+                , formerLI(0.0)
+                , formerBias(0.0)
+                , formerDeltaT(1.0) {};
 
-         CommonTime formerEpoch;    ///< The previous epoch time stamp.
-         int windowSize;         ///< Size of current window, in samples.
-         double formerLI;        ///< Value of the previous LI observable.
-         double formerBias;      ///< Previous bias (LI_1 - LI_0).
-         double formerDeltaT;    ///< Previous time difference, in seconds.
-      };
+            gnsstk::CommonTime formerEpoch; ///< The previous epoch time stamp.
+            int windowSize;                 ///< Size of current window, in samples.
+            double formerLI;                ///< Value of the previous LI observable.
+            double formerBias;              ///< Previous bias (LI_1 - LI_0).
+            double formerDeltaT;            ///< Previous time difference, in seconds.
+        };
 
+        /// Map holding the information regarding every satellite
+        std::map<gnsstk::SatID, filterData> LIData;
 
-         /// Map holding the information regarding every satellite
-      std::map<SatID, filterData> LIData;
-
-
-         /** Method that implements the LI cycle slip detection algorithm
+        /** Method that implements the LI cycle slip detection algorithm
           *
           * @param epoch     Time of observations.
           * @param sat       SatID.
@@ -296,19 +257,18 @@ namespace gnsstk
           * @param lli1      LLI1 index.
           * @param lli2      LLI2 index.
           */
-      virtual double getDetection( const CommonTime& epoch,
-                                   const SatID& sat,
-                                   typeValueMap& tvMap,
-                                   const short& epochflag,
-                                   const double& li,
-                                   const double& lli1,
-                                   const double& lli2 );
+        virtual double getDetection(const gnsstk::CommonTime& epoch,
+                                    const gnsstk::SatID& sat,
+                                    gnsstk::typeValueMap& tvMap,
+                                    const short& epochflag,
+                                    const double& li,
+                                    const double& lli1,
+                                    const double& lli2);
 
+    }; // End of class 'LICSDetector'
 
-   }; // End of class 'LICSDetector'
+    //@}
 
-      //@}
+} // namespace pod
 
-}  // End of namespace gnsstk
-
-#endif   // GPSTK_LICSDETECTOR_HPP
+#endif // GPSTK_LICSDETECTOR_HPP
