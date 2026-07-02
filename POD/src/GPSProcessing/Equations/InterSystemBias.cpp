@@ -2,13 +2,12 @@
 
 #include "StateLayout.h"
 
-using namespace gnsstk;
-
 namespace pod
 {
+    using namespace gnsstk;
 
-    constexpr std::array<gnsstk::TypeID::ValueType, InterSystemBias::NUM_BIAS> kBiasTypes = {
-        {gnsstk::TypeID::recISB_GLN, gnsstk::TypeID::recISB_GAL, gnsstk::TypeID::recISB_BDS}};
+    constexpr std::array<TypeID::ValueType, InterSystemBias::NUM_BIAS> kBiasTypes = {
+        {TypeID::recISB_GLN, TypeID::recISB_GAL, TypeID::recISB_BDS}};
 
     struct BiasEntry
     {
@@ -16,28 +15,28 @@ namespace pod
         TypeID::ValueType type;
     };
 
-    inline int getBiasIndex(gnsstk::SatelliteSystem sys)
+    inline int getBiasIndex(SatelliteSystem sys)
     {
         switch (sys)
         {
-        case gnsstk::SatelliteSystem::Glonass:
+        case SatelliteSystem::Glonass:
             return 0;
-        case gnsstk::SatelliteSystem::Galileo:
+        case SatelliteSystem::Galileo:
             return 1;
-        case gnsstk::SatelliteSystem::BeiDou:
+        case SatelliteSystem::BeiDou:
             return 2;
         default:
             return -1;
         }
     }
 
-    constexpr std::array<gnsstk::TypeID::ValueType, 5> kL1ObsTypes = {TypeID::ValueType::prefitC,
+    constexpr std::array<TypeID::ValueType, 5> kL1ObsTypes = {TypeID::ValueType::prefitC,
                                                                       TypeID::ValueType::prefitC1,
                                                                       TypeID::ValueType::prefitL1,
                                                                       TypeID::ValueType::prefitPC,
                                                                       TypeID::ValueType::prefitLC};
 
-    constexpr bool isL1ObsType(const gnsstk::TypeID& t)
+    constexpr bool isL1ObsType(const TypeID& t)
     {
         for (auto v : kL1ObsTypes)
         {
@@ -77,7 +76,7 @@ namespace pod
         }
     }
 
-    void InterSystemBias::fillRow(const RowContext& ctx, const StateLayout& layout, gnsstk::Matrix<double>& H) const
+    void InterSystemBias::fillRow(const RowContext& ctx, const StateLayout& layout, Matrix<double>& H) const
     {
         if (!isL1ObsType(ctx.type))
             return;
@@ -89,7 +88,7 @@ namespace pod
         if (j < 0 || !activeMask_[j])
             return;
 
-        const int col = layout.index(FilterParameter(gnsstk::TypeID(kBiasTypes[j])));
+        const int col = layout.index(FilterParameter(TypeID(kBiasTypes[j])));
         H(ctx.row, col) = 1.0;
     }
 
@@ -102,7 +101,7 @@ namespace pod
             if (!activeMask_[i])
                 continue;
 
-            res.insert(FilterParameter(gnsstk::TypeID(kBiasTypes[i])));
+            res.insert(FilterParameter(TypeID(kBiasTypes[i])));
         }
 
         return res;
@@ -123,24 +122,24 @@ namespace pod
         return *this;
     }
 
-    void InterSystemBias::contributeTransitionMartix(gnsstk::Matrix<double>& Phi, const StateLayout& layout) const
+    void InterSystemBias::contributeTransitionMartix(Matrix<double>& Phi, const StateLayout& layout) const
     {
         for (int i = 0; i < NUM_BIAS; ++i)
         {
             if (!activeMask_[i])
                 continue;
-            int col = layout.index(FilterParameter(gnsstk::TypeID(kBiasTypes[i])));
+            int col = layout.index(FilterParameter(TypeID(kBiasTypes[i])));
             Phi(col, col) = stochasticModels_[i]->getPhi();
         }
     }
 
-    void InterSystemBias::contributeProcessNoiseMatrix(gnsstk::Matrix<double>& Q, const StateLayout& layout) const
+    void InterSystemBias::contributeProcessNoiseMatrix(Matrix<double>& Q, const StateLayout& layout) const
     {
         for (int i = 0; i < NUM_BIAS; ++i)
         {
             if (!activeMask_[i])
                 continue;
-            const int col = layout.index(FilterParameter(gnsstk::TypeID(kBiasTypes[i])));
+            const int col = layout.index(FilterParameter(TypeID(kBiasTypes[i])));
             Q(col, col) = stochasticModels_[i]->getQ();
         }
     }
@@ -150,15 +149,15 @@ namespace pod
         return activeCount_;
     }
 
-    void InterSystemBias::defStateAndCovariance(gnsstk::Vector<double>& x,
-                                                gnsstk::Matrix<double>& P,
+    void InterSystemBias::defStateAndCovariance(Vector<double>& x,
+                                                Matrix<double>& P,
                                                 const StateLayout& layout) const
     {
         for (int i = 0; i < NUM_BIAS; ++i)
         {
             if (!activeMask_[i])
                 continue;
-            const int col = layout.index(FilterParameter(gnsstk::TypeID(kBiasTypes[i])));
+            const int col = layout.index(FilterParameter(TypeID(kBiasTypes[i])));
             x(col) = 0;
             P(col, col) = 1e9;
         }

@@ -16,7 +16,6 @@ namespace pod
       public:
         IonoEquations();
         IonoEquations(double qPrime);
-        ~IonoEquations() {};
 
         /* update state of equations with new observational data */
         void prepare(gnsstk::IRinex& gData) override;

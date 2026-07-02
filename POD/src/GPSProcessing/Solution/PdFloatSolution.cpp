@@ -365,7 +365,6 @@ namespace pod
                 rin_epoch >> minSatFilter;
                 rin_epoch >> useMarker;
 
-                DBOUT_LINE(">>" << CivilTime(rin_epoch.getHeader().epoch).asString());
                 if (forwardBackwardCycles_ > 0)
                 {
                     rin_epoch >> solverFb;

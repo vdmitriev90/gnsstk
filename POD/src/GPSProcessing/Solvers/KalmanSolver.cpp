@@ -135,7 +135,7 @@ namespace pod
 
             postfitResiduals = measVector - hMatrix * solution;
 
-            DBOUT_LINE(StringUtils::formatTime(gData.getHeader().epoch) << " sln: " << solution)
+            //DBOUT_LINE(StringUtils::formatTime(gData.getHeader().epoch) << " sln: " << solution)
 
             // DBOUT_LINE("solution: " << solution);
             // DBOUT_LINE("postfit Residuals: " << postfitResiduals);
