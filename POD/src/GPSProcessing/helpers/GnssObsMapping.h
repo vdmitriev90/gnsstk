@@ -137,14 +137,15 @@ namespace pod::obs_mapping
         }
     };
 
-    constexpr std::array<ObsSignalTraits, 7> obsAttrTable = {{
+    constexpr std::array<ObsSignalTraits, 8> obsAttrTable = {{
         {TypeID::prefitL1, 1, -1},
         {TypeID::prefitL2, 2, -1},
         {TypeID::prefitL5, 5, -1},
-        {TypeID::prefitP1, 1, 1},
         {TypeID::prefitC, 1, 1},
+        {TypeID::prefitP1, 1, 1},
         {TypeID::prefitC1, 1, 1},
         {TypeID::prefitP2, 2, 1},
+        {TypeID::prefitC5, 5, 1},
     }};
 
     constexpr ObsSignalTraits findObsAttr(TypeID::ValueType t)
