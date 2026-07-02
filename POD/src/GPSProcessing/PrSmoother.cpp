@@ -49,11 +49,25 @@ namespace pod
         // We MUST mark cycle slips
         std::list<OneFreqCSDetector> csList;
 
+        // Map a legacy TypeID to the ObsSlot pair used by CodeSmoother
+        auto toSlots = [](const TypeID& id) -> std::pair<ObsSlot, ObsSlot>
+        {
+            using T = TypeID;
+            switch (id.type)
+            {
+            case T::C2: case T::P2:
+                return { ObsSlot::SecondBandCode, ObsSlot::SecondBandPhase };
+            default:
+                return { ObsSlot::FirstBandCode, ObsSlot::FirstBandPhase };
+            }
+        };
+
         std::cout << "Obs. currParameters for smoothing: " << std::endl;
         for (auto& it : codes)
         {
             std::cout << TypeID::tStrings[it.type] << std::endl;
-            smList.push_back(CodeSmoother(it, window));
+            auto [cs, ps] = toSlots(it);
+            smList.push_back(CodeSmoother(cs, ps, window));
             csList.push_back(OneFreqCSDetector(it));
         }
 

@@ -47,7 +47,7 @@
 #include "CodeSmoother.hpp"
 
 
-namespace gnsstk
+namespace pod
 {
 
       /// @ingroup DataStructures
@@ -115,23 +115,18 @@ namespace gnsstk
    {
    public:
 
-         /// Default constructor, setting default parameters and PC and LC
-         /// as observables.
-      PCSmoother() : codeType(TypeID::PC), phaseType(TypeID::LC),
-                     resultType(TypeID::PC), maxWindowSize(100), csFlag1(TypeID::CSL1),
-                     csFlag2(TypeID::CSL2)
+         /// Default constructor: PC/LC observables, window 100.
+      PCSmoother()
+            : CodeSmoother(ObsSlot::CodeIonoFree, ObsSlot::PhaseIonoFree, 100)
       { };
 
 
          /** Common constructor
           *
-          * @param mwSize        Maximum  size of filter window, in samples.
-          * @param resultT       TypeID where results will be stored.
+          * @param mwSize   Maximum size of filter window, in samples.
           */
-      PCSmoother( const int& mwSize,
-                  const TypeID& resultT = TypeID::PC )
-            : codeType(TypeID::PC), phaseType(TypeID::LC), resultType(resultT),
-              maxWindowSize(mwSize), csFlag1(TypeID::CSL1), csFlag2(TypeID::CSL2)
+      explicit PCSmoother(int mwSize)
+            : CodeSmoother(ObsSlot::CodeIonoFree, ObsSlot::PhaseIonoFree, mwSize)
       { };
 
 
@@ -140,25 +135,7 @@ namespace gnsstk
           *
           * @param gData     Data object holding the data.
           */
-      virtual SatTypePtrMap& Process(SatTypePtrMap& gData);
-
-
-         /// Method to get the default return type being used.
-      virtual TypeID getResultType() const
-      { return resultType; };
-
-
-         /** Method to set the default return type to be used.
-          *
-          * @param returnT    TypeID to be returned
-          */
-      virtual PCSmoother& setResultType(const TypeID& resultT)
-      { resultType = resultT; return (*this); };
-
-
-         /// Method to get the maximum size of filter window, in samples.
-      virtual int getMaxWindowSize() const
-      { return maxWindowSize; };
+      virtual gnsstk::SatTypePtrMap& Process(gnsstk::SatTypePtrMap& gData);
 
 
          /** Method to set the maximum size of filter window, in samples.
@@ -166,32 +143,6 @@ namespace gnsstk
           * @param maxSize       Maximum size of filter window, in samples.
           */
       virtual PCSmoother& setMaxWindowSize(const int& maxSize);
-
-
-         /// Method to get the default cycle slip type #1 being used.
-      virtual TypeID getCSFlag1() const
-      { return csFlag1; };
-
-
-         /** Method to set the default cycle slip type #1 to be used.
-          *
-          * @param csT   Cycle slip type to be used
-          */
-      virtual PCSmoother& setCSFlag1(const TypeID& csT)
-      { csFlag1 = csT; return (*this); };
-
-
-         /// Method to get the default cycle slip type #2 being used.
-      virtual TypeID getCSFlag2() const
-      { return csFlag2; };
-
-
-         /** Method to set the default cycle slip type #2 to be used.
-          *
-          * @param csT   Cycle slip type to be used
-          */
-      virtual PCSmoother& setCSFlag2(const TypeID& csT)
-      { csFlag2 = csT; return (*this); };
 
 
          /// Returns a string identifying this object.
@@ -203,31 +154,6 @@ namespace gnsstk
 
 
    private:
-
-
-         /// Type of code observation to be used.
-      TypeID codeType;
-
-
-         /// Type of phase observation to be used.
-      TypeID phaseType;
-
-
-         /// Type assigned to the resulting smoothed code.
-      TypeID resultType;
-
-
-         /// Maximum size of filter window, in samples.
-      int maxWindowSize;
-
-
-         /// Cycle slip flag #1. It should be present.
-      TypeID csFlag1;
-
-
-         /// Cycle slip flag #2. It should be present.
-      TypeID csFlag2;
-
 
          /// A structure used to store filter data for a SV.
       struct filterData
@@ -242,10 +168,10 @@ namespace gnsstk
 
 
          /// Map holding the information regarding every satellite
-      std::map<SatID, filterData> SmoothingData;
+      std::map<gnsstk::SatID, filterData> SmoothingData;
 
 
-         /** Compute the smoothed code observable.
+         /** Compute the smoothed PC observable.
           *
           * @param sat        Satellite object.
           * @param code       Code measurement.
@@ -255,34 +181,17 @@ namespace gnsstk
           */
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Woverloaded-virtual"
-      virtual double getSmoothing( const SatID& sat,
+      virtual double getSmoothing( const gnsstk::SatID& sat,
                                    const double& code,
                                    const double& phase,
                                    const double& flag1,
                                    const double& flag2 );
 #pragma clang diagnostic pop
 
-         /// This method is out of reach in this class.
-      virtual PCSmoother& setCodeType(const TypeID& dummy)
-      { return (*this); };
-
-         /// This method is out of reach in this class.
-      virtual PCSmoother& setPhaseType(const TypeID& dummy)
-      { return (*this); };
-
-         /// This method is out of reach in this class.
-      virtual PCSmoother& setCSFlag(const TypeID& dummy)
-      { return (*this); };
-
-         /// This method is out of reach in this class.
-      virtual TypeID getCSFlag() const
-      { return TypeID::Unknown; };
-
-
    }; // End of class 'PCSmoother'
 
       //@}
 
-}  // End of namespace gnsstk
+}  // namespace pod
 
 #endif   // GPSTK_PCSMOOTHER_HPP

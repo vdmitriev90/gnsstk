@@ -46,7 +46,7 @@ namespace pod
         // basic model object
         BasicModel model(data_->navLibrary_);
         model.setDefaultObservable(TypeID::C1);
-        model.setMinElev(confReader().getValueAsInt("ElMask"));
+        model.setMinElev(opts().maskEl);
 
         // troposhere modeling object
         NeillTropModel tropo_model;
@@ -248,8 +248,8 @@ namespace pod
 
         if (opts().isSmoothCode)
         {
-            codeSmoother_.addSmoother(std::make_unique<CodeSmoother>(TypeID::C1));
-            codeSmoother_.addSmoother(std::make_unique<CodeSmoother>(TypeID::P2));
+            codeSmoother_.addSmoother(std::make_unique<CodeSmoother>(ObsSlot::FirstBandCode,  ObsSlot::FirstBandPhase));
+            codeSmoother_.addSmoother(std::make_unique<CodeSmoother>(ObsSlot::SecondBandCode, ObsSlot::SecondBandPhase));
 
             // add linear combinations, requared  for CS detections
             computeLinear_.add(std::make_unique<LICombimnation>());

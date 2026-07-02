@@ -44,9 +44,9 @@
 #include "PCSmoother.hpp"
 
 
-namespace gnsstk
+namespace pod
 {
-
+    using namespace gnsstk;
       // Returns a string identifying this object.
    std::string PCSmoother::getClassName() const
    { return "PCSmoother"; }
@@ -74,13 +74,19 @@ namespace gnsstk
             // Loop through all satellites
          for (auto it = gData.begin(); it != gData.end(); ++it)
          {
+            const SatID& sat = it->first;
+
+            const TypeID code_type   = resolver_.resolve(codeSlot,  sat.system);
+            const TypeID phase_type  = resolver_.resolve(phaseSlot, sat.system);
+            const TypeID cs_flag1    = resolver_.resolveCsFlag(ObsSlot::FirstBandPhase,  sat.system);
+            const TypeID cs_flag2    = resolver_.resolveCsFlag(ObsSlot::SecondBandPhase, sat.system);
 
             try
             {
 
                   // Try to extract the values
-               codeObs  = (*it->second)(codeType);
-               phaseObs = (*it->second)(phaseType);
+               codeObs  = (*it->second)(code_type);
+               phaseObs = (*it->second)(phase_type);
 
             }
             catch(...)
@@ -88,7 +94,7 @@ namespace gnsstk
 
                   // If some value is missing, then schedule this satellite
                   // for removal
-               satRejectedSet.insert( (*it).first );
+               satRejectedSet.insert(sat);
 
                continue;
 
@@ -98,14 +104,13 @@ namespace gnsstk
             {
 
                   // Try to get the first cycle slip flag
-               flagObs1  = (*it->second)(csFlag1);
+               flagObs1  = (*it->second)(cs_flag1);
 
             }
             catch(...)
             {
 
                   // If flag #1 is not found, no cycle slip is assumed
-                  // You REALLY want to have BOTH CS flags properly set
                flagObs1 = 0.0;
 
             }
@@ -114,24 +119,19 @@ namespace gnsstk
             {
 
                   // Try to get the second cycle slip flag
-               flagObs2  = (*it->second)(csFlag2);
+               flagObs2  = (*it->second)(cs_flag2);
 
             }
             catch(...)
             {
 
                   // If flag #2 is not found, no cycle slip is assumed
-                  // You REALLY want to have BOTH CS flags properly set
                flagObs2 = 0.0;
 
             }
 
                // Get the smoothed PC.
-            (*it->second)[resultType] = getSmoothing( (*it).first,
-                                                     codeObs,
-                                                     phaseObs,
-                                                     flagObs1,
-                                                     flagObs2 );
+            (*it->second)[code_type] = getSmoothing(sat, codeObs, phaseObs, flagObs1, flagObs2);
 
          }  // End of 'for (it = gData.begin(); it != gData.end(); ++it)'
 
@@ -238,4 +238,4 @@ namespace gnsstk
    }  // End of method 'PCSmoother::getSmoothing()'
 
 
-}  // End of namespace gnsstk
+}  // namespace pod

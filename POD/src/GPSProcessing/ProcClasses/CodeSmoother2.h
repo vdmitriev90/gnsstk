@@ -6,7 +6,7 @@
 namespace pod
 {
     using process_uptr = std::unique_ptr<gnsstk::ProcessingClass>;
-    using code_smoother_ptr = std::unique_ptr<gnsstk::CodeSmoother>;
+    using code_smoother_ptr = std::unique_ptr<CodeSmoother>;
 
     // aggregator for 'scMarker' and 'CodeSmoother' objects
     class CodeSmoother2 : public gnsstk::ProcessingClass
