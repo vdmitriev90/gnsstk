@@ -333,7 +333,48 @@ def download_erp(date, output_dir):
 
     error(f"ERP download failed for {yyyy}-{ddd}")
 
+def download_osb(date, output_dir):
+    gps_week = int((date - datetime.date(1980, 1, 6)).days / 7)
+    dow = (date - datetime.date(1980, 1, 6)).days % 7
 
+    year = date.year
+    doy = date.timetuple().tm_yday
+    yyyy = f"{year:04d}"
+    ddd = f"{doy:03d}"
+
+    os.makedirs(output_dir, exist_ok=True)
+
+    # ===================== COD0OPSFIN =====================
+    cod_filename = f"COD0OPSFIN_{yyyy}{ddd}0000_01D_01D_OSB.BIA.gz"
+    cod_extracted = os.path.join(output_dir, cod_filename[:-3])
+
+    if os.path.exists(cod_extracted):
+        log(f"OSB (COD0OPSFIN) already exists, skipping: {relpath(cod_extracted)}")
+        return
+
+    url = f"https://cddis.nasa.gov/archive/gnss/products/{gps_week}/{cod_filename}"
+    path = os.path.join(output_dir, cod_filename)
+
+    log(f"Trying OSB (COD0OPSFIN): {url}")
+
+    if download_and_extract(url, path):
+        return
+
+    # ===================== COD0MGXFIN fallback =====================
+    legacy_filename = f"COD0MGXFIN_{yyyy}{ddd}0000_01D_01D_OSB.BIA.gz"
+    legacy_extracted = os.path.join(output_dir, legacy_filename[:-3])
+
+    if os.path.exists(legacy_extracted):
+        log(f"OSB (COD0MGXFIN) already exists, skipping: {relpath(legacy_extracted)}")
+        return
+
+    legacy_url = f"https://cddis.nasa.gov/archive/gnss/products/{gps_week}/{legacy_filename}"
+    legacy_path = os.path.join(output_dir, legacy_filename)
+
+    log(f"OSB not found, trying fallback: {legacy_url}")
+
+    if not download_and_extract(legacy_url, legacy_path):
+        error(f"OSB download failed for {yyyy}-{ddd}")
 def download_brdc_gps(date, output_dir):
   year = date.year
   doy = date.timetuple().tm_yday
@@ -584,6 +625,15 @@ def _expected_ionex_filenames(start_date, end_date):
   return names
 
 
+def _expected_osb_filenames(start_date, end_date):
+    names = set()
+    for d in date_range(start_date, end_date):
+        yyyy = f"{d.year:04d}"
+        ddd = f"{d.timetuple().tm_yday:03d}"
+        names.add(f"COD0OPSFIN_{yyyy}{ddd}0000_01D_01D_OSB.BIA")
+        names.add(f"COD0MGXFIN_{yyyy}{ddd}0000_01D_01D_OSB.BIA")
+    return names
+
 def clean_outside_range(base_dir, start_date, end_date):
   if not os.path.exists(base_dir):
     return
@@ -594,6 +644,8 @@ def clean_outside_range(base_dir, start_date, end_date):
     (os.path.join(base_dir, "clk"), _expected_clk_filenames(start_date, end_date)),
     (os.path.join(base_dir, "inx"), _expected_ionex_filenames(start_date, end_date)),
     (os.path.join(base_dir, "erp"), _expected_erp_filenames(start_date, end_date)),
+    (os.path.join(base_dir, "osb"), _expected_osb_filenames(start_date, end_date)),
+
   ]
 
   for subdir, valid_names in checks:
@@ -682,6 +734,7 @@ def download_products_day(date, base_dir):
   clk_dir = os.path.join(base_dir, "clk")
   inx_dir = os.path.join(base_dir, "inx")
   erp_dir = os.path.join(base_dir, "erp")
+  osb_dir = os.path.join(base_dir, "osb")
 
   os.makedirs(nav_dir, exist_ok=True)
   os.makedirs(sp3_dir, exist_ok=True)
@@ -696,7 +749,7 @@ def download_products_day(date, base_dir):
   download_clk(date, clk_dir)
   download_ionex(date, inx_dir)
   download_erp(date, erp_dir)
-
+  download_osb(date, osb_dir)
 
 def clean_all(base_dir):
   for subdir in ("nav", "sp3", "clk", "inx", "erp"):
