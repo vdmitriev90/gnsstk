@@ -348,13 +348,6 @@ namespace pod
         if (it != tvMap.end())
             value -= it->second;
 
-        // sv phase center
-        it = tvMap.find(TypeID::satPCenter);
-        if (it == tvMap.end())
-            return false;
-        else
-            value -= it->second;
-
         // instrument delays
         it = tvMap.find(TypeID::instC1);
         if (it != tvMap.end())
@@ -430,13 +423,6 @@ namespace pod
         if (it != tvMap.end())
             value -= it->second;
 
-        // sv phase center
-        it = tvMap.find(TypeID::satPCenter);
-        if (it == tvMap.end())
-            return false;
-        else
-            value -= it->second;
-
         // instrument delays
         it = tvMap.find(TypeID::instC2);
         if (it != tvMap.end())
@@ -508,13 +494,6 @@ namespace pod
         else
             value -= it->second;
 
-        // sv phase center
-        it = tvMap.find(TypeID::satPCenter);
-        if (it == tvMap.end())
-            return false;
-        else
-            value -= it->second;
-
         // wind Up
         it = tvMap.find(TypeID::windUp);
         if (it == tvMap.end())
@@ -573,13 +552,6 @@ namespace pod
 
         // grav Delay
         it = tvMap.find(TypeID::gravDelay);
-        if (it == tvMap.end())
-            return false;
-        else
-            value -= it->second;
-
-        // sv phase center
-        it = tvMap.find(TypeID::satPCenter);
         if (it == tvMap.end())
             return false;
         else
@@ -667,13 +639,6 @@ namespace pod
         else
             value -= it->second;
 
-        // sv phase center
-        it = tvMap.find(TypeID::satPCenter);
-        if (it == tvMap.end())
-            return false;
-        else
-            value -= it->second;
-
         // tropo
         it = tvMap.find(TypeID::tropoSlant);
         if (it == tvMap.end())
@@ -751,13 +716,6 @@ namespace pod
 
         // grav Delay
         it = tvMap.find(TypeID::gravDelay);
-        if (it == tvMap.end())
-            return false;
-        else
-            value -= it->second;
-
-        // sv phase center
-        it = tvMap.find(TypeID::satPCenter);
         if (it == tvMap.end())
             return false;
         else
