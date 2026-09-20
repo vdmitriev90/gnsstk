@@ -13,6 +13,7 @@ IonexDir         = inx
 RinexClockDir    = clk
 RinexNavFilesDir = nav
 ErpDir           = erp
+BiasSinexDir     = osb
 
 #site IDs
 ##############################################################################
@@ -29,12 +30,12 @@ SiteBase         = FFMJ
 #PPP_float = 16,  ///< PPP with float ambiguities 
 slnType = 2
 
-useC1 = true
+ApplyCodeBias = false
+
+UseRinexClock = false
 
 satSystems = GPS GLO # GAL
 carrierBands = 1 2
-
-UseRinexClock = false
 
 #'computeTropo' for differeintial solutions only
 computeTropo = false 

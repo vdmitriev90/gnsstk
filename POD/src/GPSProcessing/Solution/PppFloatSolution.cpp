@@ -4,6 +4,7 @@
 #include "AmbiguitiesEquations.h"
 #include "AntexReader.hpp"
 #include "BasicModel.hpp"
+#include "BiasSinexCorrector.h"
 #include "ClockBiasEquations.h"
 #include "ComputeSatPCenter.hpp"
 #include "ComputeTropModel.hpp"
@@ -149,6 +150,8 @@ namespace pod
         linearIonoFree.add(std::make_unique<PCCombination>());
         linearIonoFree.add(std::make_unique<LCCombimnation>());
 
+        BiasSinexCorrector biasSinexCorrector(data_->biasSinexStore);
+
         UsedInPvtMarker useMarker;
         KalmanSolver solver(equations_);
         KalmanSolverFB solverFb(equations_);
@@ -229,6 +232,9 @@ namespace pod
                     printMsg(rin_epoch.getHeader().epoch, "Rover receiver: all SV has been rejected.");
                     continue;
                 }
+
+                rin_epoch >> biasSinexCorrector;
+
                 rin_epoch >> computeLinear_;
 
                 auto eop = data_->eopStore.getEOP(MJD(t).mjd, IERSConvention::IERS2010);

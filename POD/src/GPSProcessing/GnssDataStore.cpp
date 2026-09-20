@@ -79,8 +79,7 @@ namespace
             return time_rnx;
 
         const auto it = rNavHeader.mapTimeCorr.find("GPUT");
-        if (it != rNavHeader.mapTimeCorr.end()
-            && it->second.refTime != CommonTime::BEGINNING_OF_TIME)
+        if (it != rNavHeader.mapTimeCorr.end() && it->second.refTime != CommonTime::BEGINNING_OF_TIME)
             return it->second.refTime;
 
         return std::nullopt;
@@ -193,8 +192,7 @@ namespace pod
                 auto sys = convertCodeToSatelliteSystem(it);
                 if (sys == SatelliteSystem::Unknown)
                 {
-                    std::cerr << "Warning: Unknown satellite system code '" << it
-                              << "' in configuration." << std::endl;
+                    std::cerr << "Warning: Unknown satellite system code '" << it << "' in configuration." << std::endl;
                     continue;
                 }
                 opts.systems.insert(sys);
@@ -229,20 +227,24 @@ namespace pod
             std::cout << "Load Earth orientation data... ";
             std::cout << loadEOPData() << std::endl;
 
+            if (confReader->getValueAsBoolean("ApplyCodeBias"))
+            {
+                std::cout << "Load Bias-SINEX data... ";
+                std::cout << loadBiasSinex() << std::endl;
+            }
+
             std::cout << "Appr. position  source: ";
             if (createPosProvider())
                 std::cout << getPosSourceString(apprPos->getSource()) << std::endl;
         }
         catch (const Exception& e)
         {
-            std::cout << "Failed to load input data. An error has occured: " << e.what()
-                      << std::endl;
+            std::cout << "Failed to load input data. An error has occured: " << e.what() << std::endl;
             exit(-1);
         }
         catch (const std::exception& e)
         {
-            std::cout << "Failed to load input data: An error has occured: " << e.what()
-                      << std::endl;
+            std::cout << "Failed to load input data: An error has occured: " << e.what() << std::endl;
             exit(-1);
         }
     }
@@ -314,8 +316,7 @@ namespace pod
             break;
         case gnsstk::ComputeIonoModel::Klobuchar:
             if (!loadBceIonoModel())
-                GNSSTK_THROW(
-                    InvalidRequest("Can't load iono model from Rinex GPS Navigation files."));
+                GNSSTK_THROW(InvalidRequest("Can't load iono model from Rinex GPS Navigation files."));
             break;
         case gnsstk::ComputeIonoModel::Ionex:
             if (isIonexLoaded)
@@ -348,8 +349,7 @@ namespace pod
     bool GnssDataStore::loadBceIonoModel()
     {
         const std::string gpsObsExt = ".[\\d]{2}[nN]|";
-        const auto files =
-            FsUtils::getFilesByExtensionRegex(opts.workingDir / opts.bceDir, gpsObsExt);
+        const auto files = FsUtils::getFilesByExtensionRegex(opts.workingDir / opts.bceDir, gpsObsExt);
         for (auto&& file : files)
         {
             try
@@ -380,8 +380,7 @@ namespace pod
                 else
                 {
                     std::cerr << "WARNING: Navigation file " << file
-                              << " doesn't have valid ionospheric correction parameters."
-                              << std::endl;
+                              << " doesn't have valid ionospheric correction parameters." << std::endl;
                 }
 
                 bceIonoStore.addIonoModel(nav_ref_time.value(), iMod);
@@ -397,8 +396,7 @@ namespace pod
 
         if (bceIonoStore.empty())
         {
-            std::cerr << "No valid ionospheric model found in Rinex GPS Navigation files."
-                      << std::endl;
+            std::cerr << "No valid ionospheric model found in Rinex GPS Navigation files." << std::endl;
             return false;
         }
         //
@@ -462,22 +460,44 @@ namespace pod
         return !eopStore.empty();
     }
 
-    bool GnssDataStore::loadCodeBiases()
+    bool GnssDataStore::loadBiasSinex()
     {
-        std::string biasesFile = opts.genericFilesDirectory;
+        fs::path bias_dir = opts.workingDir;
         try
         {
-            biasesFile += confReader->getValue("IersEopFile");
+            const std::string subdir = confReader->getValue("BiasSinexDir");
+            bias_dir.append(subdir);
         }
         catch (...)
         {
-            std::cerr << "Problem get value from config: file \"IersEopFile\" " << std::endl;
+            std::cerr << "Problem get value from config: file \"BiasSinexDir\" " << std::endl;
+            return false;
+        }
+        const auto files = FsUtils::getAllFilesInDir(bias_dir);
+
+        if (files.empty())
+        {
+            std::cerr << "Empty OSB directory " << bias_dir << std::endl;
             return false;
         }
 
-        // TODO: implement DCB loading
-        // DCBData.setDCBFile(biasesFile,);
-
+        for (const auto& bsxFile : files)
+        {
+            try
+            {
+                biasSinexStore.loadFile(bsxFile.string());
+            }
+            catch (const Exception& e)
+            {
+                std::cerr << "Failed to load Bias-SINEX file '" << bsxFile << "': " << e.what() << std::endl;
+                return false;
+            }
+            catch (const std::exception& e)
+            {
+                std::cerr << "Failed to load Bias-SINEX file '" << bsxFile << "': " << e.what() << std::endl;
+                return false;
+            }
+        }
         return true;
     }
 
@@ -536,8 +556,7 @@ namespace pod
                             NumP2++;
                     }
 
-                    os << nGPS << " " << nGLN << " " << NumBadCNo1 << " " << NumP1 << " " << NumP2
-                       << std::endl;
+                    os << nGPS << " " << nGLN << " " << NumBadCNo1 << " " << NumP1 << " " << NumP2 << std::endl;
                 }
             }
         }
@@ -545,8 +564,7 @@ namespace pod
 
     bool GnssDataStore::createPosProvider()
     {
-        auto apprPosProvider =
-            static_cast<ApprPositionSource>(confReader->getValueAsInt("ApprPosProvider"));
+        auto apprPosProvider = static_cast<ApprPositionSource>(confReader->getValueAsInt("ApprPosProvider"));
 
         switch (apprPosProvider)
         {
@@ -560,8 +578,8 @@ namespace pod
             apprPos = std::make_unique<ComputeOnePos>(navLibrary_);
             return true;
         case ApprPositionSource::LoadFromFile:
-            apprPos = std::make_unique<PositionFromFile>(
-                (opts.workingDir / confReader->getValue("ApprPosFile")).string());
+            apprPos =
+                std::make_unique<PositionFromFile>((opts.workingDir / confReader->getValue("ApprPosFile")).string());
             return true;
         default:
             return false;

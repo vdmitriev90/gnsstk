@@ -2,6 +2,7 @@
 #define POD_GNSSDATA_STORE_H
 
 #include "ApprPosProvider.hpp"
+#include "BiasSinex/BiasSinexStore.hpp"
 #include "CommonEnums.h"
 #include "CommonTime.hpp"
 #include "ComputeIonoModel.hpp"
@@ -62,7 +63,7 @@ namespace pod
         bool loadFcn();
         bool loadClocks();
         bool loadEOPData();
-        bool loadCodeBiases();
+        bool loadBiasSinex();
         bool createPosProvider();
 
 #pragma endregion
@@ -99,6 +100,9 @@ namespace pod
 
         // class to corrects observables from differential code biases
         gnsstk::CorrectCodeBiases DCBData;
+
+        // Bias-SINEX store for satellite/station bias records
+        pod::BiasSinexStore biasSinexStore;
 
         // pocessing-spacific options
         struct ProcessOpts
