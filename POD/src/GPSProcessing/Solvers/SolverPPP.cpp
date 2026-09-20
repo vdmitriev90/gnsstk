@@ -330,7 +330,7 @@ namespace pod
         phiMatrix(4, 4) = pClockStoModel->getPhi();
         qMatrix(4, 4) = pClockStoModel->getQ();
 
-        if (defaultEqDef.body.find(gnsstk::TypeID::recISB_GLN) != defaultEqDef.body.end())
+        if (defaultEqDef.body.find(gnsstk::TypeID::recISB_GLN_L1) != defaultEqDef.body.end())
         {
             pInterSysBiasStoModel->Prepare(dummySat, gData);
             phiMatrix(numVar - 1, numVar - 1) = pInterSysBiasStoModel->getPhi();
@@ -526,7 +526,7 @@ namespace pod
                     // Third, the receiver clock
                     currentCovariance(4, 4) = 9.0e10; // (300 km)**2
                 }
-                if (defaultEqDef.body.find(gnsstk::TypeID::recISB_GLN) != defaultEqDef.body.end())
+                if (defaultEqDef.body.find(gnsstk::TypeID::recISB_GLN_L1) != defaultEqDef.body.end())
                 {
                     currentCovariance(numVar - 1, numVar - 1) = 9.0e9;
                 }

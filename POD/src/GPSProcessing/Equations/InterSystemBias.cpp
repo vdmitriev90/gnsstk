@@ -7,7 +7,7 @@ namespace pod
     using namespace gnsstk;
 
     constexpr std::array<TypeID::ValueType, InterSystemBias::NUM_BIAS> kBiasTypes = {
-        {TypeID::recISB_GLN, TypeID::recISB_GAL, TypeID::recISB_BDS}};
+        {TypeID::recISB_GLN_L1, TypeID::recISB_GAL_E1, TypeID::recISB_BDS_B1}};
 
     struct BiasEntry
     {

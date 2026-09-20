@@ -274,7 +274,7 @@ of designMatrix");
        if (numGLN < 2)
 		   gRin.getBody().keepOnlySatSyst(SatelliteSystem::GPS);
        else
-           defaultEqDef.body.insert(TypeID::recISB_GLN);
+           defaultEqDef.body.insert(TypeID::recISB_GLN_L1);
    }
 
 

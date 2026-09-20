@@ -443,11 +443,11 @@ namespace pod
 
         auto defeq = solver.getDefaultEqDefinition();
 
-        auto itcdtGLO = defeq.body.find(TypeID::recISB_GLN);
-        if (defeq.body.find(TypeID::recISB_GLN) != defeq.body.end())
+        auto itcdtGLO = defeq.body.find(TypeID::recISB_GLN_L1);
+        if (defeq.body.find(TypeID::recISB_GLN_L1) != defeq.body.end())
         {
-            double cdtGLO = solver.getSolution(TypeID::recISB_GLN);
-            gEpoch.slnData.insert(std::pair<TypeID, double>(TypeID::recISB_GLN, cdtGLO));
+            double cdtGLO = solver.getSolution(TypeID::recISB_GLN_L1);
+            gEpoch.slnData.insert(std::pair<TypeID, double>(TypeID::recISB_GLN_L1, cdtGLO));
 
             outfile << cdtGLO << " ";
         }
