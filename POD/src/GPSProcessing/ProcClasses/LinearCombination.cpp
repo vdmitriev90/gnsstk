@@ -410,8 +410,10 @@ namespace pod
         else
             value -= it->second;
 
-        // ionospheric delay on L2
-        it = tvMap.find(TypeID::ionoL2);
+        // ionospheric delay on second band (L2 for GPS/GLO, L5 for GAL)
+        const TypeID iono_type = obs_mapping::getBand(sv.system, secondCodeType) == 5 ? TypeID::ionoL5 : TypeID::ionoL2;
+        it = tvMap.find(iono_type);
+
         if (it != tvMap.end())
             value -= it->second;
 
@@ -494,18 +496,7 @@ namespace pod
         else
             value -= it->second;
 
-        // wind Up
-        it = tvMap.find(TypeID::windUp);
-        if (it == tvMap.end())
-            return false;
-        else
-        {
-            auto wu_wl = getIonoFreePhaseWaveLength(sv);
-            if (!wu_wl)
-                return false;
-
-            value -= it->second * wu_wl.value() / TWO_PI;
-        }
+        // phase wind-up affects carrier phase only, not code
         return true;
     }
 
@@ -646,8 +637,8 @@ namespace pod
         else
             value -= it->second;
 
-        // ionospheric delay on L1
-        it = tvMap.find(TypeID::ionoL2);
+        // ionospheric delay on second band (L2 for GPS/GLO, L5 for GAL)
+        it = tvMap.find(obs_mapping::getBand(sv.system, type) == 5 ? TypeID::ionoL5 : TypeID::ionoL2);
         if (it != tvMap.end())
             value += it->second;
 
