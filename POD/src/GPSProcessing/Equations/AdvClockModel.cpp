@@ -101,13 +101,10 @@ namespace pod
     void AdvClockModel::fillRow(const RowContext& ctx, const StateLayout& layout, gnsstk::Matrix<double>& H) const
     {
         FilterParameter pCdt(gnsstk::TypeID::recCdt);
-        FilterParameter pDot(gnsstk::TypeID::recCdtdot);
 
         int colCdt = layout.index(pCdt);
-        int colDot = layout.index(pDot);
 
         H(ctx.row, colCdt) = 1.0;
-        H(ctx.row, colDot) = dt;
     }
 
     int AdvClockModel::getNumUnknowns() const
