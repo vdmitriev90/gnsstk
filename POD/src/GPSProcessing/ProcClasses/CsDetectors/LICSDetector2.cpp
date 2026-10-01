@@ -181,7 +181,7 @@ namespace pod
          // in seconds, but first test if we have epoch data inside LIData
       if(s > 0)
       {
-         currentDeltaT = ( epoch - LIData[sat].LIEpoch.back() );
+         currentDeltaT = std::abs( epoch - LIData[sat].LIEpoch.back() );
       }
       else
       {

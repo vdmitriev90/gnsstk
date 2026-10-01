@@ -140,7 +140,7 @@ namespace pod
 
          // Get the difference between current epoch and former epoch,
          // in seconds
-      currentDeltaT = ( epoch - MWData[sat].formerEpoch );
+      currentDeltaT = std::abs( epoch - MWData[sat].formerEpoch );
 
          // Store current epoch as former epoch
       MWData[sat].formerEpoch = epoch;
