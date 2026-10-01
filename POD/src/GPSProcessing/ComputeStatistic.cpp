@@ -1,7 +1,5 @@
 #include "ComputeStatistic.h"
 
-#include "WinUtils.h"
-
 using namespace gnsstk;
 
 namespace pod
@@ -64,5 +62,90 @@ namespace pod
         for (size_t k = 0; k < s; k++)
             for (size_t l = 0; l <= k; l++)
                 covar(k, l) = covar(k, l) / (res.size() - 1);
+    }
+
+    void PostfitResidualStatistic::compute(const GnssEpochMap& data)
+    {
+        std::vector<double> gpsValues;
+        std::vector<double> gloValues;
+        std::vector<double> galValues;
+
+        for (const auto& epoch : data)
+        {
+            const auto& satData = epoch.second.satData;
+
+            for (const auto& sat : satData)
+            {
+                const SatID& satId = sat.first;
+                const auto& values = sat.second;
+                const auto it = values.find(residualType);
+                if (it == values.end())
+                {
+                    continue;
+                }
+
+                double residual = it->second;
+
+                switch (satId.system)
+                {
+                case SatelliteSystem::GPS:
+                    gpsValues.push_back(residual);
+                    break;
+
+                case SatelliteSystem::Glonass:
+                    gloValues.push_back(residual);
+                    break;
+
+                case SatelliteSystem::Galileo:
+                    galValues.push_back(residual);
+                    break;
+
+                default:
+                    break;
+                }
+            }
+        }
+
+        updateStatistic(gpsValues, gpsStat);
+        updateStatistic(gloValues, gloStat);
+        updateStatistic(galValues, galStat);
+    }
+
+    void PostfitResidualStatistic::updateStatistic(const std::vector<double>& values, Statistic& stat)
+    {
+        if (values.empty())
+        {
+            stat = Statistic();
+            return;
+        }
+
+        stat.count = static_cast<int>(values.size());
+
+        double sum = 0.0;
+        double sum2 = 0.0;
+
+        stat.minVal = values.front();
+        stat.maxVal = values.front();
+
+        for (double v : values)
+        {
+            sum += v;
+            sum2 += v * v;
+
+            stat.minVal = std::min(stat.minVal, v);
+            stat.maxVal = std::max(stat.maxVal, v);
+        }
+
+        stat.mean = sum / stat.count;
+
+        double var = 0.0;
+
+        for (double v : values)
+        {
+            double d = v - stat.mean;
+            var += d * d;
+        }
+
+        stat.stddev = (stat.count > 1) ? std::sqrt(var / (stat.count - 1)) : 0.0;
     }
 } // namespace pod

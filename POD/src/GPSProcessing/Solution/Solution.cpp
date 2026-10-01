@@ -48,19 +48,22 @@ namespace pod
         fs::path out_path(data->opts.workingDir / file_name / ".txt");
 
         TypeIDSet typeSet{TypeID::recX, TypeID::recY, TypeID::recZ};
-        ComputeStatistic st(solver.desiredSlnType(), typeSet);
+        ComputeStatistic rms_st(solver.desiredSlnType(), typeSet);
+
+        PostfitResidualStatistics postfit_stat;
+        postfit_stat.compute(gnss_data);
+        postfit_stat.print(std::cout);
 
         Vector<double> sln;
         Matrix<double> covar;
-        st.compute(gnss_data, sln, covar);
+        rms_st.compute(gnss_data, sln, covar);
         int summ(0);
         double avgSvInView(0);
         double avgSvInUse(0);
 
         // calculate number of desired sln types
         for_each(gnss_data.begin(), gnss_data.end(), [&](const auto& ep) {
-            if ((SlnType)(int)ep.second.slnData.getValue(TypeID::recSlnType)
-                == solver.desiredSlnType())
+            if ((SlnType)(int)ep.second.slnData.getValue(TypeID::recSlnType) == solver.desiredSlnType())
             {
                 summ++;
                 avgSvInView += ep.second.satData.size();
@@ -73,7 +76,7 @@ namespace pod
 
         std::ofstream wrt(out_path.string(), std::ostream::out | std::ostream::app);
         const std::string sep = ",";
-        
+
         // print time interval
         const std::string fmt = "%04Y-%02m-%02d %02H:%02M:%02S";
         wrt << CivilTime(gnss_data.getInitialTime()).printf(fmt) << sep
@@ -81,30 +84,27 @@ namespace pod
 
         // XYZ coordinates
         for (auto x : sln)
-            wrt << std::fixed << std::setw(13) << std::setprecision(4) << std::setfill(' ') << x
-                << sep;
+            wrt << std::fixed << std::setw(13) << std::setprecision(4) << std::setfill(' ') << x << sep;
         wrt << static_cast<int>(solver.desiredSlnType()) << sep;
 
         // number of good solutions
-        wrt << summ << sep << gnss_data.size() << sep << std::setprecision(1) << avgSvInView / summ
-            << sep << avgSvInUse / summ << sep;
+        wrt << summ << sep << gnss_data.size() << sep << std::setprecision(1) << avgSvInView / summ << sep
+            << avgSvInUse / summ << sep;
 
         // print rms3d
-        wrt << std::fixed << std::scientific << std::setprecision(3) << std::setfill(' ') << rms3d
-            << sep;
+        wrt << std::fixed << std::scientific << std::setprecision(3) << std::setfill(' ') << rms3d << sep;
 
         // compute corr. matrix
         const auto corr = ComputeStatistic::corrMatrix(covar);
         // print std.dev.
         for (size_t i = 0; i < covar.rows(); i++)
-            wrt << std::fixed << std::scientific << std::setprecision(4) << std::setfill(' ')
-                << sqrt(covar(i, i)) << sep;
+            wrt << std::fixed << std::scientific << std::setprecision(4) << std::setfill(' ') << sqrt(covar(i, i))
+                << sep;
 
         // print correlation coeff.: xx,xz,yz
         for (size_t i = 0; i < corr.rows(); i++)
             for (size_t j = 0; j < i; j++)
-                wrt << std::fixed << std::scientific << std::setprecision(4) << std::setfill(' ')
-                    << corr(i, j) << sep;
+                wrt << std::fixed << std::scientific << std::setprecision(4) << std::setfill(' ') << corr(i, j) << sep;
 
         wrt << std::endl;
     }
