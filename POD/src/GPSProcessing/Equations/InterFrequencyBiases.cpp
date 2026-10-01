@@ -9,7 +9,7 @@ namespace pod
     std::map<SatelliteSystem, FilterParameter> InterFrequencyBiases::ss2ifb;
     std::map<FilterParameter, SatelliteSystem> InterFrequencyBiases::ifb2ss;
 
-    const TypeIDSet InterFrequencyBiases::l2Types{TypeID::prefitP2, TypeID::prefitL2};
+    const TypeIDSet InterFrequencyBiases::l2Types{TypeID::prefitP2, TypeID::prefitL2, TypeID::prefitC5, TypeID::prefitL5};
 
     InterFrequencyBiases::Initilizer InterFrequencyBiases::IfbSingleton;
 
@@ -34,7 +34,11 @@ namespace pod
     {
         types.clear();
         for (const auto& it : gData.getBody())
-            types.insert(ss2ifb[it.first.system]);
+        {
+            const auto itIfb = ss2ifb.find(it.first.system);
+            if (itIfb != ss2ifb.end())
+                types.insert(itIfb->second);
+        }
 
         for (const auto& ss : types)
             stochasticModels[ss]->Prepare(SatID::dummy, gData);
