@@ -1,7 +1,9 @@
 #include "AmbiguitiesEquations.h"
 
 #include "GNSSconstants.hpp"
+#include "GnssObsMapping.h"
 #include "LinearCombination.h"
+#include "ObservationResolver.h"
 #include "StateLayout.h"
 
 using namespace gnsstk;
@@ -106,7 +108,15 @@ namespace pod
                                        const StateLayout& layout,
                                        gnsstk::Matrix<double>& H) const
     {
-        if (ctx.type != obsType_)
+        // BL1/BL2 denote first/second band ambiguities; resolve the actual
+        // prefit phase per system (e.g. prefitL5 for Galileo second band)
+        TypeID expectedType = obsType_;
+        if (ambType_.type == TypeID::BL1)
+            expectedType = ObservationResolver().resolvePrefit(ObsSlot::FirstBandPhase, ctx.sat.system);
+        else if (ambType_.type == TypeID::BL2)
+            expectedType = ObservationResolver().resolvePrefit(ObsSlot::SecondBandPhase, ctx.sat.system);
+
+        if (ctx.type != expectedType)
             return;
 
         auto itSat = csFlags_.find(ctx.sat);
@@ -116,20 +126,15 @@ namespace pod
         int col = layout.index(FilterParameter(ambType_, ctx.sat));
 
         double wavelength(0);
-        int fcn = ctx.sat.getGloFcn();
-        switch (ambType_.type)
+        if (ambType_.type == TypeID::BLC)
         {
-        case TypeID::BL1:
-            wavelength = getWavelength(ctx.sat.system, 1, fcn);
-            break;
-        case TypeID::BL2:
-            wavelength = getWavelength(ctx.sat.system, 2, fcn);
-            break;
-        case TypeID::BLC:
-            wavelength = 1.0; // LinearCombination::getIonoFreeWaveLength(itSat, 1, 2);
-            break;
-        default:
-            break;
+            wavelength = 1.0;
+        }
+        else
+        {
+            const auto attr = obs_mapping::findObsAttr(ctx.type.type);
+            if (attr.valid())
+                wavelength = getWavelength(ctx.sat.system, attr.band, ctx.sat.getGloFcn());
         }
 
         H(ctx.row, col) = wavelength;
