@@ -133,11 +133,16 @@ namespace gnsstk
             try
             {
                   // Compute most of the parameters
-               cerange.ComputeAtTransmitTime( time,
+               const auto corrRange = cerange.ComputeAtTransmitTime( time,
                                               observable,
                                               rxPos,
                                               (*stv).first,
                                               navLibrary );
+               if (!corrRange)
+               {
+                  satRejectedSet.insert( (*stv).first );
+                  continue;
+               }
             }
             catch(InvalidRequest& e)
             {
