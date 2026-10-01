@@ -53,6 +53,8 @@ namespace pod
                 && static_cast<SatUsedStatus>(status->second) == SatUsedStatus::NotEnoughData)
             {
                 (*it->second)[TypeID::CSL1] = (*it->second)[TypeID::CSL2] = 0;
+                if (it->second->find(TypeID::CSL5) != it->second->end())
+                    (*it->second)[TypeID::CSL5] = 0;
                 // status->second = UsedInPVT;
             }
         }

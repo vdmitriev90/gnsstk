@@ -55,8 +55,12 @@ namespace pod
             // OR cycle slip flags from both stations
             if (updateCSFlag_)
             {
-                for (const auto csType : {gnsstk::TypeID::CSL1, gnsstk::TypeID::CSL2})
+                for (const auto slot : {ObsSlot::FirstBandPhase, ObsSlot::SecondBandPhase})
                 {
+                    const gnsstk::TypeID csType = resolver_.resolveCsFlag(slot, sat.system);
+                    if (csType == gnsstk::TypeID::Unknown)
+                        continue;
+
                     auto c1 = tvPtr->find(csType);
                     auto c2 = itRef->second->find(csType);
 
