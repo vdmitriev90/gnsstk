@@ -1,6 +1,7 @@
 #include "CodeSolverBase.h"
 
 #include "FsUtils.h"
+#include "GnssObsMapping.h"
 #include "Matrix.hpp"
 #include "WinUtils.h"
 
@@ -53,8 +54,6 @@ namespace pod
                                            CodeProcSvData& svData,
                                            bool isApplyRCO)
     {
-        // Let's compute an useful constant (also found in "GNSSconstants.hpp")
-        const double gamma = (L1_FREQ_GPS / L2_FREQ_GPS) * (L1_FREQ_GPS / L2_FREQ_GPS);
         // Apply editing criteria
         if (rod.epochFlag == 0 || rod.epochFlag == 1) // Begin usable data
         {
@@ -62,33 +61,67 @@ namespace pod
             {
                 if (systems.find(it.first.system) == systems.end())
                     continue;
-                const auto& ids = typeMap.at(it.first.system);
+
+                const auto itIds = typeMap.find(it.first.system);
+                if (itIds == typeMap.end())
+                    continue;
+                const auto& ids = itIds->second;
+
+                const auto itC1 = ids.find(TypeID::C1);
+                if (itC1 == ids.end())
+                    continue;
 
                 double C1(0.0);
                 char S1(0);
                 try
                 {
-                    C1 = rod.getObs(it.first, ids.at(TypeID::C1), roh).data;
+                    C1 = rod.getObs(it.first, itC1->second, roh).data;
                 }
                 catch (gnsstk::Exception& e)
                 {
                     continue;
                 }
-                try
+                const auto itS1 = ids.find(TypeID::S1);
+                if (itS1 != ids.end())
                 {
-                    S1 = rod.getObs(it.first, ids.at(TypeID::S1), roh).data;
-                }
-                catch (gnsstk::Exception& e)
-                {
+                    try
+                    {
+                        S1 = rod.getObs(it.first, itS1->second, roh).data;
+                    }
+                    catch (gnsstk::Exception& e)
+                    {
+                    }
                 }
 
                 double ionocorr(0.0);
                 if (ionoType == ComputeIonoModel::IonoModelType::DualFreq)
                 {
+                    const auto* cfg = obs_mapping::findConfig(it.first.system);
+                    if (cfg == nullptr || cfg->secondCode == TypeID::Unknown)
+                        continue;
+
+                    const int band1 = obs_mapping::getBand(it.first.system, TypeID(cfg->firstPhase));
+                    const int band2 = obs_mapping::getBand(it.first.system, TypeID(cfg->secondPhase));
+                    if (band1 < 0 || band2 < 0)
+                        continue;
+
+                    const int fcn = it.first.getGloFcn();
+                    const double wl1 = getWavelength(it.first.system, band1, fcn);
+                    const double wl2 = getWavelength(it.first.system, band2, fcn);
+                    if (wl1 <= 0.0 || wl2 <= 0.0)
+                        continue;
+
+                    // gamma = (f1/f2)^2 = (wl2/wl1)^2
+                    const double gamma = (wl2 / wl1) * (wl2 / wl1);
+
+                    const auto itC2 = ids.find(TypeID(cfg->secondCode));
+                    if (itC2 == ids.end())
+                        continue;
+
                     double P2(0.0);
                     try
                     {
-                        P2 = rod.getObs(it.first, ids.at(TypeID::P2), roh).data;
+                        P2 = rod.getObs(it.first, itC2->second, roh).data;
                     }
                     catch (gnsstk::Exception& e)
                     {

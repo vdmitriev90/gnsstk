@@ -45,11 +45,20 @@ namespace pod
 
         std::map<TypeID, RinexObsID> mR = {pC1R, pP1R, pP2R, pS1R, pS2R};
 
+        RinexObsID idC1E(ObservationType::Range, CarrierBand::L1, TrackingCode::E1C);
+        RinexObsID idC5E(ObservationType::Range, CarrierBand::L5, TrackingCode::E5aQ);
+        RinexObsID idS1E(ObservationType::SNR, CarrierBand::L1, TrackingCode::E1C);
+        RinexObsID idS5E(ObservationType::SNR, CarrierBand::L5, TrackingCode::E5aQ);
+
+        std::map<TypeID, RinexObsID> mE = {
+            {TypeID::C1, idC1E}, {TypeID::C5, idC5E}, {TypeID::S1, idS1E}, {TypeID::S5, idS5E}};
+
         //
         std::pair<SatelliteSystem, std::map<TypeID, RinexObsID>> p1(SatelliteSystem::GPS, mG);
         std::pair<SatelliteSystem, std::map<TypeID, RinexObsID>> p2(SatelliteSystem::Glonass, mR);
+        std::pair<SatelliteSystem, std::map<TypeID, RinexObsID>> p3(SatelliteSystem::Galileo, mE);
 
-        obsTypes = {p1, p2};
+        obsTypes = {p1, p2, p3};
     }
 
     bool CodeProcSvData::tryAdd(const SatID& id, const SvDataItem& item)
