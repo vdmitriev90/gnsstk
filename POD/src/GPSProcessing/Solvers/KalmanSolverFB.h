@@ -158,7 +158,10 @@ namespace pod
         }
 
       private:
-        gnsstk::IRinex& ReProcessOneEpoch(gnsstk::IRinex& rin_epoch);
+        gnsstk::IRinex& ReProcessOneEpoch(gnsstk::IRinex& rin_epoch,
+                                          const gnsstk::SatIDSet* extraSlips = nullptr);
+
+        void reProcessBackward();
 
         // This method checks the residuals and modifies 'gData' accordingly.
         void checkLimits(gnsstk::IRinex& gData, size_t cycleNumber);
@@ -186,6 +189,9 @@ namespace pod
 
         std::map<gnsstk::CommonTime, pod::LICSDetector2> LIDetMap;
         std::map<gnsstk::CommonTime, pod::MWCSDetector> MWDetMap;
+
+        // satellites with cycle slip flags set in the forward pass, per epoch
+        std::map<gnsstk::CommonTime, gnsstk::SatIDSet> fwdSlips;
 
         // internal kalman solver object, which do main part of real work
         KalmanSolver solver;

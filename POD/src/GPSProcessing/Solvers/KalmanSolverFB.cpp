@@ -36,6 +36,11 @@ namespace pod
 
     gnsstk::IRinex& KalmanSolverFB::Process(gnsstk::IRinex& rin_epoch)
     {
+        // satellites that reached the solver; others were removed upstream only
+        // from currData (e.g. by SingleDifferenceOp) and must not be resurrected
+        // by resetCurrData() during reprocessing
+        const gnsstk::SatIDSet inputSats = rin_epoch.getBody().getSatID();
+
         solver.Process(rin_epoch);
         if (LiCsDetector_ && MwCsDetector_ && solver.getResetState())
         {
@@ -46,8 +51,25 @@ namespace pod
         // Before returning, store the results for a future iteration
         if (currCycle == 0)
         {
+            // remember satellites flagged with cycle slip in the forward pass
+            // (includes base station slips merged by single differences)
+            auto& slips = fwdSlips[rin_epoch.getHeader().epoch];
+            for (const auto& [sat, tv] : rin_epoch.getBody())
+                for (auto cs : {TypeID::CSL1, TypeID::CSL2, TypeID::CSL5})
+                {
+                    auto it = tv->find(cs);
+                    if (it != tv->end() && it->second > 0.0)
+                    {
+                        slips.insert(sat);
+                        break;
+                    }
+                }
+
             // Store observation data
-            ObsData.push_back(rin_epoch.clone());
+            auto stored = rin_epoch.clone();
+            if (auto* re = dynamic_cast<gnsstk::RinexEpoch*>(stored.get()))
+                re->keepOnlySatID(inputSats);
+            ObsData.push_back(std::move(stored));
 
             // Update the number of processed measurements
             processedMeasurements += rin_epoch.getBody().numSats();
@@ -78,11 +100,23 @@ namespace pod
         }
     }
 
+    void KalmanSolverFB::reProcessBackward()
+    {
+        // In backward direction an ambiguity jump that happened between t(k-1) and t(k)
+        // must be flagged at t(k-1). Detectors re-run on rover only, so slips coming
+        // from the base station (merged in SD) must be shifted explicitly.
+        const gnsstk::SatIDSet* later = nullptr;
+        for (auto rpos = ObsData.rbegin(); rpos != ObsData.rend(); ++rpos)
+        {
+            ReProcessOneEpoch(**rpos, later);
+            later = &fwdSlips[(*rpos)->getHeader().epoch];
+        }
+    }
+
     void KalmanSolverFB::reProcess()
     {
         // Backwards iteration. We must do this at least once
-        for (auto rpos = ObsData.rbegin(); rpos != ObsData.rend(); ++rpos)
-            ReProcessOneEpoch(**rpos);
+        reProcessBackward();
 
         for (currCycle = 0; currCycle < cyclesNumber - 1; ++currCycle)
         {
@@ -91,12 +125,12 @@ namespace pod
                 ReProcessOneEpoch(*it);
             }
 
-            for (auto rpos = ObsData.rbegin(); rpos != ObsData.rend(); ++rpos)
-                ReProcessOneEpoch(**rpos);
+            reProcessBackward();
         }
     }
 
-    gnsstk::IRinex& KalmanSolverFB::ReProcessOneEpoch(gnsstk::IRinex& rin_epoch)
+    gnsstk::IRinex& KalmanSolverFB::ReProcessOneEpoch(gnsstk::IRinex& rin_epoch,
+                                                       const gnsstk::SatIDSet* extraSlips)
     {
 
         if (solver.ResetIfRequared(rin_epoch.getHeader().epoch, solver.FilterData))
@@ -115,6 +149,21 @@ namespace pod
         checkLimits(rin_epoch, currCycle);
 
         rin_epoch >> reProcList;
+
+        if (extraSlips)
+        {
+            for (auto& [sat, tv] : rin_epoch.getBody())
+            {
+                if (!extraSlips->count(sat))
+                    continue;
+                for (auto cs : {TypeID::CSL1, TypeID::CSL2, TypeID::CSL5})
+                {
+                    auto it = tv->find(cs);
+                    if (it != tv->end())
+                        it->second = 1.0;
+                }
+            }
+        }
 
         solver.Process(rin_epoch);
 
