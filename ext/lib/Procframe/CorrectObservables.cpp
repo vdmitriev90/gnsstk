@@ -46,6 +46,61 @@
 
 namespace gnsstk
 {
+   namespace
+   {
+         // Receiver antenna PCO minus PCV (UEN) for a given ANTEX frequency.
+      Triple antennaPhaseCenter( const Antenna& antenna,
+                                 Antenna::frequencyType freq,
+                                 bool usePCV,
+                                 bool useAzimuth,
+                                 const typeValueMap& data )
+      {
+         Triple result( antenna.getAntennaEccentricity(freq) );
+
+         if (!usePCV)
+            return result;
+
+         const auto itElev = data.find(TypeID::elevation);
+         if (itElev == data.end())
+         {
+            InvalidRequest e("Elevation information could not be found");
+            GNSSTK_THROW(e);
+         }
+
+         const auto itAzim = data.find(TypeID::azimuth);
+         if (useAzimuth && itAzim != data.end())
+         {
+            try
+            {
+               return result - antenna.getAntennaPCVariation(freq, itElev->second, itAzim->second);
+            }
+            catch (InvalidRequest&)
+            {
+            }
+         }
+
+         return result - antenna.getAntennaPCVariation(freq, itElev->second);
+      }
+
+         // Same as above, falling back to another frequency if the
+         // primary one is absent in ANTEX.
+      Triple antennaPhaseCenter( const Antenna& antenna,
+                                 Antenna::frequencyType freq,
+                                 Antenna::frequencyType fallback,
+                                 bool usePCV,
+                                 bool useAzimuth,
+                                 const typeValueMap& data )
+      {
+         try
+         {
+            return antennaPhaseCenter(antenna, freq, usePCV, useAzimuth, data);
+         }
+         catch (InvalidRequest&)
+         {
+            return antennaPhaseCenter(antenna, fallback, usePCV, useAzimuth, data);
+         }
+      }
+   } // anonymous namespace
 
       // Returns a string identifying this object.
    std::string CorrectObservables::getClassName() const
@@ -278,6 +333,24 @@ namespace gnsstk
             Triple dL1( dispL1 + L1PhaseCenter - L1Var );
             Triple dL2( dispL2 + L2PhaseCenter - L2Var );
             Triple dL5( dispL5 + L5PhaseCenter );
+
+               // Use system-specific receiver antenna calibrations
+            if (antenna.isValid())
+            {
+               const SatelliteSystem sys = it->first.system;
+               if (sys == SatelliteSystem::Galileo)
+               {
+                  dL1 = dispL1 + antennaPhaseCenter(antenna, Antenna::E01, Antenna::G01,
+                                                    usePCV, useAzimuth, *it->second);
+                  dL5 = dispL5 + antennaPhaseCenter(antenna, Antenna::E05, Antenna::G02,
+                                                    usePCV, useAzimuth, *it->second);
+               }
+               else if (sys == SatelliteSystem::GPS)
+               {
+                  dL5 = dispL5 + antennaPhaseCenter(antenna, Antenna::G05, Antenna::G02,
+                                                    usePCV, useAzimuth, *it->second);
+               }
+            }
             Triple dL6( dispL6 + L6PhaseCenter );
             Triple dL7( dispL7 + L7PhaseCenter );
             Triple dL8( dispL8 + L8PhaseCenter );
