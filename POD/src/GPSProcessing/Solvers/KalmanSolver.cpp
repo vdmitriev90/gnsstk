@@ -22,6 +22,10 @@ namespace pod
         TypeID::postfitC2,
         TypeID::postfitP1,
         TypeID::postfitP2,
+        TypeID::postfitC5,
+        TypeID::postfitC6,
+        TypeID::postfitC7,
+        TypeID::postfitC8,
         TypeID::postfitPC,
     };
 
@@ -30,6 +34,10 @@ namespace pod
         TypeID::postfitL,
         TypeID::postfitL1,
         TypeID::postfitL2,
+        TypeID::postfitL5,
+        TypeID::postfitL6,
+        TypeID::postfitL7,
+        TypeID::postfitL8,
         TypeID::postfitLC,
     };
 
@@ -84,8 +92,16 @@ namespace pod
 
         firstTime = false;
 
+        // keep a priori state: every iteration must start from it,
+        // otherwise the rejection pass would apply prediction and update twice
+        const Vector<double> solutionPrior = solution;
+        const Matrix<double> covMatrixPrior = covMatrix;
+
         for (int i = 0; i < 2; i++)
         {
+            solution = solutionPrior;
+            covMatrix = covMatrixPrior;
+
             // if number of satellies passed to processing is less than 'MIN_NUM_SV'
             // clear all SV data except observable
             if (gData.getBody().size() < minSatNumber)
@@ -153,10 +169,10 @@ namespace pod
             sigma = (numMeas > numPar) ? sqrt(vpv(0) / (numMeas - numPar)) : 0.0;
             phaseSigma = getSigma(phaseResTypes);
 
-            if (i == 0 && checkPhase(gData) == 0)
+            if (i > 0 || checkPhase(gData) == 0)
                 break;
-            else
-                DBOUT_LINE("Catched by residuals\n")
+
+            DBOUT_LINE("Catched by residuals\n")
         }
 
         equations->saveResiduals(gData, postfitResiduals);
