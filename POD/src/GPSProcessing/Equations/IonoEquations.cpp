@@ -67,6 +67,7 @@ namespace pod
         if (!attr.valid())
         {
             GNSSTK_ASSERT_MSG(false, "Unknown observation type in IonoEquations");
+            return;
         }
 
         FilterParameter param(eqType, ctx.sat);

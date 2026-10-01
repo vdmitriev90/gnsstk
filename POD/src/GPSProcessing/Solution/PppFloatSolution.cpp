@@ -132,7 +132,7 @@ namespace pod
 
 #pragma endregion
 
-        ComputeWeightSimple computeWeightSimple(2);
+        ComputeWeightSimple computeWeightSimple(2.0);
         // Objects to compute tidal effects
         SolidTides solid;
         PoleTides pole;
