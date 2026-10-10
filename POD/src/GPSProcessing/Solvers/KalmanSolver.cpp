@@ -41,6 +41,14 @@ namespace pod
         TypeID::postfitLC,
     };
 
+    // union of code and phase postfit residual TypeIDs
+    const std::set<gnsstk::TypeID> KalmanSolver::allResTypes = []
+    {
+        std::set<gnsstk::TypeID> s(codeResTypes);
+        s.insert(phaseResTypes.begin(), phaseResTypes.end());
+        return s;
+    }();
+
     // maximum time interval (in seconds) without data
     double KalmanSolver::maxGap = 61;
 

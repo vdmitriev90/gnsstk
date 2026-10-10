@@ -18,6 +18,9 @@ namespace pod
         static const std::set<gnsstk::TypeID> phaseResTypes;
 
       public:
+        // union of code and phase postfit residual TypeIDs
+        static const std::set<gnsstk::TypeID> allResTypes;
+
         // maximum time interval without data
         static double maxGap;
 

@@ -114,6 +114,15 @@ namespace pod
             return data_->opts;
         }
 
+        // creates GnssEpoch for output: all data if fullOutput is set, only residuals otherwise
+        GnssEpoch makeEpochToOutput(const gnsstk::SatTypePtrMap& body) const
+        {
+            GnssEpoch ep(body);
+            if (!opts().fullOutput)
+                ep.satData.keepOnlyTypeID(KalmanSolver::allResTypes);
+            return ep;
+        }
+
         virtual void updateRequaredObs() = 0;
 
         void printSolution(const KalmanSolver& slr,

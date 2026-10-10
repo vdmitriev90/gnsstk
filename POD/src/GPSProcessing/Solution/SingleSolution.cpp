@@ -158,7 +158,7 @@ namespace pod
                 {
                     solver.setMinSatNumber(min_sv_num);
                     rin_epoch >> solver;
-                    auto ep = opts().fullOutput ? GnssEpoch(rin_epoch.getBody()) : GnssEpoch();
+                    auto ep = makeEpochToOutput(rin_epoch.getBody());
                     // updateNomPos(solverFB);
                     printSolution(solver, t, ep);
                     gMap_.data.insert(std::make_pair(t, ep));
@@ -175,7 +175,7 @@ namespace pod
 
             while (solverFb.lastProcess(rin_epoch))
             {
-                auto ep = opts().fullOutput ? GnssEpoch(rin_epoch.getBody()) : GnssEpoch();
+                auto ep = makeEpochToOutput(rin_epoch.getBody());
                 // updateNomPos(solverFB);
                 printSolution(solverFb, rin_epoch.getHeader().epoch, ep);
                 gMap_.data.insert(std::make_pair(rin_epoch.getHeader().epoch, ep));

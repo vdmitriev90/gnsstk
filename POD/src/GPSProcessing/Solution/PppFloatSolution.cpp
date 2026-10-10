@@ -276,7 +276,7 @@ namespace pod
                 {
                     solver.setMinSatNumber(4 /*+ rin_epoch.getBody().getSatSystems().size()*/);
                     rin_epoch >> solver;
-                    auto ep = opts().fullOutput ? GnssEpoch(rin_epoch.getBody()) : GnssEpoch();
+                    auto ep = makeEpochToOutput(rin_epoch.getBody());
                     printSolution(solver, t, ep);
                     gMap_.data.insert(std::make_pair(t, ep));
                 }
@@ -295,16 +295,16 @@ namespace pod
             while (solverFb.lastProcess(rin_epoch))
             {
                 // fill GnssEpoch by IRinex object data
-                auto ep = opts().fullOutput ? GnssEpoch(rin_epoch.getBody()) : GnssEpoch();
+                GnssEpoch epoch_to_output = makeEpochToOutput(rin_epoch.getBody());
 
                 // update nominal position
                 apprPos().getPosition(rin_epoch, nominalPos_);
 
                 // fill GnssEpoch by filter state data
-                printSolution(solverFb, rin_epoch.getHeader().epoch, ep);
+                printSolution(solverFb, rin_epoch.getHeader().epoch, epoch_to_output);
 
                 // add epoch to map
-                gMap_.data.insert(std::make_pair(rin_epoch.getHeader().epoch, ep));
+                gMap_.data.insert(std::make_pair(rin_epoch.getHeader().epoch, epoch_to_output));
             }
             std::cout << "Measurments rejected: " << solverFb.rejectedMeasurements << std::endl;
         }
