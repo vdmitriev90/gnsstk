@@ -27,7 +27,6 @@ namespace pod
         }
 
         void compute(const GnssEpochMap& data, gnsstk::Vector<double>& sln, gnsstk::Matrix<double>& cov);
-
         int goodEpochs;
         int totalEpochs;
 

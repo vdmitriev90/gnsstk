@@ -57,6 +57,9 @@ namespace pod
         Vector<double> sln;
         Matrix<double> covar;
         rms_st.compute(gnss_data, sln, covar);
+        const double rms3d = sqrt(covar(0, 0) + covar(1, 1) + covar(2, 2));
+        std::cout << std::setprecision(3) << "3D RMS: " << std::setfill(' ') << rms3d << " m" << std::endl;
+
         int summ(0);
         double avgSvInView(0);
         double avgSvInUse(0);
@@ -72,7 +75,6 @@ namespace pod
         });
 
         // calculate 3D RMS
-        double rms3d = sqrt(covar(0, 0) + covar(1, 1) + covar(2, 2));
 
         std::ofstream wrt(out_path.string(), std::ostream::out | std::ostream::app);
         const std::string sep = ",";
