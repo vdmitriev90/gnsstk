@@ -64,8 +64,16 @@ namespace gnsstk
       /** This class computes the effect of solid Earth tides at a given
        * position and epoch.
        *
-       * The model used is the simple quadrupole response model described
-       * by J.G. Williams (1970).
+       * The model follows the IERS Conventions (2010), section 7.1.1
+       * (port of the IERS routine DEHANTTIDEINEL):
+       *  - Step 1: in-phase degree 2 (latitude dependent h2, l2) and
+       *    degree 3 corrections; out-of-phase diurnal and semidiurnal
+       *    corrections; latitude dependence corrections (l(1)).
+       *  - Step 2: frequency dependent corrections for diurnal band
+       *    (31 terms) and long-period band (5 terms).
+       *
+       * The permanent tide is NOT removed, i.e. the result corresponds
+       * to the "conventional tide free" system recommended by IERS.
        *
        * Given the limitations of the algorithms used to compute the Sun
        * and Moon positions, this class is limited to the period between
@@ -99,13 +107,51 @@ namespace gnsstk
       Triple getSolidTide(const CommonTime& t, const Position& p) const;
 
 
+         /** Returns the effect of solid Earth tides (meters) in ECEF frame
+          * according to IERS Conventions 2010.
+          *
+          * @param[in] xsta  Station position, ECEF [m]
+          * @param[in] xsun  Sun position, ECEF [m]
+          * @param[in] xmon  Moon position, ECEF [m]
+          * @param[in] T     Julian centuries of TT since J2000
+          * @param[in] fhr   Hours of UT in the day
+          */
+      static Triple dehantTideInel(const Triple& xsta,
+                                   const Triple& xsun,
+                                   const Triple& xmon,
+                                   double T,
+                                   double fhr);
+
+         /** Computes time arguments required by dehantTideInel().
+          *
+          * @param[in]  t    Epoch (GPS, GAL, QZS, IRN, BDT, UTC, TAI, TT)
+          * @param[out] T    Julian centuries of TT since J2000
+          * @param[out] fhr  Hours of UT (approximated by UTC) in the day
+          */
+      static void computeTimeArgs(const CommonTime& t, double& T, double& fhr);
+
    private:
 
-         /// Love numbers
-      static const double H_LOVE, L_LOVE;
+         /// Out-of-phase corrections induced by diurnal band
+      static Triple st1idiu(const Triple& xsta, const Triple& xsun,
+                            const Triple& xmon, double fac2sun,
+                            double fac2mon);
 
-         /// Phase lag
-      static const double PH_LAG;
+         /// Out-of-phase corrections induced by semidiurnal band
+      static Triple st1isem(const Triple& xsta, const Triple& xsun,
+                            const Triple& xmon, double fac2sun,
+                            double fac2mon);
+
+         /// Corrections induced by the latitude dependence of l(1)
+      static Triple st1l1(const Triple& xsta, const Triple& xsun,
+                          const Triple& xmon, double fac2sun,
+                          double fac2mon);
+
+         /// Frequency dependent corrections in the diurnal band
+      static Triple step2diu(const Triple& xsta, double fhr, double T);
+
+         /// Frequency dependent corrections in the long-period band
+      static Triple step2lon(const Triple& xsta, double T);
 
 
    }; // end class SolidTides

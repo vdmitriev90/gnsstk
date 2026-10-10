@@ -62,8 +62,8 @@
 namespace gnsstk
 {
 
-   //---------------------------------------------------------------------------------
-      /**
+    //---------------------------------------------------------------------------------
+    /**
        Compute the site displacement due to solid Earth tides for the given
        Position (assumed to be fixed to the solid Earth) at the given time,
        given the position of the site of interest, positions and mass ratios of
@@ -85,15 +85,16 @@ namespace gnsstk
        @return Displacement vector, ECEF XYZ in meters.
        @throw Exception
       */
-   Triple
-   computeSolidEarthTides(const Position& site, const EphTime& ttag,
-                          const Position& Sun, const Position& Moon,
-                          double EMRAT        = 81.30056,
-                          double SERAT        = 332946.050894783285912,
-                          const IERSConvention& iers = IERSConvention::IERS2010);
+    Triple computeSolidEarthTides(const Position& site,
+                                  const EphTime& ttag,
+                                  const Position& Sun,
+                                  const Position& Moon,
+                                  double EMRAT = 81.30056,
+                                  double SERAT = 332946.050894783285912,
+                                  const IERSConvention& iers = IERSConvention::IERS2010);
 
-   //---------------------------------------------------------------------------------
-      /**
+    //---------------------------------------------------------------------------------
+    /**
        Compute the site displacement due to rotational deformation due to polar
        motion for the given Position (assumed to fixed to the solid Earth) at
        the given time, given the polar motion angles at time
@@ -108,9 +109,11 @@ namespace gnsstk
        @return Displacement vector, ECEF XYZ in meters.
        @throw Exception
       */
-   Triple
-   computePolarTides(const Position& site, const EphTime& ttag, double xp, double yp,
-                     const IERSConvention& iers = IERSConvention::IERS2010);
+    Triple computePolarTides(const Position& site,
+                             const EphTime& ttag,
+                             double xp,
+                             double yp,
+                             const IERSConvention& iers = IERSConvention::IERS2010);
 
 } // end namespace gnsstk
 

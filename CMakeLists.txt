@@ -280,6 +280,10 @@ endif( )
 
 add_subdirectory( core )
 
+if( TEST_SWITCH AND BUILD_EXT )
+  add_subdirectory( ext/tests )
+endif()
+
 # keep cmake quiet
 set(PYTHON_VERSION_MAJOR 0)
 set(PYTHON_VERSION_MINOR 0)
