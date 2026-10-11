@@ -74,8 +74,6 @@ namespace pod
             }
         });
 
-        // calculate 3D RMS
-
         std::ofstream wrt(out_path.string(), std::ostream::out | std::ostream::app);
         const std::string sep = ",";
 
