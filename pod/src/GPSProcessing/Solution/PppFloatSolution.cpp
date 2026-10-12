@@ -133,6 +133,7 @@ namespace pod
         ComputeWeightSimple computeWeightSimple(2.0);
         // Objects to compute tidal effects
         TidalDisplacement tides(data_->eopStore);
+        tides.setUseOcean(true);
         // Configure ocean loading model
          tides.setOceanLoadingFile(opts().genericFilesDirectory + confReader().getValue("oceanLoadingFile"));
         const std::string sat_file = opts().genericFilesDirectory + confReader().getValue("satDataFile");

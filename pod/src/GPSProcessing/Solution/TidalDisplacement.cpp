@@ -55,8 +55,14 @@ namespace pod
 			updatePoleXY(t);
 			total = total + pole_.getPoleTide(t, p);
 		}
-		if (useOcean_)
-			total = total + ocean_.getOceanLoading(site, t);
+            if (useOcean_)
+        {
+                const auto oceanDisplacement = ocean_.getOceanLoading(site, t);
+            //std::cout << "Ocean loading displacement for site " << site << " at time " << t << ": "
+            //           << oceanDisplacement[0] << " m Up, " << oceanDisplacement[1] << " m East, "
+            //           << oceanDisplacement[2] << " m North" << std::endl;
+            total = total + oceanDisplacement;
+        }
 		return total;
 	}
 

@@ -166,6 +166,7 @@ namespace pod
 
         // Objects to compute tidal effects
         TidalDisplacement tides(data_->eopStore);
+        
         // Configure ocean loading model
         tides.setOceanLoadingFile(opts().genericFilesDirectory + confReader().getValue("oceanLoadingFile"));
         const std::string sat_file = opts().genericFilesDirectory + confReader().getValue("satDataFile");
