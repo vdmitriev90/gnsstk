@@ -29,16 +29,14 @@
 #include "NeillTropModel.hpp"
 #include "NumSatFilter.h"
 #include "ObservablesSets.h"
-#include "OceanLoading.hpp"
-#include "PoleTides.hpp"
 #include "PositionEquations.h"
 #include "PowerSum.hpp"
 #include "PrefitResCatcher.h"
 #include "SNRCatcher.h"
 #include "SatArcMarker.hpp"
 #include "ObsRangeFilter.h"
-#include "SolidTides.hpp"
 #include "SyncObs.h"
+#include "TidalDisplacement.h"
 #include "TropoEquations.h"
 #include "UsedInPvtMarker.hpp"
 #include "WinUtils.h"
@@ -167,11 +165,9 @@ namespace pod
 #pragma endregion
 
         // Objects to compute tidal effects
-        SolidTides solid;
-        PoleTides pole;
+        TidalDisplacement tides(data_->eopStore);
         // Configure ocean loading model
-        //OceanLoading ocean;
-        //ocean.setFilename(opts().genericFilesDirectory + confReader().getValue("oceanLoadingFile"));
+        tides.setOceanLoadingFile(opts().genericFilesDirectory + confReader().getValue("oceanLoadingFile"));
         const std::string sat_file = opts().genericFilesDirectory + confReader().getValue("satDataFile");
 
         ComputeWindUp windupBase(data_->navLibrary_, ref_base_pos, sat_file);
@@ -288,8 +284,6 @@ namespace pod
                 rin_epoch >> snrCatcherL1Rover;
                 rin_epoch >> markArcRover;
 
-                auto eop = data_->eopStore.getEOP(MJD(t).mjd, IERSConvention::IERS2010);
-                pole.setXY(eop.xp, eop.yp);
 
                 try
                 {
@@ -319,9 +313,7 @@ namespace pod
                     gRef >> grDelayBase;
                     gRef >> svPcenterBase;
 
-                    Triple tides(solid.getSolidTide(t, ref_base_pos) /*+ ocean.getOceanLoading(opts().SiteBase, t)*/
-                                 + pole.getPoleTide(t, ref_base_pos));
-                    corrBase.setExtraBiases(tides);
+                    corrBase.setExtraBiases(tides.getDisplacement(t, ref_base_pos, opts().SiteBase));
 
                     gRef >> corrBase;
                     gRef >> windupBase;
@@ -348,9 +340,7 @@ namespace pod
                 rin_epoch >> grDelayRover;
                 rin_epoch >> svPcenterRover;
 
-                Triple tides(solid.getSolidTide(t, nominalPos_) /*+ ocean.getOceanLoading(opts().SiteRover, t)*/
-                             + pole.getPoleTide(t, nominalPos_));
-                corrRover.setExtraBiases(tides);
+                corrRover.setExtraBiases(tides.getDisplacement(t, nominalPos_, opts().SiteRover));
                 rin_epoch >> corrRover;
 
                 rin_epoch >> windupRover;
