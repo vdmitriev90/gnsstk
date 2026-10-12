@@ -42,7 +42,6 @@
  */
 
 #include "PoleTides.hpp"
-#include "CivilTime.hpp"
 #include "MJD.hpp"
 
 
@@ -55,74 +54,45 @@ namespace gnsstk
        * @param[in]  t Epoch to look up
        * @param[in]  p Position of interest
        *
-       * @return a Triple with the pole tide effect, in meters and in
-       *    the UEN reference frame.
+       * @return Triple in meters: [0] = Up, [1] = East, [2] = North.
        *
-       * @throw InvalidRequest If the request can not be completed for
-       *    any reason, this is thrown. The text may have additional
-       *    information about the reason the request failed.
-       *
-       * @warning In order to use this method, you must have previously
-       *    set the current pole displacement parameters
-       *
+       * @throw InvalidRequest if pole coordinates have not been set.
        */
    Triple PoleTides::getPoleTide( const CommonTime& t,
-                                  const Position& p )
+                                  const Position& p ) const
    {
+         if (!xySet_)
+         {
+            InvalidRequest ir("PoleTides: pole coordinates (xp, yp) are not "
+                              "set; call setXY() first.");
+            GNSSTK_THROW(ir);
+         }
 
-         // We will store here the results
-      Triple res(0.0, 0.0, 0.0);
+         double xs(0.0), ys(0.0);
+         getSecularPole(t, xs, ys);
 
-         // Declare J2000 reference time: January 1st, 2000, at noon
-      const CivilTime j2000(2000, 1, 1, 12, 0, 0.0);
+            // Wobble variables, arcseconds (IERS 2010, Eq. 7.24)
+         const double m1(xdisp_ - xs);
+            // NOTE: the minus sign is intentional. IERS pole y-coordinate
+            // is positive toward 90 deg W longitude, whereas m2 is defined
+            // positive toward 90 deg E: m2 = -(yp - ys).
+         const double m2(-(ydisp_ - ys));
 
+            // IERS uses geocentric co-latitude theta and longitude lambda
+         const double theta((90.0 - p.geocentricLatitude()) * DEG_TO_RAD);
+         const double lambda(p.longitude() * DEG_TO_RAD);
 
-      try
-      {
+         const double sinlon(std::sin(lambda));
+         const double coslon(std::cos(lambda));
+         const double c1(m1*coslon + m2*sinlon);
 
-            // Get current position's latitude and longitude, in radians
-         double latitude(p.geodeticLatitude()*DEG_TO_RAD);
-         double longitude(p.longitude()*DEG_TO_RAD);
+            // IERS 2010, Eq. 7.26 (meters): radial, south (theta), east (lambda)
+         const double sr(-0.033 * std::sin(2.0*theta) * c1);
+         const double st(-0.009 * std::cos(2.0*theta) * c1);
+         const double sl(+0.009 * std::cos(theta) * (m1*sinlon - m2*coslon));
 
-            // Compute appropriate running averages
-            // Get time difference between current epoch and
-            // J2000.0, in years
-         double timedif(static_cast<double>((MJD(t).mjd - MJD(j2000).mjd)/365.25));
-
-         double xpbar(0.054 + timedif*0.00083);
-         double ypbar(0.357 + timedif*0.00395);
-
-            // Now, compute m1 and m2 parameters
-         double m1(xdisp-xpbar);
-         double m2(ypbar-ydisp);
-
-            // Now, compute some useful values
-         double sin2lat(std::sin(2.0*latitude));
-         double cos2lat(std::cos(2.0*latitude));
-         double sinlat(std::sin(latitude));
-         double sinlon(std::sin(longitude));
-         double coslon(std::cos(longitude));
-
-            // Finally, get the pole tide values, in UEN reference
-            // frame and meters
-         res[0] = -0.033 * sin2lat * ( m1*coslon + m2*sinlon );
-         res[1] = +0.009 * sinlat  * ( m1*sinlon - m2*coslon );
-         res[2] = -0.009 * cos2lat * ( m1*coslon + m2*sinlon );
-
-            // Please be aware that the former equations take into account
-            // that the IERS pole tide equations use CO-LATITUDE instead
-            // of LATITUDE. See Wahr, 1985.
-
-      } // End of try block
-      catch(...)
-      {
-
-         InvalidRequest ir("Unknown error when computing pole tides.");
-         GNSSTK_THROW(ir);
-
-      }
-
-      return res;
+            // Result order: [Up, East, North]; North = -S_theta
+         return Triple(sr, sl, -st);
 
    }  // End of method 'PoleTides::getPoleTide()'
 
@@ -139,12 +109,30 @@ namespace gnsstk
                                 const double& y )
    {
 
-      xdisp = x;
-      ydisp = y;
+      xdisp_ = x;
+      ydisp_ = y;
+      xySet_ = true;
 
       return (*this);
 
    }  // End of method 'PoleTides::setXY()'
+
+
+
+      /* Secular pole (IERS Conventions 2010, Chapter 7 updated 2018,
+       * Eq. 7.25): xs = 55.0 + 1.677*t mas, ys = 320.5 + 3.460*t mas,
+       * t in Julian years since J2000.0.
+       */
+   void PoleTides::getSecularPole( const CommonTime& t,
+                                   double& xs,
+                                   double& ys )
+   {
+      const double dt((MJD(t).mjd - 51544.5) / 365.25);
+
+      xs = (55.0 + 1.677 * dt) * 1.0e-3;
+      ys = (320.5 + 3.460 * dt) * 1.0e-3;
+
+   }  // End of method 'PoleTides::getSecularPole()'
 
 
 

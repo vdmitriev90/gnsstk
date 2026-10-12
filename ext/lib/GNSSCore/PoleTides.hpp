@@ -61,39 +61,35 @@ namespace gnsstk
       /// @ingroup GNSSsolutions
       //@{
 
-      /** This class computes the effect of pole tides, or more properly
-       *  called "rotational deformations due to polar motion", at a given
+      /** This class computes the effect of the solid Earth pole tide
+       *  ("rotational deformation due to polar motion") at a given
        *  position and epoch.
        *
-       *  The model used is the one proposed by the "International Earth
-       *  Rotation and Reference Systems Service" (IERS) in its upcomming
-       *  "IERS Conventions" document (Chapter 7), available at:
+       *  Model: IERS Conventions 2010 (IERS TN36), Chapter 7, Section
+       *  7.1.4, as updated by the IERS Conventions Centre (Chapter 7
+       *  update, 2018): displacement per Eq. 7.26 and the linear
+       *  "secular pole" (Eq. 7.25) as the reference pole:
        *
-       *  http://tai.bipm.org/iers/convupdt/convupdt.html
+       *  \li xs = 55.0 + 1.677 t  [mas]
+       *  \li ys = 320.5 + 3.460 t [mas], t in years since J2000.0
        *
-       *  The pole movement parameters x, y for a given epoch may be
-       *  found at:
+       *  https://iers-conventions.obspm.fr/chapter7.php
        *
-       *  ftp://hpiers.obspm.fr/iers/eop/eop.others
+       *  The pole coordinates x, y (arcseconds) are e.g. from IERS
+       *  EOP 20 C04 series.
        *
-       *  Maximum displacements because of this effect are:
+       *  Maximum displacements: about 25 mm vertical, 7 mm horizontal.
        *
-       *  \li Vertical:    2.5 cm
-       *  \li Horizontal:  0.7 cm
-       *
-       *  For additional information you may consult: Wahr, J.M., 1985,
-       *  "Deformation Induced by Polar Motion", Journal of Geophysical
-       *  Research, Vol. 90, No B11, p. 9363-9368.
-       *
-       *  @warning Please take into account that pole tide equations in
-       *  IERS document use co-latitude instead of latitude.
+       *  @note Ocean pole tide loading (Section 7.1.5) is not included.
        */
    class PoleTides
    {
    public:
 
-         /// Default constructor. Sets zero pole displacement
-      PoleTides() : xdisp(0.0), ydisp(0.0) {};
+         /** Default constructor. Pole coordinates are NOT set;
+          *  setXY() must be called before getPoleTide(t, p).
+          */
+      PoleTides() : xdisp_(0.0), ydisp_(0.0), xySet_(false) {};
 
 
          /** Common constructor
@@ -103,43 +99,35 @@ namespace gnsstk
           */
       PoleTides( const double& x,
                  const double& y )
-         : xdisp(x), ydisp(y) {};
+         : xdisp_(x), ydisp_(y), xySet_(true) {};
 
 
-         /** Returns the effect of pole tides (meters) at the given
-          *  position and epoch, in the Up-East-North (UEN) reference frame.
+         /** Returns the solid Earth pole tide displacement at the given
+          *  position and epoch.
           *
           * @param[in]  t Epoch to look up
           * @param[in]  p Position of interest
           *
-          * @return a Triple with the pole tide effect, in meters and in
-          *    the UEN reference frame.
+          * @return Triple in meters, component order:
+          *    [0] = Up, [1] = East, [2] = North.
           *
-          * @throw InvalidRequest If the request can not be completed for any
-          *    reason, this is thrown. The text may have additional
-          *    information about the reason the request failed.
-          *
-          * @warning In order to use this method, you must have previously
-          *    set the current pole displacement parameters.
-          *
+          * @throw InvalidRequest if pole coordinates have not been set
+          *    via the (x, y) constructor or setXY().
           */
       Triple getPoleTide( const CommonTime& t,
-                          const Position& p );
+                          const Position& p ) const;
 
 
-         /** Returns the effect of pole tides (meters) on the given
-          *  position, in the Up-East-North (UEN) reference frame.
+         /** Sets pole coordinates and returns the solid Earth pole tide
+          *  displacement at the given position and epoch.
           *
+          * @param[in] t Epoch to look up
           * @param[in] p Position of interest
-          * @param[in] x Pole displacement x, in arcseconds
-          * @param[in] y Pole displacement y, in arcseconds
+          * @param[in] x Pole coordinate x, in arcseconds
+          * @param[in] y Pole coordinate y, in arcseconds
           *
-          * @return a Triple with the pole tide effect, in meters and in
-          *    the UEN reference frame.
-          *
-          * @throw InvalidRequest If the request can not be completed for
-          *    any reason, this is thrown. The text may have additional
-          *    information about the reason the request failed.
+          * @return Triple in meters, component order:
+          *    [0] = Up, [1] = East, [2] = North.
           */
       Triple getPoleTide( const CommonTime& t,
                           const Position& p,
@@ -161,12 +149,20 @@ namespace gnsstk
 
          /// Method to get the x pole displacement parameter, in arcseconds
       double getX(void) const
-      { return xdisp; };
+      { return xdisp_; };
 
 
          /// Method to get the y pole displacement parameter, in arcseconds
       double getY(void) const
-      { return ydisp; };
+      { return ydisp_; };
+
+
+         /** Secular pole coordinates (IERS 2010 Ch. 7 update 2018,
+          *  Eq. 7.25), in arcseconds.
+          */
+      static void getSecularPole( const CommonTime& t,
+                                  double& xs,
+                                  double& ys );
 
 
          /// Destructor
@@ -177,11 +173,15 @@ namespace gnsstk
 
 
          /// Pole displacement x, in arcseconds
-      double xdisp;
+      double xdisp_;
 
 
          /// Pole displacement y, in arcseconds
-      double ydisp;
+      double ydisp_;
+
+
+         /// True once pole coordinates have been explicitly set
+      bool xySet_;
 
 
    }; // End of class 'PoleTides'
