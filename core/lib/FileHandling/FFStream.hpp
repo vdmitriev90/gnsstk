@@ -47,6 +47,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <typeinfo>
 
@@ -203,6 +204,9 @@ namespace gnsstk
    private:
          /// Initialize internal data structures according to file name & mode
       void init(const char* fn, std::ios::openmode mode);
+
+         /// In-memory copy of the file contents used for read-only streams.
+      std::stringbuf memBuf;
 
    }; // End of class 'FFStream'
 

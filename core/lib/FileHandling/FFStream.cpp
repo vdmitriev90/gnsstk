@@ -107,7 +107,24 @@ namespace gnsstk
          // classes typically will want to do their initialization
          // AFTER the parent.
       init(fn, mode);
+      std::ios::rdbuf(std::fstream::rdbuf());
       std::fstream::open(fn, mode);
+         // For read-only streams, load the whole file into memory and
+         // read from that buffer.  This makes tellg()/seekg() cheap
+         // (no C runtime fseek/fgetpos call per record).
+      if (is_open() &&
+          ((mode & (std::ios::in | std::ios::out | std::ios::app |
+                    std::ios::trunc | std::ios::ate)) == std::ios::in))
+      {
+         std::ostringstream contents;
+         if (std::fstream::rdbuf()->in_avail() != 0 ||
+             std::fstream::rdbuf()->sgetc() != std::char_traits<char>::eof())
+         {
+            contents << std::fstream::rdbuf();
+         }
+         memBuf.str(contents.str());
+         std::ios::rdbuf(&memBuf);
+      }
    }  // End of method 'FFStream::open()'
 
 
