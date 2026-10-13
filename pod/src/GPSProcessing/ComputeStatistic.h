@@ -6,15 +6,14 @@
 
 namespace pod
 {
-    class ComputeStatistic
+    class PositionStatistic
     {
-
       public:
-        // method to compute correlation matrix from variance-covariance one
-        static gnsstk::Matrix<double> corrMatrix(const gnsstk::Matrix<double>& covar);
-
-        ComputeStatistic(SlnType st, gnsstk::TypeIDSet tIDs) : slnType(st), types(tIDs), goodEpochs(0) {};
-        ~ComputeStatistic() {};
+        PositionStatistic(SlnType st, gnsstk::TypeIDSet tIDs)
+            : slnType(st)
+            , types(tIDs)
+            , goodEpochs(0)
+            , totalEpochs(0) {};
 
         SlnType getSlnType()
         {
@@ -27,12 +26,15 @@ namespace pod
         }
 
         void compute(const GnssEpochMap& data, gnsstk::Vector<double>& sln, gnsstk::Matrix<double>& cov);
+        double getHorStdDev() const;
+        double getVertStdDev() const;
         int goodEpochs;
         int totalEpochs;
 
       private:
         SlnType slnType;
         gnsstk::TypeIDSet types;
+        gnsstk::Matrix<double> covarNEU;
     };
 
     class PostfitResidualStatistic
@@ -66,14 +68,47 @@ namespace pod
             return galStat;
         }
 
-      private:
-        void updateStatistic(const std::vector<double>& values, Statistic& stat);
+        static void updateStatistic(const std::vector<double>& values, Statistic& stat);
 
+      private:
         gnsstk::TypeID residualType;
 
         Statistic gpsStat;
         Statistic gloStat;
         Statistic galStat;
+    };
+
+    class ElevationResidualStatistic
+    {
+      public:
+        struct Bin
+        {
+            double minElev = 0.0;
+            double maxElev = 0.0;
+            PostfitResidualStatistic::Statistic gps;
+            PostfitResidualStatistic::Statistic glo;
+            PostfitResidualStatistic::Statistic gal;
+        };
+
+        explicit ElevationResidualStatistic(gnsstk::TypeID type = gnsstk::TypeID::postfitLC,
+                                            double minElevation = 5.0,
+                                            double maxElevation = 90.0,
+                                            double step = 10.0);
+
+        void compute(const GnssEpochMap& data);
+
+        const std::vector<Bin>& bins() const
+        {
+            return binList;
+        }
+
+        void print(std::ostream& os, const std::string& title = "LC") const;
+
+      private:
+        gnsstk::TypeID residualType;
+        double minElev;
+        double step;
+        std::vector<Bin> binList;
     };
 
     class PostfitResidualStatistics
@@ -82,12 +117,13 @@ namespace pod
         {
             std::string name;
             PostfitResidualStatistic statistic;
+            ElevationResidualStatistic elevStatistic;
 
-            Item(const std::string& n, gnsstk::TypeID type) : name(n), statistic(type) {}
+            Item(const std::string& n, gnsstk::TypeID type) : name(n), statistic(type), elevStatistic(type) {}
         };
 
       public:
-        PostfitResidualStatistics()
+        explicit PostfitResidualStatistics(bool withElevation = false) : elevationEnabled(withElevation)
         {
             add("PC", gnsstk::TypeID::postfitPC);
 
@@ -114,28 +150,31 @@ namespace pod
             for (auto& item : stats)
             {
                 item.statistic.compute(data);
+                if (elevationEnabled)
+                    item.elevStatistic.compute(data);
             }
         }
 
         void print(std::ostream& os) const
         {
-        auto printStat =
-            [&os](const std::string& title, const PostfitResidualStatistic::Statistic& s)
-        {
+            auto printStat = [&os](const std::string& title, const PostfitResidualStatistic::Statistic& s) {
                 if (s.count == 0)
                     return;
 
                 os << std::left << std::setw(12) << title << " N=" << std::setw(8) << s.count
-                   << " Mean=" << std::setw(12) << s.mean 
-                   << " Std=" << std::setw(12) << s.stddev << '\n';
-        };
+                   << " Mean=" << std::setw(12) << s.mean << " Std=" << std::setw(12) << s.stddev << '\n';
+            };
 
-        for (const auto& item : stats)
-        {
+            for (const auto& item : stats)
+            {
                 printStat(item.name + "_GPS", item.statistic.gps());
                 printStat(item.name + "_GLO", item.statistic.glo());
                 printStat(item.name + "_GAL", item.statistic.gal());
-        }
+            }
+
+            if (elevationEnabled)
+                for (const auto& item : stats)
+                    item.elevStatistic.print(os, item.name);
         }
 
       private:
@@ -145,6 +184,7 @@ namespace pod
         }
 
         std::vector<Item> stats;
+        bool elevationEnabled;
     };
 
 } // namespace pod

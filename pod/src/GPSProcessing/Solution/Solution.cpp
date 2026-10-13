@@ -48,17 +48,17 @@ namespace pod
         fs::path out_path(data->opts.workingDir / file_name / ".txt");
 
         TypeIDSet typeSet{TypeID::recX, TypeID::recY, TypeID::recZ};
-        ComputeStatistic rms_st(solver.desiredSlnType(), typeSet);
+        PositionStatistic rms_st(solver.desiredSlnType(), typeSet);
 
-        PostfitResidualStatistics postfit_stat;
+        PostfitResidualStatistics postfit_stat(false);
         postfit_stat.compute(gnss_data);
         postfit_stat.print(std::cout);
 
         Vector<double> sln;
         Matrix<double> covar;
         rms_st.compute(gnss_data, sln, covar);
-        const double rms3d = sqrt(covar(0, 0) + covar(1, 1) + covar(2, 2));
-        std::cout << std::setprecision(3) << "3D RMS: " << std::setfill(' ') << rms3d << " m" << std::endl;
+        std::cout << std::setprecision(3) << "SdtDev Hor: " << rms_st.getHorStdDev() << " Vert: "
+                  << rms_st.getVertStdDev() << std::endl;
 
         int summ(0);
         double avgSvInView(0);
@@ -92,21 +92,8 @@ namespace pod
             << avgSvInUse / summ << sep;
 
         // print rms3d
-        wrt << std::fixed << std::scientific << std::setprecision(3) << std::setfill(' ') << rms3d << sep;
-
-        // compute corr. matrix
-        const auto corr = ComputeStatistic::corrMatrix(covar);
-        // print std.dev.
-        for (size_t i = 0; i < covar.rows(); i++)
-            wrt << std::fixed << std::scientific << std::setprecision(4) << std::setfill(' ') << sqrt(covar(i, i))
-                << sep;
-
-        // print correlation coeff.: xx,xz,yz
-        for (size_t i = 0; i < corr.rows(); i++)
-            for (size_t j = 0; j < i; j++)
-                wrt << std::fixed << std::scientific << std::setprecision(4) << std::setfill(' ') << corr(i, j) << sep;
-
-        wrt << std::endl;
+        const double rms3d = sqrt(covar(0, 0) + covar(1, 1) + covar(2, 2));
+        wrt << std::fixed << std::scientific << std::setprecision(3) << std::setfill(' ') << rms3d << std::endl;
     }
 
     void Solution::saveToDb()
