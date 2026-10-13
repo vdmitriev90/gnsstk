@@ -43,6 +43,8 @@
 #include "ComputeSatPCenter.hpp"
 
 #include <array>
+#include <cstdio>
+#include <memory>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
@@ -384,11 +386,43 @@ namespace pod
             return 0.0;
         }
 
-        std::ostringstream satelliteName;
+        // Build the satellite antenna library on first use (single file pass)
+        if (!libraryLoaded)
+        {
+            for (const Antenna& a : pAntexReader->getAllSatelliteAntennas())
+            {
+                antennaLibrary[a.getAntennaSerial()].push_back(a);
+            }
+            libraryLoaded = true;
+        }
 
-        satelliteName << prefix << std::setw(2) << std::setfill('0') << satid.id;
+        char name[16];
+        std::snprintf(name, sizeof(name), "%c%02d", prefix, satid.id);
 
-        const Antenna antenna(pAntexReader->getAntenna(satelliteName.str(), time));
+        const Antenna* selected = nullptr;
+        const auto lib = antennaLibrary.find(name);
+        if (lib != antennaLibrary.end())
+        {
+            // Same rule as AntexReader: latest 'valid from' interval containing the epoch
+            for (const Antenna& a : lib->second)
+            {
+                if (time >= a.getAntennaValidFrom() && time <= a.getAntennaValidUntil() &&
+                    (selected == nullptr || a.getAntennaValidFrom() > selected->getAntennaValidFrom()))
+                {
+                    selected = &a;
+                }
+            }
+        }
+
+        // Not in the library: fall back to the reader (keeps original behaviour/exceptions)
+        std::unique_ptr<Antenna> fallback;
+        if (selected == nullptr)
+        {
+            fallback = std::make_unique<Antenna>(pAntexReader->getAntenna(name, time));
+            selected = fallback.get();
+        }
+
+        const Antenna& antenna = *selected;
 
         // Both PCO and PCV are selected for the requested frequency.
         Triple satAnt = antenna.getAntennaEccentricity(frequency);

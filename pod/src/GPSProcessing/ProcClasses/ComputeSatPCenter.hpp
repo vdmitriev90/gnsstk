@@ -54,8 +54,10 @@
 #include "Triple.hpp"
 
 #include <cmath>
+#include <map>
 #include <sstream>
 #include <string>
+#include <vector>
 
 namespace pod
 {
@@ -237,6 +239,8 @@ namespace pod
         virtual ComputeSatPCenter& setAntexReader(gnsstk::AntexReader& antexObj)
         {
             pAntexReader = &antexObj;
+            antennaLibrary.clear();
+            libraryLoaded = false;
             return (*this);
         };
 
@@ -309,7 +313,13 @@ namespace pod
         /// Pointer to object containing satellite antenna data, if available.
         gnsstk::AntexReader* pAntexReader;
 
-    }; // End of class 'ComputeSatPCenter'
+        /// Satellite antennas already extracted from the Antex file
+        std::map<std::string, std::vector<gnsstk::Antenna>> antennaLibrary;
+
+        /// True once the satellite antenna library has been built
+        bool libraryLoaded = false;
+
+    };
 
     //@}
 

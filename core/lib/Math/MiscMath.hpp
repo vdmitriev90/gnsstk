@@ -104,25 +104,22 @@ namespace gnsstk
 
       std::size_t i,j,k;
       T y,del;
-      std::vector<T> D,Q;
+      const std::size_t N = X.size();
+      std::vector<T> D(Y.begin(), Y.begin()+N), Q(Y.begin(), Y.begin()+N);
 
       err = T(0);
       k = X.size()/2;
       if(x == X[k]) return Y[k];
       if(x == X[k-1]) return Y[k-1];
       if(ABS(x-X[k-1]) < ABS(x-X[k])) k=k-1;
-      for(i=0; i<X.size(); i++) {
-         Q.push_back(Y[i]);
-         D.push_back(Y[i]);
-      }
       y = Y[k--];
-      for(j=1; j<X.size(); j++) {
-         for(i=0; i<X.size()-j; i++) {
+      for(j=1; j<N; j++) {
+         for(i=0; i<N-j; i++) {
             del = (Q[i+1]-D[i])/(X[i]-X[i+j]);
             D[i] = (X[i+j]-x)*del;
             Q[i] = (X[i]-x)*del;
          }
-         err = (2*(k+1) < X.size()-j ? Q[k+1] : D[k--]);    // NOT 2*k
+         err = (2*(k+1) < N-j ? Q[k+1] : D[k--]);
          y += err;
       }
       return y;
@@ -160,28 +157,36 @@ namespace gnsstk
 
       std::size_t i,j,k,N=X.size(),M;
       M = (N*(N+1))/2;
-      std::vector<T> P(N,T(1)),Q(M,T(1)),D(N,T(1));
+      std::vector<T> P(N,T(1)),Q(M,T(1)),D(N,T(1)),dx(N);
+      for(k=0; k<N; k++) dx[k] = x-X[k];
       for(i=0; i<N; i++) {
+         const T Xi = X[i];
+         T Pi(1), Di(1);
          for(j=0; j<N; j++) {
             if(i != j) {
-               P[i] *= x-X[j];
-               D[i] *= X[i]-X[j];
+               Pi *= dx[j];
+               Di *= Xi-X[j];
                if(i < j) {
+                  T q(1);
                   for(k=0; k<N; k++) {
                      if(k == i || k == j) continue;
-                     Q[i+(j*(j+1))/2] *= (x-X[k]);
+                     q *= dx[k];
                   }
+                  Q[i+(j*(j+1))/2] = q;
                }
             }
          }
+         P[i] = Pi;
+         D[i] = Di;
       }
       y = dydx = T(0);
       for(i=0; i<N; i++) {
-         y += Y[i]*(P[i]/D[i]);
+         const T Di = D[i];
+         y += Y[i]*(P[i]/Di);
          T S(0);
          for(k=0; k<N; k++) if(i != k) {
-               if(k<i) S += Q[k+(i*(i+1))/2]/D[i];
-               else    S += Q[i+(k*(k+1))/2]/D[i];
+               if(k<i) S += Q[k+(i*(i+1))/2]/Di;
+               else    S += Q[i+(k*(k+1))/2]/Di;
             }
          dydx += Y[i]*S;
       }

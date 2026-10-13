@@ -41,6 +41,7 @@
  */
 
 #include "AntexReader.hpp"
+#include <cctype>
 #include "CivilTime.hpp"
 
 
@@ -1245,27 +1246,24 @@ namespace gnsstk
       Antenna antenna;
 
 
-         // We need to read the data stream (file) from the beginning
-      FFTextStream::open( fileName.c_str(), std::ios::in );
+         const string uSerial( strip( upperCase( serial ) ) );
 
-      const string uSerial( strip( upperCase( serial ) ) );
-
-         // Getting antennas out of Antex file is a costly process, so this
-         // object will keep a "buffer" called 'antennaMap' where all antennas
-         // previously looked up are stored.
-         // Then, let's look first into this "buffer"
-      AntennaDataMap::const_iterator it1( antennaMap.begin() );
-      while( !antennaFound &&
-             it1 != antennaMap.end() )
-      {
-
-         RSCalValAntMap::const_iterator it2( (*it1).second.begin() );
-
+            // Getting antennas out of Antex file is a costly process, so this
+            // object will keep a "buffer" called 'antennaMap' where all antennas
+            // previously looked up are stored.
+            // Then, let's look first into this "buffer"
+         AntennaDataMap::const_iterator it1( antennaMap.begin() );
          while( !antennaFound &&
-                it2 != (*it1).second.end() )
+                it1 != antennaMap.end() )
          {
 
-               // Look for the serial
+            RSCalValAntMap::const_iterator it2( (*it1).second.begin() );
+
+            while( !antennaFound &&
+                   it2 != (*it1).second.end() )
+            {
+
+                  // Look for the serial
             SerCalValAntMap::const_iterator it3( (*it2).second.find(uSerial) );
 
             if( it3 != (*it2).second.end() )
@@ -1320,6 +1318,10 @@ namespace gnsstk
          // Antenna is not in 'antennaMap': Let's look for it in file
       if( !antennaFound )
       {
+
+            // We need to read the data stream (file) from the beginning,
+            // but only when the antenna is not buffered
+         FFTextStream::open( fileName.c_str(), std::ios::in );
 
             // Antenna is not in 'antennaMap': Let's look for it in file
          try
@@ -1479,6 +1481,65 @@ namespace gnsstk
       }
 
    }  // End of method 'AntexReader::isAbsolute()'
+
+
+
+      // Reads the whole file once and returns all satellite antennas.
+   std::vector<Antenna> AntexReader::getAllSatelliteAntennas()
+   {
+      std::vector<Antenna> result;
+
+      FFTextStream::open( fileName.c_str(), std::ios::in );
+
+      try
+      {
+         std::string label;
+         std::string line;
+
+         while( true )
+         {
+            label.clear();
+
+            while( label != typeSerial )
+            {
+               formattedGetLine(line, true);
+               label = strip( line.substr(60,20) );
+            }
+
+            const string serial( strip( line.substr(20,20) ) );
+
+            const bool isSatellite = serial.size() >= 3 &&
+               ( serial[0] == 'G' || serial[0] == 'R' || serial[0] == 'E' ) &&
+               std::isdigit( static_cast<unsigned char>(serial[1]) ) &&
+               std::isdigit( static_cast<unsigned char>(serial[2]) );
+
+            if( isSatellite )
+            {
+               result.push_back( fillAntennaData( line ) );
+            }
+         }
+      }
+      catch( EndOfFile& )
+      {
+            // Normal termination: the whole file was scanned
+      }
+      catch( ... )
+      {
+         if( is_open() )
+         {
+            (*this).close();
+         }
+         throw;
+      }
+
+      if( is_open() )
+      {
+         (*this).close();
+      }
+
+      return result;
+
+   }  // End of method 'AntexReader::getAllSatelliteAntennas()'
 
 
 

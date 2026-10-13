@@ -45,6 +45,7 @@
 
 #include <string>
 #include <map>
+#include <vector>
 
 #include "Exception.hpp"
 #include "FFTextStream.hpp"
@@ -302,6 +303,13 @@ namespace gnsstk
 
          /// Returns if loaded antenna data file is absolute or relative.
       bool isAbsolute() const;
+
+
+         /** Reads the Antex file once and returns all satellite antennas
+          *  (serials like G01, R01, E01) found in it, with every validity
+          *  interval.
+          */
+      std::vector<Antenna> getAllSatelliteAntennas();
 
 
          /// This methods dumps all data in Antex file header.

@@ -1020,7 +1020,8 @@ namespace gnsstk
       DEBUGTRACE_FUNCTION();
       DEBUGTRACE("start interpolating ephemeris, distance = "
                  << std::distance(ti1,ti3));
-      std::vector<double> tdata(2*halfOrderPos);
+      const unsigned N = 2*halfOrderPos;
+      std::vector<double> tdata(N);
       std::vector<std::vector<double>> posData(3), posSigData(3), velData(3),
          velSigData(3), accData(3), accSigData(3);
       CommonTime firstTime(ti1->second->timeStamp);
@@ -1033,14 +1034,12 @@ namespace gnsstk
          // posData etc are 2D arrays, where the first dimension
          // is positional, x=0,y=1,z=2 and the 2nd dimension is
          // the data index for the fit.
+         // Velocity and acceleration arrays are only allocated and
+         // filled once non-zero data is encountered.
       for (unsigned i = 0; i < 3; i++)
       {
-         posData[i].resize(2*halfOrderPos);
-         posSigData[i].resize(2*halfOrderPos);
-         velData[i].resize(2*halfOrderPos);
-         velSigData[i].resize(2*halfOrderPos);
-         accData[i].resize(2*halfOrderPos);
-         accSigData[i].resize(2*halfOrderPos);
+         posData[i].resize(N);
+         posSigData[i].resize(N);
       }
       DEBUGTRACE("resized");
       bool haveVel = false, haveAcc = false;
@@ -1057,19 +1056,62 @@ namespace gnsstk
          // ti2->second->dump(cerr, DumpDetail::Full);
          for (unsigned i = 0; i < 3; i++)
          {
-            DEBUGTRACE("i=" << i);
-            DEBUGTRACE(posData.size() << " " << velData.size() << " "
-                       << accData.size());
-            DEBUGTRACE(nav->pos.size() << " " << nav->vel.size() << " "
-                       << nav->acc.size());
             posData[i][idx] = nav->pos[i];
-            velData[i][idx] = nav->vel[i];
-            accData[i][idx] = nav->acc[i];
             posSigData[i][idx] = nav->posSig[i];
-            velSigData[i][idx] = nav->velSig[i];
-            accSigData[i][idx] = nav->accSig[i];
-            haveVel |= (nav->vel[i] != 0.0);
-            haveAcc |= (nav->acc[i] != 0.0);
+         }
+         if (!haveVel && (nav->vel[0] != 0.0 || nav->vel[1] != 0.0 ||
+                          nav->vel[2] != 0.0))
+         {
+            haveVel = true;
+            unsigned j = 0;
+            for (unsigned i = 0; i < 3; i++)
+            {
+               velData[i].resize(N);
+               velSigData[i].resize(N);
+            }
+               // back-fill sigmas of earlier epochs (velocities were 0)
+            for (NavMap::iterator tj = ti1; tj != ti2; ++tj, ++j)
+            {
+               OrbitDataSP3 *prev = dynamic_cast<OrbitDataSP3*>(
+                  tj->second.get());
+               for (unsigned i = 0; i < 3; i++)
+                  velSigData[i][j] = prev->velSig[i];
+            }
+         }
+         if (!haveAcc && (nav->acc[0] != 0.0 || nav->acc[1] != 0.0 ||
+                          nav->acc[2] != 0.0))
+         {
+            haveAcc = true;
+            unsigned j = 0;
+            for (unsigned i = 0; i < 3; i++)
+            {
+               accData[i].resize(N);
+               accSigData[i].resize(N);
+            }
+               // back-fill sigmas of earlier epochs (accelerations were 0)
+            for (NavMap::iterator tj = ti1; tj != ti2; ++tj, ++j)
+            {
+               OrbitDataSP3 *prev = dynamic_cast<OrbitDataSP3*>(
+                  tj->second.get());
+               for (unsigned i = 0; i < 3; i++)
+                  accSigData[i][j] = prev->accSig[i];
+            }
+         }
+         if (haveVel)
+         {
+            for (unsigned i = 0; i < 3; i++)
+            {
+               velData[i][idx] = nav->vel[i];
+               velSigData[i][idx] = nav->velSig[i];
+            }
+         }
+         if (haveAcc)
+         {
+            for (unsigned i = 0; i < 3; i++)
+            {
+               accData[i][idx] = nav->acc[i];
+               accSigData[i][idx] = nav->accSig[i];
+            }
          }
       }
       double dt = when - firstTime, err;
@@ -1084,10 +1126,16 @@ namespace gnsstk
             DEBUGTRACE("i=" << i << " times=" << tdata[i]);
             DEBUGTRACE("P=" << posData[0][i] << " " << posData[1][i] << " "
                        << posData[2][i]);
-            DEBUGTRACE("V=" << velData[0][i] << " " << velData[1][i] << " "
-                       << velData[2][i]);
-            DEBUGTRACE("A=" << accData[0][i] << " " << accData[1][i] << " "
-                       << accData[2][i]);
+            if (haveVel)
+            {
+               DEBUGTRACE("V=" << velData[0][i] << " " << velData[1][i] << " "
+                          << velData[2][i]);
+            }
+            if (haveAcc)
+            {
+               DEBUGTRACE("A=" << accData[0][i] << " " << accData[1][i] << " "
+                          << accData[2][i]);
+            }
          }
       }
       DEBUGTRACE("haveVelocity=" << haveVel << "  haveAcceleration="
@@ -1141,10 +1189,6 @@ namespace gnsstk
                        << velSigData[i][Nhi]);
             DEBUGTRACE("         sigV[" << i << "][" << Nlow << "] = "
                        << velSigData[i][Nlow]);
-            DEBUGTRACE("         sigA[" << i << "][" << Nhi << "] = "
-                       << accSigData[i][Nhi]);
-            DEBUGTRACE("         sigA[" << i << "][" << Nlow << "] = "
-                       << accSigData[i][Nlow]);
             if (!isExact)
             {
                osp3->posSig[i] = RSS(posSigData[i][halfOrderPos-1],
@@ -1152,9 +1196,6 @@ namespace gnsstk
                osp3->velSig[i] = RSS(velSigData[i][halfOrderPos-1],
                                      velSigData[i][halfOrderPos]);
             }
-            DEBUGTRACE("2 RSS(posSigData[" << i << "][" << (halfOrderPos-1)
-                       << "],posSigData[" << i << "][" << halfOrderPos
-                       << "]) = " << osp3->posSig[i]);
          }
          else
          {
