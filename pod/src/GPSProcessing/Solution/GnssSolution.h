@@ -47,13 +47,9 @@ namespace pod
       public:
         static std::ostream& printMsg(const gnsstk::CommonTime& time, const char* msg);
 
-#pragma region Constructors
+        GnssSolution(GnssDataStorePtr dataStore, double maxsigma = 50.0);
 
-        GnssSolution(GnssDataStorePtr dataStore, double maxsigma);
-
-        virtual ~GnssSolution();
-
-#pragma endregion
+        virtual ~GnssSolution() = default;
 
 #pragma region Methods
 
@@ -115,13 +111,7 @@ namespace pod
         }
 
         // creates GnssEpoch for output: all data if fullOutput is set, only residuals otherwise
-        GnssEpoch makeEpochToOutput(const gnsstk::SatTypePtrMap& body) const
-        {
-            GnssEpoch ep(body);
-            if (!opts().fullOutput)
-                ep.satData.keepOnlyTypeID(KalmanSolver::allResTypes);
-            return ep;
-        }
+        GnssEpoch makeEpochToOutput(const gnsstk::SatTypePtrMap& body) const;
 
         virtual void updateRequaredObs() = 0;
 

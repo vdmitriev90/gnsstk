@@ -12,14 +12,13 @@ namespace pod
         return (std::cout << "Epoch: " << CivilTime(time).asString() << " " << msg << std::endl);
     }
 
-    GnssSolution::GnssSolution(GnssDataStorePtr gnssData, double sigma = 50.0)
+    GnssSolution::GnssSolution(GnssDataStorePtr gnssData, double sigma)
         : data_(gnssData)
         , equations_(std::make_shared<EquationComposer>(config_))
         , maxSigma_(sigma)
+        , forwardBackwardCycles_(0)
     {
     }
-
-    GnssSolution::~GnssSolution() {}
 
     void GnssSolution::computeAndStoreSolution(const KalmanSolver& solver, GnssEpoch& gEpoch) const
     {
@@ -51,8 +50,8 @@ namespace pod
     }
 
     void GnssSolution::storeReceiverParams(const KalmanSolver& solver,
-                                            const FilterParameter& param,
-                                            GnssEpoch& gEpoch) const
+                                           const FilterParameter& param,
+                                           GnssEpoch& gEpoch) const
     {
         if (param.type == TypeID::cdt)
             gEpoch.slnData[TypeID::recCdt] = solver.getSolution(param);
@@ -70,9 +69,27 @@ namespace pod
                                             const FilterParameter& param,
                                             GnssEpoch& gEpoch) const
     {
+        if (!this->data_->opts.fullOutput)
+            return;
+
         const double amb = solver.getSolution(param);
         if (amb != 0)
             gEpoch.satData[param.sv][param.type] = amb;
+    }
+
+    // creates GnssEpoch for output: all data if fullOutput is set, only residuals otherwise
+    GnssEpoch GnssSolution::makeEpochToOutput(const gnsstk::SatTypePtrMap& body) const
+    {
+        const static std::set<TypeID> resTypes = []() {
+            std::set<TypeID> s(KalmanSolver::allResTypes);
+            s.insert(TypeID::elevation);
+            return s;
+        }();
+
+        GnssEpoch ep(body);
+        if (!opts().fullOutput)
+            ep.satData.keepOnlyTypeID(resTypes);
+        return ep;
     }
 
     void GnssSolution::printSolution(const KalmanSolver& solver,
@@ -99,8 +116,7 @@ namespace pod
 
     std::string FileNameBuilder::getFileName() const
     {
-        return isDifferential(solution_.desiredSlnType()) ? buildWithBaseAndRover()
-                                                          : buildRoverOnly();
+        return isDifferential(solution_.desiredSlnType()) ? buildWithBaseAndRover() : buildRoverOnly();
     }
 
     std::string FileNameBuilder::buildWithBaseAndRover() const
