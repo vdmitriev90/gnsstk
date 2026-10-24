@@ -1,7 +1,7 @@
 # pod/CMakeLists.txt
 
-file( GLOB_RECURSE POD_SOURCE_FILES "src/*.cpp" "src/*.c" )
-file( GLOB_RECURSE POD_INC_FILES "src/*.h" "src/*.hpp" )
+file( GLOB_RECURSE POD_SOURCE_FILES CONFIGURE_DEPENDS "src/*.cpp" "src/*.c" )
+file( GLOB_RECURSE POD_INC_FILES CONFIGURE_DEPENDS "src/*.h" "src/*.hpp" )
 
 set( POD_INC_DIRS "" )
 
@@ -22,6 +22,12 @@ target_compile_features(pod PUBLIC cxx_std_23)
 target_link_libraries(pod  gnsstk)
 target_link_libraries(pod  SOFA)
 target_link_libraries(pod sqlite)
+
+add_executable(pod_tests tests/DatabaseTests.cpp)
+target_compile_features(pod_tests PRIVATE cxx_std_23)
+target_link_libraries(pod_tests pod)
+enable_testing()
+add_test(NAME pod_tests COMMAND pod_tests)
 
 
 find_package(Python3 REQUIRED)

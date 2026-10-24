@@ -8,7 +8,6 @@
 #include "KalmanSolver.h"
 #include "ProcessLinear.h"
 #include "RequireObservables.hpp"
-#include "SQLiteAdapter.h"
 #include "SatelliteSystem.hpp"
 #include "CommonEnums.h"
 

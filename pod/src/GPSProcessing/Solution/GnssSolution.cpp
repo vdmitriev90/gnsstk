@@ -2,6 +2,7 @@
 
 #include "KalmanSolver.h"
 #include "PowerSum.hpp"
+#include "TimeUtils.h"
 
 using namespace gnsstk;
 
@@ -116,7 +117,9 @@ namespace pod
 
     std::string FileNameBuilder::getFileName() const
     {
-        return isDifferential(solution_.desiredSlnType()) ? buildWithBaseAndRover() : buildRoverOnly();
+        const std::string name =
+            isDifferential(solution_.desiredSlnType()) ? buildWithBaseAndRover() : buildRoverOnly();
+        return name + "_" + currentDateStr();
     }
 
     std::string FileNameBuilder::buildWithBaseAndRover() const

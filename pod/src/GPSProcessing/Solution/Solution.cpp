@@ -1,7 +1,13 @@
 #include "Solution.h"
 
 #include "ComputeStatistic.h"
+#include "ComputeWeightSimple.h"
 #include "FsUtils.h"
+#include "SolutionDatabase.h"
+#include "StatisticsDatabase.h"
+#include "TimeUtils.h"
+
+#include <chrono>
 
 using namespace gnsstk;
 namespace pod
@@ -25,6 +31,12 @@ namespace pod
 
     void Solution::process()
     {
+         processingStartedUnixSec_ = std::chrono::duration_cast<std::chrono::seconds>(
+                                       std::chrono::system_clock::now().time_since_epoch())
+                                       .count();
+
+        const StopTimer stopTimer(processingDurationMSec_);
+
         try
         {
             solver.process();
@@ -98,6 +110,12 @@ namespace pod
 
     void Solution::saveToDb()
     {
+        saveSolutionDb();
+        saveStatisticsDb();
+    }
+
+    void Solution::saveSolutionDb()
+    {
         const auto file_name = solver.getFileName();
         auto& gnss_data = solver.getData();
         gnss_data.title = file_name;
@@ -106,13 +124,32 @@ namespace pod
         const std::string file_w_ext = file_name + ".db";
         fs::path db_path(data->opts.workingDir / file_w_ext);
 
-        // delete curtrent solution database file, if exists
-        // string cmd = "del \"" + db_path.string() + "\"";
-        // system(cmd.c_str());
+        SolutionDatabase::create(db_path.string(), gnss_data);
+    }
 
-        // insert solution data into DB
-        SQLiteAdapter db(db_path.string());
-        db.addNewFile(gnss_data);
+    void Solution::saveStatisticsDb()
+    {
+        auto& gnss_data = solver.getData();
+        gnss_data.updateMetadata();
+
+        fs::path db_path(data->opts.workingDir / "statistics.db");
+
+        // compute aggregated residual statistics (no console output)
+        PostfitResidualStatistics postfit_stat(false);
+        postfit_stat.compute(gnss_data);
+
+        ProcessingRunRecord run;
+        run.processingStartedUnixSec = processingStartedUnixSec_;
+        run.processingDurationMSec = processingDurationMSec_;
+        run.solutionType = static_cast<int>(solver.desiredSlnType());
+        run.elevationCutoffDeg = data->opts.maskEl;
+
+        StatisticsDatabase db(db_path.string());
+        db.addRun(run,
+                  gnss_data.svs,
+                  postfit_stat.elevationResults(),
+                  postfit_stat.systemResults(),
+                  postfit_stat.satelliteResults());
     }
 
     void Solution::chekObs()

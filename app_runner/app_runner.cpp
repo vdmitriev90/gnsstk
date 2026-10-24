@@ -100,7 +100,6 @@ int main(int argc, char* argv[])
     //sol.chekObs();
     //codeSmoother(argv[1], atoi(argv[2]));
     //testRinParse(argv[1]);
-    //SQLiteAdapter:: testSQLite(argv[1], argv[2]);
     //test();
 
     //testRinParse(argv[1]);
