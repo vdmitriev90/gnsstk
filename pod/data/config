@@ -20,6 +20,9 @@ BiasSinexDir     = osb
 SiteRover        = TIT2
 SiteBase         = FFMJ
 
+#project name: root directory (inside the working directory) for statistics.db and solutions/
+ProjectName      = Project1
+
 #PROCESS SETTINGS
 ##############################################################################
 #required Solution Type

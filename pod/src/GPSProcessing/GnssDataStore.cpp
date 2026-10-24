@@ -169,6 +169,10 @@ namespace pod
 
             opts.SiteBase = confReader->getValue("SiteBase");
 
+            opts.projectName = confReader->getValue("ProjectName");
+            if (opts.projectName.empty())
+                throw std::runtime_error("ProjectName must not be empty.");
+
             opts.fullOutput = confReader->getValueAsBoolean("fullOutput");
 
             opts.slnType = (SlnType)confReader->getValueAsInt("slnType");

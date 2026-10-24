@@ -122,7 +122,9 @@ namespace pod
         gnss_data.updateMetadata();
 
         const std::string file_w_ext = file_name + ".db";
-        fs::path db_path(data->opts.workingDir / file_w_ext);
+        const fs::path solutions_dir = data->opts.workingDir / data->opts.projectName / "solutions";
+        fs::create_directories(solutions_dir);
+        fs::path db_path(solutions_dir / file_w_ext);
 
         SolutionDatabase::create(db_path.string(), gnss_data);
     }
@@ -132,7 +134,9 @@ namespace pod
         auto& gnss_data = solver.getData();
         gnss_data.updateMetadata();
 
-        fs::path db_path(data->opts.workingDir / "statistics.db");
+        const fs::path project_dir = data->opts.workingDir / data->opts.projectName;
+        fs::create_directories(project_dir);
+        fs::path db_path(project_dir / "statistics.db");
 
         // compute aggregated residual statistics (no console output)
         PostfitResidualStatistics postfit_stat(false);
