@@ -82,9 +82,10 @@ using Bins = std::vector<ResidualStatisticsRecord>;
 using Sats = std::vector<ResidualSatelliteStatisticsRecord>;
 
 static std::int64_t addRun(StatisticsDatabase& a, const Bins& elev = {}, const Bins& sys = {}, const Sats& sats = {},
-						   const std::set<gnsstk::SatID>& svs = {}, const ProcessingRunRecord& run = {})
+						   const std::set<gnsstk::SatID>& svs = {}, const ProcessingDataRecord& run = {},
+						   const ProcessingTechnicalInfoRecord& info = {})
 {
-	return a.addRun(run, svs, elev, sys, sats);
+	return a.addRun(run, info, svs, elev, sys, sats);
 }
 
 static ResidualSatelliteStatisticsRecord satRec(int prn, double mean = 0.0)
@@ -119,7 +120,7 @@ static void testSolutionDatabase()
 		CHECK(scalar(a.handle(), "PRAGMA foreign_keys") == 1);
 		for (const char* t : {"GnssObsFile", "Epochs", "SlnDataItems", "SvDataItems", "SVS", "RinexTypePairs", "TypeIDsByFiles"})
 			CHECK(hasTable(a.handle(), t));
-		for (const char* t : {"ProcessingRuns", "ResidualStatistics", "ResidualSatelliteStatistics"})
+		for (const char* t : {"ProcessingData", "ResidualStatisticsByElevation", "ResidualSatelliteStatistics"})
 			CHECK(!hasTable(a.handle(), t));
 		CHECK(addFile(a) > 0);
 		CHECK(count(a.handle(), "GnssObsFile") == pass + 1);
@@ -205,8 +206,11 @@ static void testStatisticsDatabase()
 		StatisticsDatabase a(path);
 		CHECK(a.userVersion() == StatisticsDatabase::SCHEMA_VERSION);
 		CHECK(scalar(a.handle(), "PRAGMA foreign_keys") == 1);
-		for (const char* t : {"ProcessingRuns", "ResidualStatistics", "ResidualSatelliteStatistics", "SVS"})
+		for (const char* t : {"ProcessingData", "ProcessingTechnicalInfo", "SolutionStatistics", "ResidualStatisticsByElevation",
+							  "ResidualStatisticsBySatSystem", "ResidualSatelliteStatistics", "SVS"})
 			CHECK(hasTable(a.handle(), t));
+		CHECK(!hasTable(a.handle(), "ProcessingRuns"));
+		CHECK(StatisticsDatabase::SCHEMA_VERSION == 4);
 		for (const char* t : {"GnssObsFile", "Epochs", "SlnDataItems", "SvDataItems", "RinexTypePairs"})
 			CHECK(!hasTable(a.handle(), t));
 	}
@@ -220,14 +224,49 @@ static void testRunsAndConstraints()
 		StatisticsDatabase a(path);
 		const auto runId0 = addRun(a);
 		CHECK(runId0 > 0);
-		ProcessingRunRecord run;
-		run.processingStartedUnixSec = 5000000000LL;  // > 2^32
-		run.processingDurationMSec = 30000000000LL;   // > 2^32
-		const auto runId = addRun(a, {}, {}, {}, {}, run);
-		CHECK(runId > 0);
-		CHECK(scalar(a.handle(), "SELECT ProcessingStartedUnixSec FROM ProcessingRuns WHERE ID=" + std::to_string(runId)) == 5000000000LL);
-		CHECK(scalar(a.handle(), "SELECT ProcessingDurationMSec FROM ProcessingRuns WHERE ID=" + std::to_string(runId)) == 30000000000LL);
-		CHECK(scalar(a.handle(), "SELECT COUNT(*) FROM ProcessingRuns WHERE SoftwareVersion IS NULL AND ElevationCutoffDeg IS NULL") == 2);
+		ProcessingDataRecord run;
+		run.roverSite = "TIT2";
+		run.baseSite = "FFMJ";
+		run.solutionType = 16;
+		run.satelliteSystemsMask = SatSysBitGPS | SatSysBitGlonass;
+		run.elevationCutoffDeg = 7.5;
+		run.epochNumber = 2880;
+		run.observationStartUnixSec = 5000000000LL; // > 2^32
+		run.observationDurationSec = 86370;
+		ProcessingTechnicalInfoRecord info;
+		info.processingStartedUnixSec = 5000000000LL;
+		info.processingDurationMSec = 30000000000LL; // > 2^32
+		info.softwareVersion = "1.2.3";
+		const auto runId = addRun(a, {}, {}, {}, {}, run, info);
+		CHECK(runId > 0 && runId != runId0);
+		const std::string id = std::to_string(runId);
+		CHECK(scalar(a.handle(), "SELECT ObservationStartUnixSec FROM ProcessingData WHERE ID=" + id) == 5000000000LL);
+		CHECK(scalar(a.handle(), "SELECT EpochNumber FROM ProcessingData WHERE ID=" + id) == 2880);
+		CHECK(scalar(a.handle(), "SELECT SatelliteSystemsMask FROM ProcessingData WHERE ID=" + id) == 3);
+		CHECK(scalar(a.handle(), "SELECT COUNT(*) FROM ProcessingData WHERE ID=" + id + " AND BaseSite='FFMJ' AND RoverSite='TIT2' AND ElevationCutoffDeg=7.5") == 1);
+		CHECK(scalar(a.handle(), "SELECT ProcessingStartedUnixSec FROM ProcessingTechnicalInfo WHERE ProcessingDataID=" + id) == 5000000000LL);
+		CHECK(scalar(a.handle(), "SELECT ProcessingDurationMSec FROM ProcessingTechnicalInfo WHERE ProcessingDataID=" + id) == 30000000000LL);
+		CHECK(scalar(a.handle(), "SELECT COUNT(*) FROM ProcessingTechnicalInfo WHERE ProcessingDataID=" + id + " AND SoftwareVersion='1.2.3'") == 1);
+		CHECK(scalar(a.handle(), "SELECT COUNT(*) FROM SolutionStatistics") == 0);
+		{
+			SolutionStatisticsRecord ss;
+            ss.average = gnsstk::Triple(2847435.133, 2178812.456, 5253147.789);
+			ss.horizontalStdDev = 0.25;
+			ss.averageSvInUse = 9.5;
+			ss.covariance = CovarianceMatrix3{1.0, 2.0, 4.0, 0.5, 0.25, 0.125};
+			const auto sid = a.addRun(run, info, {}, {}, {}, {}, ss);
+			const std::string s = std::to_string(sid);
+			CHECK(scalar(a.handle(), "SELECT COUNT(*) FROM SolutionStatistics WHERE ProcessingDataID=" + s + " AND AverageX=2847435.133 AND AverageY=2178812.456 AND AverageZ=5253147.789 AND HorizontalStdDev=0.25 AND AverageSvInUse=9.5 AND CovXY=0.5 AND CovZZ=4.0") == 1);
+			sqlite3_exec(a.handle(), ("DELETE FROM SolutionStatistics WHERE ProcessingDataID=" + s + "; DELETE FROM ProcessingTechnicalInfo WHERE ProcessingDataID=" + s + "; DELETE FROM ProcessingData WHERE ID=" + s).c_str(), nullptr, nullptr, nullptr);
+		}
+		// default record: absent base station and software version stored as NULL
+		CHECK(scalar(a.handle(), "SELECT COUNT(*) FROM ProcessingData WHERE BaseSite IS NULL") == 1);
+		CHECK(scalar(a.handle(), "SELECT COUNT(*) FROM ProcessingTechnicalInfo WHERE SoftwareVersion IS NULL") == 1);
+		CHECK(count(a.handle(), "ProcessingData") == 2 && count(a.handle(), "ProcessingTechnicalInfo") == 2);
+		// technical info must reference an existing ProcessingData row
+		CHECK(throws([&] { scalar(a.handle(), "SELECT 1"); sqlite3_exec(a.handle(), "INSERT INTO ProcessingTechnicalInfo VALUES (999,0,0,NULL)", nullptr, nullptr, nullptr); throw std::runtime_error("x"); }));
+		CHECK(count(a.handle(), "ProcessingTechnicalInfo") == 2);
+		CHECK(satelliteSystemsMask(std::set<gnsstk::SatID>{gnsstk::SatID(1, GPS), gnsstk::SatID(2, Glonass)}) == 3);
 	}
 	fs::remove(path);
 }
@@ -242,9 +281,9 @@ static void testStatisticsInsertion()
 		auto s = satRec(5, std::nan(""));
 		s.count_ = 3;
 		addRun(a, {b1, b2}, {}, {s}, {gnsstk::SatID(5, GPS)});
-		CHECK(count(a.handle(), "ProcessingRuns") == 1);
-		CHECK(count(a.handle(), "ResidualStatistics") == 2);
-		CHECK(scalar(a.handle(), "SELECT COUNT(*) FROM ResidualStatistics WHERE StandardDeviation IS NULL AND Minimum IS NULL AND Maximum IS NULL") == 2);
+		CHECK(count(a.handle(), "ProcessingData") == 1);
+		CHECK(count(a.handle(), "ResidualStatisticsByElevation") == 2);
+		CHECK(scalar(a.handle(), "SELECT COUNT(*) FROM ResidualStatisticsByElevation WHERE StandardDeviation IS NULL AND Minimum IS NULL AND Maximum IS NULL") == 2);
 		CHECK(count(a.handle(), "ResidualSatelliteStatistics") == 1);
 		CHECK(scalar(a.handle(), "SELECT COUNT(*) FROM ResidualSatelliteStatistics WHERE Mean IS NULL") == 1);
 
@@ -255,8 +294,8 @@ static void testStatisticsInsertion()
 		// satellite not registered via svs -> FK/NOT NULL failure, whole run rejected
 		CHECK(throws([&] { addRun(a, {b1}, {}, {satRec(7)}); }));
 
-		CHECK(count(a.handle(), "ProcessingRuns") == 1);
-		CHECK(count(a.handle(), "ResidualStatistics") == 2);
+		CHECK(count(a.handle(), "ProcessingData") == 1);
+		CHECK(count(a.handle(), "ResidualStatisticsByElevation") == 2);
 		CHECK(count(a.handle(), "ResidualSatelliteStatistics") == 1);
 	}
 	fs::remove(path);
@@ -268,13 +307,14 @@ static void testSystemStatisticsInsertion()
 	{
 		StatisticsDatabase a(path);
 		const double maxDeg = PostfitResidualStatistics::ELEV_BIN_MAX_DEG;
-		// elevation bins and the all-elevation (0-90) system record are stored side by side
+		// elevation bins and the all-elevation (0-90) system records go to separate tables
 		addRun(a, {bin(GPS, TypeID::postfitPC, 0, 10), bin(GPS, TypeID::postfitPC, 80, 90)},
 			   {bin(GPS, TypeID::postfitPC, 0, maxDeg), bin(Glonass, TypeID::postfitLC, 0, maxDeg)});
-		CHECK(count(a.handle(), "ResidualStatistics") == 4);
-		CHECK(scalar(a.handle(), "SELECT COUNT(*) FROM ResidualStatistics WHERE ElevationMinDeg=0 AND ElevationMaxDeg=90") == 2);
+		CHECK(count(a.handle(), "ResidualStatisticsByElevation") == 2);
+		CHECK(count(a.handle(), "ResidualStatisticsBySatSystem") == 2);
+		CHECK(scalar(a.handle(), "SELECT COUNT(*) FROM ResidualStatisticsByElevation WHERE ElevationMinDeg=0 AND ElevationMaxDeg=90") == 0);
 		CHECK(throws([&] { addRun(a, {}, {bin(GPS, TypeID::postfitPC, 0, maxDeg), bin(GPS, TypeID::postfitPC, 0, maxDeg)}); })); // unique
-		CHECK(count(a.handle(), "ProcessingRuns") == 1);
+		CHECK(count(a.handle(), "ProcessingData") == 1);
 	}
 	fs::remove(path);
 }
@@ -288,8 +328,8 @@ static void testStatisticsRollback()
 		addRun(a, {bin(GPS, TypeID::postfitPC, 0, 10)});
 		a.rollbackTransaction();
 
-		CHECK(count(a.handle(), "ProcessingRuns") == 0);
-		CHECK(count(a.handle(), "ResidualStatistics") == 0);
+		CHECK(count(a.handle(), "ProcessingData") == 0);
+		CHECK(count(a.handle(), "ResidualStatisticsByElevation") == 0);
 	}
 	fs::remove(path);
 }
@@ -302,8 +342,8 @@ static void testStatisticsAppendAcrossRuns()
 		StatisticsDatabase st(path);
 		addRun(st, {bin(GPS, TypeID::postfitPC, 0, 10)}, {}, {satRec(5)}, {gnsstk::SatID(5, GPS)});
 
-		CHECK(count(st.handle(), "ProcessingRuns") == pass);
-		CHECK(count(st.handle(), "ResidualStatistics") == pass);
+		CHECK(count(st.handle(), "ProcessingData") == pass);
+		CHECK(count(st.handle(), "ResidualStatisticsByElevation") == pass);
 		CHECK(count(st.handle(), "ResidualSatelliteStatistics") == pass);
 		CHECK(count(st.handle(), "SVS") == 1);
 	}

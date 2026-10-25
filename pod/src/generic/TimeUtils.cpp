@@ -18,7 +18,7 @@ namespace pod
 	{
 		const std::time_t t = std::time(nullptr);
 		std::ostringstream oss;
-		oss << std::put_time(std::localtime(&t), "%y%m%d%H%M");
+		oss << std::put_time(std::localtime(&t), "%y%m%d%H%M%S");
 		return oss.str();
 	}
 } // namespace pod

@@ -12,7 +12,8 @@
 namespace pod
 {
 	// Shared statistics database appended across processing runs:
-	// ProcessingRuns, ResidualStatistics, ResidualSatelliteStatistics and the SVS lookup table.
+	// ProcessingData, ProcessingTechnicalInfo, ResidualStatisticsByElevation, ResidualStatisticsBySatSystem,
+	// ResidualSatelliteStatistics and the SVS lookup table.
 	class StatisticsDatabase : public SQLiteConnection
 	{
 	  public:
@@ -21,22 +22,29 @@ namespace pod
 
 		explicit StatisticsDatabase(const std::string& path);
 
-		// Atomically stores a processing run with all its statistics; returns the new ProcessingRuns.ID.
+		// Atomically stores a processing run with all its statistics; returns the new ProcessingData.ID.
 		// Nothing is written if any part fails.
-		std::int64_t addRun(const ProcessingRunRecord& run,
+		std::int64_t addRun(const ProcessingDataRecord& data,
+							const ProcessingTechnicalInfoRecord& info,
 							const std::set<gnsstk::SatID>& svs,
 							const std::vector<ResidualStatisticsRecord>& elevationResults,
 							const std::vector<ResidualStatisticsRecord>& systemResults,
-							const std::vector<ResidualSatelliteStatisticsRecord>& satelliteResults);
+							const std::vector<ResidualSatelliteStatisticsRecord>& satelliteResults,
+														const std::optional<SolutionStatisticsRecord>& solution = std::nullopt);
 
-	  private:
+								  private:
+									void addSolutionStatistics(std::int64_t processingDataId, const SolutionStatisticsRecord& s);
 		void setPragmas();
 		void migrate();
 
-		std::int64_t addProcessingRun(const ProcessingRunRecord& record);
+		// Inserts ProcessingData and ProcessingTechnicalInfo atomically; returns ProcessingData.ID.
+				std::int64_t addProcessingData(const ProcessingDataRecord& data, const ProcessingTechnicalInfoRecord& info);
 		void addSatellites(const std::set<gnsstk::SatID>& svs);
-		void addResidualStatistics(std::int64_t processingRunId, const std::vector<ResidualStatisticsRecord>& records);
-		void addResidualSatelliteStatistics(std::int64_t processingRunId,
+		void addResidualStatisticsByElevation(std::int64_t processingDataId,
+											  const std::vector<ResidualStatisticsRecord>& records);
+		void addResidualStatisticsBySatSystem(std::int64_t processingDataId,
+											  const std::vector<ResidualStatisticsRecord>& records);
+		void addResidualSatelliteStatistics(std::int64_t processingDataId,
 											const std::vector<ResidualSatelliteStatisticsRecord>& records);
 		void bindSummary(sqlite3_stmt* stmt, int firstIdx, const ResidualSummary& s);
 	};
