@@ -32,12 +32,14 @@ add_test(NAME pod_tests COMMAND pod_tests)
 
 find_package(Python3 REQUIRED)
 
-set(PY_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/src/scripts/download_cddis.py)
+set(PY_SCRIPTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/scripts)
+file(GLOB_RECURSE PY_SCRIPT ${PY_SCRIPTS_DIR}/gnss_downloader/*.py)
 
 set(RUNTIME_DIR $<TARGET_FILE_DIR:app_runner>)
 
 add_custom_target(download_cddis
-    COMMAND ${Python3_EXECUTABLE} -u ${PY_SCRIPT}
+    COMMAND ${CMAKE_COMMAND} -E env PYTHONPATH=${PY_SCRIPTS_DIR}
+    ${Python3_EXECUTABLE} -u -m gnss_downloader.main
     --from 2020-09-02
     --to 2020-09-02
     --sites FFMJ00DEU,TIT200DEU
