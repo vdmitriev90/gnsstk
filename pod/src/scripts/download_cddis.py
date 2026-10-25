@@ -125,6 +125,7 @@ RETRIES = 3
 # ===================== DOWNLOAD =====================
 
 def try_download(url, output_path):
+  partial_path = output_path + ".partial"
   for attempt in range(RETRIES):
     try:
       if attempt > 0:
@@ -141,15 +142,18 @@ def try_download(url, output_path):
 
       r.raise_for_status()
 
-      with open(output_path, "wb") as f:
+      with open(partial_path, "wb") as f:
         for chunk in r.iter_content(chunk_size=8192):
           if chunk:
             f.write(chunk)
 
+      os.replace(partial_path, output_path)
       return True
 
     except requests.exceptions.RequestException as e:
       error(f"Download failed: {e}")
+      if os.path.exists(partial_path):
+        os.remove(partial_path)
       time.sleep(2)
 
   return False
@@ -456,48 +460,6 @@ def download_brdc_glo(date, output_dir):
   if not download_and_extract(legacy_url, legacy_path):
     error(f"BRDC GLO nav download failed for {yyyy}-{ddd}")
 
-
-def download_brdc_glo(date, output_dir):
-  year = date.year
-  doy = date.timetuple().tm_yday
-  yy = str(year)[-2:]
-
-  yyyy = f"{year:04d}"
-  ddd = f"{doy:03d}"
-
-  os.makedirs(output_dir, exist_ok=True)
-
-  filename = f"brdc{ddd}0.{yy}g.gz"
-  extracted = os.path.join(output_dir, filename[:-3])
-
-  if os.path.exists(extracted):
-    log(f"BRDC GLO nav already exists, skipping: {relpath(extracted)}")
-    return
-
-  url = f"https://cddis.nasa.gov/archive/gnss/data/daily/{yyyy}/{ddd}/{yy}g/{filename}"
-  path = os.path.join(output_dir, filename)
-
-  log(f"Trying BRDC GLO nav: {url}")
-
-  if download_and_extract(url, path):
-    return
-
-  # ===================== FALLBACK TO LEGACY .Z FORMAT =====================
-  legacy_filename = f"brdc{ddd}0.{yy}g.Z"
-  legacy_extracted = os.path.join(output_dir, legacy_filename[:-2])
-  if os.path.exists(legacy_extracted):
-    log(f"BRDC GLO nav (legacy) already exists, skipping: {relpath(legacy_extracted)}")
-    return
-
-  legacy_url = f"https://cddis.nasa.gov/archive/gnss/data/daily/{yyyy}/{ddd}/{yy}g/{legacy_filename}"
-  legacy_path = os.path.join(output_dir, legacy_filename)
-
-  log(f"BRDC GLO nav not found, trying legacy fallback: {legacy_url}")
-
-  if not download_and_extract(legacy_url, legacy_path):
-    error(f"BRDC GLO nav download failed for {yyyy}-{ddd}")
-
-
 def download_brdm(date, output_dir):
   year = date.year
   doy = date.timetuple().tm_yday
@@ -595,7 +557,7 @@ def _expected_clk_filenames(start_date, end_date):
         ddd = f"{d.timetuple().tm_yday:03d}"
 
         names.add(f"COD0MGXFIN_{yyyy}{ddd}0000_01D_30S_CLK.CLK")
-        names.add(f"cod{gps_week}{dow}.eph")
+        names.add(f"cod{gps_week}{dow}.clk_05s")
 
     return names
 
@@ -609,7 +571,7 @@ def _expected_erp_filenames(start_date, end_date):
         yyyy = f"{d.year:04d}"
         ddd = f"{d.timetuple().tm_yday:03d}"
 
-        names.add(f"COD0MGXFIN_{yyyy}{ddd}0000_01D_12H_ERP.ERP")
+        names.add(f"COD0MGXFIN_{yyyy}{ddd}0000_03D_12H_ERP.ERP")
 
     return names
 
@@ -741,6 +703,7 @@ def download_products_day(date, base_dir):
   os.makedirs(clk_dir, exist_ok=True)
   os.makedirs(inx_dir, exist_ok=True)
   os.makedirs(erp_dir, exist_ok=True)
+  os.makedirs(osb_dir, exist_ok=True)
 
   log(f"Processing date: {date_str}")
 
