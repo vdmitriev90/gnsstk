@@ -40,10 +40,7 @@ set(RUNTIME_DIR $<TARGET_FILE_DIR:app_runner>)
 add_custom_target(download_cddis
     COMMAND ${CMAKE_COMMAND} -E env PYTHONPATH=${PY_SCRIPTS_DIR}
     ${Python3_EXECUTABLE} -u -m gnss_downloader.main
-    --from 2020-09-02
-    --to 2020-09-02
-    --sites FFMJ00DEU,TIT200DEU
-    --out ${RUNTIME_DIR}/data
+    --config ${PY_SCRIPTS_DIR}/orchestrator.ini
     WORKING_DIRECTORY ${RUNTIME_DIR}
     SOURCES ${PY_SCRIPT}
 )
