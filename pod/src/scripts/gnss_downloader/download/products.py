@@ -4,6 +4,29 @@ import os
 from gnss_downloader.logging_utils import log, error, relpath
 from gnss_downloader.download.common import download_and_extract, fail
 
+REPRO3_PREFIX = "COD0R03FIN"
+
+
+def repro3_filename(date, name_tail):
+  return f"{REPRO3_PREFIX}_{date.year:04d}{date.timetuple().tm_yday:03d}0000_{name_tail}"
+
+
+def _download_repro3(label, date, output_dir, name_tail):
+  gps_week = int((date - datetime.date(1980, 1, 6)).days / 7)
+  filename = repro3_filename(date, name_tail) + ".gz"
+  extracted = os.path.join(output_dir, filename[:-3])
+
+  if os.path.exists(extracted):
+    log(f"{label} (repro3) already exists, skipping: {relpath(extracted)}")
+    return True
+
+  url = f"https://cddis.nasa.gov/archive/gnss/products/{gps_week}/repro3/{filename}"
+  path = os.path.join(output_dir, filename)
+
+  log(f"{label} not found, trying repro3 fallback: {url}")
+
+  return download_and_extract(url, path)
+
 
 def download_ionex(date, output_dir):
   year = date.year
@@ -85,6 +108,9 @@ def download_clk(date, output_dir):
     if download_and_extract(url, path):
         return
 
+    if _download_repro3("CLK", date, output_dir, "01D_30S_CLK.CLK"):
+        return
+
     # ===================== FALLBACK TO LEGACY =====================
     legacy_compressed = f"cod{gps_week}{dow}.clk_05s.Z"
     url = f"https://cddis.nasa.gov/archive/gnss/products/{gps_week}/{legacy_compressed}"
@@ -131,6 +157,9 @@ def download_sp3(date, output_dir):
     log(f"Trying SP3 (COD): {url}")
 
     if download_and_extract(url, path):
+        return
+
+    if _download_repro3("SP3", date, output_dir, "01D_05M_ORB.SP3"):
         return
 
     # ===================== FALLBACK TO LEGACY =====================
@@ -189,6 +218,9 @@ def download_erp(date, output_dir):
     if download_and_extract(url, path):
         return
 
+    if _download_repro3("ERP", date, output_dir, "01D_01D_ERP.ERP"):
+        return
+
     fail(f"ERP download failed for {date:%Y-%m-%d}")
 
 def download_osb(date, output_dir):
@@ -231,8 +263,13 @@ def download_osb(date, output_dir):
 
     log(f"OSB not found, trying fallback: {legacy_url}")
 
-    if not download_and_extract(legacy_url, legacy_path):
-        fail(f"OSB download failed for {date:%Y-%m-%d}")
+    if download_and_extract(legacy_url, legacy_path):
+        return
+
+    if _download_repro3("OSB", date, output_dir, "01D_01D_OSB.BIA"):
+        return
+
+    fail(f"OSB download failed for {date:%Y-%m-%d}")
 def download_brdc_gps(date, output_dir):
   year = date.year
   doy = date.timetuple().tm_yday

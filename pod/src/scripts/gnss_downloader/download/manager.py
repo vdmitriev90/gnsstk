@@ -58,6 +58,7 @@ def _expected_sp3_filenames(start_date, end_date):
 
         names.add(f"COD0MGXFIN_{yyyy}{ddd}0000_01D_05M_ORB.SP3")
         names.add(f"cod{gps_week}{dow}.eph")
+        names.add(f"COD0R03FIN_{yyyy}{ddd}0000_01D_05M_ORB.SP3")
 
     return names
 
@@ -75,6 +76,7 @@ def _expected_clk_filenames(start_date, end_date):
 
         names.add(f"COD0MGXFIN_{yyyy}{ddd}0000_01D_30S_CLK.CLK")
         names.add(f"cod{gps_week}{dow}.clk_05s")
+        names.add(f"COD0R03FIN_{yyyy}{ddd}0000_01D_30S_CLK.CLK")
 
     return names
 
@@ -90,6 +92,7 @@ def _expected_erp_filenames(start_date, end_date):
 
         names.add(f"COD0MGXFIN_{yyyy}{ddd}0000_03D_12H_ERP.ERP")
         names.add(f"COD0MGXFIN_{yyyy}{ddd}0000_01D_12H_ERP.ERP")
+        names.add(f"COD0R03FIN_{yyyy}{ddd}0000_01D_01D_ERP.ERP")
 
     return names
 
@@ -112,6 +115,7 @@ def _expected_osb_filenames(start_date, end_date):
         ddd = f"{d.timetuple().tm_yday:03d}"
         names.add(f"COD0OPSFIN_{yyyy}{ddd}0000_01D_01D_OSB.BIA")
         names.add(f"COD0MGXFIN_{yyyy}{ddd}0000_01D_01D_OSB.BIA")
+        names.add(f"COD0R03FIN_{yyyy}{ddd}0000_01D_01D_OSB.BIA")
     return names
 
 def clean_outside_range(base_dir, start_date, end_date):
