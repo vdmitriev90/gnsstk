@@ -176,8 +176,8 @@ namespace pod
 
             // set generic files direcory
             opts.genericFilesDirectory = confReader->getValue("GenericFilesDir");
-            if (!opts.genericFilesDirectory.empty() &&
-                opts.genericFilesDirectory.back() != '\\' && opts.genericFilesDirectory.back() != '/')
+            if (!opts.genericFilesDirectory.empty() && opts.genericFilesDirectory.back() != '\\'
+                && opts.genericFilesDirectory.back() != '/')
                 opts.genericFilesDirectory += "\\";
 
             for (auto it : confReader->getValueListAsInt("carrierBands"))
@@ -206,8 +206,17 @@ namespace pod
             });
             std::cout << std::endl;
 
+            const auto checkLoaded = [](bool ok, const char* what) {
+                std::cout << ok << std::endl;
+                if (!ok)
+                {
+                    std::cerr << "Failed to load " << what << ". Processing aborted." << std::endl;
+                    exit(-1);
+                }
+            };
+
             std::cout << "Ephemeris Loading... ";
-            std::cout << loadEphemeris() << std::endl;
+            checkLoaded(loadEphemeris(), "ephemeris");
 
             // opts.isComputeApprPos = confReader->getValueAsBoolean("calcApprPos");
             // if (opts.isComputeApprPos)
@@ -217,22 +226,22 @@ namespace pod
             if (confReader->getValueAsBoolean("UseRinexClock"))
             {
                 std::cout << "Load Rinex clock data ... ";
-                std::cout << loadClocks() << std::endl;
+                checkLoaded(loadClocks(), "Rinex clock data");
             }
 
             std::cout << "Load ionospheric data ... ";
-            std::cout << loadIono() << std::endl;
+            checkLoaded(loadIono(), "ionospheric data");
 
             std::cout << "Load Glonass FCN data... ";
-            std::cout << loadFcn() << std::endl;
+            checkLoaded(loadFcn(), "Glonass FCN data");
 
             std::cout << "Load Earth orientation data... ";
-            std::cout << loadEOPData() << std::endl;
+            checkLoaded(loadEOPData(), "Earth orientation data");
 
             if (confReader->getValueAsBoolean("ApplyCodeBias"))
             {
                 std::cout << "Load Bias-SINEX data... ";
-                std::cout << loadBiasSinex() << std::endl;
+                checkLoaded(loadBiasSinex(), "Bias-SINEX data");
             }
 
             std::cout << "Appr. position  source: ";
@@ -288,22 +297,25 @@ namespace pod
         const std::string subdir = "data/clk";
         const auto files = FsUtils::getAllFilesInDir(opts.workingDir / subdir);
 
+        bool res = false;
+
         for (const auto& file : files)
         {
-            // Try to load each ephemeris file
             try
             {
-                sp3NavFactory_->addDataSource(file.string());
+                res = sp3NavFactory_->addDataSource(file.string());
             }
-            catch (FileMissingException& e)
+            catch (Exception& e)
             {
-                // If file doesn't exist, issue a warning
-                std::cerr << "Rinex clock file '" << file << "' doesn't exist or you don't "
-                          << "have permission to read it. Skipping it." << std::endl;
-                continue;
+                res = false;
+            }
+            if (!res)
+            {
+                std::cerr << "Failed to load Rinex clock file '" << file << "'." << std::endl;
+                return false;
             }
         }
-        return files.size() > 0;
+        return res;
     }
 
     bool GnssDataStore::loadIono()
