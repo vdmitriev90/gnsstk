@@ -5,14 +5,19 @@ import os
 def log(msg):
   print(f"[INFO] {msg}")
 
-LOG_FILE_NAME = "download.log"
 _log_file_path = None
 
 
 def set_log_file(output_dir):
   global _log_file_path
   os.makedirs(output_dir, exist_ok=True)
-  _log_file_path = os.path.join(output_dir, LOG_FILE_NAME)
+  stamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+  _log_file_path = os.path.join(output_dir, f"download_{stamp}.log")
+  suffix = 1
+  while os.path.exists(_log_file_path):
+    _log_file_path = os.path.join(output_dir, f"download_{stamp}_{suffix}.log")
+    suffix += 1
+  return _log_file_path
 
 
 def _write_file(line):
