@@ -2,6 +2,7 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 
 from gnss_downloader.logging_utils import log, log_file
 
@@ -46,10 +47,18 @@ def run_processor(executable, ini_path, cwd, log_path):
   log(f"Running processor: {executable} {ini_path}")
   log_file(f"Running processor: {executable} {ini_path} (cwd={cwd})")
   with open(log_path, "w", encoding="utf-8") as out:
-    result = subprocess.run(
+    proc = subprocess.Popen(
       [executable, ini_path], cwd=cwd, stdin=subprocess.DEVNULL,
-      stdout=out, stderr=subprocess.STDOUT)
-  log_file(f"Processor exit code: {result.returncode} (output: {log_path})")
-  if result.returncode != 0:
+      stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    for raw in iter(proc.stdout.readline, b""):
+      text = raw.decode("utf-8", errors="replace")
+      sys.stdout.write(text)
+      sys.stdout.flush()
+      out.write(text)
+      out.flush()
+    proc.stdout.close()
+    returncode = proc.wait()
+  log_file(f"Processor exit code: {returncode} (output: {log_path})")
+  if returncode != 0:
     raise ProcessorError(
-      f"Processor failed with exit code {result.returncode} for {ini_path} (see {log_path})")
+      f"Processor failed with exit code {returncode} for {ini_path} (see {log_path})")
