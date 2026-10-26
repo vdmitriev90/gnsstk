@@ -41,6 +41,7 @@ add_custom_target(download_cddis
     COMMAND ${CMAKE_COMMAND} -E env PYTHONPATH=${PY_SCRIPTS_DIR}
     ${Python3_EXECUTABLE} -u -m gnss_downloader.main
     --config ${RUNTIME_DIR}/orchestrator.ini
+#   --no-download
 #    --debug
     WORKING_DIRECTORY ${RUNTIME_DIR}
     SOURCES ${PY_SCRIPT}

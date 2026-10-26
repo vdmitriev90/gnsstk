@@ -33,20 +33,19 @@ def copy_processor_template(template_path, layout):
   return copy_path
 
 
-def write_job_ini(template_copy, out_path, rover, base):
-  with open(template_copy, encoding="utf-8", newline="") as f:
+def write_job_ini(ini_path, rover, base):
+  with open(ini_path, encoding="utf-8", newline="") as f:
     lines = f.readlines()
-  _set_key(lines, "SiteRover", rover)
-  _set_key(lines, "SiteBase", base or "")
-  with open(out_path, "w", encoding="utf-8", newline="") as f:
+  _set_key(lines, "SiteRover", rover[:4])
+  _set_key(lines, "SiteBase", (base or "")[:4])
+  with open(ini_path, "w", encoding="utf-8", newline="") as f:
     f.writelines(lines)
-  return out_path
 
 
 def run_processor(executable, ini_path, cwd, log_path):
   log(f"Running processor: {executable} {ini_path}")
   log_file(f"Running processor: {executable} {ini_path} (cwd={cwd})")
-  with open(log_path, "w", encoding="utf-8") as out:
+  with open(log_path, "a", encoding="utf-8") as out:
     proc = subprocess.Popen(
       [executable, ini_path], cwd=cwd, stdin=subprocess.DEVNULL,
       stdout=subprocess.PIPE, stderr=subprocess.STDOUT)

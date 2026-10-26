@@ -28,7 +28,6 @@ class ProjectLayout:
   statistics_db: str
   solutions_dir: str
   logs_dir: str
-  state_dir: str
   data_dir: str
 
   @classmethod
@@ -39,13 +38,11 @@ class ProjectLayout:
       statistics_db=os.path.join(root, "statistics.db"),
       solutions_dir=os.path.join(root, "solutions"),
       logs_dir=os.path.join(root, "logs"),
-      state_dir=os.path.join(root, "state"),
       data_dir=os.path.join(root, "data"),
     )
 
   def create_directories(self):
-    for path in (self.root, self.solutions_dir, self.logs_dir,
-                 self.state_dir, self.data_dir):
+    for path in (self.root, self.solutions_dir, self.logs_dir, self.data_dir):
       os.makedirs(path, exist_ok=True)
 
 

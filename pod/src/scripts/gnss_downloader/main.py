@@ -13,6 +13,7 @@ def parse_args():
   parser = argparse.ArgumentParser(description="GNSS session-based processing orchestrator")
   parser.add_argument("--config", required=True, help="Path to orchestrator.ini")
   parser.add_argument("--debug", action="store_true", help="Wait for debugger attach")
+  parser.add_argument("--no-download", action="store_true", help="Skip downloads, run processor on existing data")
   return parser.parse_args()
 
 
@@ -35,7 +36,7 @@ def main(args):
     shutil.copyfile(config_path, config_copy)
     log_file(f"Config copied to: {config_copy}")
 
-  run_orchestrator(config, layout)
+  run_orchestrator(config, layout, no_download=args.no_download)
 
 
 if __name__ == "__main__":

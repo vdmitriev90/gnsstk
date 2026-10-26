@@ -20,6 +20,10 @@ def set_log_file(output_dir):
   return _log_file_path
 
 
+def get_log_file():
+  return _log_file_path
+
+
 def _write_file(line):
   if _log_file_path:
     try:
