@@ -144,10 +144,34 @@ def try_download(url, output_path):
   return False
 
 
+def _has_valid_archive_header(path):
+  magic = {".gz": b"\x1f\x8b", ".Z": b"\x1f\x9d"}
+  for ext, expected in magic.items():
+    if path.endswith(ext):
+      with open(path, "rb") as f:
+        head = f.read(len(expected))
+      return head == expected
+  return True
+
+
 def download_and_extract(url, path):
   if not try_download(url, path):
     return False
 
-  unzip_path = unzip_file(path)
+  if not _has_valid_archive_header(path):
+    with open(path, "rb") as f:
+      head = f.read(64)
+    error(f"Invalid archive (not {os.path.splitext(path)[1]}), first bytes: {head!r} ({url})")
+    os.remove(path)
+    return False
+
+  try:
+    unzip_path = unzip_file(path)
+  except Exception as e:
+    error(f"Failed to extract {relpath(path)}: {e} ({url})")
+    if os.path.exists(path):
+      os.remove(path)
+    return False
+
   log_file(f"Downloaded: {os.path.basename(unzip_path)} ({url})")
   return True

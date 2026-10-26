@@ -2,7 +2,7 @@ import datetime
 import os
 import shutil
 
-from gnss_downloader.logging_utils import log, relpath
+from gnss_downloader.logging_utils import log, log_file, relpath
 from gnss_downloader.download.products import (
   download_ionex,
   download_clk,
@@ -155,7 +155,7 @@ def download_products_day(date, base_dir):
   os.makedirs(erp_dir, exist_ok=True)
   os.makedirs(osb_dir, exist_ok=True)
 
-  log(f"Processing date: {date_str}")
+  log_file(f"Processing date: {date_str}")
 
   download_brdc_gps(date, nav_dir)
   download_sp3(date, sp3_dir)
