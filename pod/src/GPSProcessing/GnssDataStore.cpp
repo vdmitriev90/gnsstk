@@ -163,15 +163,11 @@ namespace pod
 
             opts.dynamics = (Dynamics)confReader->getValueAsInt("Dynamics");
 
-            opts.bceDir = confReader->getValue("RinexNavFilesDir");
+            opts.bceDir = "data/nav";
 
             opts.SiteRover = confReader->getValue("SiteRover");
 
             opts.SiteBase = confReader->getValue("SiteBase");
-
-            opts.projectName = confReader->getValue("ProjectName");
-            if (opts.projectName.empty())
-                throw std::runtime_error("ProjectName must not be empty.");
 
             opts.fullOutput = confReader->getValueAsBoolean("fullOutput");
 
@@ -179,8 +175,10 @@ namespace pod
             std::cout << "Solution Type: " << slnType2Str[opts.slnType] << std::endl;
 
             // set generic files direcory
-            std::string subdir = confReader->getValue("GenericFilesDir");
-            opts.genericFilesDirectory = (opts.workingDir / subdir).string() + "\\";
+            opts.genericFilesDirectory = confReader->getValue("GenericFilesDir");
+            if (!opts.genericFilesDirectory.empty() &&
+                opts.genericFilesDirectory.back() != '\\' && opts.genericFilesDirectory.back() != '/')
+                opts.genericFilesDirectory += "\\";
 
             for (auto it : confReader->getValueListAsInt("carrierBands"))
                 opts.carrierBands.insert(static_cast<CarrierBand>(it));
@@ -257,7 +255,7 @@ namespace pod
     bool GnssDataStore::loadEphemeris()
     {
 
-        std::string subdir = confReader->getValue("EphemerisDir");
+        const std::string subdir = "data/sp3";
         const auto files = FsUtils::getAllFilesInDir(opts.workingDir / subdir);
         if (files.empty())
         {
@@ -287,7 +285,7 @@ namespace pod
     // reading clock data
     bool GnssDataStore::loadClocks()
     {
-        std::string subdir = confReader->getValue("RinexClockDir");
+        const std::string subdir = "data/clk";
         const auto files = FsUtils::getAllFilesInDir(opts.workingDir / subdir);
 
         for (const auto& file : files)
@@ -339,7 +337,7 @@ namespace pod
 
     bool GnssDataStore::loadIonoMap()
     {
-        std::string subdir = confReader->getValue("IonexDir");
+        const std::string subdir = "data/inx";
         const auto files = FsUtils::getAllFilesInDir(opts.workingDir / subdir);
         ionexStore.clear();
         for (const auto& file : files)
@@ -434,17 +432,7 @@ namespace pod
     bool GnssDataStore::loadEOPData()
     {
 
-        fs::path eop_dir = opts.workingDir;
-        try
-        {
-            const std::string subdir = confReader->getValue("ErpDir");
-            eop_dir.append(subdir);
-        }
-        catch (...)
-        {
-            std::cerr << "Problem get value from config: file \"ErpDir\" " << std::endl;
-            exit(-1);
-        }
+        const fs::path eop_dir = opts.workingDir / "data" / "erp";
 
         const auto files = FsUtils::getFilesByExtension(eop_dir, ".ERP");
 
@@ -466,17 +454,7 @@ namespace pod
 
     bool GnssDataStore::loadBiasSinex()
     {
-        fs::path bias_dir = opts.workingDir;
-        try
-        {
-            const std::string subdir = confReader->getValue("BiasSinexDir");
-            bias_dir.append(subdir);
-        }
-        catch (...)
-        {
-            std::cerr << "Problem get value from config: file \"BiasSinexDir\" " << std::endl;
-            return false;
-        }
+        const fs::path bias_dir = opts.workingDir / "data" / "osb";
         const auto files = FsUtils::getAllFilesInDir(bias_dir);
 
         if (files.empty())
@@ -598,7 +576,7 @@ namespace pod
 
     std::list<std::string> GnssDataStore::getObsFiles(const std::string& siteID) const
     {
-        std::string subdir = confReader->getValue("RinesObsDir");
+        const std::string subdir = "data/obs";
         auto paths = FsUtils::getAllFilesInDir(opts.workingDir / subdir / siteID);
         std::list<std::string> result;
         for (const auto& p : paths)

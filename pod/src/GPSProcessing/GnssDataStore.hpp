@@ -119,9 +119,6 @@ namespace pod
             // working directory
             std::filesystem::path workingDir;
 
-            // project name: root directory (inside workingDir) for all databases
-            std::string projectName;
-
             // Broadcast ephemeris directory
             std::string bceDir;
 
