@@ -33,6 +33,18 @@ def copy_processor_template(template_path, layout):
   return copy_path
 
 
+def read_key(ini_path, key):
+  pattern = re.compile(rf"^\s*{re.escape(key)}\s*=\s*([^#\r\n]*?)\s*(#.*)?$", re.IGNORECASE)
+  with open(ini_path, encoding="utf-8") as f:
+    for line in f:
+      if line.lstrip().startswith("#"):
+        continue
+      m = pattern.match(line.rstrip("\r\n"))
+      if m:
+        return m.group(1)
+  return None
+
+
 def write_job_ini(ini_path, rover, base):
   with open(ini_path, encoding="utf-8", newline="") as f:
     lines = f.readlines()

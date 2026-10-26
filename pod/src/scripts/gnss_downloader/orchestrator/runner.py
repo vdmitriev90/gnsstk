@@ -5,7 +5,7 @@ from gnss_downloader.logging_utils import log, log_file, get_log_file
 from gnss_downloader.download.manager import process_range
 from gnss_downloader.orchestrator.models import ProcessingJob
 from gnss_downloader.orchestrator.processor import (
-  copy_processor_template, write_job_ini, run_processor)
+  copy_processor_template, write_job_ini, run_processor, read_key)
 
 
 def expand_jobs(config):
@@ -48,6 +48,8 @@ def run_orchestrator(config, layout, no_download=False):
 
 
   template_copy = copy_processor_template(config.processor_ini, layout)
+  use_ionex = read_key(template_copy, "CodeIonoCorrType") == "2"
+  _info(f"Ionex download: {use_ionex}")
 
   for session in config.sessions:
     start_date, end_date = session_dates(session)
@@ -67,7 +69,8 @@ def run_orchestrator(config, layout, no_download=False):
     else:
       process_range(
         start_date, end_date, layout.data_dir, sites,
-        rovers=list(session.rovers), base=session.base, on_rover_ready=on_rover_ready)
+        rovers=list(session.rovers), base=session.base, on_rover_ready=on_rover_ready,
+        use_ionex=use_ionex)
     _info(f"Session {session.name} done")
 
   return jobs

@@ -142,7 +142,7 @@ def clean_outside_range(base_dir, start_date, end_date):
         os.remove(path)
 
 
-def download_products_day(date, base_dir):
+def download_products_day(date, base_dir, use_ionex=True):
   date_str = date.strftime("%Y-%m-%d")
 
   nav_dir = os.path.join(base_dir, "nav")
@@ -163,7 +163,8 @@ def download_products_day(date, base_dir):
   download_clk(date, clk_dir)
   download_erp(date, erp_dir)
   download_osb(date, osb_dir)
-  download_ionex(date, inx_dir)
+  if use_ionex:
+    download_ionex(date, inx_dir)
 
 
 def clean_all(base_dir):
@@ -175,7 +176,8 @@ def clean_all(base_dir):
       os.makedirs(path)
 
 
-def process_range(start_date, end_date, base_dir, site_ids=None, rovers=None, base=None, on_rover_ready=None):
+def process_range(start_date, end_date, base_dir, site_ids=None, rovers=None, base=None, on_rover_ready=None,
+                  use_ionex=True):
   log(f"Processing range: {start_date} -> {end_date}")
 
   os.makedirs(base_dir, exist_ok=True)
@@ -190,7 +192,7 @@ def process_range(start_date, end_date, base_dir, site_ids=None, rovers=None, ba
     clean_outside_range(base_dir, window_start, window_end)
 
     for d in window:
-      download_products_day(d, base_dir)
+      download_products_day(d, base_dir, use_ionex)
 
     nav_dir = os.path.join(base_dir, "nav")
     os.makedirs(nav_dir, exist_ok=True)
