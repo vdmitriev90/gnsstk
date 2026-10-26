@@ -97,7 +97,7 @@ namespace gnsstk
          if(debug) cout << "Rinex3Clock Header Line " << line << endl;
 
          if(line.length() == 0) continue;
-         else if(line.length() < 60 || line.length() > 85)
+         else if(line.length() < 60 || line.length() > 150)
          {
             FFStreamError e("Invalid line length");
             GNSSTK_THROW(e);
@@ -277,8 +277,7 @@ namespace gnsstk
                valid |= endOfHeaderValid;
             }
             else {
-               FFStreamError e("Invalid line label: " + label);
-               GNSSTK_THROW(e);
+               if(debug) cout << "Unknown header label ignored: " << label << endl;
             }
 
             if(debug) cout << "Valid is " << hex << valid << fixed << endl;
