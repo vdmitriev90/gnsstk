@@ -89,6 +89,7 @@ def _expected_erp_filenames(start_date, end_date):
         ddd = f"{d.timetuple().tm_yday:03d}"
 
         names.add(f"COD0MGXFIN_{yyyy}{ddd}0000_03D_12H_ERP.ERP")
+        names.add(f"COD0MGXFIN_{yyyy}{ddd}0000_01D_12H_ERP.ERP")
 
     return names
 

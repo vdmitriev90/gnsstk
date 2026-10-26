@@ -173,6 +173,22 @@ def download_erp(date, output_dir):
     if download_and_extract(url, path):
         return
 
+    # ===================== FALLBACK: COD MGXFIN ERP 01D =====================
+    cod1d_filename = f"COD0MGXFIN_{yyyy}{ddd}0000_01D_12H_ERP.ERP.gz"
+    cod1d_extracted = os.path.join(output_dir, cod1d_filename[:-3])
+
+    if os.path.exists(cod1d_extracted):
+        log(f"ERP (COD 01D) already exists, skipping: {relpath(cod1d_extracted)}")
+        return
+
+    url = f"https://cddis.nasa.gov/archive/gnss/products/{gps_week}/{cod1d_filename}"
+    path = os.path.join(output_dir, cod1d_filename)
+
+    log(f"Trying ERP (COD 01D): {url}")
+
+    if download_and_extract(url, path):
+        return
+
     fail(f"ERP download failed for {date:%Y-%m-%d}")
 
 def download_osb(date, output_dir):
