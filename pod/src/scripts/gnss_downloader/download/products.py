@@ -47,7 +47,7 @@ def download_ionex(date, output_dir):
   if download_and_extract(url, path):
     return
 
-  fail(f"IONEX download failed for {yyyy}-{ddd}")
+  fail(f"IONEX download failed for {date:%Y-%m-%d}")
 
 
 def download_clk(date, output_dir):
@@ -95,7 +95,7 @@ def download_clk(date, output_dir):
     if download_and_extract(url, path):
         return
 
-    fail(f"CLK download failed for {yyyy}-{ddd}")
+    fail(f"CLK download failed for {date:%Y-%m-%d}")
 
 
 def download_sp3(date, output_dir):
@@ -143,7 +143,7 @@ def download_sp3(date, output_dir):
     if download_and_extract(url, path):
         return
 
-    fail(f"SP3 download failed for {yyyy}-{ddd}")
+    fail(f"SP3 download failed for {date:%Y-%m-%d}")
 
 
 def download_erp(date, output_dir):
@@ -173,7 +173,7 @@ def download_erp(date, output_dir):
     if download_and_extract(url, path):
         return
 
-    fail(f"ERP download failed for {yyyy}-{ddd}")
+    fail(f"ERP download failed for {date:%Y-%m-%d}")
 
 def download_osb(date, output_dir):
     gps_week = int((date - datetime.date(1980, 1, 6)).days / 7)
@@ -216,7 +216,7 @@ def download_osb(date, output_dir):
     log(f"OSB not found, trying fallback: {legacy_url}")
 
     if not download_and_extract(legacy_url, legacy_path):
-        fail(f"OSB download failed for {yyyy}-{ddd}")
+        fail(f"OSB download failed for {date:%Y-%m-%d}")
 def download_brdc_gps(date, output_dir):
   year = date.year
   doy = date.timetuple().tm_yday
@@ -255,7 +255,7 @@ def download_brdc_gps(date, output_dir):
   log(f"BRDC nav not found, trying legacy fallback: {legacy_url}")
 
   if not download_and_extract(legacy_url, legacy_path):
-    fail(f"BRDC nav download failed for {yyyy}-{ddd}")
+    fail(f"BRDC nav download failed for {date:%Y-%m-%d}")
 
 
 def download_brdc_glo(date, output_dir):
@@ -296,7 +296,7 @@ def download_brdc_glo(date, output_dir):
   log(f"BRDC GLO nav not found, trying legacy fallback: {legacy_url}")
 
   if not download_and_extract(legacy_url, legacy_path):
-    fail(f"BRDC GLO nav download failed for {yyyy}-{ddd}")
+    fail(f"BRDC GLO nav download failed for {date:%Y-%m-%d}")
 
 def download_brdm(date, output_dir):
   year = date.year

@@ -1,11 +1,12 @@
 import argparse
+import shutil
 import sys
 import os
 
 from gnss_downloader.logging_utils import error, set_log_file, log_file
 from gnss_downloader.download.common import TIMEOUT, RETRIES
 from gnss_downloader.debug_utils import setup_debug
-from gnss_downloader.orchestrator import load_orchestrator_config, run_orchestrator
+from gnss_downloader.orchestrator import load_orchestrator_config, run_orchestrator, ProjectLayout
 
 
 def parse_args():
@@ -16,15 +17,25 @@ def parse_args():
 
 
 def main(args):
+
   config_path = os.path.abspath(args.config)
-  set_log_file(os.path.dirname(config_path))
+  config = load_orchestrator_config(config_path)
+
+  layout = ProjectLayout.from_config(config)
+  layout.create_directories()
+  set_log_file(layout.logs_dir)
   log_file("=== Start ===")
   log_file(f"Command: {' '.join(sys.argv)}")
   log_file(f"Arguments: config={config_path} debug={args.debug}")
   log_file(f"Settings: TIMEOUT={TIMEOUT} RETRIES={RETRIES} cwd={os.getcwd()}")
+  log_file(f"Project directory: {layout.root}")
 
-  config = load_orchestrator_config(config_path)
-  run_orchestrator(config)
+  config_copy = os.path.join(layout.configs_dir, os.path.basename(config_path))
+  if os.path.normcase(os.path.abspath(config_copy)) != os.path.normcase(config_path):
+    shutil.copyfile(config_path, config_copy)
+    log_file(f"Config copied to: {config_copy}")
+
+  run_orchestrator(config, layout)
 
 
 if __name__ == "__main__":
@@ -39,4 +50,6 @@ if __name__ == "__main__":
     error(f"Fatal error: {e}")
     import traceback
     traceback.print_exc()
-    input("Press Enter to exit...")
+    if sys.stdin is not None and sys.stdin.isatty():
+      input("Press Enter to exit...")
+    sys.exit(1)

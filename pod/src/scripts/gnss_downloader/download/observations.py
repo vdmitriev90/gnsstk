@@ -44,7 +44,7 @@ def download_obs_site(date, output_dir, site_id):
   if download_and_extract(url, path):
     return True
 
-  fail(f"OBS not found: {site_id} {yyyy}-{ddd}")
+  fail(f"OBS not found: {site_id} {date:%Y-%m-%d}")
 
 
 def clean_obs_dir(base_dir):

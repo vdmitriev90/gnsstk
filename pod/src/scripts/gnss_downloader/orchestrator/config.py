@@ -36,6 +36,11 @@ def _require_file(path, key):
   return path
 
 
+def _resolve_path(base_dir, value):
+  path = value if os.path.isabs(value) else os.path.join(base_dir, value)
+  return os.path.normpath(path)
+
+
 def _parse_utc(value, key, section_name):
   text = value.strip()
   if text.endswith(("Z", "z")):
@@ -92,17 +97,20 @@ def load_orchestrator_config(path):
     raise ConfigError(f"Missing [{DEFAULT_SECTION}] section")
 
   defaults = parser[DEFAULT_SECTION]
-  processor_executable = _require_file(
-    _require(defaults, "ProcessorExecutable", DEFAULT_SECTION), "ProcessorExecutable")
-  processor_ini = _require_file(
-    _require(defaults, "ProcessorIni", DEFAULT_SECTION), "ProcessorIni")
-  project_name = _validate_project_name(_require(defaults, "ProjectName", DEFAULT_SECTION))
   working_directory = _require(defaults, "WorkingDirectory", DEFAULT_SECTION)
   if not os.path.isabs(working_directory):
     working_directory = os.path.join(os.path.dirname(os.path.abspath(path)), working_directory)
   working_directory = os.path.normpath(working_directory)
   if os.path.exists(working_directory) and not os.path.isdir(working_directory):
     raise ConfigError(f"WorkingDirectory is not a directory: {working_directory}")
+
+  processor_executable = _require_file(
+    _resolve_path(working_directory, _require(defaults, "ProcessorExecutable", DEFAULT_SECTION)),
+    "ProcessorExecutable")
+  processor_ini = _require_file(
+    _resolve_path(working_directory, _require(defaults, "ProcessorIni", DEFAULT_SECTION)),
+    "ProcessorIni")
+  project_name = _validate_project_name(_require(defaults, "ProjectName", DEFAULT_SECTION))
 
   sessions = []
   seen = set()
