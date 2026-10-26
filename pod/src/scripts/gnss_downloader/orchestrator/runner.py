@@ -1,8 +1,11 @@
 import datetime
+import os
 
 from gnss_downloader.logging_utils import log, log_file
 from gnss_downloader.download.manager import process_range
 from gnss_downloader.orchestrator.models import ProcessingJob
+from gnss_downloader.orchestrator.processor import (
+  copy_processor_template, write_job_ini, run_processor)
 
 
 def expand_jobs(config):
@@ -44,11 +47,25 @@ def run_orchestrator(config, layout):
   _info(f"Execution plan: {len(config.sessions)} session(s), {len(jobs)} job(s)")
 
 
+  template_copy = copy_processor_template(config.processor_ini, layout)
+
   for session in config.sessions:
     start_date, end_date = session_dates(session)
     sites = session_sites(session)
     _info(f"Downloading session {session.name}: {start_date} -> {end_date} sites={' '.join(sites)}")
-    process_range(start_date, end_date, layout.data_dir, sites)
-    _info(f"Session {session.name} downloaded")
+
+    def on_rover_ready(day, rover, base, session=session):
+      stamp = f"{session.name}_{rover}_{day:%Y%m%d}"
+      ini_path = write_job_ini(
+        template_copy, os.path.join(layout.root, f"{stamp}.ini"), rover, base)
+      _info(f"Processing {stamp} with {ini_path}")
+      run_processor(
+        config.processor_executable, ini_path, layout.root,
+        os.path.join(layout.logs_dir, f"processor_{stamp}.log"))
+
+    process_range(
+      start_date, end_date, layout.data_dir, sites,
+      rovers=list(session.rovers), base=session.base, on_rover_ready=on_rover_ready)
+    _info(f"Session {session.name} done")
 
   return jobs

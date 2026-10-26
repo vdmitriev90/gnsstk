@@ -159,14 +159,12 @@ def download_products_day(date, base_dir):
   os.makedirs(erp_dir, exist_ok=True)
   os.makedirs(osb_dir, exist_ok=True)
 
-  log_file(f"Processing date: {date_str}")
-
-  download_brdc_gps(date, nav_dir)
   download_sp3(date, sp3_dir)
   download_clk(date, clk_dir)
-  download_ionex(date, inx_dir)
   download_erp(date, erp_dir)
   download_osb(date, osb_dir)
+  download_ionex(date, inx_dir)
+
 
 def clean_all(base_dir):
   for subdir in ("nav", "sp3", "clk", "inx", "erp"):
@@ -177,7 +175,7 @@ def clean_all(base_dir):
       os.makedirs(path)
 
 
-def process_range(start_date, end_date, base_dir, site_ids=None):
+def process_range(start_date, end_date, base_dir, site_ids=None, rovers=None, base=None, on_rover_ready=None):
   log(f"Processing range: {start_date} -> {end_date}")
 
   os.makedirs(base_dir, exist_ok=True)
@@ -187,17 +185,27 @@ def process_range(start_date, end_date, base_dir, site_ids=None):
     window = get_window_dates(current)
     window_start, window_end = window[0], window[-1]
 
+    log_file(f"Processing date: {current}")
     log(f"--- Window for {window_start} {current} {window_end}")
     clean_outside_range(base_dir, window_start, window_end)
 
+    for d in window:
+      download_products_day(d, base_dir)
+
     nav_dir = os.path.join(base_dir, "nav")
     os.makedirs(nav_dir, exist_ok=True)
-    #download_brdm(current, nav_dir)
+    download_brdc_gps(current, nav_dir)
     download_brdc_glo(current, nav_dir)
 
-    if site_ids:
+    if rovers:
+      clean_obs_dir(base_dir)
+      if base:
+        download_obs_day(current, base_dir, [base])
+      for rover in rovers:
+        download_obs_day(current, base_dir, [rover])
+        if on_rover_ready:
+          on_rover_ready(current, rover, base)
+    elif site_ids:
       clean_obs_dir(base_dir)
       download_obs_day(current, base_dir, site_ids)
 
-    for d in window:
-      download_products_day(d, base_dir)

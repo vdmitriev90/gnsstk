@@ -30,8 +30,8 @@ def main(args):
   log_file(f"Settings: TIMEOUT={TIMEOUT} RETRIES={RETRIES} cwd={os.getcwd()}")
   log_file(f"Project directory: {layout.root}")
 
-  config_copy = os.path.join(layout.configs_dir, os.path.basename(config_path))
-  if os.path.normcase(os.path.abspath(config_copy)) != os.path.normcase(config_path):
+  config_copy = os.path.join(layout.root, os.path.basename(config_path))
+  if os.path.normcase(os.path.abspath(config_copy)) != os.path.normcase(os.path.abspath(config_path)):
     shutil.copyfile(config_path, config_copy)
     log_file(f"Config copied to: {config_copy}")
 

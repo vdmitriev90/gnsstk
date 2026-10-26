@@ -48,7 +48,7 @@ def download_obs_site(date, output_dir, site_id):
 
 
 def clean_obs_dir(base_dir):
-  obs_dir = os.path.join(base_dir, "OBS")
+  obs_dir = os.path.join(base_dir, "obs")
   if not os.path.exists(obs_dir):
     return
 
@@ -63,7 +63,7 @@ def clean_obs_dir(base_dir):
 
 
 def download_obs_day(date, base_dir, site_ids):
-  obs_dir = os.path.join(base_dir, "OBS")
+  obs_dir = os.path.join(base_dir, "obs")
   os.makedirs(obs_dir, exist_ok=True)
 
   for site_id in site_ids:
