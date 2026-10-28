@@ -54,6 +54,21 @@ option( PYTHON_USER_INSTALL "HELP: PYTHON_USER_INSTALL: SWITCH, Default= OFF, In
 option( VERSIONED_HEADER_INSTALL "HELP: VERSIONED_HEADER_INSTALL: SWITCH, Default= OFF, Install header files into maj/min versioned directory." OFF )
 option( BUILD_EXAMPLES "HELP: BUILD_EXAMPLES: SWITCH, Default = OFF, Build the examples project, in addition to the core library." OFF )
 option( BUILD_POD "HELP: BUILD_POD: SWITCH, Default = ON, Build the pod and app_runner project, in addition to the core library." ON )
+option( ASAN_SWITCH "HELP: ASAN_SWITCH: SWITCH, Default = OFF, Build with AddressSanitizer." OFF )
+
+if( ASAN_SWITCH )
+    if( MSVC )
+        add_compile_options( /fsanitize=address /Zi )
+        add_link_options( /INCREMENTAL:NO /DEBUG )
+        # ASan is incompatible with /RTC* and /ZI (edit-and-continue)
+        string( REGEX REPLACE "/RTC[1csu]+" "" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}" )
+        string( REGEX REPLACE "/RTC[1csu]+" "" CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG}" )
+        set( CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "ProgramDatabase" )
+    else()
+        add_compile_options( -fsanitize=address -fno-omit-frame-pointer -g )
+        add_link_options( -fsanitize=address )
+    endif()
+endif()
 
 set(PYTHON_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}" CACHE PATH "Directory to install SWIG files for Python")
 

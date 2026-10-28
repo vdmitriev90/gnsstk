@@ -37,8 +37,13 @@ file(GLOB_RECURSE PY_SCRIPT ${PY_SCRIPTS_DIR}/gnss_downloader/*.py)
 
 set(RUNTIME_DIR $<TARGET_FILE_DIR:app_runner>)
 
+set(RUN_ENV PYTHONPATH=${PY_SCRIPTS_DIR})
+if(ASAN_SWITCH)
+    list(APPEND RUN_ENV "ASAN_OPTIONS=verbosity=1:quarantine_size_mb=4096:detect_stack_use_after_return=1:halt_on_error=1:malloc_fill_byte=190:max_free_fill_size=4096")
+endif()
+
 add_custom_target(download_cddis
-    COMMAND ${CMAKE_COMMAND} -E env PYTHONPATH=${PY_SCRIPTS_DIR}
+    COMMAND ${CMAKE_COMMAND} -E env ${RUN_ENV}
     ${Python3_EXECUTABLE} -u -m gnss_downloader.main
     --config ${RUNTIME_DIR}/orchestrator.ini
 #   --no-download
