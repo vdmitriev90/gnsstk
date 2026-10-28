@@ -5,7 +5,7 @@ from gnss_downloader.logging_utils import log, log_file, get_log_file
 from gnss_downloader.download.manager import process_range
 from gnss_downloader.orchestrator.models import ProcessingJob
 from gnss_downloader.orchestrator.processor import (
-  copy_processor_template, write_job_ini, run_processor, read_key)
+  copy_processor_template, write_job_ini, run_processor, read_key, ProcessorError)
 
 
 def expand_jobs(config):
@@ -61,7 +61,10 @@ def run_orchestrator(config, layout, no_download=False):
       ini_path = template_copy
       write_job_ini(ini_path, rover, base)
       _info(f"Processing {stamp} with {ini_path}")
-      run_processor(config.processor_executable, ini_path, layout.root, get_log_file())
+      try:
+        run_processor(config.processor_executable, ini_path, layout.root, get_log_file())
+      except ProcessorError as e:
+        _info(f"Processing failed, continuing: {e}")
 
     if no_download:
       _info(f"Download skipped, Run processing session")

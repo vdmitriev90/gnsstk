@@ -62,7 +62,7 @@ def run_processor(executable, ini_path, cwd, log_path):
       [executable, ini_path], cwd=cwd, stdin=subprocess.DEVNULL,
       stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     for raw in iter(proc.stdout.readline, b""):
-      text = raw.decode("utf-8", errors="replace")
+      text = raw.decode("utf-8", errors="replace").rstrip("\r\n") + "\n"
       sys.stdout.write(text)
       sys.stdout.flush()
       out.write(text)
