@@ -28,6 +28,11 @@ namespace pod
             return ptr->getFileName();
         }
 
+        virtual std::string getBaseFileName() const override
+        {
+            return ptr->getBaseFileName();
+        }
+
         virtual SlnType desiredSlnType() const override
         {
             return ptr->desiredSlnType();

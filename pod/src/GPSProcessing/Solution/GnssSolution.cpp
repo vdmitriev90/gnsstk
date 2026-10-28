@@ -117,9 +117,12 @@ namespace pod
 
     std::string FileNameBuilder::getFileName() const
     {
-        const std::string name =
-            isDifferential(solution_.desiredSlnType()) ? buildWithBaseAndRover() : buildRoverOnly();
-        return name + "_" + currentDateStr();
+        return getBaseFileName() + "_" + currentDateStr();
+    }
+
+    std::string FileNameBuilder::getBaseFileName() const
+    {
+        return isDifferential(solution_.desiredSlnType()) ? buildWithBaseAndRover() : buildRoverOnly();
     }
 
     std::string FileNameBuilder::buildWithBaseAndRover() const

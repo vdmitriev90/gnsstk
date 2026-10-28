@@ -28,6 +28,9 @@ namespace pod
 
         std::string getFileName() const;
 
+        // File name without date suffix
+        std::string getBaseFileName() const;
+
       private:
         // Format: SiteBase-SiteRover_SlnType_System1_System2...
         std::string buildWithBaseAndRover() const;
@@ -67,6 +70,11 @@ namespace pod
         virtual std::string getFileName() const
         {
             return FileNameBuilder(*this).getFileName();
+        }
+
+        virtual std::string getBaseFileName() const
+        {
+            return FileNameBuilder(*this).getBaseFileName();
         }
 
         virtual SlnType desiredSlnType() const = 0;

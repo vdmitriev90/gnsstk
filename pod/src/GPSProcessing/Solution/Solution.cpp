@@ -144,17 +144,36 @@ namespace pod
         saveStatisticsDb();
     }
 
+    namespace
+    {
+        // Builds a unique .db path: <base>_<first epoch>[_001, _002, ...].db
+        fs::path makeUniqueDbPath(const fs::path& dir, std::string base, const GnssEpochMap& gnss_data)
+        {
+            if (!gnss_data.empty())
+                base += "_" + CivilTime(gnss_data.getInitialTime()).printf("%02y%02m%02d%02H%02M%02S");
+
+            fs::path db_path = dir / (base + ".db");
+            for (int i = 1; fs::exists(db_path); ++i)
+            {
+                std::ostringstream suffix;
+                suffix << "_" << std::setw(3) << std::setfill('0') << i;
+                db_path = dir / (base + suffix.str() + ".db");
+            }
+            return db_path;
+        }
+    } // namespace
+
     void Solution::saveSolutionDb()
     {
-        const auto file_name = solver.getFileName();
         auto& gnss_data = solver.getData();
-        gnss_data.title = file_name;
-        gnss_data.updateMetadata();
 
-        const std::string file_w_ext = file_name + ".db";
         const fs::path solutions_dir = data->opts.workingDir / "solutions";
         fs::create_directories(solutions_dir);
-        fs::path db_path(solutions_dir / file_w_ext);
+
+        const fs::path db_path = makeUniqueDbPath(solutions_dir, solver.getBaseFileName(), gnss_data);
+
+        gnss_data.title = db_path.stem().string();
+        gnss_data.updateMetadata();
 
         SolutionDatabase::create(db_path.string(), gnss_data);
     }
