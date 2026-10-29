@@ -158,7 +158,7 @@ namespace pod
    CycleSlipDetector::DetectionResult LICSDetector2::
 	   getDetection( const CommonTime& epoch,
                                        const SatID& sat,
-                                       typeValueMap& tvMap,
+                                       TypeValueRow& tvMap,
                                        const short& epochflag,
                                        const double& li,
                                        const double& lli1,

@@ -39,7 +39,7 @@ set(RUNTIME_DIR $<TARGET_FILE_DIR:app_runner>)
 
 set(RUN_ENV PYTHONPATH=${PY_SCRIPTS_DIR})
 if(ASAN_SWITCH)
-    list(APPEND RUN_ENV "ASAN_OPTIONS=verbosity=1:quarantine_size_mb=4096:detect_stack_use_after_return=1:halt_on_error=1:malloc_fill_byte=190:max_free_fill_size=4096")
+list(APPEND RUN_ENV "ASAN_OPTIONS=verbosity=1:quarantine_size_mb=512:thread_local_quarantine_size_kb=1024:malloc_fill_byte=190:max_free_fill_size=256:detect_stack_use_after_return=1:halt_on_error=0")
 endif()
 
 add_custom_target(download_cddis

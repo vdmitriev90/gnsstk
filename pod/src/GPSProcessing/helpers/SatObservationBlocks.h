@@ -11,6 +11,7 @@
 namespace gnsstk
 {
     struct typeValueMap;
+    class TypeValueRow;
     class IRinex;
     template <class T>
     class Vector;
@@ -47,7 +48,7 @@ namespace pod
         gnsstk::SatID sat;
 
         /// Pointer to raw observation storage (from GNSS data)
-        const gnsstk::typeValueMap* data = nullptr;
+        const gnsstk::TypeValueRow* data = nullptr;
 
         /// List of actual measurements used in filter
         std::vector<Measurement> measurements;

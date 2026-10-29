@@ -372,7 +372,7 @@ namespace gnsstk
           */
       virtual double getDetection( const CommonTime& epoch,
                                    const SatID& sat,
-                                   typeValueMap& tvMap,
+                                   TypeValueRow& tvMap,
                                    const short& epochflag,
                                    const double& code,
                                    const double& phase );

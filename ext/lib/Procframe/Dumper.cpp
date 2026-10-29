@@ -180,11 +180,11 @@ namespace gnsstk
 
 
       // Print TypeIDs information.
-   void Dumper::printTypeID( const typeValueMap& tvMap )
+   void Dumper::printTypeID( const TypeValueRow& tvMap )
    {
 
          // Iterate through all 'tvMap'
-      for( typeValueMap::const_iterator itObs = tvMap.begin();
+      for( TypeValueRow::const_iterator itObs = tvMap.begin();
            itObs != tvMap.end();
            itObs++ )
       {
@@ -217,7 +217,7 @@ namespace gnsstk
 
          }  // End of 'if( printTypeSet.size() > 0 )'
 
-      }  // End of 'for( typeValueMap::const_iterator itObs = ... )'
+      }  // End of 'for( TypeValueRow::const_iterator itObs = ... )'
 
       return;
 

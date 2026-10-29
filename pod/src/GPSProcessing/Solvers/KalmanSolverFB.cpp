@@ -218,7 +218,7 @@ namespace pod
         for (const auto& block : blocks)
         {
             auto it = gData.getBody().find(block.sat);
-            if (it == gData.getBody().end() || !it->second)
+            if (it == gData.getBody().end())
                 continue;
 
             auto& values = *it->second;

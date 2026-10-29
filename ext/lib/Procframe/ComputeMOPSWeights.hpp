@@ -220,7 +220,7 @@ namespace gnsstk
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Woverloaded-virtual"
       virtual double getWeight( const SatID& sat,
-                                typeValueMap& tvMap );
+                                TypeValueRow& tvMap );
 #pragma clang diagnostic pop
 
          // Compute ionospheric sigma^2 according to Appendix J.2.3

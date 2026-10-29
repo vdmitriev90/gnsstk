@@ -39,7 +39,7 @@ namespace pod
          */
         virtual double getDetection(const gnsstk::CommonTime& epoch,
                                     const gnsstk::SatID& sat,
-                                    gnsstk::typeValueMap& tvMap,
+                                    gnsstk::TypeValueRow& tvMap,
                                     double snr);
 
         /// Returns a string identifying this object.

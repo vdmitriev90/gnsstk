@@ -58,7 +58,7 @@ namespace pod
     }
 
 #pragma region MWoubenna
-    bool MWoubenna::getCombination(const SatID& sv, const typeValueMap& tvMap, double& value) const
+    bool MWoubenna::getCombination(const SatID& sv, const TypeValueRow& tvMap, double& value) const
     {
         value = NAN;
         const TypeID first_code_type = resolver_.firstCode(sv.system);
@@ -105,7 +105,7 @@ namespace pod
 #pragma endregion
 
 #pragma region PDelta
-    bool PDelta::getCombination(const SatID& sv, const typeValueMap& tvMap, double& value) const
+    bool PDelta::getCombination(const SatID& sv, const TypeValueRow& tvMap, double& value) const
     {
         value = NAN;
 
@@ -148,7 +148,7 @@ namespace pod
 #pragma endregion
 
 #pragma region LDelta
-    bool LDelta::getCombination(const SatID& sv, const typeValueMap& tvMap, double& value) const
+    bool LDelta::getCombination(const SatID& sv, const TypeValueRow& tvMap, double& value) const
     {
         value = NAN;
 
@@ -188,7 +188,7 @@ namespace pod
 #pragma endregion
 
 #pragma region PC
-    bool PCCombination::getCombination(const SatID& sv, const typeValueMap& tvMap, double& value) const
+    bool PCCombination::getCombination(const SatID& sv, const TypeValueRow& tvMap, double& value) const
     {
         value = NAN;
 
@@ -231,7 +231,7 @@ namespace pod
 #pragma endregion
 
 #pragma region LC
-    bool LCCombimnation::getCombination(const SatID& sv, const typeValueMap& tvMap, double& value) const
+    bool LCCombimnation::getCombination(const SatID& sv, const TypeValueRow& tvMap, double& value) const
     {
         value = NAN;
 
@@ -271,7 +271,7 @@ namespace pod
 #pragma endregion
 
 #pragma region LI
-    bool LICombimnation::getCombination(const SatID& sv, const typeValueMap& tvMap, double& value) const
+    bool LICombimnation::getCombination(const SatID& sv, const TypeValueRow& tvMap, double& value) const
     {
         value = NAN;
 
@@ -295,7 +295,7 @@ namespace pod
 #pragma endregion
 
 #pragma region PrefitC1
-    bool PrefitC1::getCombination(const SatID& sv, const typeValueMap& tvMap, double& value) const
+    bool PrefitC1::getCombination(const SatID& sv, const TypeValueRow& tvMap, double& value) const
     {
         value = NAN;
 
@@ -370,7 +370,7 @@ namespace pod
 
 #pragma region PrefitP2
 
-    bool PrefitC2::getCombination(const SatID& sv, const typeValueMap& tvMap, double& value) const
+    bool PrefitC2::getCombination(const SatID& sv, const TypeValueRow& tvMap, double& value) const
     {
         value = NAN;
 
@@ -447,7 +447,7 @@ namespace pod
 #pragma endregion
 
 #pragma region PrefitPC
-    bool PrefitPC::getCombination(const SatID& sv, const typeValueMap& tvMap, double& value) const
+    bool PrefitPC::getCombination(const SatID& sv, const TypeValueRow& tvMap, double& value) const
     {
         value = NAN;
 
@@ -508,7 +508,7 @@ namespace pod
 #pragma endregion
 
 #pragma region PrefitL1
-    bool PrefitL1::getCombination(const SatID& sv, const typeValueMap& tvMap, double& value) const
+    bool PrefitL1::getCombination(const SatID& sv, const TypeValueRow& tvMap, double& value) const
     {
         value = NAN;
 
@@ -590,7 +590,7 @@ namespace pod
 #pragma endregion
 
 #pragma region PrefitL2
-    bool PrefitL2::getCombination(const SatID& sv, const typeValueMap& tvMap, double& value) const
+    bool PrefitL2::getCombination(const SatID& sv, const TypeValueRow& tvMap, double& value) const
     {
         value = NAN;
 
@@ -673,7 +673,7 @@ namespace pod
 #pragma endregion
 
 #pragma region PrefitLC
-    bool PrefitLC::getCombination(const SatID& sv, const typeValueMap& tvMap, double& value) const
+    bool PrefitLC::getCombination(const SatID& sv, const TypeValueRow& tvMap, double& value) const
     {
         value = NAN;
 
@@ -744,7 +744,7 @@ namespace pod
 
 #pragma region CodeIonoDelayL1
 
-    bool CodeIonoDelayL1::getCombination(const SatID& sv, const typeValueMap& tvMap, double& value) const
+    bool CodeIonoDelayL1::getCombination(const SatID& sv, const TypeValueRow& tvMap, double& value) const
     {
         value = NAN;
 
@@ -789,7 +789,7 @@ namespace pod
 
 #pragma region PhaseIonoDelayL1
 
-    bool PhaseIonoDelayL1::getCombination(const SatID& sv, const typeValueMap& tvMap, double& value) const
+    bool PhaseIonoDelayL1::getCombination(const SatID& sv, const TypeValueRow& tvMap, double& value) const
     {
         value = NAN;
 

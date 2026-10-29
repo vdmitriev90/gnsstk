@@ -7,15 +7,9 @@ namespace pod
 
     GnssEpoch::GnssEpoch() {}
 
+    GnssEpoch::GnssEpoch(const gnsstk::SatTypePtrMap& stpMap) : satData(stpMap) {}
     GnssEpoch::GnssEpoch(const satTypeValueMap& sData) : satData(sData) {}
-
     GnssEpoch::GnssEpoch(const gnsstk::gnssRinex& rin_epoch) : satData(rin_epoch.body) {}
-
-    GnssEpoch::GnssEpoch(const gnsstk::SatTypePtrMap& stpMap)
-    {
-        for (auto&& it : stpMap)
-            satData.emplace(it.first, (*it.second));
-    }
 
     GnssEpoch::~GnssEpoch() {}
 

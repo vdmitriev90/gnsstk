@@ -12,14 +12,8 @@ namespace pod
 
         for (auto& [sat, tvPtr] : gData)
         {
-            if (!tvPtr)
-            {
-                satRejectedSet.insert(sat);
-                continue;
-            }
-
             auto itRef = refData_.find(sat);
-            if (itRef == refData_.end() || !itRef->second)
+            if (itRef == refData_.end())
             {
                 satRejectedSet.insert(sat);
                 continue;

@@ -83,8 +83,8 @@ namespace gnsstk
          {
             SatID sat = it->first;
             
-            typeValueMap::iterator ittC1 = it->second->find(TypeID::C1);
-            typeValueMap::iterator ittP1 = it->second->find(TypeID::P1);
+            TypeValueRow::iterator ittC1 = it->second->find(TypeID::C1);
+            TypeValueRow::iterator ittP1 = it->second->find(TypeID::P1);
 
             bool hasC1( ittC1 != it->second->end() );
             bool hasP1( ittP1 != it->second->end() );

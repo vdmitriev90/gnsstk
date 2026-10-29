@@ -116,7 +116,7 @@ namespace pod
    CycleSlipDetector::DetectionResult MWCSDetector::
 	   getDetection( const CommonTime& epoch,
                                       const SatID& sat,
-                                      typeValueMap& tvMap,
+                                      TypeValueRow& tvMap,
                                       const short& epochflag,
                                       const double& mw,
                                       const double& lli1,

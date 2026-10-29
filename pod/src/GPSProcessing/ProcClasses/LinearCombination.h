@@ -17,23 +17,10 @@ namespace pod
 
         LinearCombination() = default;
         virtual ~LinearCombination() = default;
-        bool getCombination(const SatID& sv, const gnssRinex& rin_epoch, double& value) const
-        {
-            return getCombination(sv, rin_epoch.body, value);
-        }
 
-        bool getCombination(const SatID& sv, const satTypeValueMap& gData, double& value) const
-        {
-            value = NAN;
-            auto tvm = gData.find(sv);
-            if (tvm == gData.end())
-                return false;
-
-            return getCombination(sv, tvm->second, value);
-        }
 
         virtual bool getCombination(const SatID& sv,
-                                    const typeValueMap& tvMap,
+                                    const TypeValueRow& tvMap,
                                     double& value) const = 0;
 
         virtual TypeID getType(SatelliteSystem ss) const = 0;
@@ -52,7 +39,7 @@ namespace pod
         MWoubenna() {};
         virtual ~MWoubenna() {};
         virtual bool getCombination(const SatID& sv,
-                                    const typeValueMap& tvMap,
+                                    const TypeValueRow& tvMap,
                                     double& value) const override;
         virtual TypeID getType(SatelliteSystem ss) const override;
     };
@@ -63,7 +50,7 @@ namespace pod
         PDelta() {};
         virtual ~PDelta() {};
         virtual bool getCombination(const SatID& sv,
-                                    const typeValueMap& tvMap,
+                                    const TypeValueRow& tvMap,
                                     double& value) const override;
         virtual TypeID getType(SatelliteSystem ss) const override;
     };
@@ -74,7 +61,7 @@ namespace pod
         LDelta() {};
         virtual ~LDelta() {};
         virtual bool getCombination(const SatID& sv,
-                                    const typeValueMap& tvMap,
+                                    const TypeValueRow& tvMap,
                                     double& value) const override;
         virtual TypeID getType(SatelliteSystem ss) const override;
     };
@@ -85,7 +72,7 @@ namespace pod
         PCCombination() {};
         virtual ~PCCombination() {};
         virtual bool getCombination(const SatID& sv,
-                                    const typeValueMap& tvMap,
+                                    const TypeValueRow& tvMap,
                                     double& value) const override;
         virtual TypeID getType(SatelliteSystem ss) const override;
     };
@@ -96,7 +83,7 @@ namespace pod
         LCCombimnation() {};
         virtual ~LCCombimnation() {};
         virtual bool getCombination(const SatID& sv,
-                                    const typeValueMap& tvMap,
+                                    const TypeValueRow& tvMap,
                                     double& value) const override;
         virtual TypeID getType(SatelliteSystem ss) const override;
     };
@@ -107,7 +94,7 @@ namespace pod
         LICombimnation() {};
         virtual ~LICombimnation() {};
         virtual bool getCombination(const SatID& sv,
-                                    const typeValueMap& tvMap,
+                                    const TypeValueRow& tvMap,
                                     double& value) const override;
         virtual TypeID getType(SatelliteSystem ss) const override;
     };
@@ -130,7 +117,7 @@ namespace pod
 
         virtual ~PrefitC1() {};
         virtual bool getCombination(const SatID& sv,
-                                    const typeValueMap& tvMap,
+                                    const TypeValueRow& tvMap,
                                     double& value) const override;
         virtual TypeID getType(SatelliteSystem ss) const override;
     };
@@ -142,7 +129,7 @@ namespace pod
         PrefitC2(bool isPreciseModel) : PrefitCode(isPreciseModel) {};
         virtual ~PrefitC2() {};
         virtual bool getCombination(const SatID& sv,
-                                    const typeValueMap& tvMap,
+                                    const TypeValueRow& tvMap,
                                     double& value) const override;
         virtual TypeID getType(SatelliteSystem ss) const override;
     };
@@ -154,7 +141,7 @@ namespace pod
         PrefitPC(bool isPreciseModel) : PrefitCode(isPreciseModel) {};
         virtual ~PrefitPC() {};
         virtual bool getCombination(const SatID& sv,
-                                    const typeValueMap& tvMap,
+                                    const TypeValueRow& tvMap,
                                     double& value) const override;
         virtual TypeID getType(SatelliteSystem ss) const override;
     };
@@ -165,7 +152,7 @@ namespace pod
         PrefitLC() {};
         virtual ~PrefitLC() {};
         virtual bool getCombination(const SatID& sv,
-                                    const typeValueMap& tvMap,
+                                    const TypeValueRow& tvMap,
                                     double& value) const override;
         virtual TypeID getType(SatelliteSystem ss) const override;
     };
@@ -176,7 +163,7 @@ namespace pod
         PrefitL1() {};
         virtual ~PrefitL1() {};
         virtual bool getCombination(const SatID& sv,
-                                    const typeValueMap& tvMap,
+                                    const TypeValueRow& tvMap,
                                     double& value) const override;
         virtual TypeID getType(SatelliteSystem ss) const override;
     };
@@ -187,7 +174,7 @@ namespace pod
         PrefitL2() {};
         virtual ~PrefitL2() {};
         virtual bool getCombination(const SatID& sv,
-                                    const typeValueMap& tvMap,
+                                    const TypeValueRow& tvMap,
                                     double& value) const override;
         virtual TypeID getType(SatelliteSystem ss) const override;
     };
@@ -198,7 +185,7 @@ namespace pod
         CodeIonoDelayL1() {};
         virtual ~CodeIonoDelayL1() {};
         virtual bool getCombination(const SatID& sv,
-                                    const typeValueMap& tvMap,
+                                    const TypeValueRow& tvMap,
                                     double& value) const override;
         virtual TypeID getType(SatelliteSystem ss) const override;
     };
@@ -209,7 +196,7 @@ namespace pod
         PhaseIonoDelayL1() {};
         virtual ~PhaseIonoDelayL1() {};
         virtual bool getCombination(const SatID& sv,
-                                    const typeValueMap& tvMap,
+                                    const TypeValueRow& tvMap,
                                     double& value) const override;
         virtual TypeID getType(SatelliteSystem ss) const override;
     };

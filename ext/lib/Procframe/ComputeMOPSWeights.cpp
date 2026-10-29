@@ -158,7 +158,7 @@ namespace gnsstk
        *
        */
    double ComputeMOPSWeights::getWeight( const SatID& sat,
-                                         typeValueMap& tvMap )
+                                         TypeValueRow& tvMap )
    {
 
          // Value to store computed iono correction

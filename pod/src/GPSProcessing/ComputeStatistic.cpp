@@ -110,7 +110,7 @@ namespace pod
             return TypeID(static_cast<TypeID::ValueType>(v));
         }
 
-        std::optional<double> elevationOf(const typeValueMap& tv)
+        std::optional<double> elevationOf(const TypeValueRow& tv)
         {
             const auto it = tv.find(TypeID::elevation);
             if (it == tv.end() || !std::isfinite(it->second))
@@ -118,7 +118,7 @@ namespace pod
             return it->second;
         }
 
-        bool isRejected(const typeValueMap& tv)
+        bool isRejected(const TypeValueRow& tv)
         {
             const auto it = tv.find(TypeID::satStatus);
             return it != tv.end() && it->second < 0;
@@ -134,7 +134,7 @@ namespace pod
         const int binCount = static_cast<int>(ELEV_BIN_MAX_DEG / ELEV_BIN_STEP_DEG);
 
         // accumulates all residual types of one satellite at one epoch
-        auto accumulate = [&](const SatID& sat, const typeValueMap& tv) {
+        auto accumulate = [&](const SatID& sat, const TypeValueRow& tv) {
             const auto el = elevationOf(tv);
             const bool rejected = isRejected(tv);
             const bool inBins = el && *el >= 0.0 && *el <= ELEV_BIN_MAX_DEG;

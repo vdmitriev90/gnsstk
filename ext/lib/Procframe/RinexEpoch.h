@@ -43,47 +43,49 @@ namespace gnsstk
 
     public:
 
-        RinexEpoch( ) = default; 
+		RinexEpoch( ) = default; 
 		RinexEpoch(const RinexEpoch & other);
-        RinexEpoch(const gnssRinex & gRin);
+		RinexEpoch(const gnssRinex & gRin);
+		RinexEpoch(const sourceEpochRinexHeader& header, SatTable body);
 
-        void resetCurrData();
+		/// Makes softly removed satellites visible again.
+		void resetCurrData();
 
-        SatTypePtrMap& getBody()
-        {
-            return currData;
-        };
+		SatTypePtrMap& getBody()
+		{
+			return body_;
+		};
 
 		virtual RinexEpoch& operator=(const RinexEpoch & other);
 
 		virtual RinexEpoch& operator=(const IRinex & other) override;
-		
+
 		virtual irinex_uptr clone() const override
 		{
 			return std::make_unique<RinexEpoch>(*this);
 		}
 
-        const SatTypePtrMap& getBody() const
-        {
-            return currData;
-        };
+		const SatTypePtrMap& getBody() const
+		{
+			return body_;
+		};
 
-        sourceEpochRinexHeader& getHeader()
-        {
-            return rinex.header;
-        }
+		sourceEpochRinexHeader& getHeader()
+		{
+			return header_;
+		}
 
 		const sourceEpochRinexHeader& getHeader() const 
-        {
-            return rinex.header;
-        }
+		{
+			return header_;
+		}
+
+		/// Converts all stored satellites, including softly removed ones.
+		gnssRinex toGnssRinex() const;
 
 		std::istream& read(std::istream& i);
 
-		std::ostream& print(std::ostream& i) const
-		{
-			return i << rinex;
-		}
+		std::ostream& print(std::ostream& i) const;
 
         RinexEpoch extractSatID(const SatID& satellite) const;
 
@@ -118,9 +120,9 @@ namespace gnsstk
 		RinexEpoch& removeSatID(const SatIDSet& satSet);
 
     protected:
-        SatTypePtrMap currData;
+        sourceEpochRinexHeader header_;
 
-        gnssRinex rinex;
+        SatTable body_;
 
     };
 }

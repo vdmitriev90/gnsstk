@@ -22,14 +22,11 @@ namespace pod
 
         for (const auto& [sat, tvPtr] : gData.getBody())
         {
-            if (!tvPtr)
-                continue;
-
             const auto& values = *tvPtr;
 
             SatObservationBlock block;
             block.sat = sat;
-            block.data = tvPtr;
+            block.data = &tvPtr;
 
             block.reserve(slots.size());
 

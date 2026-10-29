@@ -263,14 +263,14 @@ namespace pod
 
         bool computeSatPos(const gnsstk::SatID& satid,
                            const gnsstk::CommonTime& time,
-                           const gnsstk::typeValueMap& data,
+                           const gnsstk::TypeValueRow& data,
                            gnsstk::Triple& svPos);
 
         void applyBandCorrections(const gnsstk::SatID& satid,
                                   const gnsstk::CommonTime& time,
                                   const gnsstk::Triple& svPos,
                                   const gnsstk::Triple& sunPos,
-                                  gnsstk::typeValueMap& data);
+                                  gnsstk::TypeValueRow& data);
 
         /** Compute satellite antenna phase correction using the absolute
           * ANTEX model.

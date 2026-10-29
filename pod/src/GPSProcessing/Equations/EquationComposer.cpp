@@ -155,7 +155,7 @@ void EquationComposer::updateSystemMatrices(gnsstk::IRinex& gData,
         for (const auto& block : satBlocks_)
         {
             auto it = gData.getBody().find(block.sat);
-            if (it == gData.getBody().end() || !it->second)
+            if (it == gData.getBody().end())
             {
                 row += static_cast<int>(block.size());
                 continue;

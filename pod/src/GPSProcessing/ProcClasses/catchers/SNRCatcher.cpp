@@ -108,7 +108,7 @@ namespace pod
 
     double SNRCatcher::getDetection(const gnsstk::CommonTime& epoch,
                                     const gnsstk::SatID& sat,
-                                    gnsstk::typeValueMap& tvMap,
+                                    gnsstk::TypeValueRow& tvMap,
                                     double snr)
     {
         bool reportCS(false);

@@ -326,7 +326,7 @@ namespace gnsstk
 
 
          /// Print TypeIDs information.
-      void printTypeID( const typeValueMap& tvMap );
+      void printTypeID( const TypeValueRow& tvMap );
 
 
    }; // End of class 'Dumper'

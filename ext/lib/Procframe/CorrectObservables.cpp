@@ -53,7 +53,7 @@ namespace gnsstk
                                  Antenna::frequencyType freq,
                                  bool usePCV,
                                  bool useAzimuth,
-                                 const typeValueMap& data )
+                                 const TypeValueRow& data )
       {
          Triple result( antenna.getAntennaEccentricity(freq) );
 
@@ -89,7 +89,7 @@ namespace gnsstk
                                  Antenna::frequencyType fallback,
                                  bool usePCV,
                                  bool useAzimuth,
-                                 const typeValueMap& data )
+                                 const TypeValueRow& data )
       {
          try
          {

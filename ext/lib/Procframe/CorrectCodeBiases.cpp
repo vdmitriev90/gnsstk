@@ -122,7 +122,7 @@ namespace gnsstk
          for (auto it = gData.begin(); it != gData.end(); ++it)
          {
             SatID sat = it->first;
-            for(typeValueMap::iterator itt = it->second->begin();
+            for(TypeValueRow::iterator itt = it->second->begin();
                 itt != it->second->end();
                 ++itt)
             {

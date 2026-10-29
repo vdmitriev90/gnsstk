@@ -53,9 +53,7 @@ namespace pod
 		for (auto it = gData.begin(); it != gData.end(); ++it)
 		{
 			const SatID& sat = it->first;
-			typeValueMap* tvMap = it->second;
-			if (tvMap == nullptr)
-				continue;
+			TypeValueRow* tvMap = &it->second;
 
 			const auto sysIt = codeMappings_.find(sat.system);
 			if (sysIt == codeMappings_.end())

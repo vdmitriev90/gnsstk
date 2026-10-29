@@ -164,7 +164,7 @@ namespace pod
 
     bool ComputeSatPCenter::computeSatPos(const SatID& satid,
                                           const CommonTime& time,
-                                          const typeValueMap& data,
+                                          const TypeValueRow& data,
                                           Triple& svPos)
     {
         const auto satXIt = data.find(TypeID::satX);
@@ -203,7 +203,7 @@ namespace pod
                                                  const CommonTime& time,
                                                  const Triple& svPos,
                                                  const Triple& sunPos,
-                                                 typeValueMap& data)
+                                                 TypeValueRow& data)
     {
         for (const auto& band : bands)
         {

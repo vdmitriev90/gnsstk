@@ -13,7 +13,7 @@ namespace pod
         const gnsstk::SatID& sat;
 
         /// Pointer to full satellite data
-        const gnsstk::typeValueMap* data;
+        const gnsstk::TypeValueRow* data;
 
         /// Measurement type (prefit TypeID, e.g. prefitL1, prefitC1)
         gnsstk::TypeID type;

@@ -141,7 +141,7 @@ namespace pod
 
         virtual DetectionResult getDetection(const gnsstk::CommonTime& epoch,
                                              const gnsstk::SatID& sat,
-                                             gnsstk::typeValueMap& tvMap,
+                                             gnsstk::TypeValueRow& tvMap,
                                              const short& epochflag,
                                              const double& li,
                                              const double& lli1,
