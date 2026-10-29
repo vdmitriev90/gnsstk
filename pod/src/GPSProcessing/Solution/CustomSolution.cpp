@@ -1,9 +1,6 @@
 #include "CustomSolution.h"
 
 #include "CdDiffSolution.h"
-#include "PODSolution.h"
-#include "PPPSolution.h"
-#include "PPPSolutionBase.h"
 #include "PdFixedSolution.h"
 #include "PdFloatSolution.h"
 #include "PppFloatSolution.h"
@@ -24,11 +21,10 @@ namespace pod
         case pod::SlnType::PdFixed:
             return std::make_unique<PdFixedSolution>(dataStore);
         case pod::SlnType::PppFloat:
-            if (dataStore->opts.isSpaceborneRcv)
-                return std::make_unique<PODSolution>(dataStore);
-            else
-                // return std::make_unique<PPPSolution>(dataStore);
-                return std::make_unique<PppFloatSolution>(dataStore);
+            //if (dataStore->opts.isSpaceborneRcv)
+                //return std::make_unique<PODSolution>(dataStore);
+            //else
+              return std::make_unique<PppFloatSolution>(dataStore);
             break;
         case pod::SlnType::PppFixed:
             break;
