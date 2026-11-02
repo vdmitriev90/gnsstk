@@ -8,7 +8,7 @@ namespace pod
     class KalmanSolver : public gnsstk::SolverBase, public gnsstk::ProcessingClass
     {
       public:
-        typedef std::map<gnsstk::CommonTime, EquationComposer::FilterState> filterHistory;
+        typedef std::map<gnsstk::CommonTime, EquationComposer::FilterState> FilterHistory;
 
       protected:
         // set of all possible TypeID for code pseudorange postfit residuals
@@ -28,55 +28,30 @@ namespace pod
 
         KalmanSolver(EquationComposerPtr eqs);
 
-        virtual ~KalmanSolver();
+        virtual ~KalmanSolver() = default;
 
         virtual gnsstk::IRinex& Process(gnsstk::IRinex& gData);
 
         // Returns a string identifying this object.
-        virtual std::string getClassName(void) const
-        {
-            return "KalmanSolver";
-        }
+        virtual std::string getClassName() const;
 
-        virtual EquationComposer& eqComposer()
-        {
-            return *equations;
-        }
+        virtual EquationComposer& eqComposer();
 
         // return sqrt(vpv/(n-p)) value
-        virtual double getSigma() const
-        {
-            return sigma;
-        }
+        virtual double getSigma() const;
 
-        virtual double getPhaseSigma() const
-        {
-            return phaseSigma;
-        }
+        virtual double getPhaseSigma() const;
 
-        virtual double getCodeSigma() const
-        {
-            return codeSigma;
-        }
+        virtual double getCodeSigma() const;
 
         // return minimum number of satellites requared for state esimation
-        virtual double getMinSatNumber() const
-        {
-            return minSatNumber;
-        }
+        virtual double getMinSatNumber() const;
 
         // return isValid
-        virtual bool getValid() const
-        {
-            return isValid;
-        }
+        virtual bool getValid() const;
 
         // set minimum number of satellites requared for state esimation
-        virtual KalmanSolver& setMinSatNumber(int value)
-        {
-            minSatNumber = value;
-            return *this;
-        }
+        virtual KalmanSolver& setMinSatNumber(int value);
 
         // get solution
         virtual double getSolution(const FilterParameter& type) const;
@@ -84,25 +59,16 @@ namespace pod
         // get solution variance
         virtual double getVariance(const FilterParameter& type) const;
 
-        virtual const EquationComposer::FilterState& getState() const
-        {
-            return equations->getState();
-        }
+        virtual const EquationComposer::FilterState& getState() const;
 
-        virtual KalmanSolver& setState(const EquationComposer::FilterState& newState)
-        {
-            equations->setState(newState);
-            return *this;
-        }
-        bool getResetState()
-        {
-            return isReset;
-        }
+        virtual KalmanSolver& setState(const EquationComposer::FilterState& newState);
 
-        bool ResetIfRequared(const gnsstk::CommonTime& t, const filterHistory& data);
+        bool getResetState();
+
+        bool ResetIfRequared(const gnsstk::CommonTime& t, const FilterHistory& data);
 
         // filter states, processed so far will be used in case of filer reset
-        std::map<gnsstk::CommonTime, EquationComposer::FilterState> FilterData;
+        FilterHistory FilterData;
 
       protected:
         double getSigma(const gnsstk::TypeIDSet& types) const;
@@ -118,10 +84,7 @@ namespace pod
         // reject bad observation using residuals value
         virtual gnsstk::IRinex& reject(gnsstk::IRinex& gData, const gnsstk::TypeIDSet& typeOfResid);
 
-        virtual void reset()
-        {
-            equations->clearData();
-        }
+        virtual void reset();
 
         gnsstk::CommonTime t_pre = gnsstk::CommonTime::BEGINNING_OF_TIME;
 

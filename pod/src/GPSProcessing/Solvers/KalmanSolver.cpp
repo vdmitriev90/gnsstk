@@ -42,8 +42,7 @@ namespace pod
     };
 
     // union of code and phase postfit residual TypeIDs
-    const std::set<gnsstk::TypeID> KalmanSolver::allResTypes = []
-    {
+    const std::set<gnsstk::TypeID> KalmanSolver::allResTypes = [] {
         std::set<gnsstk::TypeID> s(codeResTypes);
         s.insert(phaseResTypes.begin(), phaseResTypes.end());
         return s;
@@ -56,7 +55,6 @@ namespace pod
 
     KalmanSolver::KalmanSolver(EquationComposerPtr eqs) : firstTime(true), equations(eqs), isValid(false) {}
 
-    KalmanSolver::~KalmanSolver() {}
 
     IRinex& KalmanSolver::Process(IRinex& gData)
     {
@@ -70,7 +68,7 @@ namespace pod
             isReset = true;
             FilterData[t_pre] = getState();
             reset();
-            DBOUT_LINE("dt= " << dt << "->RESET")
+            DBOUT_LINE("Too big gap: " << dt << " sec. Reset Filter")
             // resetEpoches.insert(gData.getHeader().epoch);
         }
         t_pre = gData.getHeader().epoch;
@@ -132,19 +130,19 @@ namespace pod
             // DBOUT_LINE("phiMatrix: " << phiMatrix.diagCopy());
 
             // prepare
-            Matrix<double> hMatrixTr = transpose(hMatrix);
-            Matrix<double> phiMatrixTr = transpose(phiMatrix);
-            Matrix<double> hTrTimesW = hMatrixTr * weightMatrix;
+            const Matrix<double> hMatrixTr = transpose(hMatrix);
+            const Matrix<double> phiMatrixTr = transpose(phiMatrix);
+            const Matrix<double> hTrTimesW = hMatrixTr * weightMatrix;
 
             // predict
-            Matrix<double> Pminus = phiMatrix * covMatrix * phiMatrixTr + qMatrix;
-            Vector<double> xminus = phiMatrix * solution;
+            const Matrix<double> Pminus = phiMatrix * covMatrix * phiMatrixTr + qMatrix;
+            const Vector<double> xminus = phiMatrix * solution;
 
             // DBOUT_LINE("Pminus\n" << Pminus);
             // correct
             try
             {
-                Matrix<double> invPminus = inverseChol(Pminus);
+                const Matrix<double> invPminus = inverseChol(Pminus);
                 covMatrix = inverseChol(hTrTimesW * hMatrix + invPminus);
                 solution = covMatrix * (hTrTimesW * measVector + invPminus * xminus);
             }
@@ -152,7 +150,7 @@ namespace pod
             {
                 std::cerr << e << endl;
 
-                Matrix<double> invPminus = inverseSVD(Pminus);
+                const Matrix<double> invPminus = inverseSVD(Pminus);
                 covMatrix = inverseSVD(hTrTimesW * hMatrix + invPminus);
                 solution = covMatrix * (hTrTimesW * measVector + invPminus * xminus);
             }
@@ -170,9 +168,9 @@ namespace pod
             fixAmbiguities(gData);
             // storeAmbiguities(gData);
 
-            auto vpv = postfitResiduals * weightMatrix * postfitResiduals;
-            int numMeas = postfitResiduals.size();
-            int numPar = solution.size();
+            const auto vpv = postfitResiduals * weightMatrix * postfitResiduals;
+            const int numMeas = postfitResiduals.size();
+            const int numPar = solution.size();
 
             sigma = (numMeas > numPar) ? sqrt(vpv(0) / (numMeas - numPar)) : 0.0;
             phaseSigma = getSigma(phaseResTypes);
@@ -301,9 +299,38 @@ namespace pod
         return gData;
     }
 
+    inline void KalmanSolver::reset()
+    {
+        equations->clearData();
+    }
+
     int KalmanSolver::getUnknownIndex(const FilterParameter& parameter) const
     {
         return equations->getLayout().index(parameter);
+    }
+
+    double KalmanSolver::getCodeSigma() const
+    {
+        return codeSigma;
+    }
+
+    // return minimum number of satellites requared for state esimation
+    double KalmanSolver::getMinSatNumber() const
+    {
+        return minSatNumber;
+    }
+
+    // return isValid
+    bool KalmanSolver::getValid() const
+    {
+        return isValid;
+    }
+
+    // set minimum number of satellites requared for state esimation
+    KalmanSolver& KalmanSolver::setMinSatNumber(int value)
+    {
+        minSatNumber = value;
+        return *this;
     }
 
     double KalmanSolver::getSolution(const FilterParameter& parameter) const
@@ -320,7 +347,23 @@ namespace pod
 
     } // End of method 'SolverLMS::getVariance()'
 
-    bool KalmanSolver::ResetIfRequared(const gnsstk::CommonTime& t, const KalmanSolver::filterHistory& data)
+    const EquationComposer::FilterState& KalmanSolver::getState() const
+    {
+        return equations->getState();
+    }
+
+    KalmanSolver& KalmanSolver::setState(const EquationComposer::FilterState& newState)
+    {
+        equations->setState(newState);
+        return *this;
+    }
+
+    bool KalmanSolver::getResetState()
+    {
+        return isReset;
+    }
+
+    bool KalmanSolver::ResetIfRequared(const gnsstk::CommonTime& t, const KalmanSolver::FilterHistory& data)
     {
         double dt = t - t_pre;
 
