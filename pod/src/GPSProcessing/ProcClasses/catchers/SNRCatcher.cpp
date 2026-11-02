@@ -14,11 +14,7 @@ namespace pod
         , satThreshold(10)
         , maxBufferSize(30) {};
 
-    SNRCatcher::SNRCatcher(const TypeID& obsType,
-                           const TypeID& resType,
-                           double maxgap,
-                           double tresh,
-                           int maxCount)
+    SNRCatcher::SNRCatcher(const TypeID& obsType, const TypeID& resType, double maxgap, double tresh, int maxCount)
         : obsType(obsType)
         , resultType1(resType)
         , deltaTMax(maxgap)
@@ -84,15 +80,15 @@ namespace pod
             rejTableItem.insert(satRejectedSet.begin(), satRejectedSet.end());
 
             // palliative guard in case of sharp drop SNR for huge amount of observable satellites
-            if (affectedSatSet.size() < 3)
-                for (auto&& sv : affectedSatSet)
-                {
-                    rejTableItem.insert(sv);
-                    auto& it = gData[sv];
-                    (*it)[resultType1] += 1.0;
-                    if ((*it)[resultType1] > 1.0)
-                        (*it)[resultType1] = 1.0;
-                }
+            //if (affectedSatSet.size() < 3)
+            for (auto&& sv : affectedSatSet)
+            {
+                rejTableItem.insert(sv);
+                auto& it = gData[sv];
+                (*it)[resultType1] += 1.0;
+                if ((*it)[resultType1] > 1.0)
+                    (*it)[resultType1] = 1.0;
+            }
 
             return gData;
         }
@@ -106,77 +102,46 @@ namespace pod
 
     } // End of method 'SNRCatcher::Process()'
 
-    double SNRCatcher::getDetection(const gnsstk::CommonTime& epoch,
-                                    const gnsstk::SatID& sat,
-                                    gnsstk::TypeValueRow& tvMap,
-                                    double snr)
+ double SNRCatcher::getDetection(const CommonTime& epoch, const SatID& sat, TypeValueRow& tvMap, double snr)
     {
-        bool reportCS(false);
-
-        // Difference between current and former epochs, in sec
-        double currentDeltaT(0.0);
         auto& currData = data[sat];
-        size_t s(currData.epochs.size());
 
-        // Get the difference between current epoch and LAST epoch,
-        // in seconds, but first test if we have epoch data inside LIData
-        if (s > 0)
+        if (!currData.epochs.empty())
         {
-            currentDeltaT = (epoch - currData.epochs.back());
-        }
-        else
-        {
-            // This will yield a very big value
-            currentDeltaT = (epoch - CommonTime::BEGINNING_OF_TIME);
+            const double dt = epoch - currData.epochs.back();
+
+            if (dt <= 0.0 || dt > deltaTMax)
+            {
+                currData.epochs.clear();
+                currData.buffer.clear();
+            }
         }
 
-        if (currentDeltaT > deltaTMax)
+        bool reportDrop = false;
+
+        if (currData.buffer.size() >= static_cast<size_t>(minBufferSize))
         {
-            // We reset buffer with the following lines
-            currData.epochs.clear();
-            currData.buffer.clear();
+            double avg = 0.0;
 
-            // current buffer size should be updated
-            s = currData.epochs.size();
-        }
-        // Check if we have enough data to start processing.
-        if (s >= (size_t)minBufferSize)
-        {
-            double avg(0);
-            for (auto it : currData.buffer)
-                avg += it;
+            for (double value : currData.buffer)
+                avg += value;
 
-            avg /= s;
-            if ((avg - snr) > satThreshold /*&& snr < 40*/)
-                reportCS = true;
-        }
-        if (!reportCS)
-        { // Store current epoch at the end of deque
-            currData.epochs.push_back(epoch);
+            avg /= static_cast<double>(currData.buffer.size());
 
-            // Store current value of LI at the end of deque
-            currData.buffer.push_back(snr);
-
-            // Update current buffer size
-            s = currData.epochs.size();
+            reportDrop = ((avg - snr) > satThreshold);
         }
 
-        // Check if we have exceeded maximum window size
-        if (s > size_t(maxBufferSize))
+        // Update history buffer
+        currData.epochs.push_back(epoch);
+        currData.buffer.push_back(snr);
+
+        while (currData.buffer.size() > static_cast<size_t>(maxBufferSize))
         {
-            // Get rid of oldest data, which is at the beginning of deque
             currData.epochs.pop_front();
             currData.buffer.pop_front();
         }
 
-        if (reportCS)
-        {
-            return 1.0;
-        }
-        else
-        {
-            return 0.0;
-        }
+        return reportDrop ? 1.0 : 0.0;
     }
 
     // Returns a string identifying this object.
