@@ -123,6 +123,9 @@ namespace pod
 
         size_t totalMeasurements() const;
 
+        /// Remove the block of @sat. Returns true if a block was removed.
+        bool remove(const gnsstk::SatID& sat);
+
       private:
         Container blocks_;
     };
@@ -144,6 +147,10 @@ namespace pod
     ResidualInfo findMaxResidual(const SatObservationBlocks& blocks,
                                  const gnsstk::Vector<double>& residuals,
                                  const std::set<gnsstk::TypeID>& postfitTypes);
+
+    /// Describe the satellite/postfit type owning @row in the current block layout.
+    /// Returns ResidualInfo with row == -1 if @row is out of range.
+    ResidualInfo getResidualInfo(const SatObservationBlocks& blocks, int row);
 
     /// Collect the contiguous set of residual rows contributed by @sat.
     std::set<int> getSatRows(const SatObservationBlocks& blocks, const gnsstk::SatID& sat);

@@ -42,8 +42,6 @@ namespace pod
 
         virtual double getPhaseSigma() const;
 
-        virtual double getCodeSigma() const;
-
         // return minimum number of satellites requared for state esimation
         virtual double getMinSatNumber() const;
 
@@ -78,50 +76,42 @@ namespace pod
         // resolve carrier  phase ambiguities ot integer values
         virtual void fixAmbiguities(gnsstk::IRinex& gData);
 
-        // check phase data integrity
-        int checkPhase(gnsstk::IRinex& gData);
+        // measurement update: sets solution, covMatrix and postfitResiduals
+        void update(const gnsstk::Vector<double>& xminus,
+                    const gnsstk::Matrix<double>& Pminus,
+                    const gnsstk::Matrix<double>& hMatrix,
+                    const gnsstk::Matrix<double>& weightMatrix,
+                    const gnsstk::Vector<double>& measVector);
+
+        // check phase data integrity, re-initialize suspicious ambiguities in the a priori state
+        int checkPhase(gnsstk::IRinex& gData,
+                       gnsstk::Vector<double>& xminus,
+                       gnsstk::Matrix<double>& Pminus,
+                       const gnsstk::Matrix<double>& hMatrix,
+                       const gnsstk::Matrix<double>& weightMatrix);
 
         // reject bad observation using residuals value
         virtual gnsstk::IRinex& reject(gnsstk::IRinex& gData, const gnsstk::TypeIDSet& typeOfResid);
 
         virtual void reset();
 
-        gnsstk::CommonTime t_pre = gnsstk::CommonTime::BEGINNING_OF_TIME;
-
-        bool firstTime;
+        gnsstk::CommonTime lastTime_ = gnsstk::CommonTime::BEGINNING_OF_TIME;
 
         // Minimum satellites number required for state computation
-        size_t minSatNumber;
-
-        // State transition matrix
-        gnsstk::Matrix<double> phiMatrix;
-
-        // Process noise matrix
-        gnsstk::Matrix<double> qMatrix;
-
-        // Geometry matrix (derivative of observations wrt state)
-        gnsstk::Matrix<double> hMatrix;
-
-        // weights matrix
-        gnsstk::Matrix<double> weightMatrix;
-
-        // Measurements vector (prefit-residuals)
-        gnsstk::Vector<double> measVector;
+        size_t minSatNumber_;
 
         // Weight unit error (sqrt(vpv/(n-p)))
-        double sigma;
+        double sigma_;
 
-        double phaseSigma;
-
-        double codeSigma;
+        double phaseSigma_;
 
         // object to prepare h, phi, q  matrices for filter
-        EquationComposerPtr equations;
+        EquationComposerPtr equations_;
 
         // Indicator of current filter state validity
-        bool isValid;
+        bool isValid_;
 
         // Indicate, if reset occurred on current filter step
-        bool isReset;
+        bool isReset_;
     };
 } // namespace pod

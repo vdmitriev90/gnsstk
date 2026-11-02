@@ -75,12 +75,6 @@ namespace pod
             return solver.getPhaseSigma();
         }
 
-        // return sqrt(vpv/(n-p)) value
-        virtual double getCodeSigma() const
-        {
-            return solver.getCodeSigma();
-        }
-
         // return minimum number of satellites requared for state esimation
         virtual double getMinSatNumber() const
         {

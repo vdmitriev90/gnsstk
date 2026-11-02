@@ -197,6 +197,16 @@ void EquationComposer::updateSystemMatrices(gnsstk::IRinex& gData,
         return pod::findMaxResidual(satBlocks_, residuals, postfitTypes);
     }
 
+    ResidualInfo EquationComposer::getResidualInfo(int row) const
+    {
+        return pod::getResidualInfo(satBlocks_, row);
+    }
+
+    bool EquationComposer::removeSatBlock(const SatID& sat)
+    {
+        return satBlocks_.remove(sat);
+    }
+
     std::set<int> EquationComposer::getSatRows(const SatID& sat) const
     {
         return pod::getSatRows(satBlocks_, sat);

@@ -1,4 +1,4 @@
-#include "KalmanSolver.h"
+﻿#include "KalmanSolver.h"
 
 #include "AmbiguityHandler.h"
 #include "GnssSolution.h"
@@ -51,193 +51,245 @@ namespace pod
     // maximum time interval (in seconds) without data
     double KalmanSolver::maxGap = 61;
 
-    KalmanSolver::KalmanSolver() : firstTime(true), isValid(false) {}
+    KalmanSolver::KalmanSolver() : isValid_(false) {}
 
-    KalmanSolver::KalmanSolver(EquationComposerPtr eqs) : firstTime(true), equations(eqs), isValid(false) {}
-
+    KalmanSolver::KalmanSolver(EquationComposerPtr eqs) : equations_(eqs), isValid_(false) {}
 
     IRinex& KalmanSolver::Process(IRinex& gData)
     {
         // invalidate solution
-        isValid = false;
-        isReset = false;
-        double dt = std::abs(t_pre - gData.getHeader().epoch);
+        isValid_ = false;
+        isReset_ = false;
+        double dt = std::abs(lastTime_ - gData.getHeader().epoch);
 
         if (dt > maxGap)
         {
-            isReset = true;
-            FilterData[t_pre] = getState();
+            isReset_ = true;
+            FilterData[lastTime_] = getState();
             reset();
             DBOUT_LINE("Too big gap: " << dt << " sec. Reset Filter")
             // resetEpoches.insert(gData.getHeader().epoch);
         }
-        t_pre = gData.getHeader().epoch;
+        lastTime_ = gData.getHeader().epoch;
         // workaround: reset PPP engine every day
         double sec = gData.getHeader().epoch.getSecondOfDay();
-        if (static_cast<int>(sec) == 0 && equations->getSlnType() == SlnType::PppFloat)
-            equations->clearSvData();
+        if (static_cast<int>(sec) == 0 && equations_->getSlnType() == SlnType::PppFloat)
+            equations_->clearSvData();
 
-        equations->prepare(gData);
-        Vector<double> floatSolution;
+        equations_->prepare(gData);
 
         // if number of satellies passed to processing is less than 'MIN_NUM_SV'
         // clear all SV data except observable
-        if (gData.getBody().size() < minSatNumber)
+        if (gData.getBody().size() < minSatNumber_)
         {
-            equations->keepOnlySv(gData.getBody().getSatID());
+            equations_->keepOnlySv(gData.getBody().getSatID());
 
             return gData;
         }
+                
+        gnsstk::Matrix<double> phiMatrix;// state transition matrix        
+        gnsstk::Matrix<double> qMatrix; // Process noise matrix  
+        gnsstk::Matrix<double> hMatrix; // design matrix
+        gnsstk::Matrix<double> weightMatrix; // measurements vector (prefit-residuals)        
+        gnsstk::Vector<double> measVector;
 
-        equations->updateSystemMatrices(gData, hMatrix, measVector, weightMatrix, phiMatrix, qMatrix);
+        equations_->updateSystemMatrices(gData, hMatrix, measVector, weightMatrix, phiMatrix, qMatrix);
 
         if (dt > maxGap)
-            equations->initKfState(solution, covMatrix);
+            equations_->initKfState(solution, covMatrix);
         else
-            equations->updateKfState(solution, covMatrix);
+            equations_->updateKfState(solution, covMatrix);
 
-        firstTime = false;
+        // a priori (predicted) state; solution/covMatrix stay untouched until update(),
+        // so every early return leaves the filter with the a priori state
+        Vector<double> xminus = phiMatrix * solution;
+        Matrix<double> Pminus = phiMatrix * covMatrix * transpose(phiMatrix) + qMatrix;
 
-        // keep a priori state: every iteration must start from it,
-        // otherwise the rejection pass would apply prediction and update twice
-        const Vector<double> solutionPrior = solution;
-        const Matrix<double> covMatrixPrior = covMatrix;
+        update(xminus, Pminus, hMatrix, weightMatrix, measVector);
 
-        for (int i = 0; i < 2; i++)
-        {
-            solution = solutionPrior;
-            covMatrix = covMatrixPrior;
+        // carrier phase postfit check (data snooping): re-initialize ambiguities of the worst
+        // satellite only, recompute the solution and residuals, and only then repeat the check
+        constexpr int maxPhaseReinit = 4;
+        for (int k = 0; k < maxPhaseReinit && checkPhase(gData, xminus, Pminus, hMatrix, weightMatrix) > 0; ++k)
+            update(xminus, Pminus, hMatrix, weightMatrix, measVector);
 
-            // if number of satellies passed to processing is less than 'MIN_NUM_SV'
-            // clear all SV data except observable
-            if (gData.getBody().size() < minSatNumber)
-            {
-                equations->keepOnlySv(gData.getBody().getSatID());
+        const Vector<double> floatSolution = solution;
 
-                return gData;
-            }
+        fixAmbiguities(gData);
 
-            // DBOUT_LINE("--" << i << "--");
+        const auto vpv = postfitResiduals * weightMatrix * postfitResiduals;
+        const int numMeas = postfitResiduals.size();
+        const int numPar = solution.size();
 
-            /*for (auto& it : equations->currentUnknowns())
-                DBOUT(it << " ");
-            DBOUT_LINE("")*/
-            // DBOUT_LINE("meas Vector\n" << setprecision(10) << measVector);
-            // DBOUT_LINE("H\n" << hMatrix);
-            // DBOUT_LINE("Cov\n" << covMatrix);
-            // DBOUT_LINE("weightMatrix\n" << weightMatrix.diagCopy());
-            // DBOUT_LINE("qMatrix: " << qMatrix.diagCopy());
-            // DBOUT_LINE("phiMatrix: " << phiMatrix.diagCopy());
+        sigma_ = (numMeas > numPar) ? sqrt(vpv(0) / (numMeas - numPar)) : 0.0;
+        phaseSigma_ = getSigma(phaseResTypes);
 
-            // prepare
-            const Matrix<double> hMatrixTr = transpose(hMatrix);
-            const Matrix<double> phiMatrixTr = transpose(phiMatrix);
-            const Matrix<double> hTrTimesW = hMatrixTr * weightMatrix;
+        equations_->saveResiduals(gData, postfitResiduals);
 
-            // predict
-            const Matrix<double> Pminus = phiMatrix * covMatrix * phiMatrixTr + qMatrix;
-            const Vector<double> xminus = phiMatrix * solution;
-
-            // DBOUT_LINE("Pminus\n" << Pminus);
-            // correct
-            try
-            {
-                const Matrix<double> invPminus = inverseChol(Pminus);
-                covMatrix = inverseChol(hTrTimesW * hMatrix + invPminus);
-                solution = covMatrix * (hTrTimesW * measVector + invPminus * xminus);
-            }
-            catch (const gnsstk::MatrixException& e)
-            {
-                std::cerr << e << endl;
-
-                const Matrix<double> invPminus = inverseSVD(Pminus);
-                covMatrix = inverseSVD(hTrTimesW * hMatrix + invPminus);
-                solution = covMatrix * (hTrTimesW * measVector + invPminus * xminus);
-            }
-
-            postfitResiduals = measVector - hMatrix * solution;
-
-            //DBOUT_LINE(StringUtils::formatTime(gData.getHeader().epoch) << " sln: " << solution)
-
-            // DBOUT_LINE("solution: " << solution);
-            // DBOUT_LINE("postfit Residuals: " << postfitResiduals);
-            // DBOUT_LINE("CovPost\n" << covMatrix.diagCopy());
-
-            floatSolution = solution;
-
-            fixAmbiguities(gData);
-            // storeAmbiguities(gData);
-
-            const auto vpv = postfitResiduals * weightMatrix * postfitResiduals;
-            const int numMeas = postfitResiduals.size();
-            const int numPar = solution.size();
-
-            sigma = (numMeas > numPar) ? sqrt(vpv(0) / (numMeas - numPar)) : 0.0;
-            phaseSigma = getSigma(phaseResTypes);
-
-            if (i > 0 || checkPhase(gData) == 0)
-                break;
-
-            DBOUT_LINE("Catched by residuals\n")
-        }
-
-        equations->saveResiduals(gData, postfitResiduals);
-
-        equations->storeKfState(floatSolution, covMatrix);
+        equations_->storeKfState(floatSolution, covMatrix);
 
         // everything is OK => set solutiuon status to VALID
-        isValid = true;
+        isValid_ = true;
         return gData;
     }
 
-    int KalmanSolver::checkPhase(IRinex& gData)
+    // Returns a string identifying this object.
+    std::string KalmanSolver::getClassName() const
     {
-        constexpr double phaseLim = 0.1; //meters
+        return "KalmanSolver";
+    }
 
-        const ResidualInfo worst = equations->findMaxResidual(postfitResiduals, phaseResTypes);
+    EquationComposer& KalmanSolver::eqComposer()
+    {
+        return *equations_;
+    }
 
-        if (worst.row < 0 || worst.value < phaseLim)
+    // return sqrt(vpv/(n-p)) value
+    double KalmanSolver::getSigma() const
+    {
+        return sigma_;
+    }
+
+    double KalmanSolver::getPhaseSigma() const
+    {
+        return phaseSigma_;
+    }
+
+    // Measurement update in information form: sets solution, covMatrix and postfitResiduals
+    void KalmanSolver::update(const Vector<double>& xminus,
+                              const Matrix<double>& Pminus,
+                              const Matrix<double>& hMatrix,
+                              const Matrix<double>& weightMatrix,
+                              const Vector<double>& measVector)
+    {
+        const Matrix<double> hTrTimesW = transpose(hMatrix) * weightMatrix;
+
+        try
+        {
+            const Matrix<double> invPminus = inverseChol(Pminus);
+
+            covMatrix = inverseChol(hTrTimesW * hMatrix + invPminus);
+            solution = covMatrix * (hTrTimesW * measVector + invPminus * xminus);
+        }
+        catch (const MatrixException& e)
+        {
+            std::cerr << e << endl;
+
+            const Matrix<double> invPminus = inverseSVD(Pminus);
+
+            covMatrix = inverseSVD(hTrTimesW * hMatrix + invPminus);
+            solution = covMatrix * (hTrTimesW * measVector + invPminus * xminus);
+        }
+
+        postfitResiduals = measVector - hMatrix * solution;
+    }
+
+    // Postfit carrier phase consistency check (cycle slip / wrong ambiguity detection).
+    // For the optimal Kalman update Var(v_i) = R_ii - H_i * P+ * H_i^T, so the normalized
+    // postfit residual v_i / sqrt(Var(v_i)) is N(0,1) for a consistent measurement.
+    // Ambiguities of the single worst satellite failing the test are re-initialized in the a priori
+    // state (the satellite and its code measurements are kept). The caller must recompute the solution
+    // and repeat the check (data snooping: one satellite per iteration).
+    // Returns 1 if an ambiguity was re-initialized, otherwise 0.
+    int KalmanSolver::checkPhase(IRinex& gData,
+                                 Vector<double>& xminus,
+                                 Matrix<double>& Pminus,
+                                 const Matrix<double>& hMatrix,
+                                 const Matrix<double>& weightMatrix)
+    {
+        constexpr double phasePostfitGate = 4.0;
+
+        // rows with variance reduction close to R_ii are fully absorbed by the state
+        // and can not be tested
+        constexpr double minVarianceRatio = 1.0e-3;
+
+        SatID worstSat;
+        TypeID worstType;
+        double worstNormalized = phasePostfitGate;
+        double worstAbs = 0.0;
+        bool found = false;
+
+        for (int row = 0; row < postfitResiduals.size(); ++row)
+        {
+            const ResidualInfo info = equations_->getResidualInfo(row);
+
+            if (info.row < 0 || phaseResTypes.count(info.type) == 0)
+                continue;
+
+            const double weight = weightMatrix(row, row);
+            if (!std::isfinite(weight) || weight <= 0.0)
+                continue;
+
+            const double measVariance = 1.0 / weight;
+
+            double stateVariance = 0.0;
+            for (int c1 = 0; c1 < hMatrix.cols(); ++c1)
+            {
+                const double h1 = hMatrix(row, c1);
+                if (h1 == 0.0)
+                    continue;
+
+                for (int c2 = 0; c2 < hMatrix.cols(); ++c2)
+                {
+                    const double h2 = hMatrix(row, c2);
+                    if (h2 != 0.0)
+                        stateVariance += h1 * covMatrix(c1, c2) * h2;
+                }
+            }
+
+            const double residVariance = measVariance - stateVariance;
+
+            if (!std::isfinite(residVariance) || residVariance < minVarianceRatio * measVariance)
+                continue;
+
+            const double normalized = std::abs(postfitResiduals(row)) / std::sqrt(residVariance);
+
+            if (normalized <= worstNormalized)
+                continue;
+
+            worstNormalized = normalized;
+            worstAbs = std::abs(postfitResiduals(row));
+            worstSat = info.sat;
+            worstType = info.type;
+            found = true;
+        }
+
+        if (!found)
             return 0;
 
-        // drop the offending satellite's (contiguous) rows from H, l and W
-        const std::set<int> rows = equations->getSatRows(worst.sat);
+        int count = 0;
 
-        // update H
-        MatrixExtensions::removeRows(hMatrix, rows);
-
-        // update observations
-        MatrixExtensions::removeElms(measVector, rows);
-
-        // update weigths
-        MatrixExtensions::removeRows(weightMatrix, rows);
-        MatrixExtensions::removeColumns(weightMatrix, rows);
-
-        // reset Phi and Q only for THIS satellite's ambiguities, via the layout
-        for (const auto& amb : equations->getCurrentAmb())
+        // re-initialize ONLY this satellite's ambiguities
+        for (const auto& amb : equations_->getCurrentAmb())
         {
-            if (amb.sv != worst.sat)
+            if (amb.sv != worstSat)
                 continue;
 
             const int ind = getUnknownIndex(amb);
             if (ind < 0)
                 continue;
 
-            phiMatrix(ind, ind) = 0;
-            qMatrix(ind, ind) = 4e14;
+            // re-initialize the ambiguity in the a priori state: x = 0, P = diag(4e14)
+            xminus(ind) = 0.0;
+            for (int k = 0; k < Pminus.rows(); ++k)
+            {
+                Pminus(ind, k) = 0.0;
+                Pminus(k, ind) = 0.0;
+            }
+            Pminus(ind, ind) = 4e14;
+            ++count;
         }
 
-        // remove sv
-        gData.getBody().removeSatID(worst.sat);
+        cout << StringUtils::formatTime(gData.getHeader().epoch) << " PHASE POSTFIT " << worstSat << " "
+             << TypeID::tStrings[worstType.type] << " normalized: " << worstNormalized << " abs: " << worstAbs << " m"
+             << endl;
 
-        cout << StringUtils::formatTime(gData.getHeader().epoch) << " : " << worst.sat << " "
-             << TypeID::tStrings[worst.type.type] << " value: " << worst.value << endl;
-
-        return 1;
+        return count > 0 ? 1 : 0;
     }
 
     double KalmanSolver::getSigma(const TypeIDSet& types) const
     {
-        std::vector<double> phaseRes = equations->getResiduals(PostfitResiduals(), types);
+        std::vector<double> phaseRes = equations_->getResiduals(PostfitResiduals(), types);
         Matrix<double> res(phaseRes.size(), 1, 0.0);
 
         for (size_t i = 0; i < phaseRes.size(); ++i)
@@ -252,11 +304,11 @@ namespace pod
 
     void KalmanSolver::fixAmbiguities(IRinex& gData)
     {
-        if (equations->getSlnType() == SlnType::PdFixed && gData.getBody().size() > 5)
+        if (equations_->getSlnType() == SlnType::PdFixed && gData.getBody().size() > 5)
         {
-            int core_num = equations->getLayout().size() - equations->getCurrentAmb().size();
+            int core_num = equations_->getLayout().size() - equations_->getCurrentAmb().size();
 
-            AmbiguityHandler ar(equations->getCurrentAmb(), solution, covMatrix, core_num);
+            AmbiguityHandler ar(equations_->getCurrentAmb(), solution, covMatrix, core_num);
             ar.fixL1L2(gData);
 
             for (int k = 0; k < core_num; k++)
@@ -301,35 +353,30 @@ namespace pod
 
     inline void KalmanSolver::reset()
     {
-        equations->clearData();
+        equations_->clearData();
     }
 
     int KalmanSolver::getUnknownIndex(const FilterParameter& parameter) const
     {
-        return equations->getLayout().index(parameter);
-    }
-
-    double KalmanSolver::getCodeSigma() const
-    {
-        return codeSigma;
+        return equations_->getLayout().index(parameter);
     }
 
     // return minimum number of satellites requared for state esimation
     double KalmanSolver::getMinSatNumber() const
     {
-        return minSatNumber;
+        return minSatNumber_;
     }
 
     // return isValid
     bool KalmanSolver::getValid() const
     {
-        return isValid;
+        return isValid_;
     }
 
     // set minimum number of satellites requared for state esimation
     KalmanSolver& KalmanSolver::setMinSatNumber(int value)
     {
-        minSatNumber = value;
+        minSatNumber_ = value;
         return *this;
     }
 
@@ -349,23 +396,23 @@ namespace pod
 
     const EquationComposer::FilterState& KalmanSolver::getState() const
     {
-        return equations->getState();
+        return equations_->getState();
     }
 
     KalmanSolver& KalmanSolver::setState(const EquationComposer::FilterState& newState)
     {
-        equations->setState(newState);
+        equations_->setState(newState);
         return *this;
     }
 
     bool KalmanSolver::getResetState()
     {
-        return isReset;
+        return isReset_;
     }
 
     bool KalmanSolver::ResetIfRequared(const gnsstk::CommonTime& t, const KalmanSolver::FilterHistory& data)
     {
-        double dt = t - t_pre;
+        double dt = t - lastTime_;
 
         if (std::abs(dt) > maxGap)
         {
@@ -373,7 +420,7 @@ namespace pod
             if (it != data.end())
             {
                 setState(it->second);
-                t_pre = t;
+                lastTime_ = t;
                 DBOUT_LINE(StringUtils::formatTime(t) << "reset: " << dt)
 
                 return true;
@@ -381,4 +428,5 @@ namespace pod
         }
         return false;
     }
+
 } // namespace pod

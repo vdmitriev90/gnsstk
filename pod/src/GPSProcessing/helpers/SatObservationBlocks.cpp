@@ -4,6 +4,7 @@
 #include "RinexEpoch.h"
 #include "Vector.hpp"
 
+#include <algorithm>
 #include <cmath>
 
 namespace pod
@@ -129,6 +130,41 @@ namespace pod
             row += static_cast<int>(block.size());
         }
         return rows;
+    }
+
+    ResidualInfo getResidualInfo(const SatObservationBlocks& blocks, int row)
+    {
+        ResidualInfo info;
+
+        if (row < 0)
+            return info;
+
+        int first = 0;
+        for (const auto& block : blocks)
+        {
+            const int n = static_cast<int>(block.size());
+            if (row < first + n)
+            {
+                const auto& m = block.measurements[row - first];
+                const auto postfit = obs_mapping::prefitToPostfit(m.type);
+
+                info.sat = block.sat;
+                info.type = (postfit != gnsstk::TypeID::Unknown) ? gnsstk::TypeID(postfit) : m.type;
+                info.row = row;
+                return info;
+            }
+            first += n;
+        }
+        return info;
+    }
+
+    bool SatObservationBlocks::remove(const gnsstk::SatID& sat)
+    {
+        const auto it = std::remove_if(blocks_.begin(), blocks_.end(),
+                                       [&](const SatObservationBlock& b) { return b.sat == sat; });
+        const bool removed = it != blocks_.end();
+        blocks_.erase(it, blocks_.end());
+        return removed;
     }
 
     size_t SatObservationBlocks::totalMeasurements() const

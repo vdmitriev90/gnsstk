@@ -61,6 +61,12 @@ namespace pod
         // return postfit residuals as gnsstk::satTypeValueMap structure
         std::vector<double> getResiduals(const gnsstk::Vector<double>& residuals,
                                          const gnsstk::TypeIDSet& types) const;
+        
+        // describe satellite and postfit type owning the given row of the current system
+        ResidualInfo getResidualInfo(int row) const;
+
+        // drop satellite measurements block, keeping row layout consistent with reduced matrices
+        bool removeSatBlock(const gnsstk::SatID& sat);
 
         // find the row with the largest |residual| among the given postfit types
         ResidualInfo findMaxResidual(const gnsstk::Vector<double>& residuals,
