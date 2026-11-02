@@ -1,6 +1,7 @@
 #include "Solution.h"
 
-#include "ComputeStatistic.h"
+#include "ResidualsStatistic.h"
+#include "PositionStatistic.h"
 #include "ComputeWeightSimple.h"
 #include "FsUtils.h"
 #include "SolutionDatabase.h"
@@ -58,8 +59,8 @@ namespace pod
         // Position and satellite-count statistics over epochs having the desired solution type.
         struct SolutionSummary
         {
-            Vector<double> sln;
-            Matrix<double> covar;
+            Triple sln;
+            CovarianceMatrix3 covar;
             double horStdDev = 0.0;
             double vertStdDev = 0.0;
             int goodEpochs = 0;
@@ -125,8 +126,8 @@ namespace pod
             << CivilTime(gnss_data.getFinalTime()).printf(fmt) << sep;
 
         // XYZ coordinates
-        for (auto x : sln)
-            wrt << std::fixed << std::setw(13) << std::setprecision(4) << std::setfill(' ') << x << sep;
+        for (int i = 0; i < 3; ++i)
+            wrt << std::fixed << std::setw(13) << std::setprecision(4) << std::setfill(' ') << sln[i] << sep;
         wrt << static_cast<int>(solver.desiredSlnType()) << sep;
 
         // number of good solutions
@@ -134,7 +135,7 @@ namespace pod
             << avgSvInUse / summ << sep;
 
         // print rms3d
-        const double rms3d = sqrt(covar(0, 0) + covar(1, 1) + covar(2, 2));
+        const double rms3d = sqrt(covar.xx + covar.yy + covar.zz);
         wrt << std::fixed << std::scientific << std::setprecision(3) << std::setfill(' ') << rms3d << std::endl;
     }
 
@@ -206,15 +207,14 @@ namespace pod
             data_rec.observationDurationSec = static_cast<std::int64_t>(std::llround(t1 - t0));
 
             const auto s = computeSolutionSummary(gnss_data, solver.desiredSlnType());
-            if (s.goodEpochs > 0 && s.sln.size() >= 3 && s.covar.rows() >= 3 && s.covar.cols() >= 3)
+            if (s.goodEpochs > 0)
             {
                 SolutionStatisticsRecord rec;
-                rec.average = gnsstk::Triple(s.sln[0], s.sln[1], s.sln[2]);
+                rec.average = s.sln;
                 rec.horizontalStdDev = s.horStdDev;
                 rec.verticalStdDev = s.vertStdDev;
                 rec.averageSvInUse = s.avgSvInUse;
-                rec.covariance = CovarianceMatrix3{s.covar(0, 0), s.covar(1, 1), s.covar(2, 2),
-                                                   s.covar(0, 1), s.covar(0, 2), s.covar(1, 2)};
+                rec.covariance = s.covar;
                 solution_rec = rec;
             }
         }

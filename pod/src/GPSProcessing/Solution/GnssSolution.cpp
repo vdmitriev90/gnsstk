@@ -34,15 +34,17 @@ namespace pod
         new_pos[1] += solver.getSolution(FilterParameter(TypeID::dy)); // dy
         new_pos[2] += solver.getSolution(FilterParameter(TypeID::dz)); // dz
 
-        double var_x = solver.getVariance(FilterParameter(TypeID::dx)); // Cov dx
-        double var_y = solver.getVariance(FilterParameter(TypeID::dy)); // Cov dy
-        double var_z = solver.getVariance(FilterParameter(TypeID::dz)); // Cov dz
-        const double st_dev3_d = sqrt(var_x + var_y + var_z);
-
         gEpoch.slnData.insert(std::make_pair(TypeID::recX, new_pos.X()));
         gEpoch.slnData.insert(std::make_pair(TypeID::recY, new_pos.Y()));
         gEpoch.slnData.insert(std::make_pair(TypeID::recZ, new_pos.Z()));
-        gEpoch.slnData.insert(std::make_pair(TypeID::recStDev3D, st_dev3_d));
+
+        const double var_x = solver.getVariance(FilterParameter(TypeID::dx)); // Cov dx
+        const double var_y = solver.getVariance(FilterParameter(TypeID::dy)); // Cov dy
+        const double var_z = solver.getVariance(FilterParameter(TypeID::dz)); // Cov dz
+
+        gEpoch.slnData.insert(std::make_pair(TypeID::recStDevX, sqrt(var_x)));
+        gEpoch.slnData.insert(std::make_pair(TypeID::recStDevY, sqrt(var_y)));
+        gEpoch.slnData.insert(std::make_pair(TypeID::recStDevZ, sqrt(var_z)));
 
         gEpoch.slnData.insert(std::make_pair(TypeID::recUsedSV, equations_->getNumSv()));
 

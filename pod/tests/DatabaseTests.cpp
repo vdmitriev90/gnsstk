@@ -1,6 +1,6 @@
 // Standalone tests for SolutionDatabase / StatisticsDatabase and residual statistics storage.
 // Run: pod_tests (returns non-zero on failure).
-#include "ComputeStatistic.h"
+#include "ResidualsStatistic.h"
 #include "SolutionDatabase.h"
 #include "StatisticsDatabase.h"
 
