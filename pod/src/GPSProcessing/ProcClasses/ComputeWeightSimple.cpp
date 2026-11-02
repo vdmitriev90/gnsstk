@@ -19,30 +19,58 @@ namespace pod
         Process(gData.getBody());
         return gData;
     }
-
-    gnsstk::SatTypePtrMap& ComputeWeightSimple::Process(gnsstk::SatTypePtrMap& gData)
+    SatTypePtrMap& ComputeWeightSimple::Process(SatTypePtrMap& gData)
     {
         SatIDSet rejSatSet;
+
+        constexpr double referenceSNR = 45.0;
+
+        // Минимальный вес, но не порог отбраковки.
+        constexpr double minimumSNRWeight = 0.01;
+
+        // 20.0 для мягкого взвешивания.
+        // 10.0 для более агрессивного.
+        constexpr double snrScale = 20.0;
+
         for (auto& it : gData)
         {
-            auto el = it.second->find(TypeID::elevation);
-            if (el != it.second->end() && el->second > 0)
-            {
+            TypeValueRow& tvMap = *it.second;
 
-                double invsig = 1.0;
-                if (el->second < elev0)
-                    invsig = (::sin(el->second * DEG_TO_RAD) / sin0);
-                // invsig = 0.5/(::sin(el->second * DEG_TO_RAD) / sin0);
+            const auto el = tvMap.find(TypeID::elevation);
 
-                double factor = (it.first.system == SatelliteSystem::Glonass) ? glnSigmaFactor : 1;
-
-                (*it.second)[TypeID::weight] = invsig * invsig / factor;
-            }
-            else
+            if (el == tvMap.end() || !std::isfinite(el->second) || el->second <= 0.0)
             {
                 rejSatSet.insert(it.first);
+                continue;
             }
+
+            const auto snr = tvMap.find(TypeID::S1);
+
+            if (snr == tvMap.end() || !std::isfinite(snr->second))
+            {
+                rejSatSet.insert(it.first);
+                continue;
+            }
+
+            double elevationWeight = 1.0;
+
+            if (el->second < elev0)
+            {
+                const double normalizedSin = std::sin(el->second * DEG_TO_RAD) / sin0;
+
+                elevationWeight = normalizedSin * normalizedSin;
+            }
+
+            const double snrWeight =
+                std::clamp(std::pow(10.0, (snr->second - referenceSNR) / snrScale), minimumSNRWeight, 1.0);
+
+            const double systemFactor = (it.first.system == SatelliteSystem::Glonass) ? glnSigmaFactor : 1.0;
+
+            tvMap[TypeID::weight] = elevationWeight * snrWeight / systemFactor;
         }
+
+        // Удаляем спутники без elevation или SNR.
+        gData.removeSatID(rejSatSet);
 
         return gData;
     }
