@@ -60,7 +60,7 @@ namespace pod
 		const std::vector<ResidualSatelliteStatisticsRecord>& satelliteResults() const;
 
 		// Prints systemResults() and, if enabled, elevationResults().
-		void print(std::ostream& os) const;
+        void print(std::ostream& os, bool withElevation = true) const;
 
 		// Fills count/mean/std/min/max.
 		static void summarize(const std::vector<double>& values, ResidualSummary& out);

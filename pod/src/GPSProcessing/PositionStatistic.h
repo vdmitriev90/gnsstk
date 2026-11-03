@@ -1,28 +1,43 @@
-#pragma once
+﻿#pragma once
 #include "GnssEpochMap.h"
 #include "GnssSolution.h"
 #include "ProcessingRecords.h"
+
+#include <cstddef>
+
 namespace pod
 {
+    struct PositionStatisticResult
+    {
+        gnsstk::Triple averagePosition{0.0, 0.0, 0.0};
+
+        CovarianceMatrix3 covarianceEcef{};
+
+        double horizontalStdDev = 0.0;
+        double verticalStdDev = 0.0;
+
+        int totalEpochs = 0;
+        int fixEpochs = 0;
+        int outlierEpochs = 0;
+
+        // epochs having the requested solution type
+        double avgSvInUse = 0.0;
+
+        bool valid = false;
+    };
+
     class PositionStatistic
     {
       public:
-        PositionStatistic(SlnType st, gnsstk::TypeIDSet tIDs);
+        explicit PositionStatistic(SlnType solutionType);
 
-        SlnType getSlnType() const;
-        gnsstk::TypeIDSet getTypeIDSet() const;
+        PositionStatisticResult compute(GnssEpochMap& data) const;
 
-        void compute(const GnssEpochMap& data, gnsstk::Triple& sln, CovarianceMatrix3& cov);
-        double getHorStdDev() const;
-        double getVertStdDev() const;
-
-        int goodEpochs = 0;
-        int totalEpochs = 0;
+        SlnType getSlnType() const noexcept;
 
       private:
-        SlnType slnType;
-        gnsstk::TypeIDSet types;
-        gnsstk::Matrix<double> covarNEU;
+        SlnType solutionType_;
     };
 
+    PositionStatisticResult computeSolutionSummary(GnssEpochMap& gnss_data, SlnType slnType);
 } // namespace pod

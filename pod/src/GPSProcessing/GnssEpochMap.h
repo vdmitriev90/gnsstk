@@ -20,6 +20,8 @@ namespace pod
         gnsstk::SatTypePtrMap satData;
 
         gnsstk::typeValueMap slnData;
+        // flag indicating whether GNSS solution for this epoch pass tests for validity or not
+        bool isValidSolution_ = false;
 
         std::ostream& dump(std::ostream& s, int precision = 4);
     };

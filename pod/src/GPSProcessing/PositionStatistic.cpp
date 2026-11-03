@@ -5,6 +5,61 @@ namespace pod
 {
     namespace
     {
+        namespace
+        {
+            struct PositionOutlierThreshold
+            {
+                double horizontal; // m
+                double vertical;   // m
+            };
+
+            constexpr PositionOutlierThreshold getPositionOutlierThreshold(const SlnType solutionType)
+            {
+                switch (solutionType)
+                {
+                case SlnType::Standalone:
+                    return {10.0, 20.0};
+
+                case SlnType::CodeDiff:
+                    return {3.0, 4.0};
+
+                case SlnType::PdFloat:
+                    return {1.0, 2.0};
+
+                case SlnType::PdFixed:
+                    return {0.15, 0.30};
+
+                case SlnType::PppFloat:
+                    return {0.20, 0.40};
+
+                case SlnType::PppFixed:
+                    return {0.10, 0.20};
+
+                case SlnType::None:
+                default:
+                    return {0.0, 0.0};
+                }
+            }
+            bool isPositionOutlier(const Triple& position,
+                                   const Triple& mean,
+                                   const Matrix<double>& xyzToNeu,
+                                   const SlnType solutionType)
+            {
+                const auto threshold = getPositionOutlierThreshold(solutionType);
+
+                const double dx = position[0] - mean[0];
+                const double dy = position[1] - mean[1];
+                const double dz = position[2] - mean[2];
+
+                const double north = xyzToNeu(0, 0) * dx + xyzToNeu(0, 1) * dy + xyzToNeu(0, 2) * dz;
+                const double east = xyzToNeu(1, 0) * dx + xyzToNeu(1, 1) * dy + xyzToNeu(1, 2) * dz;
+                const double up = xyzToNeu(2, 0) * dx + xyzToNeu(2, 1) * dy + xyzToNeu(2, 2) * dz;
+                const double horizontalError = std::hypot(north, east);
+
+                return horizontalError > threshold.horizontal || std::abs(up) > threshold.vertical;
+            }
+        } // namespace
+
         constexpr double sigmaFloor = 0.01; // m
 
         struct WeightedPosition
@@ -13,23 +68,8 @@ namespace pod
             Triple weightSum{0.0, 0.0, 0.0};
         };
 
-        TypeID getSigmaType(const TypeID& coordinateType)
-        {
-            switch (coordinateType.type)
-            {
-            case TypeID::recX:
-                return TypeID::recStDevX;
-
-            case TypeID::recY:
-                return TypeID::recStDevY;
-
-            case TypeID::recZ:
-                return TypeID::recStDevZ;
-
-            default:
-                throw Exception("PositionStatistic: unsupported coordinate TypeID");
-            }
-        }
+        constexpr TypeID::ValueType coordinateTypes[3] = {TypeID::recX, TypeID::recY, TypeID::recZ};
+        constexpr TypeID::ValueType sigmaTypes[3] = {TypeID::recStDevX, TypeID::recStDevY, TypeID::recStDevZ};
 
         bool isRequestedSolutionType(const GnssEpoch& epoch, const SlnType requestedType)
         {
@@ -44,20 +84,14 @@ namespace pod
             }
         }
 
-        bool accumulateEpoch(const GnssEpoch& epoch, const TypeIDSet& types, WeightedPosition& accumulator)
+        bool accumulateEpoch(const GnssEpoch& epoch, WeightedPosition& accumulator)
         {
-            size_t coordinateIndex = 0;
-
-            for (const TypeID& coordinateType : types)
+            for (size_t coordinateIndex = 0; coordinateIndex < 3; ++coordinateIndex)
             {
-                if (coordinateIndex >= 3)
-                    return false;
-
                 try
                 {
-                    const TypeID sigmaType = getSigmaType(coordinateType);
-                    const double coordinate = epoch.slnData.getValue(coordinateType);
-                    const double sigma = epoch.slnData.getValue(sigmaType);
+                    const double coordinate = epoch.slnData.getValue(TypeID(coordinateTypes[coordinateIndex]));
+                    const double sigma = epoch.slnData.getValue(TypeID(sigmaTypes[coordinateIndex]));
 
                     if (!std::isfinite(coordinate) || !std::isfinite(sigma) || sigma <= 0.0)
                     {
@@ -75,11 +109,9 @@ namespace pod
                 {
                     return false;
                 }
-
-                ++coordinateIndex;
             }
 
-            return coordinateIndex == 3;
+            return true;
         }
 
         bool computeWeightedSolution(const WeightedPosition& accumulator, Triple& solution)
@@ -99,27 +131,38 @@ namespace pod
             return true;
         }
 
-        CovarianceMatrix3 computeMeanCovariance(const WeightedPosition& accumulator)
+        /*
+         * Ковариация по внутренней сходимости: выборочный разброс эпохальных решений
+         * относительно среднего. Формальные sigma используются только как веса среднего.
+         */
+        CovarianceMatrix3 computeScatterCovariance(const std::vector<Triple>& positions, const Triple& mean)
         {
             CovarianceMatrix3 covariance{};
 
-            /*
-             * Формальная дисперсия взвешенного среднего:
-             *
-             * Var(mean) = 1 / sum(weights)
-             */
-            covariance.xx = 1.0 / accumulator.weightSum[0];
-            covariance.yy = 1.0 / accumulator.weightSum[1];
-            covariance.zz = 1.0 / accumulator.weightSum[2];
+            if (positions.size() < 2)
+                return covariance;
 
-            /*
-             * Корреляции между X, Y и Z неизвестны,
-             * поскольку для каждой эпохи сохранены только
-             * recStDevX, recStDevY и recStDevZ.
-             */
-            covariance.xy = 0.0;
-            covariance.xz = 0.0;
-            covariance.yz = 0.0;
+            for (const Triple& p : positions)
+            {
+                const double dx = p[0] - mean[0];
+                const double dy = p[1] - mean[1];
+                const double dz = p[2] - mean[2];
+
+                covariance.xx += dx * dx;
+                covariance.yy += dy * dy;
+                covariance.zz += dz * dz;
+                covariance.xy += dx * dy;
+                covariance.xz += dx * dz;
+                covariance.yz += dy * dz;
+            }
+
+            const double n = static_cast<double>(positions.size()) - 1.0;
+            covariance.xx /= n;
+            covariance.yy /= n;
+            covariance.zz /= n;
+            covariance.xy /= n;
+            covariance.xz /= n;
+            covariance.yz /= n;
 
             return covariance;
         }
@@ -161,82 +204,112 @@ namespace pod
         return neu;
     }
 
-    SlnType PositionStatistic::getSlnType() const
+    SlnType PositionStatistic::getSlnType() const noexcept
     {
-        return slnType;
+        return solutionType_;
     }
-    TypeIDSet PositionStatistic::getTypeIDSet() const
+
+    PositionStatisticResult PositionStatistic::compute(GnssEpochMap& data) const
     {
-        return types;
-    }
-    void PositionStatistic::compute(const GnssEpochMap& data, Triple& avgPos, CovarianceMatrix3& covar)
-    {
-        avgPos = Triple(0.0, 0.0, 0.0);
-        covar = CovarianceMatrix3{};
-        covarNEU = Matrix<double>(3, 3, 0.0);
+        PositionStatisticResult result;
+        result.totalEpochs = data.size();
 
-        goodEpochs = 0;
-        totalEpochs = static_cast<int>(data.size());
-
-        if (types.size() != 3)
-            return;
-
-        WeightedPosition accumulator;
-
-        for (const auto& ep : data)
+        struct EpochSample
         {
-            const auto& epoch = ep.second;
+            GnssEpoch* epoch = nullptr;
+            Triple position;
+            Triple sigma;
+            Triple weightedSum;
+            Triple weightSum;
+        };
 
-            if (!isRequestedSolutionType(epoch, slnType))
-            {
+        std::vector<EpochSample> samples;
+        WeightedPosition preliminary;
+        double inUse(0.0);
+
+        for (auto& ep : data)
+        {
+            auto& epoch = ep.second;
+
+            if (!isRequestedSolutionType(epoch, solutionType_))
                 continue;
-            }
 
-            /*
-             * Сначала накапливаем эпоху во временный объект.
-             * Это не позволяет частично добавить X и Y,
-             * если чтение Z или sigma Z завершилось ошибкой.
-             */
+            epoch.isValidSolution_ = false;
             WeightedPosition epochAccumulator;
 
-            if (!accumulateEpoch(epoch, types, epochAccumulator))
+            ++result.fixEpochs;
+            inUse += epoch.slnData.at(TypeID::recUsedSV);
+
+            if (!accumulateEpoch(epoch, epochAccumulator))
+                continue;
+
+            EpochSample s;
+            s.epoch = &epoch;
+            s.weightedSum = epochAccumulator.weightedSum;
+            s.weightSum = epochAccumulator.weightSum;
+            for (size_t i = 0; i < 3; ++i)
             {
+                s.position[i] = s.weightedSum[i] / s.weightSum[i];
+                s.sigma[i] = 1.0 / std::sqrt(s.weightSum[i]); // effective sigma
+                preliminary.weightedSum[i] += s.weightedSum[i];
+                preliminary.weightSum[i] += s.weightSum[i];
+            }
+            samples.push_back(s);
+        }
+
+        if (result.fixEpochs > 0)
+        {
+            result.avgSvInUse = inUse / static_cast<double>(result.fixEpochs);
+        }
+
+        Triple preliminaryMean;
+        if (samples.empty() || !computeWeightedSolution(preliminary, preliminaryMean))
+            return result;
+
+        const auto xyzToNeu = xyzToNEURotation(preliminaryMean);
+        // single-pass 4 sigma rejection relative to the preliminary weighted mean
+        WeightedPosition accumulator;
+        std::vector<Triple> positions;
+
+        for (const auto& s : samples)
+        {
+            bool outlier = isPositionOutlier(s.position, preliminaryMean, xyzToNeu, solutionType_);
+
+            if (outlier)
+            {
+                ++result.outlierEpochs;
+                s.epoch->isValidSolution_ = false;
                 continue;
             }
 
+            s.epoch->isValidSolution_ = true;
             for (size_t i = 0; i < 3; ++i)
             {
-                accumulator.weightedSum[i] += epochAccumulator.weightedSum[i];
-                accumulator.weightSum[i] += epochAccumulator.weightSum[i];
+                accumulator.weightedSum[i] += s.weightedSum[i];
+                accumulator.weightSum[i] += s.weightSum[i];
             }
-
-            ++goodEpochs;
+            positions.push_back(s.position);
         }
 
-        if (goodEpochs == 0)
-            return;
+        if (positions.empty() || !computeWeightedSolution(accumulator, result.averagePosition))
+            return result;
 
-        if (!computeWeightedSolution(accumulator, avgPos))
-        {
-            goodEpochs = 0;
-            return;
-        }
+        result.covarianceEcef = computeScatterCovariance(positions, result.averagePosition);
 
-        covar = computeMeanCovariance(accumulator);
+        const Matrix<double> covarNEU = covarToNEU(result.covarianceEcef, xyzToNEURotation(result.averagePosition));
+        result.horizontalStdDev = std::sqrt(covarNEU(0, 0) + covarNEU(1, 1));
+        result.verticalStdDev = std::sqrt(covarNEU(2, 2));
+        result.valid = true;
 
-        covarNEU = covarToNEU(covar, xyzToNEURotation(avgPos));
+        return result;
     }
 
-    double PositionStatistic::getHorStdDev() const
+    PositionStatistic::PositionStatistic(SlnType solutionType) : solutionType_(solutionType) {}
+
+    PositionStatisticResult computeSolutionSummary(GnssEpochMap& gnss_data, SlnType slnType)
     {
-        return sqrt(covarNEU(0, 0) + covarNEU(1, 1));
+        const PositionStatistic rms_st(slnType);
+        return rms_st.compute(gnss_data);
     }
-
-    double PositionStatistic::getVertStdDev() const
-    {
-        return sqrt(covarNEU(2, 2));
-    }
-
-    PositionStatistic::PositionStatistic(SlnType st, TypeIDSet tIDs) : slnType(st), types(std::move(tIDs)) {}
 
 } // namespace pod

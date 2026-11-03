@@ -159,9 +159,14 @@ namespace pod
         };
 
         for (const auto& epoch : data)
+        {
+            if (!epoch.second.isValidSolution_)
+                continue;
+
             for (const auto& sat : epoch.second.satData)
                 if (isSupported(sat.first.system))
                     accumulate(sat.first, sat.second);
+        }
 
         sysResults.clear();
         for (auto& [key, acc] : systems)
@@ -245,7 +250,7 @@ namespace pod
 		return satResults;
 	}
 
-	void PostfitResidualStatistics::print(std::ostream& os) const
+	void PostfitResidualStatistics::print(std::ostream& os, bool withElevation) const
 	{
 		static const std::pair<SatelliteSystem, const char*> systems[] = {
 			{SatelliteSystem::GPS, "GPS"}, {SatelliteSystem::Glonass, "GLO"}, {SatelliteSystem::Galileo, "GAL"}};
@@ -265,7 +270,7 @@ namespace pod
 					   << " Mean=" << std::setw(12) << r->mean_.value_or(0.0) << " Std=" << std::setw(12)
 					   << r->stdDev_.value_or(0.0) << '\n';
 
-		if (!elevationEnabled)
+		if (!elevationEnabled || !withElevation)
 			return;
 
 		for (const auto& item : printOrder)

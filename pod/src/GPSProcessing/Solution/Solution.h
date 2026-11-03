@@ -21,7 +21,6 @@ namespace pod
         void saveToDb();
         void saveSolutionDb();
         void saveStatisticsDb();
-        void saveStatistic();
         GnssEpochMap& getData()
         {
             return solver.getData();

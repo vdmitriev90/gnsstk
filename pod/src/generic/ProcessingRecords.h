@@ -76,7 +76,8 @@ namespace pod
 		struct SolutionStatisticsRecord
 		{
 			gnsstk::Triple average; // mean X, Y, Z
-			double horizontalStdDev = 0.0, verticalStdDev = 0.0;
+			double horizontalStdDev = 0.0;
+			double verticalStdDev = 0.0;
 			double averageSvInUse = 0.0;
 			CovarianceMatrix3 covariance;
 		};

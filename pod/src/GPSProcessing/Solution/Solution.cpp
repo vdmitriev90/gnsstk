@@ -1,16 +1,16 @@
 #include "Solution.h"
 
-#include "ResidualsStatistic.h"
-#include "PositionStatistic.h"
 #include "ComputeWeightSimple.h"
 #include "FsUtils.h"
+#include "PositionStatistic.h"
+#include "ResidualsStatistic.h"
 #include "SolutionDatabase.h"
 #include "StatisticsDatabase.h"
 #include "TimeUtils.h"
+#include "UnixTime.hpp"
 
 #include <chrono>
 #include <cmath>
-#include "UnixTime.hpp"
 
 using namespace gnsstk;
 namespace pod
@@ -34,9 +34,9 @@ namespace pod
 
     void Solution::process()
     {
-         processingStartedUnixSec_ = std::chrono::duration_cast<std::chrono::seconds>(
-                                       std::chrono::system_clock::now().time_since_epoch())
-                                       .count();
+        processingStartedUnixSec_ =
+            std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch())
+                .count();
 
         const StopTimer stopTimer(processingDurationMSec_);
 
@@ -54,89 +54,14 @@ namespace pod
         }
     }
 
-    namespace
+    void printStatistic(const PositionStatisticResult& slnSumm, const PostfitResidualStatistics& residStat)
     {
-        // Position and satellite-count statistics over epochs having the desired solution type.
-        struct SolutionSummary
-        {
-            Triple sln;
-            CovarianceMatrix3 covar;
-            double horStdDev = 0.0;
-            double vertStdDev = 0.0;
-            int goodEpochs = 0;
-            double avgSvInView = 0.0;
-            double avgSvInUse = 0.0;
-        };
+        residStat.print(std::cout, false);
 
-        SolutionSummary computeSolutionSummary(const GnssEpochMap& gnss_data, SlnType slnType)
-        {
-            SolutionSummary r;
-            TypeIDSet typeSet{TypeID::recX, TypeID::recY, TypeID::recZ};
-            PositionStatistic rms_st(slnType, typeSet);
-            rms_st.compute(gnss_data, r.sln, r.covar);
-            r.horStdDev = rms_st.getHorStdDev();
-            r.vertStdDev = rms_st.getVertStdDev();
-
-            double inView(0), inUse(0);
-            for (const auto& ep : gnss_data)
-            {
-                if ((SlnType)(int)ep.second.slnData.getValue(TypeID::recSlnType) == slnType)
-                {
-                    r.goodEpochs++;
-                    inView += ep.second.satData.size();
-                    inUse += ep.second.slnData.at(TypeID::recUsedSV);
-                }
-            }
-            if (r.goodEpochs > 0)
-            {
-                r.avgSvInView = inView / r.goodEpochs;
-                r.avgSvInUse = inUse / r.goodEpochs;
-            }
-            return r;
-        }
-    } // namespace
-
-    void Solution::saveStatistic()
-    {
-        const auto file_name = solver.getFileName();
-        const auto& gnss_data = solver.getData();
-        if (gnss_data.empty())
-            return;
-        fs::path out_path(data->opts.workingDir / file_name / ".txt");
-
-        PostfitResidualStatistics postfit_stat(false);
-        postfit_stat.compute(gnss_data);
-        postfit_stat.print(std::cout);
-
-        const auto s = computeSolutionSummary(gnss_data, solver.desiredSlnType());
-        const auto& sln = s.sln;
-        const auto& covar = s.covar;
-        std::cout << std::setprecision(3) << "SdtDev Hor: " << s.horStdDev << " Vert: " << s.vertStdDev << std::endl;
-
-        const int summ = s.goodEpochs;
-        const double avgSvInView = s.avgSvInView * summ;
-        const double avgSvInUse = s.avgSvInUse * summ;
-
-        std::ofstream wrt(out_path.string(), std::ostream::out | std::ostream::app);
-        const std::string sep = ",";
-
-        // print time interval
-        const std::string fmt = "%04Y-%02m-%02d %02H:%02M:%02S";
-        wrt << CivilTime(gnss_data.getInitialTime()).printf(fmt) << sep
-            << CivilTime(gnss_data.getFinalTime()).printf(fmt) << sep;
-
-        // XYZ coordinates
-        for (int i = 0; i < 3; ++i)
-            wrt << std::fixed << std::setw(13) << std::setprecision(4) << std::setfill(' ') << sln[i] << sep;
-        wrt << static_cast<int>(solver.desiredSlnType()) << sep;
-
-        // number of good solutions
-        wrt << summ << sep << gnss_data.size() << sep << std::setprecision(1) << avgSvInView / summ << sep
-            << avgSvInUse / summ << sep;
-
-        // print rms3d
-        const double rms3d = sqrt(covar.xx + covar.yy + covar.zz);
-        wrt << std::fixed << std::scientific << std::setprecision(3) << std::setfill(' ') << rms3d << std::endl;
+        const auto& sln = slnSumm.averagePosition;
+        std::cout << std::setprecision(3) << "SdtDev Hor: " << slnSumm.horizontalStdDev
+                  << " Vert: " << slnSumm.verticalStdDev << " TotalEpohs " << slnSumm.totalEpochs << " FixEpochs "
+                  << slnSumm.fixEpochs << " Outliers " << slnSumm.outlierEpochs << std::endl;
     }
 
     void Solution::saveToDb()
@@ -184,14 +109,29 @@ namespace pod
         auto& gnss_data = solver.getData();
         gnss_data.updateMetadata();
 
+        if (gnss_data.empty())
+            return;
+
         fs::path db_path(data->opts.workingDir / "statistics.db");
 
-        // compute aggregated residual statistics (no console output)
-        PostfitResidualStatistics postfit_stat(false);
+        std::optional<SolutionStatisticsRecord> solution_rec;
+        const auto sln_summ = computeSolutionSummary(gnss_data, solver.desiredSlnType());
+        if (sln_summ.valid)
+        {
+            SolutionStatisticsRecord rec;
+            rec.average = sln_summ.averagePosition;
+            rec.horizontalStdDev = sln_summ.horizontalStdDev;
+            rec.verticalStdDev = sln_summ.verticalStdDev;
+            rec.averageSvInUse = sln_summ.avgSvInUse;
+            rec.covariance = sln_summ.covarianceEcef;
+            solution_rec = rec;
+        }
+
+        // compute aggregated residual statistics
+        PostfitResidualStatistics postfit_stat(true);
         postfit_stat.compute(gnss_data);
 
         ProcessingDataRecord data_rec;
-        std::optional<SolutionStatisticsRecord> solution_rec;
         data_rec.roverSite = data->opts.SiteRover;
         if (isDifferential(solver.desiredSlnType()) && !data->opts.SiteBase.empty())
             data_rec.baseSite = data->opts.SiteBase;
@@ -199,25 +139,11 @@ namespace pod
         data_rec.satelliteSystemsMask = satelliteSystemsMask(gnss_data.svs);
         data_rec.elevationCutoffDeg = data->opts.maskEl;
         data_rec.epochNumber = static_cast<std::int64_t>(gnss_data.size());
-        if (!gnss_data.empty())
-        {
-            const auto t0 = gnss_data.getInitialTime();
-            const auto t1 = gnss_data.getFinalTime();
-            data_rec.observationStartUnixSec = static_cast<std::int64_t>(gnsstk::UnixTime(t0).tv.tv_sec);
-            data_rec.observationDurationSec = static_cast<std::int64_t>(std::llround(t1 - t0));
 
-            const auto s = computeSolutionSummary(gnss_data, solver.desiredSlnType());
-            if (s.goodEpochs > 0)
-            {
-                SolutionStatisticsRecord rec;
-                rec.average = s.sln;
-                rec.horizontalStdDev = s.horStdDev;
-                rec.verticalStdDev = s.vertStdDev;
-                rec.averageSvInUse = s.avgSvInUse;
-                rec.covariance = s.covar;
-                solution_rec = rec;
-            }
-        }
+        const auto t0 = gnss_data.getInitialTime();
+        const auto t1 = gnss_data.getFinalTime();
+        data_rec.observationStartUnixSec = static_cast<std::int64_t>(gnsstk::UnixTime(t0).tv.tv_sec);
+        data_rec.observationDurationSec = static_cast<std::int64_t>(std::llround(t1 - t0));
 
         ProcessingTechnicalInfoRecord info;
         info.processingStartedUnixSec = processingStartedUnixSec_;
@@ -231,6 +157,8 @@ namespace pod
                   postfit_stat.systemResults(),
                   postfit_stat.satelliteResults(),
                   solution_rec);
+
+        printStatistic(sln_summ, postfit_stat);
     }
 
     void Solution::chekObs()

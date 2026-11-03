@@ -26,6 +26,7 @@ namespace pod
         if (!solver.getValid())
         {
             gEpoch.slnData.insert(std::make_pair(TypeID::recSlnType, static_cast<int>(SlnType::None)));
+            gEpoch.isValidSolution_ = false;
             return;
         }
 
@@ -50,6 +51,8 @@ namespace pod
 
         gEpoch.slnData.insert(std::make_pair(TypeID::recSlnType, static_cast<int>(desiredSlnType())));
         gEpoch.slnData.insert(std::make_pair(TypeID::sigma, solver.getPhaseSigma()));
+
+        gEpoch.isValidSolution_ = true;
     }
 
     void GnssSolution::storeReceiverParams(const KalmanSolver& solver,

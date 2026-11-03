@@ -79,8 +79,7 @@ void testPod(const char * path)
     auto t2 = clock();
     cout << (t2 - t1) / (double)CLOCKS_PER_SEC << endl;
     cout << "processed epochs: " << sol.getData().data.size() << endl;
-   
-    sol.saveStatistic();
+
     sol.saveToDb();
 
     cout << "inserting to db complete ";
