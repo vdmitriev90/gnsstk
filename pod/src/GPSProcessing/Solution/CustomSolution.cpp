@@ -10,7 +10,7 @@ namespace pod
 {
     GnssSolutionUPtr CustomSolution::Factory(GnssDataStorePtr dataStore)
     {
-        switch (dataStore->opts.slnType)
+        switch (dataStore->opts_.slnType)
         {
         case pod::SlnType::Standalone:
             return std::make_unique<SingleSolution>(dataStore);
@@ -31,7 +31,7 @@ namespace pod
         default:
             break;
         }
-        std::string sExc = "Processing for Solution type " + slnType2Str[dataStore->opts.slnType]
+        std::string sExc = "Processing for Solution type " + slnType2Str[dataStore->opts_.slnType]
                            + " is not supported.";
 
         GNSSTK_THROW(InvalidRequest(sExc))

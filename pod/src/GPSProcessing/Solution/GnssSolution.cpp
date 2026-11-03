@@ -75,7 +75,7 @@ namespace pod
                                             const FilterParameter& param,
                                             GnssEpoch& gEpoch) const
     {
-        if (!this->data_->opts.fullOutput)
+        if (!this->data_->opts_.fullOutput)
             return;
 
         const double amb = solver.getSolution(param);

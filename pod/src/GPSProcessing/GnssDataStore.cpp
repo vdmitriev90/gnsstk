@@ -122,7 +122,7 @@ namespace pod
         try
         {
             // Try to open the provided configuration file
-            confReader->open(path);
+            confReader_->open(path);
         }
         catch (...)
         {
@@ -136,7 +136,7 @@ namespace pod
 
         // If a given variable is not found in the provided section, then
         // 'confReader' will look for it in the 'DEFAULT' section.
-        confReader->setFallback2Default(true);
+        confReader_->setFallback2Default(true);
 
         return true;
     }
@@ -147,49 +147,57 @@ namespace pod
         {
             initReader(path);
 
-            opts.workingDir = fs::path(path).parent_path();
+            opts_.workingDir = fs::path(path).parent_path();
 
-            opts.isSpaceborneRcv = confReader->getValueAsBoolean("IsSpaceborneRcv");
+            opts_.isSpaceborneRcv = confReader_->getValueAsBoolean("IsSpaceborneRcv");
 
-            opts.isSmoothCode = confReader->getValueAsBoolean("IsSmoothCode");
+            opts_.isSmoothCode = confReader_->getValueAsBoolean("IsSmoothCode");
 
-            opts.computeTropo = confReader->getValueAsBoolean("computeTropo");
+            opts_.computeTropo = confReader_->getValueAsBoolean("computeTropo");
 
-            opts.tropoModelType = (TropoModelType)confReader->getValueAsInt("tropoModelType");
+            opts_.tropoModelType = (TropoModelType)confReader_->getValueAsInt("tropoModelType");
 
-            opts.maskEl = confReader->getValueAsDouble("ElMask");
+            opts_.maskEl = confReader_->getValueAsDouble("ElMask");
 
-            opts.maskSNR = confReader->getValueAsDouble("SNRmask");
+            opts_.maskSNR = confReader_->getValueAsDouble("SNRmask");
 
-            opts.dynamics = (Dynamics)confReader->getValueAsInt("Dynamics");
+            opts_.dynamics = (Dynamics)confReader_->getValueAsInt("Dynamics");
 
-            opts.bceDir = "data/nav";
+            opts_.bceDir = "data/nav";
 
-            opts.SiteRover = confReader->getValue("SiteRover");
+            opts_.SiteRover = confReader_->getValue("SiteRover");
 
-            opts.SiteBase = confReader->getValue("SiteBase");
+            opts_.SiteBase = confReader_->getValue("SiteBase");
 
-            opts.fullOutput = confReader->getValueAsBoolean("fullOutput");
+            opts_.fullOutput = confReader_->getValueAsBoolean("fullOutput");
 
-            opts.slnType = (SlnType)confReader->getValueAsInt("slnType");
-            std::cout << "Solution Type: " << slnType2Str[opts.slnType] << std::endl;
+            opts_.slnType = (SlnType)confReader_->getValueAsInt("slnType");
+            std::cout << "Solution Type: " << slnType2Str[opts_.slnType] << std::endl;
 
             // set generic files direcory
-            opts.genericFilesDirectory = confReader->getValue("GenericFilesDir");
-            if (!opts.genericFilesDirectory.empty() && opts.genericFilesDirectory.back() != '\\'
-                && opts.genericFilesDirectory.back() != '/')
-                opts.genericFilesDirectory += "\\";
+            opts_.genericFilesDirectory = confReader_->getValue("GenericFilesDir");
+            if (!opts_.genericFilesDirectory.empty() && opts_.genericFilesDirectory.back() != '\\'
+                && opts_.genericFilesDirectory.back() != '/')
+                opts_.genericFilesDirectory += "\\";
 
-            for (auto it : confReader->getValueListAsInt("carrierBands"))
-                opts.carrierBands.insert(static_cast<CarrierBand>(it));
+            opts_.antexFile = opts_.genericFilesDirectory + confReader_->getValue("antexFile");
+            opts_.stationsDataFile = opts_.genericFilesDirectory + "stations.ini";
+            opts_.oceanLoadingFile = opts_.genericFilesDirectory + confReader_->getValue("oceanLoadingFile");
+            opts_.satDataFile = opts_.genericFilesDirectory + confReader_->getValue("satDataFile");
+
+            stationsDataReader_.open(opts_.stationsDataFile);
+            stationsDataReader_.setFallback2Default(true);
+
+            for (auto it : confReader_->getValueListAsInt("carrierBands"))
+                opts_.carrierBands.insert(static_cast<CarrierBand>(it));
 
             std::cout << "Used Carrier bands: ";
-            for_each(opts.carrierBands.begin(), opts.carrierBands.end(), [](auto&& it) {
+            for_each(opts_.carrierBands.begin(), opts_.carrierBands.end(), [](auto&& it) {
                 std::cout << carrierBand2Str[it] << " ";
             });
             std::cout << std::endl;
 
-            for (auto it : confReader->getValueList("satSystems"))
+            for (auto it : confReader_->getValueList("satSystems"))
             {
                 auto sys = convertCodeToSatelliteSystem(it);
                 if (sys == SatelliteSystem::Unknown)
@@ -197,11 +205,11 @@ namespace pod
                     std::cerr << "Warning: Unknown satellite system code '" << it << "' in configuration." << std::endl;
                     continue;
                 }
-                opts.systems.insert(sys);
+                opts_.systems.insert(sys);
             }
 
             std::cout << "Used Sat. Systems: ";
-            for_each(opts.systems.begin(), opts.systems.end(), [](auto&& ss) {
+            for_each(opts_.systems.begin(), opts_.systems.end(), [](auto&& ss) {
                 std::cout << convertSatelliteSystemToCode(ss) << " ";
             });
             std::cout << std::endl;
@@ -223,7 +231,7 @@ namespace pod
             //     apprPosFile = confReader->getValue("apprPosFile");
 
             // load clock data from RINEX clk files, if required
-            if (confReader->getValueAsBoolean("UseRinexClock"))
+            if (confReader_->getValueAsBoolean("UseRinexClock"))
             {
                 std::cout << "Load Rinex clock data ... ";
                 checkLoaded(loadClocks(), "Rinex clock data");
@@ -238,7 +246,7 @@ namespace pod
             std::cout << "Load Earth orientation data... ";
             checkLoaded(loadEOPData(), "Earth orientation data");
 
-            if (confReader->getValueAsBoolean("ApplyCodeBias"))
+            if (confReader_->getValueAsBoolean("ApplyCodeBias"))
             {
                 std::cout << "Load Bias-SINEX data... ";
                 checkLoaded(loadBiasSinex(), "Bias-SINEX data");
@@ -246,7 +254,7 @@ namespace pod
 
             std::cout << "Appr. position  source: ";
             if (createPosProvider())
-                std::cout << getPosSourceString(apprPos->getSource()) << std::endl;
+                std::cout << getPosSourceString(apprPosProvider_->getSource()) << std::endl;
         }
         catch (const Exception& e)
         {
@@ -265,10 +273,10 @@ namespace pod
     {
 
         const std::string subdir = "data/sp3";
-        const auto files = FsUtils::getAllFilesInDir(opts.workingDir / subdir);
+        const auto files = FsUtils::getAllFilesInDir(opts_.workingDir / subdir);
         if (files.empty())
         {
-            std::cerr << "Empty ephemeris directory " << opts.workingDir / subdir << std::endl;
+            std::cerr << "Empty ephemeris directory " << opts_.workingDir / subdir << std::endl;
             return false;
         }
         bool res = false;
@@ -295,7 +303,7 @@ namespace pod
     bool GnssDataStore::loadClocks()
     {
         const std::string subdir = "data/clk";
-        const auto files = FsUtils::getAllFilesInDir(opts.workingDir / subdir);
+        const auto files = FsUtils::getAllFilesInDir(opts_.workingDir / subdir);
 
         bool res = false;
 
@@ -322,11 +330,11 @@ namespace pod
     {
         bool isIonexLoaded = loadIonoMap();
 
-        auto type = (ComputeIonoModel::IonoModelType)confReader->getValueAsInt("CodeIonoCorrType");
+        auto type = (ComputeIonoModel::IonoModelType)confReader_->getValueAsInt("CodeIonoCorrType");
         switch (type)
         {
         case gnsstk::ComputeIonoModel::Zero:
-            ionoCorrector.setZeroModel();
+            ionoCorrector_.setZeroModel();
             break;
         case gnsstk::ComputeIonoModel::Klobuchar:
             if (!loadBceIonoModel())
@@ -334,12 +342,12 @@ namespace pod
             break;
         case gnsstk::ComputeIonoModel::Ionex:
             if (isIonexLoaded)
-                ionoCorrector.setIonosphereMap(ionexStore);
+                ionoCorrector_.setIonosphereMap(ionexStore_);
             else
                 GNSSTK_THROW(InvalidRequest("Can't load Ionosphere map from Ionex files."));
             break;
         case gnsstk::ComputeIonoModel::DualFreq:
-            ionoCorrector.setDualFreqModel();
+            ionoCorrector_.setDualFreqModel();
             break;
         default:
             GNSSTK_THROW(InvalidRequest("Unknown Ionospheric model type."));
@@ -350,20 +358,20 @@ namespace pod
     bool GnssDataStore::loadIonoMap()
     {
         const std::string subdir = "data/inx";
-        const auto files = FsUtils::getAllFilesInDir(opts.workingDir / subdir);
-        ionexStore.clear();
+        const auto files = FsUtils::getAllFilesInDir(opts_.workingDir / subdir);
+        ionexStore_.clear();
         for (const auto& file : files)
         {
-            ionexStore.loadFile(file.string());
+            ionexStore_.loadFile(file.string());
         }
 
-        return ionexStore.size() > 0;
+        return ionexStore_.size() > 0;
     }
 
     bool GnssDataStore::loadBceIonoModel()
     {
         const std::string gpsObsExt = ".[\\d]{2}[nN]|";
-        const auto files = FsUtils::getFilesByExtensionRegex(opts.workingDir / opts.bceDir, gpsObsExt);
+        const auto files = FsUtils::getFilesByExtensionRegex(opts_.workingDir / opts_.bceDir, gpsObsExt);
         for (auto&& file : files)
         {
             try
@@ -397,7 +405,7 @@ namespace pod
                               << " doesn't have valid ionospheric correction parameters." << std::endl;
                 }
 
-                bceIonoStore.addIonoModel(nav_ref_time.value(), iMod);
+                bceIonoStore_.addIonoModel(nav_ref_time.value(), iMod);
             }
             catch (...)
             {
@@ -408,13 +416,13 @@ namespace pod
             }
         }
 
-        if (bceIonoStore.empty())
+        if (bceIonoStore_.empty())
         {
             std::cerr << "No valid ionospheric model found in Rinex GPS Navigation files." << std::endl;
             return false;
         }
         //
-        ionoCorrector.setKlobucharModel(bceIonoStore);
+        ionoCorrector_.setKlobucharModel(bceIonoStore_);
 
         return true;
     }
@@ -422,7 +430,7 @@ namespace pod
     bool GnssDataStore::loadFcn()
     {
         const std::string gln_nav_ext = ".[\\d]{2}[gG]|\\.rnx";
-        auto files = FsUtils::getFilesByExtensionRegex(opts.workingDir / opts.bceDir, gln_nav_ext);
+        auto files = FsUtils::getFilesByExtensionRegex(opts_.workingDir / opts_.bceDir, gln_nav_ext);
 
         for (auto file : files)
         {
@@ -444,7 +452,7 @@ namespace pod
     bool GnssDataStore::loadEOPData()
     {
 
-        const fs::path eop_dir = opts.workingDir / "data" / "erp";
+        const fs::path eop_dir = opts_.workingDir / "data" / "erp";
 
         const auto files = FsUtils::getFilesByExtension(eop_dir, ".ERP");
 
@@ -456,17 +464,17 @@ namespace pod
 
         for (const auto& file : files)
         {
-            eopStore.addERPFile(file.string());
+            eopStore_.addERPFile(file.string());
         }
 
-        if (eopStore.empty())
+        if (eopStore_.empty())
             std::cerr << "Empty ERP store after import " << eop_dir << std::endl;
-        return !eopStore.empty();
+        return !eopStore_.empty();
     }
 
     bool GnssDataStore::loadBiasSinex()
     {
-        const fs::path bias_dir = opts.workingDir / "data" / "osb";
+        const fs::path bias_dir = opts_.workingDir / "data" / "osb";
         const auto files = FsUtils::getAllFilesInDir(bias_dir);
 
         if (files.empty())
@@ -479,7 +487,7 @@ namespace pod
         {
             try
             {
-                biasSinexStore.loadFile(bsxFile.string());
+                biasSinexStore_.loadFile(bsxFile.string());
             }
             catch (const Exception& e)
             {
@@ -495,7 +503,7 @@ namespace pod
         return true;
     }
 
-    GnssDataStore::GnssDataStore(gnsstk::ConfDataReader& confReader) : confReader(&confReader)
+    GnssDataStore::GnssDataStore(gnsstk::ConfDataReader& confReader) : confReader_(&confReader)
     {
         sp3NavFactory_ = std::make_shared<SP3NavDataFactory>();
         navLibrary_.addFactory(sp3NavFactory_);
@@ -503,9 +511,9 @@ namespace pod
 
     void GnssDataStore::checkObservable()
     {
-        std::ofstream os((opts.workingDir / "ObsStatistic.out").string());
+        std::ofstream os((opts_.workingDir / "ObsStatistic.out").string());
 
-        for (auto obsFile : getObsFiles(opts.SiteRover))
+        for (auto obsFile : getObsFiles(opts_.SiteRover))
         {
             // Input observation file stream
             Rinex3ObsStream rin;
@@ -528,7 +536,7 @@ namespace pod
                     int nGPS = 0, nGLN = 0;
                     for (auto& it : rod.obs)
                     {
-                        if (opts.systems.find(it.first.system) == opts.systems.end())
+                        if (opts_.systems.find(it.first.system) == opts_.systems.end())
                             continue;
                         if (it.first.system == SatelliteSystem::GPS)
                             nGPS++;
@@ -558,22 +566,22 @@ namespace pod
 
     bool GnssDataStore::createPosProvider()
     {
-        auto apprPosProvider = static_cast<ApprPositionSource>(confReader->getValueAsInt("ApprPosProvider"));
+        auto apprPosProvider = static_cast<ApprPositionSource>(confReader_->getValueAsInt("ApprPosProvider"));
 
         switch (apprPosProvider)
         {
         case ApprPositionSource::FromConfig:
-            apprPos = std::make_unique<ApprPosSimple>(getNominalPosition(opts.SiteRover));
+            apprPosProvider_ = std::make_unique<ApprPosSimple>(getNominalPosition(opts_.SiteRover));
             return true;
         case ApprPositionSource::ComputeForEachEpoch:
-            apprPos = std::make_unique<ComputeOnePos>(navLibrary_);
+            apprPosProvider_ = std::make_unique<ComputeOnePos>(navLibrary_);
             return true;
         case ApprPositionSource::ComputeForFirstEpoch:
-            apprPos = std::make_unique<ComputeOnePos>(navLibrary_);
+            apprPosProvider_ = std::make_unique<ComputeOnePos>(navLibrary_);
             return true;
         case ApprPositionSource::LoadFromFile:
-            apprPos =
-                std::make_unique<PositionFromFile>((opts.workingDir / confReader->getValue("ApprPosFile")).string());
+            apprPosProvider_ =
+                std::make_unique<PositionFromFile>((opts_.workingDir / confReader_->getValue("ApprPosFile")).string());
             return true;
         default:
             return false;
@@ -582,14 +590,14 @@ namespace pod
 
     gnsstk::Position GnssDataStore::getNominalPosition(std::string siteId)
     {
-        const auto pos = confReader->getValueListAsTriple("nominalPosition", siteId);
+        const auto pos = stationsDataReader_.getValueListAsTriple("nominalPosition", siteId);
         return Position(pos);
     }
 
     std::list<std::string> GnssDataStore::getObsFiles(const std::string& siteID) const
     {
         const std::string subdir = "data/obs";
-        auto paths = FsUtils::getAllFilesInDir(opts.workingDir / subdir / siteID);
+        auto paths = FsUtils::getAllFilesInDir(opts_.workingDir / subdir / siteID);
         std::list<std::string> result;
         for (const auto& p : paths)
             result.push_back(p.string());

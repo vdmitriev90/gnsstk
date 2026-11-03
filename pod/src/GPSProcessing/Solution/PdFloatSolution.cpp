@@ -95,7 +95,7 @@ namespace pod
 
 #pragma endregion
 
-        IonexModel ionoModel(nominalPos_, data_->ionexStore, TypeID::C1, false);
+        IonexModel ionoModel(nominalPos_, data_->ionexStore_, TypeID::C1, false);
 
         // Object to compute gravitational delay effects
         GravitationalDelay grDelayBase(ref_base_pos);
@@ -126,15 +126,8 @@ namespace pod
 
 #pragma endregion
 
-#pragma region prepare ANTEX reader
-
-        std::string antxfile = opts().genericFilesDirectory;
-        antxfile += confReader().getValue("antexFile");
-
         AntexReader antexReader;
-        antexReader.open(antxfile);
-
-#pragma endregion
+        antexReader.open(opts().antexFile);
 
 #pragma region correct observable
 
@@ -145,39 +138,38 @@ namespace pod
 
         // Vector from monument to antenna ARP [UEN], in meters
         // for base
-        const Triple offsetARP = confReader().getValueListAsTriple("offsetARP", opts().SiteBase);
+        const Triple offsetARP = stationsDataReader().getValueListAsTriple("offsetARP", opts().SiteBase);
         corrBase.setMonument(offsetARP);
 
         // for rover
-        const Triple offsetARP_Rover = confReader().getValueListAsTriple("offsetARP", opts().SiteRover);
+        const Triple offsetARP_Rover = stationsDataReader().getValueListAsTriple("offsetARP", opts().SiteRover);
         corrRover.setMonument(offsetARP_Rover);
 
-        Antenna baseAnt(antexReader.getAntenna(confReader().getValue("antennaModel", opts().SiteBase)));
+        Antenna baseAnt(antexReader.getAntenna(stationsDataReader().getValue("antennaModel", opts().SiteBase)));
         corrBase.setAntenna(baseAnt);
-        corrBase.setUsePcv(confReader().getValueAsBoolean("usePCPatterns", opts().SiteBase));
-        corrBase.setUseAzimuth(confReader().getValueAsBoolean("useAzim", opts().SiteBase));
+        corrBase.setUsePcv(stationsDataReader().getValueAsBoolean("usePCPatterns", opts().SiteBase));
+        corrBase.setUseAzimuth(stationsDataReader().getValueAsBoolean("useAzim", opts().SiteBase));
 
-        Antenna roverAnt(antexReader.getAntenna(confReader().getValue("antennaModel", opts().SiteRover)));
+        Antenna roverAnt(antexReader.getAntenna(stationsDataReader().getValue("antennaModel", opts().SiteRover)));
         corrRover.setAntenna(roverAnt);
-        corrRover.setUsePcv(confReader().getValueAsBoolean("usePCPatterns", opts().SiteRover));
-        corrRover.setUseAzimuth(confReader().getValueAsBoolean("useAzim", opts().SiteRover));
+        corrRover.setUsePcv(stationsDataReader().getValueAsBoolean("usePCPatterns", opts().SiteRover));
+        corrRover.setUseAzimuth(stationsDataReader().getValueAsBoolean("useAzim", opts().SiteRover));
 
 #pragma endregion
 
         // Objects to compute tidal effects
-        TidalDisplacement tides(data_->eopStore);
+        TidalDisplacement tides(data_->eopStore_);
         
         // Configure ocean loading model
-        tides.setOceanLoadingFile(opts().genericFilesDirectory + confReader().getValue("oceanLoadingFile"));
-        const std::string sat_file = opts().genericFilesDirectory + confReader().getValue("satDataFile");
+        tides.setOceanLoadingFile(opts().oceanLoadingFile);
 
-        ComputeWindUp windupBase(data_->navLibrary_, ref_base_pos, sat_file);
-        ComputeWindUp windupRover(data_->navLibrary_, ref_base_pos, sat_file);
+        ComputeWindUp windupBase(data_->navLibrary_, ref_base_pos, opts().satDataFile);
+        ComputeWindUp windupRover(data_->navLibrary_, ref_base_pos, opts().satDataFile);
 
-        ComputeSatPCenter svPcenterBase(ref_base_pos, sat_file);
+        ComputeSatPCenter svPcenterBase(ref_base_pos, opts().satDataFile);
         svPcenterBase.setAntexReader(antexReader);
 
-        ComputeSatPCenter svPcenterRover(ref_base_pos, sat_file);
+        ComputeSatPCenter svPcenterRover(ref_base_pos, opts().satDataFile);
         svPcenterRover.setAntexReader(antexReader);
 
         ProcessLinear linearIonoFree;
@@ -318,7 +310,7 @@ namespace pod
 
                     gRef >> corrBase;
                     gRef >> windupBase;
-                    data_->ionoCorrector.setNominalPosition(ref_base_pos);
+                    data_->ionoCorrector_.setNominalPosition(ref_base_pos);
 
                     gRef >> computeTropoBase;
                     // gRef >> ionoFilterBase;

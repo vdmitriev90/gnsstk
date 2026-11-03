@@ -93,7 +93,7 @@ namespace pod
     {
         auto& gnss_data = solver.getData();
 
-        const fs::path solutions_dir = data->opts.workingDir / "solutions";
+        const fs::path solutions_dir = data->opts_.workingDir / "solutions";
         fs::create_directories(solutions_dir);
 
         const fs::path db_path = makeUniqueDbPath(solutions_dir, solver.getBaseFileName(), gnss_data);
@@ -112,7 +112,7 @@ namespace pod
         if (gnss_data.empty())
             return;
 
-        fs::path db_path(data->opts.workingDir / "statistics.db");
+        fs::path db_path(data->opts_.workingDir / "statistics.db");
 
         std::optional<SolutionStatisticsRecord> solution_rec;
         const auto sln_summ = computeSolutionSummary(gnss_data, solver.desiredSlnType());
@@ -135,12 +135,12 @@ namespace pod
         postfit_stat.compute(gnss_data);
 
         ProcessingDataRecord data_rec;
-        data_rec.roverSite = data->opts.SiteRover;
-        if (isDifferential(solver.desiredSlnType()) && !data->opts.SiteBase.empty())
-            data_rec.baseSite = data->opts.SiteBase;
+        data_rec.roverSite = data->opts_.SiteRover;
+        if (isDifferential(solver.desiredSlnType()) && !data->opts_.SiteBase.empty())
+            data_rec.baseSite = data->opts_.SiteBase;
         data_rec.solutionType = static_cast<int>(solver.desiredSlnType());
         data_rec.satelliteSystemsMask = satelliteSystemsMask(gnss_data.svs);
-        data_rec.elevationCutoffDeg = data->opts.maskEl;
+        data_rec.elevationCutoffDeg = data->opts_.maskEl;
 
         const auto t0 = gnss_data.getInitialTime();
         const auto t1 = gnss_data.getFinalTime();

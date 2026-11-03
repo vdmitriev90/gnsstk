@@ -26,13 +26,13 @@
 #include "LinearCombinations.hpp"
 #include "MJD.hpp"
 #include "MWCSDetector.hpp"
+#include "ObsRangeFilter.h"
 #include "ObservablesSets.h"
 #include "PositionEquations.h"
 #include "PowerSum.hpp"
 #include "PrefitResCatcher.h"
 #include "SNRCatcher.h"
 #include "SatArcMarker.hpp"
-#include "ObsRangeFilter.h"
 #include "StringUtils.h"
 #include "TidalDisplacement.h"
 #include "TropoEquations.h"
@@ -67,7 +67,8 @@ namespace pod
 
         ElevationMask elMask(opts().maskEl);
 
-        ObsRangeFilter CodeFilter({ObsRangeType::FirstCode, ObsRangeType::SecondCode, ObsRangeType::FirstPhase, ObsRangeType::SecondPhase});
+        ObsRangeFilter CodeFilter(
+            {ObsRangeType::FirstCode, ObsRangeType::SecondCode, ObsRangeType::FirstPhase, ObsRangeType::SecondPhase});
         ObsRangeFilter SNRFilter(ObsRangeType::Snr, confReader().getValueAsInt("SNRmask"), DBL_MAX);
         // Object to remove eclipsed satellites
         EclipsedSatFilter eclipsedSV;
@@ -105,49 +106,41 @@ namespace pod
 
 #pragma endregion
 
-#pragma region prepare ANTEX reader
-
-        std::string antxfile = opts().genericFilesDirectory;
-        antxfile += confReader().getValue("antexFile");
-
         AntexReader antexReader;
-        antexReader.open(antxfile);
-
-#pragma endregion
+        antexReader.open(opts().antexFile);
 
 #pragma region correct observable
 
         CorrectObservables corrRover(data_->navLibrary_);
 
         // Vector from monument to antenna ARP [UEN], in meters
-        const Triple offsetARP = confReader().getValueListAsTriple("offsetARP", opts().SiteRover);
+        const Triple offsetARP = stationsDataReader().getValueListAsTriple("offsetARP", opts().SiteRover);
         corrRover.setMonument(offsetARP);
 
-        Antenna roverAnt(antexReader.getAntenna(confReader().getValue("antennaModel", opts().SiteRover)));
-        corrRover.setUsePcv(confReader().getValueAsBoolean("usePCPatterns", opts().SiteRover));
+        Antenna roverAnt(antexReader.getAntenna(stationsDataReader().getValue("antennaModel", opts().SiteRover)));
+        corrRover.setUsePcv(stationsDataReader().getValueAsBoolean("usePCPatterns", opts().SiteRover));
         corrRover.setAntenna(roverAnt);
-        corrRover.setUseAzimuth(confReader().getValueAsBoolean("useAzim", opts().SiteRover));
+        corrRover.setUseAzimuth(stationsDataReader().getValueAsBoolean("useAzim", opts().SiteRover));
 
 #pragma endregion
 
         ComputeWeightSimple computeWeightSimple(2.0);
         // Objects to compute tidal effects
-        TidalDisplacement tides(data_->eopStore);
+        TidalDisplacement tides(data_->eopStore_);
         tides.setUseOcean(true);
         // Configure ocean loading model
-         tides.setOceanLoadingFile(opts().genericFilesDirectory + confReader().getValue("oceanLoadingFile"));
-        const std::string sat_file = opts().genericFilesDirectory + confReader().getValue("satDataFile");
+        tides.setOceanLoadingFile(opts().oceanLoadingFile);
 
-        ComputeWindUp windupRover(data_->navLibrary_, sat_file);
+        ComputeWindUp windupRover(data_->navLibrary_, opts().satDataFile);
 
-        ComputeSatPCenter svPcenterRover(sat_file);
+        ComputeSatPCenter svPcenterRover(opts().satDataFile);
         svPcenterRover.setAntexReader(antexReader);
 
         ProcessLinear linearIonoFree;
         linearIonoFree.add(std::make_unique<PCCombination>());
         linearIonoFree.add(std::make_unique<LCCombimnation>());
 
-        BiasSinexCorrector biasSinexCorrector(data_->biasSinexStore);
+        BiasSinexCorrector biasSinexCorrector(data_->biasSinexStore_);
 
         UsedInPvtMarker useMarker;
         KalmanSolver solver(equations_);
@@ -233,7 +226,6 @@ namespace pod
                 rin_epoch >> biasSinexCorrector;
 
                 rin_epoch >> computeLinear_;
-
 
                 rin_epoch >> model;
                 rin_epoch >> eclipsedSV;
@@ -336,7 +328,7 @@ namespace pod
         oMinusC_.add(std::make_unique<PrefitPC>(true));
         oMinusC_.add(std::make_unique<PrefitLC>());
 
-        config_.slots_ = { ObsSlot::CodeIonoFree, ObsSlot::PhaseIonoFree };
+        config_.slots_ = {ObsSlot::CodeIonoFree, ObsSlot::PhaseIonoFree};
     }
 
     void PppFloatSolution::configureSolver()

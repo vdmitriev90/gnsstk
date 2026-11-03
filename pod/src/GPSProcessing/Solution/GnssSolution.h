@@ -99,22 +99,27 @@ namespace pod
       protected:
         virtual gnsstk::ConfDataReader& confReader()
         {
-            return *(data_->confReader);
+            return *(data_->confReader_);
+        }
+
+        virtual gnsstk::ConfDataReader& stationsDataReader()
+        {
+            return data_->stationsDataReader_;
         }
 
         virtual GnssDataStore::ProcessOpts& opts()
         {
-            return data_->opts;
+            return data_->opts_;
         }
 
         virtual IApprPosProvider& apprPos()
         {
-            return *data_->apprPos;
+            return *data_->apprPosProvider_;
         }
 
         virtual GnssDataStore::ProcessOpts& opts() const
         {
-            return data_->opts;
+            return data_->opts_;
         }
 
         // creates GnssEpoch for output: all data if fullOutput is set, only residuals otherwise

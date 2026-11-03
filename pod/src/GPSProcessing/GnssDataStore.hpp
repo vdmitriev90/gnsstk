@@ -38,15 +38,9 @@ namespace pod
         };
         static Initializer GnssDataInitializer;
 
-#pragma region Constructors
       public:
         GnssDataStore() = delete;
         GnssDataStore(gnsstk::ConfDataReader& confReader);
-        ~GnssDataStore() {}
-
-#pragma endregion
-
-#pragma region Methods
 
       public:
         void checkObservable();
@@ -66,13 +60,12 @@ namespace pod
         bool loadBiasSinex();
         bool createPosProvider();
 
-#pragma endregion
-
-#pragma region Fields
-
       public:
         // pointer to  configuration file reader
-        gnsstk::ConfDataReader* confReader;
+        gnsstk::ConfDataReader* confReader_;
+
+        // reader of the stations information file
+        gnsstk::ConfDataReader stationsDataReader_;
 
         gnsstk::NavDataFactoryPtr sp3NavFactory_;
 
@@ -80,29 +73,29 @@ namespace pod
         gnsstk::NavLibrary navLibrary_;
 
         // Earth orintation parameters store
-        gnsstk::EOPStore eopStore;
+        gnsstk::EOPStore eopStore_;
 
         // GPS Navigation Message based ionospheric models store
-        gnsstk::IonoModelStore bceIonoStore;
+        gnsstk::IonoModelStore bceIonoStore_;
 
         // ionosphere map store
-        gnsstk::IonexStore ionexStore;
+        gnsstk::IonexStore ionexStore_;
 
         // compute the  values related to a given GNSS ionospheric model.
-        gnsstk::ComputeIonoModel ionoCorrector;
+        gnsstk::ComputeIonoModel ionoCorrector_;
 
         // path to approximate position and code clock bias file
-        std::string apprPosFile;
+        std::string apprPosFile_;
 
         // store of  approximate position and code clock bias
         // std::map<gnsstk::CommonTime, gnsstk::Xvt, std::less<gnsstk::CommonTime>> apprPos;
-        PosProviderUPtr apprPos;
+        PosProviderUPtr apprPosProvider_;
 
         // class to corrects observables from differential code biases
-        gnsstk::CorrectCodeBiases DCBData;
+        gnsstk::CorrectCodeBiases dcbData_;
 
         // Bias-SINEX store for satellite/station bias records
-        pod::BiasSinexStore biasSinexStore;
+        pod::BiasSinexStore biasSinexStore_;
 
         // pocessing-spacific options
         struct ProcessOpts
@@ -115,6 +108,18 @@ namespace pod
 
             // directory with generic files
             std::string genericFilesDirectory;
+            
+            // file with ANTEX data
+            std::string antexFile;
+
+            // file with stations information (antenna model, ARP offsets, ...)
+            std::string stationsDataFile;
+            
+            // file with ocean loading (BLQ) information 
+            std::string oceanLoadingFile;
+            
+            // file with satellite data (GPS_PRN)
+            std::string satDataFile;
 
             // working directory
             std::filesystem::path workingDir;
@@ -158,9 +163,8 @@ namespace pod
             // Use carrier-smoothing of code pseudoranges
             bool isSmoothCode = false;
 
-        } opts;
+        } opts_;
 
-#pragma endregion
     };
 
     typedef std::shared_ptr<pod::GnssDataStore> GnssDataStorePtr;

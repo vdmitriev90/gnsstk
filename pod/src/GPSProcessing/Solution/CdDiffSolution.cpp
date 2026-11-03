@@ -33,7 +33,7 @@ namespace pod
     {
         updateRequaredObs();
         ObsRangeFilter CodeFilter(ObsRangeType::FirstCode);
-        if (data_->ionoCorrector.getType() == ComputeIonoModel::DualFreq)
+        if (data_->ionoCorrector_.getType() == ComputeIonoModel::DualFreq)
             CodeFilter.addFilteredType(ObsRangeType::SecondCode);
 
         ObsRangeFilter SNRFilter(ObsRangeType::Snr, confReader().getValueAsInt("SNRmask"), DBL_MAX);
@@ -171,8 +171,8 @@ namespace pod
                     epoch_base >> modelRef;
                     epoch_base >> comp_tropo_base;
 
-                    data_->ionoCorrector.setNominalPosition(refPos);
-                    epoch_base >> data_->ionoCorrector;
+                    data_->ionoCorrector_.setNominalPosition(refPos);
+                    epoch_base >> data_->ionoCorrector_;
 
                     epoch_base >> oMinusC_;
 
@@ -186,8 +186,8 @@ namespace pod
                 epoch_rover >> modelRover;
                 epoch_rover >> compute_tropo_rover;
 
-                data_->ionoCorrector.setNominalPosition(nominalPos_);
-                epoch_rover >> data_->ionoCorrector;
+                data_->ionoCorrector_.setNominalPosition(nominalPos_);
+                epoch_rover >> data_->ionoCorrector_;
 
                 epoch_rover >> oMinusC_;
                 epoch_rover >> deltaOp_;
