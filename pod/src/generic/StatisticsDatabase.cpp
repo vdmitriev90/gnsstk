@@ -23,7 +23,6 @@ namespace pod
 			"`SatelliteSystemsMask` INTEGER NOT NULL,"
 			"`ElevationCutoffDeg` REAL NOT NULL,"
 			"`ObservationStartUnixSec` INTEGER NOT NULL,"
-			"`EpochNumber` INTEGER NOT NULL,"
 			"`ObservationDurationSec` INTEGER NOT NULL,"
 			"PRIMARY KEY (`ID`)"
 			");"
@@ -32,6 +31,9 @@ namespace pod
 			"`AverageX` REAL NOT NULL,`AverageY` REAL NOT NULL,`AverageZ` REAL NOT NULL,"
 			"`HorizontalStdDev` REAL NOT NULL,`VerticalStdDev` REAL NOT NULL,"
 			"`AverageSvInUse` REAL NOT NULL,"
+			"`EpochNumber` INTEGER NOT NULL,"
+			"`FixEpochs` INTEGER NOT NULL,"
+			"`OutlierEpochs` INTEGER NOT NULL,"
 			"`CovXX` REAL NOT NULL,`CovYY` REAL NOT NULL,`CovZZ` REAL NOT NULL,"
 			"`CovXY` REAL NOT NULL,`CovXZ` REAL NOT NULL,`CovYZ` REAL NOT NULL,"
 			"PRIMARY KEY (`ProcessingDataID`),"
@@ -165,9 +167,9 @@ namespace pod
 		inTransaction([&] {
 			sqlite3_stmt* stmt = prepare(
 				"INSERT INTO `SolutionStatistics`(`ProcessingDataID`,`AverageX`,`AverageY`,`AverageZ`,"
-				"`HorizontalStdDev`,`VerticalStdDev`,`AverageSvInUse`,"
+				"`HorizontalStdDev`,`VerticalStdDev`,`AverageSvInUse`,`EpochNumber`,`FixEpochs`,`OutlierEpochs`,"
 				"`CovXX`,`CovYY`,`CovZZ`,`CovXY`,`CovXZ`,`CovYZ`) "
-				"VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13);");
+				"VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16);");
 			bindInt64(stmt, 1, processingDataId);
 			bindDouble(stmt, 2, s.average[0]);
 			bindDouble(stmt, 3, s.average[1]);
@@ -175,12 +177,15 @@ namespace pod
 			bindDouble(stmt, 5, s.horizontalStdDev);
 			bindDouble(stmt, 6, s.verticalStdDev);
 			bindDouble(stmt, 7, s.averageSvInUse);
-			bindDouble(stmt, 8, s.covariance.xx);
-			bindDouble(stmt, 9, s.covariance.yy);
-			bindDouble(stmt, 10, s.covariance.zz);
-			bindDouble(stmt, 11, s.covariance.xy);
-			bindDouble(stmt, 12, s.covariance.xz);
-			bindDouble(stmt, 13, s.covariance.yz);
+			bindInt64(stmt, 8, s.totalEpochs);
+			bindInt64(stmt, 9, s.fixEpochs);
+			bindInt64(stmt, 10, s.outlierEpochs);
+			bindDouble(stmt, 11, s.covariance.xx);
+			bindDouble(stmt, 12, s.covariance.yy);
+			bindDouble(stmt, 13, s.covariance.zz);
+			bindDouble(stmt, 14, s.covariance.xy);
+			bindDouble(stmt, 15, s.covariance.xz);
+			bindDouble(stmt, 16, s.covariance.yz);
 			tryExecuteNonQueryAndGetRowId(stmt);
 		});
 	}
@@ -192,8 +197,8 @@ namespace pod
 		inTransaction([&] {
 			sqlite3_stmt* stmt = prepare(
 				"INSERT INTO `ProcessingData`(`RoverSite`,`BaseSite`,`SolutionType`,`SatelliteSystemsMask`,"
-				"`ElevationCutoffDeg`,`ObservationStartUnixSec`,`EpochNumber`,`ObservationDurationSec`) "
-				"VALUES (?1,?2,?3,?4,?5,?6,?7,?8);");
+				"`ElevationCutoffDeg`,`ObservationStartUnixSec`,`ObservationDurationSec`) "
+				"VALUES (?1,?2,?3,?4,?5,?6,?7);");
 			bindText(stmt, 1, d.roverSite);
 			if (d.baseSite)
 				bindText(stmt, 2, *d.baseSite);
@@ -203,8 +208,7 @@ namespace pod
 			bindInt64(stmt, 4, d.satelliteSystemsMask);
 			bindDouble(stmt, 5, d.elevationCutoffDeg);
 			bindInt64(stmt, 6, d.observationStartUnixSec);
-			bindInt64(stmt, 7, d.epochNumber);
-			bindInt64(stmt, 8, d.observationDurationSec);
+			bindInt64(stmt, 7, d.observationDurationSec);
 			id = tryExecuteNonQueryAndGetRowId(stmt);
 
 			stmt = prepare(

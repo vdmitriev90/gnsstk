@@ -124,6 +124,9 @@ namespace pod
             rec.verticalStdDev = sln_summ.verticalStdDev;
             rec.averageSvInUse = sln_summ.avgSvInUse;
             rec.covariance = sln_summ.covarianceEcef;
+            rec.totalEpochs = sln_summ.totalEpochs;
+            rec.fixEpochs = sln_summ.fixEpochs;
+            rec.outlierEpochs = sln_summ.outlierEpochs;
             solution_rec = rec;
         }
 
@@ -138,7 +141,6 @@ namespace pod
         data_rec.solutionType = static_cast<int>(solver.desiredSlnType());
         data_rec.satelliteSystemsMask = satelliteSystemsMask(gnss_data.svs);
         data_rec.elevationCutoffDeg = data->opts.maskEl;
-        data_rec.epochNumber = static_cast<std::int64_t>(gnss_data.size());
 
         const auto t0 = gnss_data.getInitialTime();
         const auto t1 = gnss_data.getFinalTime();

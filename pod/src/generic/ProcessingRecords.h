@@ -61,7 +61,6 @@ namespace pod
 		int satelliteSystemsMask = 0;
 		double elevationCutoffDeg = 0.0;
 		std::int64_t observationStartUnixSec = 0;
-		std::int64_t epochNumber = 0;
 		std::int64_t observationDurationSec = 0;
 		};
 
@@ -79,6 +78,9 @@ namespace pod
 			double horizontalStdDev = 0.0;
 			double verticalStdDev = 0.0;
 			double averageSvInUse = 0.0;
+            std::int64_t totalEpochs = 0.0;
+            std::int64_t fixEpochs = 0.0;
+			std::int64_t outlierEpochs = 0.0;
 			CovarianceMatrix3 covariance;
 		};
 

@@ -230,7 +230,6 @@ static void testRunsAndConstraints()
 		run.solutionType = 16;
 		run.satelliteSystemsMask = SatSysBitGPS | SatSysBitGlonass;
 		run.elevationCutoffDeg = 7.5;
-		run.epochNumber = 2880;
 		run.observationStartUnixSec = 5000000000LL; // > 2^32
 		run.observationDurationSec = 86370;
 		ProcessingTechnicalInfoRecord info;
@@ -241,7 +240,6 @@ static void testRunsAndConstraints()
 		CHECK(runId > 0 && runId != runId0);
 		const std::string id = std::to_string(runId);
 		CHECK(scalar(a.handle(), "SELECT ObservationStartUnixSec FROM ProcessingData WHERE ID=" + id) == 5000000000LL);
-		CHECK(scalar(a.handle(), "SELECT EpochNumber FROM ProcessingData WHERE ID=" + id) == 2880);
 		CHECK(scalar(a.handle(), "SELECT SatelliteSystemsMask FROM ProcessingData WHERE ID=" + id) == 3);
 		CHECK(scalar(a.handle(), "SELECT COUNT(*) FROM ProcessingData WHERE ID=" + id + " AND BaseSite='FFMJ' AND RoverSite='TIT2' AND ElevationCutoffDeg=7.5") == 1);
 		CHECK(scalar(a.handle(), "SELECT ProcessingStartedUnixSec FROM ProcessingTechnicalInfo WHERE ProcessingDataID=" + id) == 5000000000LL);
@@ -253,10 +251,13 @@ static void testRunsAndConstraints()
             ss.average = gnsstk::Triple(2847435.133, 2178812.456, 5253147.789);
 			ss.horizontalStdDev = 0.25;
 			ss.averageSvInUse = 9.5;
+			ss.totalEpochs = 2880;
+			ss.fixEpochs = 2800;
+			ss.outlierEpochs = 7;
 			ss.covariance = CovarianceMatrix3{1.0, 2.0, 4.0, 0.5, 0.25, 0.125};
 			const auto sid = a.addRun(run, info, {}, {}, {}, {}, ss);
 			const std::string s = std::to_string(sid);
-			CHECK(scalar(a.handle(), "SELECT COUNT(*) FROM SolutionStatistics WHERE ProcessingDataID=" + s + " AND AverageX=2847435.133 AND AverageY=2178812.456 AND AverageZ=5253147.789 AND HorizontalStdDev=0.25 AND AverageSvInUse=9.5 AND CovXY=0.5 AND CovZZ=4.0") == 1);
+			CHECK(scalar(a.handle(), "SELECT COUNT(*) FROM SolutionStatistics WHERE ProcessingDataID=" + s + " AND AverageX=2847435.133 AND AverageY=2178812.456 AND AverageZ=5253147.789 AND HorizontalStdDev=0.25 AND AverageSvInUse=9.5 AND EpochNumber=2880 AND FixEpochs=2800 AND OutlierEpochs=7 AND CovXY=0.5 AND CovZZ=4.0") == 1);
 			sqlite3_exec(a.handle(), ("DELETE FROM SolutionStatistics WHERE ProcessingDataID=" + s + "; DELETE FROM ProcessingTechnicalInfo WHERE ProcessingDataID=" + s + "; DELETE FROM ProcessingData WHERE ID=" + s).c_str(), nullptr, nullptr, nullptr);
 		}
 		// default record: absent base station and software version stored as NULL
