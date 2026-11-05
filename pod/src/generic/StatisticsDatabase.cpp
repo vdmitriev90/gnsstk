@@ -95,10 +95,15 @@ namespace pod
 			"PRIMARY KEY (`ProcessingDataID`, `SV`, `ObservationClass`),"
 			"FOREIGN KEY (`ProcessingDataID`) REFERENCES `ProcessingData` (`ID`),"
 			"FOREIGN KEY (`SV`) REFERENCES `SVS` (`ID`)"
+			");"
+			"CREATE TABLE IF NOT EXISTS `ObservationClasses` ("
+			"`ID` INTEGER NOT NULL,"
+			"`Description` TEXT NOT NULL,"
+			"PRIMARY KEY (`ID`)"
 			");";
 	} // namespace
 
-	const unsigned StatisticsDatabase::SCHEMA_VERSION = 4;
+	const unsigned StatisticsDatabase::SCHEMA_VERSION = 5;
 	const std::int32_t StatisticsDatabase::APPLICATION_ID = 0x47535441; // 'GSTA'
 
 	StatisticsDatabase::StatisticsDatabase(const std::string& path) : SQLiteConnection(path)
@@ -128,6 +133,8 @@ namespace pod
 
 		Transaction tx(*this);
 		execScript(createStatisticsSchemaCommand);
+		if (version != 0 && version < 5)
+			backfillObservationClasses();
 		setUserVersion(SCHEMA_VERSION);
 		tx.commit();
 	}
@@ -145,6 +152,13 @@ namespace pod
 			if (solution)
 				addSolutionStatistics(dataId, *solution);
 			addSatellites(svs);
+			std::set<int> classes;
+			for (const auto* v : {&elevationResults, &systemResults})
+				for (const auto& r : *v)
+					classes.insert(r.residualType.type);
+			for (const auto& r : satelliteResults)
+				classes.insert(r.residualType.type);
+			addObservationClasses(classes);
 			addResidualStatisticsByElevation(dataId, elevationResults);
 			addResidualStatisticsBySatSystem(dataId, systemResults);
 			addResidualSatelliteStatistics(dataId, satelliteResults);
@@ -293,6 +307,37 @@ namespace pod
 			}
 			sqlite3_finalize(stmt);
 		});
+	}
+
+	void StatisticsDatabase::addObservationClasses(const std::set<int>& classes)
+	{
+		if (classes.empty())
+			return;
+		inTransaction([&] {
+			sqlite3_stmt* stmt =
+				prepare("INSERT OR REPLACE INTO `ObservationClasses`(`ID`,`Description`) VALUES (?1, ?2);");
+			for (const int id : classes)
+			{
+				bindInt64(stmt, 1, id);
+				bindText(stmt, 2, gnsstk::StringUtils::asString(gnsstk::TypeID(static_cast<gnsstk::TypeID::ValueType>(id))));
+				stepAndReset(stmt);
+			}
+			sqlite3_finalize(stmt);
+		});
+	}
+
+	// Fills descriptions for classes already present in statistics tables of a pre-v5 database.
+	void StatisticsDatabase::backfillObservationClasses()
+	{
+		std::set<int> classes;
+		sqlite3_stmt* stmt = prepare(
+			"SELECT `ObservationClass` FROM `ResidualStatisticsByElevation` UNION "
+			"SELECT `ObservationClass` FROM `ResidualStatisticsBySatSystem` UNION "
+			"SELECT `ObservationClass` FROM `ResidualSatelliteStatistics`;");
+		while (sqlite3_step(stmt) == SQLITE_ROW)
+			classes.insert(sqlite3_column_int(stmt, 0));
+		sqlite3_finalize(stmt);
+		addObservationClasses(classes);
 	}
 
 	void StatisticsDatabase::addSatellites(const std::set<gnsstk::SatID>& svs)
