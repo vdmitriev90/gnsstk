@@ -8,6 +8,7 @@
 #include "StatisticsDatabase.h"
 #include "TimeUtils.h"
 #include "UnixTime.hpp"
+#include "Version.h"
 
 #include <chrono>
 #include <cmath>
@@ -150,10 +151,14 @@ namespace pod
         ProcessingTechnicalInfoRecord info;
         info.processingStartedUnixSec = processingStartedUnixSec_;
         info.processingDurationMSec = processingDurationMSec_;
+        SoftwareVersionRecord sv;
+        sv.softwareVersion = POD_BUILD_TIMESTAMP;
+        sv.commitHash = POD_GIT_HASH;
 
         StatisticsDatabase db(db_path.string());
         db.addRun(data_rec,
                   info,
+                  sv,
                   gnss_data.svs,
                   postfit_stat.elevationResults(),
                   postfit_stat.systemResults(),

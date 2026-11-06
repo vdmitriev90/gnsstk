@@ -83,9 +83,10 @@ using Sats = std::vector<ResidualSatelliteStatisticsRecord>;
 
 static std::int64_t addRun(StatisticsDatabase& a, const Bins& elev = {}, const Bins& sys = {}, const Sats& sats = {},
 						   const std::set<gnsstk::SatID>& svs = {}, const ProcessingDataRecord& run = {},
-						   const ProcessingTechnicalInfoRecord& info = {})
+                           const ProcessingTechnicalInfoRecord& info = {},
+                           const SoftwareVersionRecord& sv = {})
 {
-	return a.addRun(run, info, svs, elev, sys, sats);
+	return a.addRun(run, info, sv, svs, elev, sys, sats);
 }
 
 static ResidualSatelliteStatisticsRecord satRec(int prn, double mean = 0.0)
@@ -210,7 +211,7 @@ static void testStatisticsDatabase()
 							  "ResidualStatisticsBySatSystem", "ResidualSatelliteStatistics", "SVS"})
 			CHECK(hasTable(a.handle(), t));
 		CHECK(!hasTable(a.handle(), "ProcessingRuns"));
-		CHECK(StatisticsDatabase::SCHEMA_VERSION == 4);
+		CHECK(StatisticsDatabase::SCHEMA_VERSION == 6);
 		for (const char* t : {"GnssObsFile", "Epochs", "SlnDataItems", "SvDataItems", "RinexTypePairs"})
 			CHECK(!hasTable(a.handle(), t));
 	}
@@ -235,8 +236,9 @@ static void testRunsAndConstraints()
 		ProcessingTechnicalInfoRecord info;
 		info.processingStartedUnixSec = 5000000000LL;
 		info.processingDurationMSec = 30000000000LL; // > 2^32
-		info.softwareVersion = "1.2.3";
-		const auto runId = addRun(a, {}, {}, {}, {}, run, info);
+		SoftwareVersionRecord sv_info;
+		sv_info.softwareVersion = "1.2.3";
+        const auto runId = addRun(a, {}, {}, {}, {}, run, info, sv_info);
 		CHECK(runId > 0 && runId != runId0);
 		const std::string id = std::to_string(runId);
 		CHECK(scalar(a.handle(), "SELECT ObservationStartUnixSec FROM ProcessingData WHERE ID=" + id) == 5000000000LL);
@@ -244,7 +246,7 @@ static void testRunsAndConstraints()
 		CHECK(scalar(a.handle(), "SELECT COUNT(*) FROM ProcessingData WHERE ID=" + id + " AND BaseSite='FFMJ' AND RoverSite='TIT2' AND ElevationCutoffDeg=7.5") == 1);
 		CHECK(scalar(a.handle(), "SELECT ProcessingStartedUnixSec FROM ProcessingTechnicalInfo WHERE ProcessingDataID=" + id) == 5000000000LL);
 		CHECK(scalar(a.handle(), "SELECT ProcessingDurationMSec FROM ProcessingTechnicalInfo WHERE ProcessingDataID=" + id) == 30000000000LL);
-		CHECK(scalar(a.handle(), "SELECT COUNT(*) FROM ProcessingTechnicalInfo WHERE ProcessingDataID=" + id + " AND SoftwareVersion='1.2.3'") == 1);
+		CHECK(scalar(a.handle(), "SELECT COUNT(*) FROM ProcessingTechnicalInfo t JOIN SoftwareVersions s ON s.ID=t.SoftwareVersionID WHERE t.ProcessingDataID=" + id + " AND s.SoftwareVersion='1.2.3'") == 1);
 		CHECK(scalar(a.handle(), "SELECT COUNT(*) FROM SolutionStatistics") == 0);
 		{
 			SolutionStatisticsRecord ss;
@@ -255,14 +257,14 @@ static void testRunsAndConstraints()
 			ss.fixEpochs = 2800;
 			ss.outlierEpochs = 7;
 			ss.covariance = CovarianceMatrix3{1.0, 2.0, 4.0, 0.5, 0.25, 0.125};
-			const auto sid = a.addRun(run, info, {}, {}, {}, {}, ss);
+            const auto sid = a.addRun(run, info, sv_info, {}, {}, {}, {}, ss);
 			const std::string s = std::to_string(sid);
 			CHECK(scalar(a.handle(), "SELECT COUNT(*) FROM SolutionStatistics WHERE ProcessingDataID=" + s + " AND AverageX=2847435.133 AND AverageY=2178812.456 AND AverageZ=5253147.789 AND HorizontalStdDev=0.25 AND AverageSvInUse=9.5 AND EpochNumber=2880 AND FixEpochs=2800 AND OutlierEpochs=7 AND CovXY=0.5 AND CovZZ=4.0") == 1);
 			sqlite3_exec(a.handle(), ("DELETE FROM SolutionStatistics WHERE ProcessingDataID=" + s + "; DELETE FROM ProcessingTechnicalInfo WHERE ProcessingDataID=" + s + "; DELETE FROM ProcessingData WHERE ID=" + s).c_str(), nullptr, nullptr, nullptr);
 		}
 		// default record: absent base station and software version stored as NULL
 		CHECK(scalar(a.handle(), "SELECT COUNT(*) FROM ProcessingData WHERE BaseSite IS NULL") == 1);
-		CHECK(scalar(a.handle(), "SELECT COUNT(*) FROM ProcessingTechnicalInfo WHERE SoftwareVersion IS NULL") == 1);
+		CHECK(scalar(a.handle(), "SELECT COUNT(*) FROM ProcessingTechnicalInfo t JOIN SoftwareVersions s ON s.ID=t.SoftwareVersionID WHERE s.SoftwareVersion IS NULL") == 1);
 		CHECK(count(a.handle(), "ProcessingData") == 2 && count(a.handle(), "ProcessingTechnicalInfo") == 2);
 		// technical info must reference an existing ProcessingData row
 		CHECK(throws([&] { scalar(a.handle(), "SELECT 1"); sqlite3_exec(a.handle(), "INSERT INTO ProcessingTechnicalInfo VALUES (999,0,0,NULL)", nullptr, nullptr, nullptr); throw std::runtime_error("x"); }));

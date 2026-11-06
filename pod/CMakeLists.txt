@@ -1,5 +1,20 @@
 # pod/CMakeLists.txt
 
+# Build version information
+string(TIMESTAMP BUILD_TIMESTAMP "%Y-%m-%d %H:%M:%S")
+execute_process(
+    COMMAND git rev-parse --short HEAD
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE GIT_HASH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/utils/Version.h.in
+    ${CMAKE_CURRENT_BINARY_DIR}/generated/Version.h
+    @ONLY
+)
+
 file( GLOB_RECURSE POD_SOURCE_FILES CONFIGURE_DEPENDS "src/*.cpp" "src/*.c" )
 file( GLOB_RECURSE POD_INC_FILES CONFIGURE_DEPENDS "src/*.h" "src/*.hpp" )
 
@@ -13,6 +28,8 @@ endforeach()
 include_directories( ${POD_INC_DIRS} )
 
 add_library(pod ${POD_SOURCE_FILES} ${POD_INC_FILES})
+
+target_include_directories(pod PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/generated)
 
 # Mirror the source directory structure as filters in Visual Studio Solution Explorer
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${POD_SOURCE_FILES} ${POD_INC_FILES})
@@ -45,7 +62,7 @@ endif()
 add_custom_target(download_cddis
     COMMAND ${CMAKE_COMMAND} -E env ${RUN_ENV}
     ${Python3_EXECUTABLE} -u -m gnss_downloader.main
-    --config ${RUNTIME_DIR}/orchestrator.ini
+    --config ${RUNTIME_DIR}/ppp_core_v1.ini
 #   --no-download
 #    --debug
     WORKING_DIRECTORY ${RUNTIME_DIR}

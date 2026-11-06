@@ -1,0 +1,4 @@
+#pragma once
+
+#define POD_BUILD_TIMESTAMP "@BUILD_TIMESTAMP@"
+#define POD_GIT_HASH "@GIT_HASH@"

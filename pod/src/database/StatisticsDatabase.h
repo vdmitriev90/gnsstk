@@ -26,6 +26,7 @@ namespace pod
         // Nothing is written if any part fails.
         std::int64_t addRun(const ProcessingDataRecord& data,
                             const ProcessingTechnicalInfoRecord& info,
+                            const SoftwareVersionRecord& sv,
                             const std::set<gnsstk::SatID>& svs,
                             const std::vector<ResidualStatisticsRecord>& elevationResults,
                             const std::vector<ResidualStatisticsRecord>& systemResults,
@@ -38,7 +39,7 @@ namespace pod
         void migrate();
 
         // Inserts ProcessingData and ProcessingTechnicalInfo atomically; returns ProcessingData.ID.
-        std::int64_t addProcessingData(const ProcessingDataRecord& data, const ProcessingTechnicalInfoRecord& info);
+        std::int64_t addProcessingData(const ProcessingDataRecord& data, const ProcessingTechnicalInfoRecord& info, const SoftwareVersionRecord& sv);
         void addSatellites(const std::set<gnsstk::SatID>& svs);
         void addObservationClasses(const std::set<int>& classes);
         void backfillObservationClasses();
