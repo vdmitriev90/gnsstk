@@ -1,4 +1,4 @@
-#ifndef POD_GNSSDATA_STORE_H
+﻿#ifndef POD_GNSSDATA_STORE_H
 #define POD_GNSSDATA_STORE_H
 
 #include "ApprPosProvider.hpp"
@@ -6,12 +6,13 @@
 #include "CommonEnums.h"
 #include "CommonTime.hpp"
 #include "ComputeIonoModel.hpp"
-#include "ConfDataReader.hpp"
 #include "CorrectCodeBiases.hpp"
 #include "EOPStore.hpp"
 #include "IonexStore.hpp"
 #include "IonoModelStore.hpp"
 #include "NavLibrary.hpp"
+#include "ProjectConfig.hpp"
+
 #include <filesystem>
 #include <map>
 #include <memory>
@@ -38,8 +39,7 @@ namespace pod
         static Initializer GnssDataInitializer;
 
       public:
-        GnssDataStore() = delete;
-        GnssDataStore(gnsstk::ConfDataReader& confReader);
+        GnssDataStore();
 
       public:
         void checkObservable();
@@ -48,7 +48,6 @@ namespace pod
         gnsstk::Position getNominalPosition(std::string siteId);
 
       private:
-        bool initReader(const char* path);
         bool loadIono();
         bool loadBceIonoModel();
         bool loadIonoMap();
@@ -60,11 +59,8 @@ namespace pod
         bool createPosProvider();
 
       public:
-        // pointer to  configuration file reader
-        gnsstk::ConfDataReader* confReader_;
-
-        // reader of the stations information file
-        gnsstk::ConfDataReader stationsDataReader_;
+        // strongly typed project configuration loaded from the TOML file
+        config::ProjectConfig config_;
 
         gnsstk::NavDataFactoryPtr sp3NavFactory_;
 
@@ -96,74 +92,14 @@ namespace pod
         // Bias-SINEX store for satellite/station bias records
         pod::BiasSinexStore biasSinexStore_;
 
-        // pocessing-spacific options
-        struct ProcessOpts
-        {
-            // rover receiver site ID
-            std::string SiteRover;
+        // working directory
+        std::filesystem::path workingDir;
 
-            // base receiver site ID
-            std::string SiteBase;
+        // Broadcast ephemeris directory
+        std::string bceDir;
 
-            // directory with generic files
-            std::string genericFilesDirectory;
-            
-            // file with ANTEX data
-            std::string antexFile;
-
-            // file with stations information (antenna model, ARP offsets, ...)
-            std::string stationsDataFile;
-            
-            // file with ocean loading (BLQ) information 
-            std::string oceanLoadingFile;
-            
-            // file with satellite data (GPS_PRN)
-            std::string satDataFile;
-
-            // working directory
-            std::filesystem::path workingDir;
-
-            // Broadcast ephemeris directory
-            std::string bceDir;
-
-            // is output SV-depended data?
-            bool fullOutput = false;
-
-            // Estimate zenith troposperic delay?
-            bool computeTropo = false;
-
-            // Compute tropospheric delay gradient
-            TropoModelType tropoModelType = TropoModelType::Simple;
-
-            // Is data relate to the spacecraft-based receiver?
-            bool isSpaceborneRcv = false;
-
-            // Day of year. Used for tropospheric model object  initialization
-            int DoY = 0;
-
-            // Satellite systems used for position computation
-            gnsstk::SatSystSet systems;
-
-            // Satellite systems used for position computation
-            std::set<CarrierBand> carrierBands;
-
-            // S1 (L1 C/No) threshold for position computation
-            int maskSNR = 0;
-
-            // Elevation mask (degrees) for position computation
-            double maskEl = 10;
-
-            // Receiver dynamic mode
-            Dynamics dynamics = Dynamics::Kinematic;
-
-            // Desired type of GNSS solution
-            SlnType slnType = SlnType::Standalone;
-
-            // Use carrier-smoothing of code pseudoranges
-            bool isSmoothCode = false;
-
-        } opts_;
-
+        // Day of year. Used for tropospheric model object  initialization
+        int DoY = 0;
     };
 
     typedef std::shared_ptr<pod::GnssDataStore> GnssDataStorePtr;

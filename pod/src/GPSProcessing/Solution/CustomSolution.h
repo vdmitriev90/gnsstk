@@ -59,10 +59,6 @@ namespace pod
         };
 
       protected:
-        virtual GnssDataStore::ProcessOpts& opts() override
-        {
-            return data_->opts_;
-        };
 
         virtual void updateRequaredObs() override {}
 

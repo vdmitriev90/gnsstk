@@ -97,29 +97,19 @@ namespace pod
         };
 
       protected:
-        virtual gnsstk::ConfDataReader& confReader()
+        virtual const config::ProcessingConfig& processingConfig() const
         {
-            return *(data_->confReader_);
+            return data_->config_.processing;
         }
 
-        virtual gnsstk::ConfDataReader& stationsDataReader()
+        virtual const config::StationConfig& stationConfig(const std::string& siteId) const
         {
-            return data_->stationsDataReader_;
-        }
-
-        virtual GnssDataStore::ProcessOpts& opts()
-        {
-            return data_->opts_;
+            return data_->config_.station(siteId);
         }
 
         virtual IApprPosProvider& apprPos()
         {
             return *data_->apprPosProvider_;
-        }
-
-        virtual GnssDataStore::ProcessOpts& opts() const
-        {
-            return data_->opts_;
         }
 
         // creates GnssEpoch for output: all data if fullOutput is set, only residuals otherwise

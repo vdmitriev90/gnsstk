@@ -59,28 +59,28 @@ namespace pod
         ObsRangeFilter CodePhaseFilterBase({ObsRangeType::FirstCode, ObsRangeType::SecondCode, ObsRangeType::FirstPhase, ObsRangeType::SecondPhase});
         ObsRangeFilter CodePhaseFilterRover(CodePhaseFilterBase);
 
-        ObsRangeFilter SNRFilterBase(ObsRangeType::Snr, confReader().getValueAsInt("SNRmask"), DBL_MAX);
+        ObsRangeFilter SNRFilterBase(ObsRangeType::Snr, processingConfig().snrMaskDbHz, DBL_MAX);
         ObsRangeFilter SNRFilterRover(SNRFilterBase);
 
         // Object to remove eclipsed satellites
         EclipsedSatFilter eclipsedSV;
         ComputeWeightSimple computeWeightSimple(1);
 
-        const auto ref_base_pos = data_->getNominalPosition(opts().SiteBase);
+        const auto ref_base_pos = data_->getNominalPosition(data_->config_.siteBase);
         // basic model object for ref. station
         BasicModel modelRef(ref_base_pos, data_->navLibrary_, TypeID::C1);
-        modelRef.setMinElev(opts().maskEl);
+        modelRef.setMinElev(processingConfig().elevationMaskDeg);
 
         BasicModel modelRover(data_->navLibrary_);
         modelRover.setDefaultObservable(TypeID::C1);
-        modelRover.setMinElev(opts().maskEl);
+        modelRover.setMinElev(processingConfig().elevationMaskDeg);
 
         RinexEpoch rin_epoch, gRef;
-        SyncObs sync(data_->getObsFiles(opts().SiteBase), rin_epoch);
+        SyncObs sync(data_->getObsFiles(data_->config_.siteBase), rin_epoch);
 
         // Object to decimate data
-        Decimate decimateData(confReader().getValueAsDouble("decimationInterval"),
-                              confReader().getValueAsDouble("decimationTolerance"),
+        Decimate decimateData(processingConfig().decimationIntervalSeconds,
+                              processingConfig().decimationToleranceSeconds,
                               data_->navLibrary_.getInitialTime());
 
 #pragma region troposhere modeling objects
@@ -106,13 +106,13 @@ namespace pod
         // Objects to mark cycle slips
         // Checks LI cycle slips
         LICSDetector2 markCSLI2Base, markCSLI2Rover;
-        markCSLI2Base.setSatThreshold(confReader().getValueAsDouble("LISatThreshold"));
-        markCSLI2Rover.setSatThreshold(confReader().getValueAsDouble("LISatThreshold"));
+        markCSLI2Base.setSatThreshold(processingConfig().lossOfLockThreshold);
+        markCSLI2Rover.setSatThreshold(processingConfig().lossOfLockThreshold);
 
         // Checks Merbourne-Wubbena cycle slips
         MWCSDetector markCSMW2Base, markCSMW2Rover;
-        markCSMW2Base.setMaxNumLambdas(confReader().getValueAsDouble("MWNLambdas"));
-        markCSMW2Rover.setMaxNumLambdas(confReader().getValueAsDouble("MWNLambdas"));
+        markCSMW2Base.setMaxNumLambdas(processingConfig().MelbourneWubbenaThreshold);
+        markCSMW2Rover.setMaxNumLambdas(processingConfig().MelbourneWubbenaThreshold);
 
         // check sharp SNR drops
         SNRCatcher snrCatcherL1Base(TypeID::S1, TypeID::CSL1, 901.0, 5, 30);
@@ -127,7 +127,7 @@ namespace pod
 #pragma endregion
 
         AntexReader antexReader;
-        antexReader.open(opts().antexFile);
+        antexReader.open(data_->config_.genericFiles.antexFilePath());
 
 #pragma region correct observable
 
@@ -138,22 +138,22 @@ namespace pod
 
         // Vector from monument to antenna ARP [UEN], in meters
         // for base
-        const Triple offsetARP = stationsDataReader().getValueListAsTriple("offsetARP", opts().SiteBase);
+        const Triple offsetARP = stationConfig(data_->config_.siteBase).markerToArpUenM;
         corrBase.setMonument(offsetARP);
 
         // for rover
-        const Triple offsetARP_Rover = stationsDataReader().getValueListAsTriple("offsetARP", opts().SiteRover);
+        const Triple offsetARP_Rover = stationConfig(data_->config_.siteRover).markerToArpUenM;
         corrRover.setMonument(offsetARP_Rover);
 
-        Antenna baseAnt(antexReader.getAntenna(stationsDataReader().getValue("antennaModel", opts().SiteBase)));
+        Antenna baseAnt(antexReader.getAntenna(stationConfig(data_->config_.siteBase).antennaModel));
         corrBase.setAntenna(baseAnt);
-        corrBase.setUsePcv(stationsDataReader().getValueAsBoolean("usePCPatterns", opts().SiteBase));
-        corrBase.setUseAzimuth(stationsDataReader().getValueAsBoolean("useAzim", opts().SiteBase));
+        corrBase.setUsePcv(stationConfig(data_->config_.siteBase).usePcPatterns);
+        corrBase.setUseAzimuth(stationConfig(data_->config_.siteBase).useAzimuth);
 
-        Antenna roverAnt(antexReader.getAntenna(stationsDataReader().getValue("antennaModel", opts().SiteRover)));
+        Antenna roverAnt(antexReader.getAntenna(stationConfig(data_->config_.siteRover).antennaModel));
         corrRover.setAntenna(roverAnt);
-        corrRover.setUsePcv(stationsDataReader().getValueAsBoolean("usePCPatterns", opts().SiteRover));
-        corrRover.setUseAzimuth(stationsDataReader().getValueAsBoolean("useAzim", opts().SiteRover));
+        corrRover.setUsePcv(stationConfig(data_->config_.siteRover).usePcPatterns);
+        corrRover.setUseAzimuth(stationConfig(data_->config_.siteRover).useAzimuth);
 
 #pragma endregion
 
@@ -161,15 +161,15 @@ namespace pod
         TidalDisplacement tides(data_->eopStore_);
         
         // Configure ocean loading model
-        tides.setOceanLoadingFile(opts().oceanLoadingFile);
+        tides.setOceanLoadingFile(data_->config_.genericFiles.oceanLoadingFilePath());
 
-        ComputeWindUp windupBase(data_->navLibrary_, ref_base_pos, opts().satDataFile);
-        ComputeWindUp windupRover(data_->navLibrary_, ref_base_pos, opts().satDataFile);
+        ComputeWindUp windupBase(data_->navLibrary_, ref_base_pos, data_->config_.genericFiles.satelliteDataFilePath());
+        ComputeWindUp windupRover(data_->navLibrary_, ref_base_pos, data_->config_.genericFiles.satelliteDataFilePath());
 
-        ComputeSatPCenter svPcenterBase(ref_base_pos, opts().satDataFile);
+        ComputeSatPCenter svPcenterBase(ref_base_pos, data_->config_.genericFiles.satelliteDataFilePath());
         svPcenterBase.setAntexReader(antexReader);
 
-        ComputeSatPCenter svPcenterRover(ref_base_pos, opts().satDataFile);
+        ComputeSatPCenter svPcenterRover(ref_base_pos, data_->config_.genericFiles.satelliteDataFilePath());
         svPcenterRover.setAntexReader(antexReader);
 
         ProcessLinear linearIonoFree;
@@ -187,8 +187,8 @@ namespace pod
         if (forwardBackwardCycles_ > 0)
         {
             solverFb.setCyclesNumber(forwardBackwardCycles_);
-            solverFb.setLimits(confReader().getValueListAsDouble("codeLimList"),
-                               confReader().getValueListAsDouble("phaseLimList"));
+            solverFb.setLimits(processingConfig().codeLimits,
+                               processingConfig().phaseLimits);
 
             solverFb.ReProcList().push_back(markCSLI2Rover);
             solverFb.ReProcList().push_back(markCSMW2Rover);
@@ -197,7 +197,7 @@ namespace pod
 
         bool firstTime = true;
         //
-        for (auto& obsFile : data_->getObsFiles(opts().SiteRover))
+        for (auto& obsFile : data_->getObsFiles(data_->config_.siteRover))
         {
             std::cout << obsFile << std::endl;
             // Input observation file stream
@@ -234,7 +234,7 @@ namespace pod
                     DBOUT_LINE("catched")
 #endif
                 // keep only satellites from satellites systems selecyted for processing
-                rin_epoch.keepOnlySatSystems(opts().systems);
+                rin_epoch.keepOnlySatSystems(processingConfig().satelliteSystems);
 
                 // keep only types used for processing
                 //  rin_epoch.keepOnlyTypeID(requireObs_.getRequiredType());
@@ -244,7 +244,7 @@ namespace pod
                 {
                     /* if (computeApprPos(rin_epoch, data_->SP3EphList, nominalPos_))
                          continue;*/
-                    nominalPos_ = data_->getNominalPosition(opts().SiteRover);
+                    nominalPos_ = data_->getNominalPosition(data_->config_.siteRover);
                     std::cout << "Baseline: " << std::setprecision(4) << (nominalPos_ - ref_base_pos).mag() / 1000
                               << " km" << std::endl;
                     firstTime = false;
@@ -286,7 +286,7 @@ namespace pod
                     corrBase.setAntenna(ant_ref);
 
                     // keep only satellites from satellites systems selecyted for processing
-                    gRef.keepOnlySatSystems(opts().systems);
+                    gRef.keepOnlySatSystems(processingConfig().satelliteSystems);
 
                     gRef >> requireObs_;
                     gRef >> CodePhaseFilterBase;
@@ -306,7 +306,7 @@ namespace pod
                     gRef >> grDelayBase;
                     gRef >> svPcenterBase;
 
-                    corrBase.setExtraBiases(tides.getDisplacement(t, ref_base_pos, opts().SiteBase));
+                    corrBase.setExtraBiases(tides.getDisplacement(t, ref_base_pos, data_->config_.siteBase));
 
                     gRef >> corrBase;
                     gRef >> windupBase;
@@ -333,7 +333,7 @@ namespace pod
                 rin_epoch >> grDelayRover;
                 rin_epoch >> svPcenterRover;
 
-                corrRover.setExtraBiases(tides.getDisplacement(t, nominalPos_, opts().SiteRover));
+                corrRover.setExtraBiases(tides.getDisplacement(t, nominalPos_, data_->config_.siteRover));
                 rin_epoch >> corrRover;
 
                 rin_epoch >> windupRover;
@@ -381,9 +381,9 @@ namespace pod
             std::cout << "Measurments rejected: " << solverFb.rejectedMeasurements << std::endl;
         }
 
-        // CatcherStatistic statB(opts().workingDir+"\\"+opts().SiteBase+".cst");
+        // CatcherStatistic statB(opts().workingDir+"\\"+data_->config_.siteBase+".cst");
         // statB.logStatistic(plBase);
-        // CatcherStatistic statR(opts().workingDir+"\\"+opts().SiteRover+".cst");
+        // CatcherStatistic statR(opts().workingDir+"\\"+data_->config_.siteRover+".cst");
         // statR.logStatistic(plRov);
     }
 
@@ -397,9 +397,9 @@ namespace pod
 
         configureSolver();
 
-        requireObs_ = RequireObservablesBuilder(opts().systems).build();
+        requireObs_ = RequireObservablesBuilder(processingConfig().satelliteSystems).build();
 
-        if (opts().carrierBands.find(CarrierBand::L1) != opts().carrierBands.end())
+        if (processingConfig().carrierBands.find(CarrierBand::L1) != processingConfig().carrierBands.end())
         {
             oMinusC_.add(std::make_unique<PrefitC1>(true));
             oMinusC_.add(std::make_unique<PrefitL1>());
@@ -407,7 +407,7 @@ namespace pod
             config_.slots_.push_back(ObsSlot::FirstBandCode);
             config_.slots_.push_back(ObsSlot::FirstBandPhase);
         }
-        if (opts().carrierBands.find(CarrierBand::L2) != opts().carrierBands.end())
+        if (processingConfig().carrierBands.find(CarrierBand::L2) != processingConfig().carrierBands.end())
         {
             oMinusC_.add(std::make_unique<PrefitC2>(true));
             oMinusC_.add(std::make_unique<PrefitL2>());
@@ -422,26 +422,26 @@ namespace pod
         equations_->clearEquations();
 
         // tropo
-        if (opts().computeTropo)
+        if (processingConfig().computeTroposphere)
         {
-            double qPrimeVert = confReader().getValueAsDouble("tropoQVertical");
+            double qPrimeVert = processingConfig().troposphereVerticalProcessNoise;
             equations_->addEquation(std::make_unique<TropoEquations>(qPrimeVert));
         }
 
-        //  Equations->addEquation(std::make_unique<IonoEquations>(confReader().getValueAsDouble("ionoQ")));
+        //  Equations->addEquation(std::make_unique<IonoEquations>(processingConfig().ionoQ));
         // White noise stochastic models
         auto coord = std::make_unique<PositionEquations>();
 
-        double posSigma = confReader().getValueAsDouble("posSigma");
-        if (opts().dynamics == Dynamics::Static)
+        double posSigma = processingConfig().positionSigmaM;
+        if (processingConfig().dynamics == Dynamics::Static)
         {
             coord->setStochasicModel(std::make_shared<ConstantModel>());
         }
-        else if (opts().dynamics == Dynamics::Kinematic)
+        else if (processingConfig().dynamics == Dynamics::Kinematic)
         {
             coord->setStochasicModel(std::make_shared<WhiteNoiseModel>(posSigma));
         }
-        else if (opts().dynamics == Dynamics::RandomWalk)
+        else if (processingConfig().dynamics == Dynamics::RandomWalk)
         {
             for (const auto& it : coord->getParameters())
                 coord->setStochasicModel(it, std::make_shared<RandomWalkModel>(posSigma));
@@ -450,36 +450,36 @@ namespace pod
         // add position equations
         equations_->addEquation(std::move(coord));
 
-        equations_->addEquation(std::make_unique<ClockBiasEquations>(confReader().getValueAsDouble("clkSigma")));
+        equations_->addEquation(std::make_unique<ClockBiasEquations>(processingConfig().clockSigmaM));
 
-        if (opts().systems.size() > 1)
+        if (processingConfig().satelliteSystems.size() > 1)
             equations_->addEquation(std::make_unique<InterSystemBias>());
 
-        if (opts().carrierBands.size() > 1)
+        if (processingConfig().carrierBands.size() > 1)
             equations_->addEquation(std::make_unique<InterFrequencyBiases>());
 
-        if (confReader().getValueAsBoolean("computeIono"))
+        if (processingConfig().computeIonosphere)
         {
             auto ionoEq = std::make_unique<IonoEquations>();
 
-            int ionoModelType = confReader().getValueAsInt("ionoModelType");
+            int ionoModelType = processingConfig().ionosphereModelType;
 
             if (ionoModelType == 0)
                 ionoEq->setStocModel<WhiteNoiseModel>();
             else if (ionoModelType == 1)
                 ionoEq->setStocModel<IonoStochasticModel>();
 
-            double ionoSigma = confReader().getValueAsDouble("ionoSigma");
+            double ionoSigma = processingConfig().ionosphereSigmaM;
             ionoEq->setSigma(ionoSigma);
             equations_->addEquation(std::move(ionoEq));
         }
 
-        if (opts().carrierBands.find(CarrierBand::L1) != opts().carrierBands.end())
+        if (processingConfig().carrierBands.find(CarrierBand::L1) != processingConfig().carrierBands.end())
             equations_->addEquation(std::make_unique<AmbiguitiesEquations>(TypeID::BL1));
 
-        if (opts().carrierBands.find(CarrierBand::L2) != opts().carrierBands.end())
+        if (processingConfig().carrierBands.find(CarrierBand::L2) != processingConfig().carrierBands.end())
             equations_->addEquation(std::make_unique<AmbiguitiesEquations>(TypeID::BL2));
 
-        forwardBackwardCycles_ = confReader().getValueAsInt("forwardBackwardCycles");
+        forwardBackwardCycles_ = processingConfig().forwardBackwardCycles;
     }
 } // namespace pod

@@ -36,14 +36,14 @@ namespace pod
         if (data_->ionoCorrector_.getType() == ComputeIonoModel::DualFreq)
             CodeFilter.addFilteredType(ObsRangeType::SecondCode);
 
-        ObsRangeFilter SNRFilter(ObsRangeType::Snr, confReader().getValueAsInt("SNRmask"), DBL_MAX);
+        ObsRangeFilter SNRFilter(ObsRangeType::Snr, processingConfig().snrMaskDbHz, DBL_MAX);
 
-        Position refPos = data_->getNominalPosition(opts().SiteBase);
+        Position refPos = data_->getNominalPosition(data_->config_.siteBase);
 
         // basic model object for ref. station
         BasicModel modelRef(data_->navLibrary_);
         modelRef.setDefaultObservable(TypeID::C1);
-        modelRef.setMinElev(opts().maskEl);
+        modelRef.setMinElev(processingConfig().elevationMaskDeg);
 
         // basic model object for rover has the same settings as BasicModel for ref. station
         BasicModel modelRover(modelRef);
@@ -51,11 +51,11 @@ namespace pod
         modelRef.setRxPosition(refPos);
 
         RinexEpoch epoch_rover, epoch_base;
-        SyncObs sync(data_->getObsFiles(opts().SiteBase), epoch_rover);
+        SyncObs sync(data_->getObsFiles(data_->config_.siteBase), epoch_rover);
 
         // Object to decimate data
-        Decimate decimateData(confReader().getValueAsDouble("decimationInterval"),
-                              confReader().getValueAsDouble("decimationTolerance"),
+        Decimate decimateData(processingConfig().decimationIntervalSeconds,
+                              processingConfig().decimationToleranceSeconds,
                               data_->navLibrary_.getInitialTime());
 
         UsedInPvtMarker useMarker;
@@ -76,13 +76,13 @@ namespace pod
         if (forwardBackwardCycles_ > 0)
         {
             solverFb.setCyclesNumber(forwardBackwardCycles_);
-            solverFb.setLimits(confReader().getValueListAsDouble("codeLimList"),
-                               confReader().getValueListAsDouble("phaseLimList"));
+            solverFb.setLimits(processingConfig().codeLimits,
+                               processingConfig().phaseLimits);
         }
 
         bool firstTime = true;
         //
-        for (auto& obsFile : data_->getObsFiles(opts().SiteRover))
+        for (auto& obsFile : data_->getObsFiles(data_->config_.siteRover))
         {
             std::cout << obsFile << std::endl;
             // Input observation file stream
@@ -113,7 +113,7 @@ namespace pod
                 const auto& t = epoch_rover.getHeader().epoch;
 
                 // keep only satellites from satellites systems selecyted for processing
-                epoch_rover.keepOnlySatSystems(opts().systems);
+                epoch_rover.keepOnlySatSystems(processingConfig().satelliteSystems);
 
                 // compute approximate position
 
@@ -136,21 +136,21 @@ namespace pod
                 epoch_rover >> SNRFilter;
                 epoch_rover >> computeLinear_;
 
-                if (opts().isSmoothCode)
+                if (processingConfig().smoothCode)
                     epoch_rover >> codeSmoother_;
 
                 try
                 {
                     epoch_base >> sync;
                     // keep only satellites from satellites systems selecyted for processing
-                    epoch_base.keepOnlySatSystems(opts().systems);
+                    epoch_base.keepOnlySatSystems(processingConfig().satelliteSystems);
 
                     epoch_base >> requireObs_;
                     epoch_base >> CodeFilter;
                     epoch_base >> SNRFilter;
                     epoch_base >> computeLinear_;
 
-                    if (opts().isSmoothCode)
+                    if (processingConfig().smoothCode)
                     {
                         // update code smoother interval length
                         codeSmootherRef_.setInterval(codeSmWindowSize_ / sync.getRefHeader().interval);
@@ -232,16 +232,16 @@ namespace pod
         // White noise stochastic models
         auto coord = std::make_unique<PositionEquations>();
 
-        double sigma = confReader().getValueAsDouble("posSigma");
-        if (opts().dynamics == Dynamics::Static)
+        double sigma = processingConfig().positionSigmaM;
+        if (processingConfig().dynamics == Dynamics::Static)
         {
             coord->setStochasicModel(std::make_shared<ConstantModel>());
         }
-        else if (opts().dynamics == Dynamics::Kinematic)
+        else if (processingConfig().dynamics == Dynamics::Kinematic)
         {
             coord->setStochasicModel(std::make_shared<WhiteNoiseModel>(sigma));
         }
-        else if (opts().dynamics == Dynamics::RandomWalk)
+        else if (processingConfig().dynamics == Dynamics::RandomWalk)
         {
             for (const auto& it : coord->getParameters())
             {
@@ -254,10 +254,10 @@ namespace pod
 
         equations_->addEquation(std::make_unique<ClockBiasEquations>());
 
-        if (opts().systems.size() > 1)
+        if (processingConfig().satelliteSystems.size() > 1)
             equations_->addEquation(/*std::move(bias)*/ std::make_unique<InterSystemBias>());
 
-        forwardBackwardCycles_ = confReader().getValueAsInt("forwardBackwardCycles");
+        forwardBackwardCycles_ = processingConfig().forwardBackwardCycles;
     }
 
     ///
@@ -269,9 +269,9 @@ namespace pod
         config_.slots_ = {ObsSlot::FirstBandCode};
         deltaOp_.setSlots(config_.slots_);
 
-        requireObs_ = RequireObservablesBuilder(opts().systems).build();
+        requireObs_ = RequireObservablesBuilder(processingConfig().satelliteSystems).build();
 
-        if (opts().isSmoothCode)
+        if (processingConfig().smoothCode)
         {
             codeSmoother_.addSmoother(std::make_unique<CodeSmoother>(ObsSlot::FirstBandCode,  ObsSlot::FirstBandPhase));
             codeSmoother_.addSmoother(std::make_unique<CodeSmoother>(ObsSlot::SecondBandCode, ObsSlot::SecondBandPhase));

@@ -1,4 +1,4 @@
-#include "SingleSolution.h"
+﻿#include "SingleSolution.h"
 
 #include "BasicModel.hpp"
 #include "ClockBiasEquations.h"
@@ -37,8 +37,8 @@ namespace pod
         ObsRangeFilter SNRFilter(ObsRangeType::Snr, 30, DBL_MAX);
 
         // Object to decimate data
-        Decimate decimateData(confReader().getValueAsDouble("decimationInterval"),
-                              confReader().getValueAsDouble("decimationTolerance"),
+        Decimate decimateData(processingConfig().decimationIntervalSeconds,
+                              processingConfig().decimationToleranceSeconds,
                               data_->navLibrary_.getInitialTime());
 
         UsedInPvtMarker useMarker;
@@ -46,7 +46,7 @@ namespace pod
         // basic model object
         BasicModel model(data_->navLibrary_);
         model.setDefaultObservable(TypeID::C1);
-        model.setMinElev(opts().maskEl);
+        model.setMinElev(processingConfig().elevationMaskDeg);
 
         // troposhere modeling object
         NeillTropModel tropo_model;
@@ -61,15 +61,15 @@ namespace pod
         if (forwardBackwardCycles_ > 0)
         {
             solverFb.setCyclesNumber(forwardBackwardCycles_);
-            solverFb.setLimits(confReader().getValueListAsDouble("codeLimList"),
-                               confReader().getValueListAsDouble("phaseLimList"));
+            solverFb.setLimits(processingConfig().codeLimits,
+                               processingConfig().phaseLimits);
         }
 
         bool firstTime = true;
 
         RinexEpoch rin_epoch;
 
-        for (auto& obsFile : data_->getObsFiles(opts().SiteRover))
+        for (auto& obsFile : data_->getObsFiles(data_->config_.siteRover))
         {
             std::cout << obsFile << std::endl;
 
@@ -103,7 +103,7 @@ namespace pod
                 auto& t = rin_epoch.getHeader().epoch;
 
                 // keep only satellites from satellites systems selected for processing
-                rin_epoch.keepOnlySatSystems(opts().systems);
+                rin_epoch.keepOnlySatSystems(processingConfig().satelliteSystems);
 
                 // filter out satellites with incomplete observables set
                 rin_epoch >> requireObs_;
@@ -129,7 +129,7 @@ namespace pod
                 rin_epoch >> computeLinear_;
 
                 // smooth pseudoranges if required
-                if (opts().isSmoothCode)
+                if (processingConfig().smoothCode)
                     rin_epoch >> codeSmoother_;
 
                 if (rin_epoch.getBody().size() == 0)
@@ -209,16 +209,16 @@ namespace pod
         // White noise stochastic models
         auto coord = std::make_unique<PositionEquations>();
 
-        double sigma = confReader().getValueAsDouble("posSigma");
-        if (opts().dynamics == Dynamics::Static)
+        double sigma = processingConfig().positionSigmaM;
+        if (processingConfig().dynamics == Dynamics::Static)
         {
             coord->setStochasicModel(std::make_shared<ConstantModel>());
         }
-        else if (opts().dynamics == Dynamics::Kinematic)
+        else if (processingConfig().dynamics == Dynamics::Kinematic)
         {
             coord->setStochasicModel(std::make_shared<WhiteNoiseModel>(sigma));
         }
-        else if (opts().dynamics == Dynamics::RandomWalk)
+        else if (processingConfig().dynamics == Dynamics::RandomWalk)
         {
 
             for (const auto& it : coord->getParameters())
@@ -232,10 +232,10 @@ namespace pod
 
         equations_->addEquation(std::make_unique<ClockBiasEquations>());
 
-        if (opts().systems.size() > 1)
+        if (processingConfig().satelliteSystems.size() > 1)
             equations_->addEquation(/*std::move(bias)*/ std::make_unique<InterSystemBias>());
 
-        forwardBackwardCycles_ = confReader().getValueAsInt("forwardBackwardCycles");
+        forwardBackwardCycles_ = processingConfig().forwardBackwardCycles;
     }
 
     void SingleSolution::updateRequaredObs()
@@ -244,9 +244,9 @@ namespace pod
 
         oMinusC_.add(std::make_unique<PrefitC1>(false));
         config_.slots_ = {ObsSlot::FirstBandCode};
-        requireObs_ = RequireObservablesBuilder(opts().systems).build();
+        requireObs_ = RequireObservablesBuilder(processingConfig().satelliteSystems).build();
 
-        if (opts().isSmoothCode)
+        if (processingConfig().smoothCode)
         {
             codeSmoother_.addSmoother(std::make_unique<CodeSmoother>(ObsSlot::FirstBandCode,  ObsSlot::FirstBandPhase));
             codeSmoother_.addSmoother(std::make_unique<CodeSmoother>(ObsSlot::SecondBandCode, ObsSlot::SecondBandPhase));

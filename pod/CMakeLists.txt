@@ -76,7 +76,7 @@ endif()
 add_custom_target(download_cddis
     COMMAND ${CMAKE_COMMAND} -E env ${RUN_ENV}
     ${Python3_EXECUTABLE} -u -m gnss_downloader.main
-    --config ${RUNTIME_DIR}/ppp_core_v1.ini
+    --config ${RUNTIME_DIR}/orchestrator.toml
 #   --no-download
 #    --debug
     WORKING_DIRECTORY ${RUNTIME_DIR}

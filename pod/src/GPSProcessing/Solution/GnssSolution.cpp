@@ -75,7 +75,7 @@ namespace pod
                                             const FilterParameter& param,
                                             GnssEpoch& gEpoch) const
     {
-        if (!this->data_->opts_.fullOutput)
+        if (!processingConfig().fullOutput)
             return;
 
         const double amb = solver.getSolution(param);
@@ -93,7 +93,7 @@ namespace pod
         }();
 
         GnssEpoch ep(body);
-        if (!opts().fullOutput)
+        if (!processingConfig().fullOutput)
             ep.satData.keepOnlyTypeID(resTypes);
         return ep;
     }
@@ -133,19 +133,19 @@ namespace pod
     std::string FileNameBuilder::buildWithBaseAndRover() const
     {
         std::string ss_str;
-        for (auto&& system : solution_.opts().systems)
+        for (auto&& system : solution_.data_->config_.processing.satelliteSystems)
             ss_str += '_' + convertSatelliteSystemToCode(system);
 
-        return solution_.opts().SiteBase + "-" + solution_.opts().SiteRover + "_"
+        return solution_.data_->config_.siteBase + "-" + solution_.data_->config_.siteRover + "_"
                + slnType2Str.at(solution_.desiredSlnType()) + ss_str;
     }
 
     std::string FileNameBuilder::buildRoverOnly() const
     {
         std::string ss_str;
-        for (auto&& system : solution_.opts().systems)
+        for (auto&& system : solution_.data_->config_.processing.satelliteSystems)
             ss_str += '_' + convertSatelliteSystemToCode(system);
 
-        return solution_.opts().SiteRover + "_" + slnType2Str.at(solution_.desiredSlnType()) + ss_str;
+        return solution_.data_->config_.siteRover + "_" + slnType2Str.at(solution_.desiredSlnType()) + ss_str;
     }
 } // namespace pod

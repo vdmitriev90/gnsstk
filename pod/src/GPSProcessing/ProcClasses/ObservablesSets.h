@@ -11,7 +11,7 @@ namespace pod
      *
      *  Usage:
      *  @code
-     *    requireObs_ = RequireObservablesBuilder(opts().systems, useC1).build();
+     *    requireObs_ = RequireObservablesBuilder(processingConfig().satelliteSystems, useC1).build();
      *  @endcode
      */
     class RequireObservablesBuilder

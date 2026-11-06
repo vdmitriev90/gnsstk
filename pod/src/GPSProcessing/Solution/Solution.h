@@ -2,7 +2,6 @@
 #define POD_SOLUTION_H
 
 #include "BasicFramework.hpp"
-#include "ConfDataReader.hpp"
 #include "CustomSolution.h"
 
 #include <cstdint>
@@ -35,9 +34,6 @@ namespace pod
         GnssDataStorePtr data;
 
         gnsstk::CommandOptionWithArg confFile;
-
-        // Configuration file reader
-        gnsstk::ConfDataReader confReader;
 
         CustomSolution solver;
 
