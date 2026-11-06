@@ -13,6 +13,34 @@ namespace pod
         return (std::cout << "Epoch: " << CivilTime(time).asString() << " " << msg << std::endl);
     }
 
+    void GnssSolution::setupAntenna(CorrectObservables& corr,
+                                    AntexReader& antex,
+                                    const std::string& siteId,
+                                    const std::string& rinexAntType) const
+    {
+        std::string model;
+        bool usePcv = true;
+        bool useAzimuth = false;
+        if (const auto* st = data_->config_.findStation(siteId))
+        {
+            model = st->antennaModel;
+            usePcv = st->usePcPatterns;
+            useAzimuth = st->useAzimuth;
+        }
+        else
+        {
+            model = rinexAntType;
+            model.erase(model.find_last_not_of(' ') + 1);
+            if (model.empty())
+                throw std::runtime_error("No station config and no antenna type in RINEX header for " + siteId);
+        }
+
+        Antenna ant(antex.getAntenna(model));
+        corr.setAntenna(ant);
+        corr.setUsePcv(usePcv);
+        corr.setUseAzimuth(useAzimuth);
+    }
+
     GnssSolution::GnssSolution(GnssDataStorePtr gnssData, double sigma)
         : data_(gnssData)
         , equations_(std::make_shared<EquationComposer>(config_))

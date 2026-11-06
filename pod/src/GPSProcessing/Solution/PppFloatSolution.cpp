@@ -113,15 +113,6 @@ namespace pod
 
         CorrectObservables corrRover(data_->navLibrary_);
 
-        // Vector from monument to antenna ARP [UEN], in meters
-        const Triple offsetARP = stationConfig(data_->config_.siteRover).markerToArpUenM;
-        corrRover.setMonument(offsetARP);
-
-        Antenna roverAnt(antexReader.getAntenna(stationConfig(data_->config_.siteRover).antennaModel));
-        corrRover.setUsePcv(stationConfig(data_->config_.siteRover).usePcPatterns);
-        corrRover.setAntenna(roverAnt);
-        corrRover.setUseAzimuth(stationConfig(data_->config_.siteRover).useAzimuth);
-
 #pragma endregion
 
         ComputeWeightSimple computeWeightSimple(2.0);
@@ -176,6 +167,8 @@ namespace pod
             // read the header
             rin >> roh;
             gMap_.header = roh;
+
+            setupAntenna(corrRover, antexReader, data_->config_.siteRover, roh.antType);
 
             // read all epochs
             while (rin >> rin_epoch)

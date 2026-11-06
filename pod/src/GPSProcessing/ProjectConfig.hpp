@@ -100,6 +100,7 @@ namespace pod::config
 		std::map<std::string, StationConfig> stations;
 
 		const StationConfig& station(const std::string& siteId) const;
+		const StationConfig* findStation(const std::string& siteId) const;
 
 		// Parses a TOML configuration file. Throws ConfigError on any missing or invalid value.
 		static ProjectConfig load(const std::filesystem::path& file);

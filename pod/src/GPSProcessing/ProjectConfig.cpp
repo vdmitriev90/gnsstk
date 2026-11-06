@@ -214,8 +214,14 @@ namespace pod::config
 		}
 	} // namespace
 
-	const StationConfig& ProjectConfig::station(const std::string& siteId) const
+	const StationConfig* ProjectConfig::findStation(const std::string& siteId) const
 	{
+		const auto it = stations.find(siteId);
+		return it == stations.end() ? nullptr : &it->second;
+	}
+
+	const StationConfig& ProjectConfig::station(const std::string& siteId) const
+		{
 		const auto it = stations.find(siteId);
 		if (it == stations.end())
 			throw ConfigError("Config error: no [stations." + siteId + "] table");

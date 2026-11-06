@@ -138,22 +138,13 @@ namespace pod
 
         // Vector from monument to antenna ARP [UEN], in meters
         // for base
-        const Triple offsetARP = stationConfig(data_->config_.siteBase).markerToArpUenM;
-        corrBase.setMonument(offsetARP);
+        //const Triple offsetARP = stationConfig(data_->config_.siteBase).markerToArpUenM;
+        //corrBase.setMonument(offsetARP);
 
         // for rover
-        const Triple offsetARP_Rover = stationConfig(data_->config_.siteRover).markerToArpUenM;
-        corrRover.setMonument(offsetARP_Rover);
+        //const Triple offsetARP_Rover = stationConfig(data_->config_.siteRover).markerToArpUenM;
+        //corrRover.setMonument(offsetARP_Rover);
 
-        Antenna baseAnt(antexReader.getAntenna(stationConfig(data_->config_.siteBase).antennaModel));
-        corrBase.setAntenna(baseAnt);
-        corrBase.setUsePcv(stationConfig(data_->config_.siteBase).usePcPatterns);
-        corrBase.setUseAzimuth(stationConfig(data_->config_.siteBase).useAzimuth);
-
-        Antenna roverAnt(antexReader.getAntenna(stationConfig(data_->config_.siteRover).antennaModel));
-        corrRover.setAntenna(roverAnt);
-        corrRover.setUsePcv(stationConfig(data_->config_.siteRover).usePcPatterns);
-        corrRover.setUseAzimuth(stationConfig(data_->config_.siteRover).useAzimuth);
 
 #pragma endregion
 
@@ -213,8 +204,7 @@ namespace pod
             rin >> roh;
             gMap_.header = roh;
 
-            Antenna ant_rov(antexReader.getAntenna(roh.antType));
-            corrRover.setAntenna(ant_rov);
+            setupAntenna(corrRover, antexReader, data_->config_.siteRover, roh.antType);
 
             // read all epochs
             while (rin >> rin_epoch)
@@ -282,10 +272,9 @@ namespace pod
                 {
                     gRef >> sync;
 
-                    Antenna ant_ref(antexReader.getAntenna(sync.getRefHeader().antType));
-                    corrBase.setAntenna(ant_ref);
+                    setupAntenna(corrBase, antexReader, data_->config_.siteBase, sync.getRefHeader().antType);
 
-                    // keep only satellites from satellites systems selecyted for processing
+                    // keep only satellites from satellites systems selected for processing
                     gRef.keepOnlySatSystems(processingConfig().satelliteSystems);
 
                     gRef >> requireObs_;

@@ -1,7 +1,9 @@
 #ifndef POD_GNSS_SOLUTION_H
 #define POD_GNSS_SOLUTION_H
 
+#include "AntexReader.hpp"
 #include "ComputeLinear.hpp"
+#include "CorrectObservables.hpp"
 #include "EquationComposer.h"
 #include "GnssDataStore.hpp"
 #include "GnssEpochMap.h"
@@ -106,6 +108,13 @@ namespace pod
         {
             return data_->config_.station(siteId);
         }
+
+        // Sets antenna and PCV options of corr: from the station config if the station is listed there,
+        // otherwise from the RINEX header antenna type (PCV used, azimuth not used)
+        void setupAntenna(gnsstk::CorrectObservables& corr,
+                          gnsstk::AntexReader& antex,
+                          const std::string& siteId,
+                          const std::string& rinexAntType) const;
 
         virtual IApprPosProvider& apprPos()
         {
