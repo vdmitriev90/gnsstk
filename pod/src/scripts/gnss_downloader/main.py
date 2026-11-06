@@ -11,7 +11,7 @@ from gnss_downloader.orchestrator import load_orchestrator_config, run_orchestra
 
 def parse_args():
   parser = argparse.ArgumentParser(description="GNSS session-based processing orchestrator")
-  parser.add_argument("--config", required=True, help="Path to orchestrator.ini")
+  parser.add_argument("--config", required=True, help="Path to orchestrator.toml")
   parser.add_argument("--debug", action="store_true", help="Wait for debugger attach")
   parser.add_argument("--no-download", action="store_true", help="Skip downloads, run processor on existing data")
   return parser.parse_args()

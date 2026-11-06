@@ -1,3 +1,4 @@
+import json
 import os
 import re
 import shutil
@@ -48,8 +49,8 @@ def read_key(ini_path, key):
 def write_job_ini(ini_path, rover, base):
   with open(ini_path, encoding="utf-8", newline="") as f:
     lines = f.readlines()
-  _set_key(lines, "SiteRover", rover[:4])
-  _set_key(lines, "SiteBase", (base or "")[:4])
+  _set_key(lines, "site_rover", json.dumps(rover[:4]))
+  _set_key(lines, "site_base", json.dumps((base or "")[:4]))
   with open(ini_path, "w", encoding="utf-8", newline="") as f:
     f.writelines(lines)
 

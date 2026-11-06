@@ -48,7 +48,7 @@ def run_orchestrator(config, layout, no_download=False):
 
 
   template_copy = copy_processor_template(config.processor_ini, layout)
-  use_ionex = read_key(template_copy, "CodeIonoCorrType") == "2"
+  use_ionex = read_key(template_copy, "code_ionosphere_correction_type") == "2"
   _info(f"Ionex download: {use_ionex}")
 
   for session in config.sessions:

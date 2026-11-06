@@ -2,7 +2,7 @@
 #define POD_GNSSDATA_STORE_H
 
 #include "ApprPosProvider.hpp"
-#include "BiasSinex/BiasSinexStore.hpp"
+#include "BiasSinexStore.hpp"
 #include "CommonEnums.h"
 #include "CommonTime.hpp"
 #include "ComputeIonoModel.hpp"

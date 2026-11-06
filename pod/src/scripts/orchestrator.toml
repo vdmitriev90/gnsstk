@@ -1,0 +1,28 @@
+[orchestrator]
+processor_executable = "pod_processor.exe"
+processor_config = "processor.template.toml"
+project_name = "test"
+working_directory = "D:/GNSS/work"
+
+[time_spans.span1]
+start = 2026-10-20T00:00:00Z
+end = 2026-10-21T00:00:00Z
+
+[time_spans.span2]
+start = 2025-10-20T00:00:00Z
+end = 2025-10-21T00:00:00Z
+
+[rover_sets.set1]
+rovers = ["FFMJ", "CNC9", "MADR"]
+base = "ARTU"
+
+[rover_sets.set2]
+rovers = ["FFMJ"]
+
+[sessions.session1]
+time_span = "span1"
+rovers = "set1"
+
+[sessions.session2]
+time_span = "span2"
+rovers = ["FFMJ","CNC9" ]

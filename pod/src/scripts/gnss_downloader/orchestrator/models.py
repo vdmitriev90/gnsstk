@@ -5,12 +5,57 @@ from typing import Optional, Tuple
 
 
 @dataclass(frozen=True)
-class Session:
-  name: str
+class TimeSpan:
   start: datetime
   end: datetime
-  rovers: Tuple[str, ...]
+
+  def __post_init__(self):
+    if self.start >= self.end:
+      raise ValueError("start must be earlier than end")
+
+
+@dataclass(frozen=True)
+class RoverSet:
+  sites: Tuple[str, ...]
   base: Optional[str] = None
+
+  def __post_init__(self):
+    if not self.sites:
+      raise ValueError("at least one rover is required")
+    duplicates = sorted({r for r in self.sites if self.sites.count(r) > 1})
+    if duplicates:
+      raise ValueError(f"duplicate rovers: {', '.join(duplicates)}")
+    if self.base is not None and self.base in self.sites:
+      raise ValueError(f"base {self.base} must differ from every rover")
+
+  def __iter__(self):
+    return iter(self.sites)
+
+  def __len__(self):
+    return len(self.sites)
+
+  def __contains__(self, site):
+    return site in self.sites
+
+
+@dataclass(frozen=True)
+class Session:
+  name: str
+  time_span: TimeSpan
+  rover_set: RoverSet
+  base: Optional[str] = None
+
+  @property
+  def start(self):
+    return self.time_span.start
+
+  @property
+  def end(self):
+    return self.time_span.end
+
+  @property
+  def rovers(self):
+    return self.rover_set.sites
 
 
 @dataclass(frozen=True)

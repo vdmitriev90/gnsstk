@@ -1,0 +1,153 @@
+# =============================================================================
+# Selected sites
+# =============================================================================
+
+site_rover = "TIT2"
+site_base = "FFMJ"
+
+
+# =============================================================================
+# Generic files
+# =============================================================================
+
+[generic_files]
+
+directory = "gen"
+satellite_data_file = "PRN_GPS"
+antex_file = "I20_2388.ATX"
+ocean_loading_file = "JUN2016.BLQ"
+
+
+# =============================================================================
+# Processing settings
+# =============================================================================
+
+[processing]
+
+# Solution types:
+# 1  = Standalone
+# 2  = DGNSS
+# 3  = Phase Differential Float
+# 4  = Phase Differential Fixed
+# 16 = PPP Float
+solution_type = 2
+
+apply_code_bias = false
+use_rinex_clock = false
+full_output = false
+
+satellite_systems = ["GPS", "GLO"]
+carrier_bands = [1, 2]
+
+
+# -----------------------------------------------------------------------------
+# Troposphere
+# -----------------------------------------------------------------------------
+
+# Used by differential solutions
+compute_troposphere = false
+troposphere_vertical_process_noise = 1e-9
+
+# Used by PPP solutions:
+# 1 = Simple
+# 2 = Simple with gradients
+# 3 = Advanced
+troposphere_model_type = 1
+troposphere_q1 = 1e-10
+troposphere_q2 = 1e-12
+
+
+# -----------------------------------------------------------------------------
+# Receiver clock
+# -----------------------------------------------------------------------------
+
+use_advanced_clock_model = false
+clock_q1 = 5e-9
+clock_q2 = 5e-9
+
+
+# -----------------------------------------------------------------------------
+# Ionosphere
+# -----------------------------------------------------------------------------
+
+compute_ionosphere = true
+
+# Stochastic model:
+# 0 = White noise
+# 1 = Random walk
+ionosphere_model_type = 0
+
+ionosphere_sigma_m = 10.0
+
+# Code ionospheric correction:
+# 0 = Zero
+# 1 = Klobuchar
+# 2 = IONEX
+# 3 = Dual frequency
+code_ionosphere_correction_type = 2
+
+smooth_code = true
+spaceborne_receiver = false
+
+
+# -----------------------------------------------------------------------------
+# Receiver dynamics
+# -----------------------------------------------------------------------------
+
+# 1 = Kinematic
+# 2 = Static
+dynamics = 1
+
+
+# -----------------------------------------------------------------------------
+# Observation masks
+# -----------------------------------------------------------------------------
+
+elevation_mask_deg = 7.5
+snr_mask_db_hz = 29.0
+
+
+# -----------------------------------------------------------------------------
+# Forward-backward processing
+# -----------------------------------------------------------------------------
+
+forward_backward_cycles = 0
+
+phase_limits = [0.02]
+code_limits = [20.0]
+
+
+# -----------------------------------------------------------------------------
+# Stochastic model parameters
+# -----------------------------------------------------------------------------
+
+position_sigma_m = 10000.0
+clock_sigma_m = 30000000.0
+weight_factor = 10000.0
+
+loss_of_lock_threshold = 0.08
+melbourne_wubbena_threshold = 2.0
+
+
+# -----------------------------------------------------------------------------
+# Decimation
+# -----------------------------------------------------------------------------
+
+decimation_interval_s = 30
+decimation_tolerance_s = 0.1
+
+
+# -----------------------------------------------------------------------------
+# Approximate position provider
+# -----------------------------------------------------------------------------
+
+# 1 = From configuration
+# 2 = Compute for each epoch
+# 3 = Compute for the first epoch
+# 4 = Load from file
+approximate_position_provider = 3
+
+# Required only when approximate_position_provider = 4.
+# It is kept here for convenience but will not be used for provider 3.
+approximate_position_file = "CNC9_PPP_Float.pos"
+
