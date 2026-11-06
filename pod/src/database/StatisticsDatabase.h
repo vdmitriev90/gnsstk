@@ -37,6 +37,8 @@ namespace pod
         void addSolutionStatistics(std::int64_t processingDataId, const SolutionStatisticsRecord& s);
         void setPragmas();
         void migrate();
+        void migrateToVersion5();
+        void migrateToVersion6();
 
         // Inserts ProcessingData and ProcessingTechnicalInfo atomically; returns ProcessingData.ID.
         std::int64_t addProcessingData(const ProcessingDataRecord& data, const ProcessingTechnicalInfoRecord& info, const SoftwareVersionRecord& sv);

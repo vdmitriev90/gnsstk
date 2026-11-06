@@ -138,24 +138,66 @@ namespace pod
         if (version > SCHEMA_VERSION)
             errorHandler(SQLITE_ERROR, "Statistics database schema is newer than supported.");
 
+        if (version == 0)
+        {
+            // new database: create the latest schema at once
+            Transaction tx(*this);
+            execScript(createStatisticsSchemaCommand);
+            setUserVersion(SCHEMA_VERSION);
+            tx.commit();
+            return;
+        }
+
+        if (version < 5)
+            migrateToVersion5();
+        if (version < 6)
+            migrateToVersion6();
+    }
+
+    // v5: adds the ObservationClasses table and fills it for already stored classes
+    void StatisticsDatabase::migrateToVersion5()
+    {
         Transaction tx(*this);
-        const bool migrateSoftwareVersion = version != 0 && version < 6;
-        if (migrateSoftwareVersion)
-            execScript("ALTER TABLE `ProcessingTechnicalInfo` RENAME TO `ProcessingTechnicalInfo_old`;");
-        execScript(createStatisticsSchemaCommand);
-        if (migrateSoftwareVersion)
-            execScript("INSERT INTO `SoftwareVersions`(`SoftwareVersion`,`CommitHash`) "
-                       "SELECT DISTINCT `SoftwareVersion`, NULL FROM `ProcessingTechnicalInfo_old` "
-                       "WHERE `SoftwareVersion` IS NOT NULL;"
-                       "INSERT INTO `ProcessingTechnicalInfo`(`ProcessingDataID`,`ProcessingStartedUnixSec`,"
-                       "`ProcessingDurationMSec`,`SoftwareVersionID`) "
-                       "SELECT o.`ProcessingDataID`, o.`ProcessingStartedUnixSec`, o.`ProcessingDurationMSec`, "
-                       "(SELECT s.`ID` FROM `SoftwareVersions` s WHERE s.`SoftwareVersion` = o.`SoftwareVersion`) "
-                       "FROM `ProcessingTechnicalInfo_old` o;"
-                       "DROP TABLE `ProcessingTechnicalInfo_old`;");
-        if (version != 0 && version < 5)
-            backfillObservationClasses();
-        setUserVersion(SCHEMA_VERSION);
+        execScript("CREATE TABLE IF NOT EXISTS `ObservationClasses` ("
+                   "`ID` INTEGER NOT NULL,"
+                   "`Description` TEXT NOT NULL,"
+                   "PRIMARY KEY (`ID`)"
+                   ");");
+        backfillObservationClasses();
+        setUserVersion(5);
+        tx.commit();
+    }
+
+    // v6: moves SoftwareVersion from ProcessingTechnicalInfo to the SoftwareVersions table (with CommitHash)
+    void StatisticsDatabase::migrateToVersion6()
+    {
+        Transaction tx(*this);
+        execScript("ALTER TABLE `ProcessingTechnicalInfo` RENAME TO `ProcessingTechnicalInfo_old`;"
+                   "CREATE TABLE `SoftwareVersions` ("
+                   "`ID` INTEGER NOT NULL,"
+                   "`SoftwareVersion` TEXT,"
+                   "`CommitHash` TEXT,"
+                   "PRIMARY KEY (`ID`)"
+                   ");"
+                   "CREATE TABLE `ProcessingTechnicalInfo` ("
+                   "`ProcessingDataID` INTEGER NOT NULL,"
+                   "`ProcessingStartedUnixSec` INTEGER NOT NULL,"
+                   "`ProcessingDurationMSec` INTEGER NOT NULL,"
+                   "`SoftwareVersionID` INTEGER,"
+                   "PRIMARY KEY (`ProcessingDataID`),"
+                   "FOREIGN KEY (`ProcessingDataID`) REFERENCES `ProcessingData` (`ID`),"
+                   "FOREIGN KEY (`SoftwareVersionID`) REFERENCES `SoftwareVersions` (`ID`)"
+                   ");"
+                   "INSERT INTO `SoftwareVersions`(`SoftwareVersion`,`CommitHash`) "
+                   "SELECT DISTINCT `SoftwareVersion`, NULL FROM `ProcessingTechnicalInfo_old` "
+                   "WHERE `SoftwareVersion` IS NOT NULL;"
+                   "INSERT INTO `ProcessingTechnicalInfo`(`ProcessingDataID`,`ProcessingStartedUnixSec`,"
+                   "`ProcessingDurationMSec`,`SoftwareVersionID`) "
+                   "SELECT o.`ProcessingDataID`, o.`ProcessingStartedUnixSec`, o.`ProcessingDurationMSec`, "
+                   "(SELECT s.`ID` FROM `SoftwareVersions` s WHERE s.`SoftwareVersion` = o.`SoftwareVersion`) "
+                   "FROM `ProcessingTechnicalInfo_old` o;"
+                   "DROP TABLE `ProcessingTechnicalInfo_old`;");
+        setUserVersion(6);
         tx.commit();
     }
 
