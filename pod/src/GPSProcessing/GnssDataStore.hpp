@@ -12,7 +12,6 @@
 #include "IonexStore.hpp"
 #include "IonoModelStore.hpp"
 #include "NavLibrary.hpp"
-
 #include <filesystem>
 #include <map>
 #include <memory>

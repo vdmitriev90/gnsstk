@@ -14,13 +14,23 @@ configure_file(
     ${CMAKE_CURRENT_BINARY_DIR}/generated/Version.h
     @ONLY
 )
+include(FetchContent)
+
+FetchContent_Declare(
+    tomlplusplus
+    GIT_REPOSITORY https://github.com/marzer/tomlplusplus.git
+    GIT_TAG v3.4.0
+    GIT_SHALLOW TRUE
+)
+
+FetchContent_MakeAvailable(tomlplusplus)
 
 file( GLOB_RECURSE POD_SOURCE_FILES CONFIGURE_DEPENDS "src/*.cpp" "src/*.c" )
 file( GLOB_RECURSE POD_INC_FILES CONFIGURE_DEPENDS "src/*.h" "src/*.hpp" )
 
 set( POD_INC_DIRS "" )
 
-foreach( _headerFile ${MY_INC_FILES} )
+foreach( _headerFile ${POD_INC_FILES} )
     get_filename_component( _dir ${_headerFile} PATH )
     list( APPEND POD_INC_DIRS ${_dir} )
 endforeach()
@@ -36,8 +46,13 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${POD_SOURCE_FILES} ${POD_IN
 
 target_compile_features(pod PUBLIC cxx_std_23)
 
-target_link_libraries(pod  gnsstk)
-target_link_libraries(pod sqlite)
+target_link_libraries(
+    pod
+    PUBLIC
+        gnsstk
+        sqlite
+        tomlplusplus::tomlplusplus
+)
 
 add_executable(pod_tests tests/DatabaseTests.cpp)
 target_compile_features(pod_tests PRIVATE cxx_std_23)
