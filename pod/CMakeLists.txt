@@ -37,7 +37,6 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${POD_SOURCE_FILES} ${POD_IN
 target_compile_features(pod PUBLIC cxx_std_23)
 
 target_link_libraries(pod  gnsstk)
-target_link_libraries(pod  SOFA)
 target_link_libraries(pod sqlite)
 
 add_executable(pod_tests tests/DatabaseTests.cpp)

@@ -237,8 +237,6 @@ if( BUILD_POD )
   else()
     message( FATAL_ERROR "Boost not found. Set Boost_ROOT environment variable to Boost source directory." )
   endif()
-  include_directories(third_party/SOFA)
-  add_subdirectory(third_party/SOFA )
   
   include_directories(third_party/sqlite)
   add_subdirectory(third_party/sqlite)
