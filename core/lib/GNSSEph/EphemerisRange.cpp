@@ -126,8 +126,8 @@ namespace gnsstk
                 RawRange::fromNominalReceiveWithObs(Rx, trNom, pr, navLib, NavSatelliteID(sat), ellipsoid);
             if (!success)
             {
-                std::cerr << "getXvt failed. RawRange::fromNominalReceiveWithObs failed for sat " << sat << " at "
-                          << printTime(trNom) << std::endl;
+                //std::cerr << "getXvt failed. RawRange::fromNominalReceiveWithObs failed for sat " << sat << " at "
+                //          << printTime(trNom) << std::endl;
                 return std::nullopt;
             }
 
@@ -159,8 +159,8 @@ namespace gnsstk
 
             if (!success)
             {
-                std::cerr << "getXvt failed. RawRange::fromNominalReceive failed for sat " << sat << " at "
-                          << printTime(trNom) << std::endl;
+                //std::cerr << "getXvt failed. RawRange::fromNominalReceive failed for sat " << sat << " at "
+                //          << printTime(trNom) << std::endl;
                 return std::nullopt;
             }
 
@@ -194,8 +194,8 @@ namespace gnsstk
 
             if (!success)
             {
-                std::cerr << "getXvt failed. RawRange::fromSvTransmitWithObs failed for sat " << sat
-                          << " at nominal transmit time " << ttNom << std::endl;
+                //std::cerr << "getXvt failed. RawRange::fromSvTransmitWithObs failed for sat " << sat
+                //          << " at nominal transmit time " << ttNom << std::endl;
                 return std::nullopt;
             }
 
