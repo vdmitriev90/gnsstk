@@ -43,7 +43,7 @@ def run_orchestrator(config, layout, no_download=False):
   _info(f"Project: {config.project_name}")
   _info(f"Project directory: {layout.root}")
   _info(f"Processor executable: {config.processor_executable}")
-  _info(f"Processor INI template: {config.processor_ini}")
+  _info(f"Processor config template: {config.processor_ini}")
   _info(f"Execution plan: {len(config.sessions)} session(s), {len(jobs)} job(s)")
 
 

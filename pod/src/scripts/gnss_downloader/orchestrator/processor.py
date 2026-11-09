@@ -28,7 +28,7 @@ def _set_key(lines, key, value):
 
 def copy_processor_template(template_path, layout):
   os.makedirs(layout.root, exist_ok=True)
-  copy_path = os.path.join(layout.root, os.path.basename(template_path))
+  copy_path = os.path.join(layout.root, "config.toml")
   if os.path.normcase(os.path.abspath(copy_path)) != os.path.normcase(os.path.abspath(template_path)):
     shutil.copyfile(template_path, copy_path)
   return copy_path
