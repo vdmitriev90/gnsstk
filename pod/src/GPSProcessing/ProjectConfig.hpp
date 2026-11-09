@@ -87,7 +87,7 @@ namespace pod::config
 		int decimationIntervalSeconds{0};
 		double decimationToleranceSeconds{0};
 
-		ApprPositionSource approximatePositionProvider{ApprPositionSource::FromConfig};
+		ApprPositionSource approximatePositionProvider{ApprPositionSource::FromRinexHeader};
 		std::filesystem::path approximatePositionFile;
 	};
 

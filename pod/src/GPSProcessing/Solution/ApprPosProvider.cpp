@@ -19,6 +19,7 @@ namespace pod
             {ApprPositionSource::ComputeForEachEpoch, "Statndalone for each epoch"},
             {ApprPositionSource::ComputeForFirstEpoch, "Statndalone for first epoch"},
             {ApprPositionSource::LoadFromFile, "*.pos file"},
+            {ApprPositionSource::FromRinexHeader, "RINEX header"},
         };
         const auto it = posSource2Str.find(source);
         if (it != posSource2Str.end())
@@ -139,5 +140,22 @@ namespace pod
             return -1;
         pos = Position(it->second.x[0], it->second.x[1], it->second.x[2]);
         return 0;
+    }
+    PositionFromRinexHeader::PositionFromRinexHeader() {}
+
+    int PositionFromRinexHeader::getPosition(const gnsstk::IRinex& rinEpoch, gnsstk::Position& pos)
+    {
+        const auto ant_pos = rinEpoch.getHeader().antennaPosition;
+        if (!std::isfinite(ant_pos.mag()) || ant_pos.mag() < 5e6)
+        {
+            std::cerr << "Invalid Apprpximate position" << std::endl;
+            return 1;
+        }
+        pos = ant_pos;
+        return 0;
+    }
+    inline ApprPositionSource PositionFromRinexHeader::getSource() const
+    {
+        return ApprPositionSource::FromRinexHeader;
     }
 } // namespace pod

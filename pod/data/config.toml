@@ -141,11 +141,12 @@ decimation_tolerance_s = 0.1
 # Approximate position provider
 # -----------------------------------------------------------------------------
 
-# 1 = From configuration
-# 2 = Compute for each epoch
-# 3 = Compute for the first epoch
-# 4 = Load from file
-approximate_position_provider = 3
+# 1 = FromConfig
+# 2 = ComputeForEachEpoch
+# 3 = ComputeForFirstEpoch
+# 4 = LoadFromFile
+# 5 = From Rinex header (by default)
+approximate_position_provider = 5
 
 # Required only when approximate_position_provider = 4.
 # It is kept here for convenience but will not be used for provider 3.

@@ -12,6 +12,7 @@ namespace pod
         ComputeForEachEpoch,
         ComputeForFirstEpoch,
         LoadFromFile,
+        FromRinexHeader,
     };
 
     std::string getPosSourceString(ApprPositionSource source);
@@ -138,4 +139,14 @@ namespace pod
         gnsstk::Position apprPos;
     };
 
+    class PositionFromRinexHeader: public IApprPosProvider
+    {
+
+      public:
+        PositionFromRinexHeader();
+
+        int getPosition(const gnsstk::IRinex& rinEpoch, gnsstk::Position& pos) override;
+        
+        virtual ApprPositionSource getSource() const override;
+    };
 } // namespace pod

@@ -252,8 +252,7 @@ namespace pod
     {
         bool isIonexLoaded = loadIonoMap();
 
-        const auto type =
-            static_cast<ComputeIonoModel::IonoModelType>(config_.processing.codeIonosphereCorrectionType);
+        const auto type = static_cast<ComputeIonoModel::IonoModelType>(config_.processing.codeIonosphereCorrectionType);
         switch (type)
         {
         case gnsstk::ComputeIonoModel::Zero:
@@ -459,7 +458,8 @@ namespace pod
                     int nGPS = 0, nGLN = 0;
                     for (auto& it : rod.obs)
                     {
-                        if (config_.processing.satelliteSystems.find(it.first.system) == config_.processing.satelliteSystems.end())
+                        if (config_.processing.satelliteSystems.find(it.first.system)
+                            == config_.processing.satelliteSystems.end())
                             continue;
                         if (it.first.system == SatelliteSystem::GPS)
                             nGPS++;
@@ -489,9 +489,7 @@ namespace pod
 
     bool GnssDataStore::createPosProvider()
     {
-        const auto apprPosProvider = static_cast<ApprPositionSource>(config_.processing.approximatePositionProvider);
-
-        switch (apprPosProvider)
+        switch (config_.processing.approximatePositionProvider)
         {
         case ApprPositionSource::FromConfig:
             apprPosProvider_ = std::make_unique<ApprPosSimple>(getNominalPosition(config_.siteRover));
@@ -503,8 +501,13 @@ namespace pod
             apprPosProvider_ = std::make_unique<ComputeOnePos>(navLibrary_);
             return true;
         case ApprPositionSource::LoadFromFile:
-            apprPosProvider_ = std::make_unique<PositionFromFile>(
-                (workingDir / config_.processing.approximatePositionFile).string());
+        {
+            const auto path = workingDir / config_.processing.approximatePositionFile;
+            apprPosProvider_ = std::make_unique<PositionFromFile>(path);
+            return true;
+        }
+        case ApprPositionSource::FromRinexHeader:
+            apprPosProvider_ = std::make_unique<PositionFromRinexHeader>();
             return true;
         default:
             return false;
