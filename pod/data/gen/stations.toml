@@ -216,3 +216,9 @@ marker_to_arp_uen_m = [0.0, 0.0, 0.0]
 antenna_model = "LEIAR25.R4      NONE"
 use_pc_patterns = true
 use_azimuth = false
+[stations.FAIR]
+nominal_position_ecef_m = [ -2281621.7717, -1453595.9493, 5756961.9444]
+marker_to_arp_uen_m = [0.0, 0.0, 0.0]
+antenna_model = "ASH701945G_M    NONE"
+use_pc_patterns = true
+use_azimuth = false
