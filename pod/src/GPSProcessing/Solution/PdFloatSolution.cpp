@@ -3,7 +3,6 @@
 #include "AmbiguitiesEquations.h"
 #include "AntexReader.hpp"
 #include "BasicModel.hpp"
-#include "CatcherStatistic.h"
 #include "ClockBiasEquations.h"
 #include "ComputeSatPCenter.hpp"
 #include "ComputeTropModel.hpp"
@@ -21,16 +20,13 @@
 #include "IonoStochasticModel.h"
 #include "KalmanSolver.h"
 #include "KalmanSolverFB.h"
-#include "LICSDetector.hpp"
 #include "LICSDetector2.hpp"
 #include "LinearCombinations.hpp"
-#include "MJD.hpp"
 #include "MWCSDetector.hpp"
 #include "NeillTropModel.hpp"
 #include "NumSatFilter.h"
 #include "ObservablesSets.h"
 #include "PositionEquations.h"
-#include "PowerSum.hpp"
 #include "PrefitResCatcher.h"
 #include "SNRCatcher.h"
 #include "SatArcMarker.hpp"
@@ -39,7 +35,6 @@
 #include "TidalDisplacement.h"
 #include "TropoEquations.h"
 #include "UsedInPvtMarker.hpp"
-#include "WinUtils.h"
 
 #include <memory>
 
