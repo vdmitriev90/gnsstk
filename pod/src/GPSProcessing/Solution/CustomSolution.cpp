@@ -5,6 +5,7 @@
 #include "PdFloatSolution.h"
 #include "PppFloatSolution.h"
 #include "SingleSolution.h"
+#include "UncombinedPppSolution.h"
 
 namespace pod
 {
@@ -27,7 +28,7 @@ namespace pod
               return std::make_unique<PppFloatSolution>(dataStore);
             break;
         case pod::SlnType::PppFixed:
-            break;
+            return std::make_unique<UncombinedPppSolution>(dataStore);
         default:
             break;
         }

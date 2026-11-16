@@ -143,7 +143,12 @@ namespace pod::config
                 t,
                 sec,
                 "solution_type",
-                {SlnType::Standalone, SlnType::CodeDiff, SlnType::PdFloat, SlnType::PdFixed, SlnType::PppFloat});
+                {SlnType::Standalone,
+                 SlnType::CodeDiff,
+                 SlnType::PdFloat,
+                 SlnType::PdFixed,
+                 SlnType::PppFloat,
+                 SlnType::PppFixed});
             p.applyCodeBias = require<bool>(t, sec, "apply_code_bias");
             p.useRinexClock = require<bool>(t, sec, "use_rinex_clock");
             p.fullOutput = require<bool>(t, sec, "full_output");
