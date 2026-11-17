@@ -8,11 +8,13 @@ namespace pod
 		: store_(&store)
 	{
 		setDefaultCodeMappings();
+		setDefaultPhaseMappings();
 	}
 
 	BiasSinexCorrector& BiasSinexCorrector::clearMappings()
 	{
 		codeMappings_.clear();
+		phaseMappings_.clear();
 		return *this;
 	}
 
@@ -48,34 +50,70 @@ namespace pod
 		return *this;
 	}
 
+	BiasSinexCorrector& BiasSinexCorrector::setDefaultPhaseMappings()
+	{
+		phaseMappings_.clear();
+
+		mapPhaseObservable(SatelliteSystem::GPS, TypeID(TypeID::L1), "L1C");
+		mapPhaseObservable(SatelliteSystem::GPS, TypeID(TypeID::L2), "L2W");
+
+		mapPhaseObservable(SatelliteSystem::Glonass, TypeID(TypeID::L1), "L1C");
+		mapPhaseObservable(SatelliteSystem::Glonass, TypeID(TypeID::L2), "L2P");
+
+		mapPhaseObservable(SatelliteSystem::Galileo, TypeID(TypeID::L1), "L1X");
+		mapPhaseObservable(SatelliteSystem::Galileo, TypeID(TypeID::L5), "L5X");
+
+		mapPhaseObservable(SatelliteSystem::BeiDou, TypeID(TypeID::L1), "L1P");
+		mapPhaseObservable(SatelliteSystem::BeiDou, TypeID(TypeID::L5), "L5P");
+
+		mapPhaseObservable(SatelliteSystem::QZSS, TypeID(TypeID::L1), "L1L");
+		mapPhaseObservable(SatelliteSystem::QZSS, TypeID(TypeID::L5), "L5Q");
+
+		return *this;
+	}
+
+	BiasSinexCorrector& BiasSinexCorrector::mapPhaseObservable(const SatelliteSystem& system,
+															   const TypeID& type,
+															   const std::string& obsCode)
+	{
+		phaseMappings_[system][type] = obsCode;
+		return *this;
+	}
+
+	void BiasSinexCorrector::applyOsb(const CommonTime& epoch,
+									  const SatID& sat,
+									  const std::map<SatelliteSystem, TypeMap>& mappings,
+									  TypeValueRow& tvMap) const
+	{
+		const auto sysIt = mappings.find(sat.system);
+		if (sysIt == mappings.end())
+			return;
+
+		for (const auto& mapping : sysIt->second)
+		{
+			const TypeID& type = mapping.first;
+			const std::string& obsCode = mapping.second;
+
+			const auto tvIt = tvMap.find(type);
+			if (tvIt == tvMap.end())
+				continue;
+
+			const auto* bias = store_->findSatelliteOsb(sat, obsCode, epoch);
+			if (bias == nullptr)
+				continue;
+			if (bias->unit != BiasSinexUnit::Ns)
+				continue;
+			const double bias_m = bias->estimatedValue * gnsstk::C_MPS * 1.0e-9;
+			tvIt->second -= bias_m;
+		}
+	}
+
 	SatTypePtrMap& BiasSinexCorrector::Process(const CommonTime& epoch, SatTypePtrMap& gData)
 	{
 		for (auto it = gData.begin(); it != gData.end(); ++it)
 		{
-			const SatID& sat = it->first;
-			TypeValueRow* tvMap = &it->second;
-
-			const auto sysIt = codeMappings_.find(sat.system);
-			if (sysIt == codeMappings_.end())
-				continue;
-
-			for (const auto& mapping : sysIt->second)
-			{
-				const TypeID& type = mapping.first;
-				const std::string& obsCode = mapping.second;
-
-				const auto tvIt = tvMap->find(type);
-				if (tvIt == tvMap->end())
-					continue;
-
-				const auto* bias = store_->findSatelliteOsb(sat, obsCode, epoch);
-				if (bias == nullptr)
-					continue;
-				if (bias->unit != BiasSinexUnit::Ns)
-					continue;
-                const double bias_m = bias->estimatedValue* gnsstk::C_MPS* 1.0e-9;
-                tvIt->second -= bias_m;
-			}
+			applyOsb(epoch, it->first, codeMappings_, it->second);
+			applyOsb(epoch, it->first, phaseMappings_, it->second);
 		}
 
 		return gData;

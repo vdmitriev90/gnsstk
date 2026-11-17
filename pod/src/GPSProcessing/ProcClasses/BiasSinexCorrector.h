@@ -18,9 +18,13 @@ namespace pod
 
 		BiasSinexCorrector& clearMappings();
 		BiasSinexCorrector& setDefaultCodeMappings();
+		BiasSinexCorrector& setDefaultPhaseMappings();
 		BiasSinexCorrector& mapCodeObservable(const gnsstk::SatelliteSystem& system,
 											 const gnsstk::TypeID& type,
 											 const std::string& obsCode);
+		BiasSinexCorrector& mapPhaseObservable(const gnsstk::SatelliteSystem& system,
+											  const gnsstk::TypeID& type,
+											  const std::string& obsCode);
 
 		gnsstk::SatTypePtrMap& Process(const gnsstk::CommonTime& epoch,
 									   gnsstk::SatTypePtrMap& gData);
@@ -32,5 +36,11 @@ namespace pod
 	  private:
 		const BiasSinexStore* store_;
 		std::map<gnsstk::SatelliteSystem, TypeMap> codeMappings_;
+		std::map<gnsstk::SatelliteSystem, TypeMap> phaseMappings_;
+
+		void applyOsb(const gnsstk::CommonTime& epoch,
+					  const gnsstk::SatID& sat,
+					  const std::map<gnsstk::SatelliteSystem, TypeMap>& mappings,
+					  gnsstk::TypeValueRow& tvMap) const;
 	};
 } // namespace pod
