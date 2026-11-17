@@ -9,7 +9,7 @@ namespace pod
     std::map<SatelliteSystem, FilterParameter> InterFrequencyBiases::ss2ifb;
     std::map<FilterParameter, SatelliteSystem> InterFrequencyBiases::ifb2ss;
 
-    const TypeIDSet InterFrequencyBiases::l2Types{TypeID::prefitP2, TypeID::prefitL2, TypeID::prefitC5, TypeID::prefitL5};
+    const TypeIDSet InterFrequencyBiases::l2Types{TypeID::prefitP2, TypeID::prefitC5};
 
     InterFrequencyBiases::Initilizer InterFrequencyBiases::IfbSingleton;
 
