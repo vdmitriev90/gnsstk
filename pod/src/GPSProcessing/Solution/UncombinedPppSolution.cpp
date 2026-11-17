@@ -3,13 +3,14 @@
 #include "AmbiguitiesEquations.h"
 #include "AntexReader.hpp"
 #include "BasicModel.hpp"
+#include "BiasSinexCorrector.h"
 #include "ClockBiasEquations.h"
 #include "ComputeSatPCenter.hpp"
 #include "ComputeTropModel.hpp"
 #include "ComputeWeightSimple.h"
 #include "ComputeWindUp.hpp"
 #include "CorrectObservables.hpp"
-#include "Decimate.hpp"
+//#include "Decimate.hpp"
 #include "EclipsedSatFilter.hpp"
 #include "GravitationalDelay.hpp"
 #include "InterFrequencyBiases.h"
@@ -31,6 +32,8 @@
 #include "SatArcMarker.hpp"
 #include "TidalDisplacement.h"
 #include "TropoEquations.h"
+#include "TropoEquationsAdv.hpp"
+#include "TropoGradEquations.h"
 #include "UsedInPvtMarker.hpp"
 
 #include <memory>
@@ -63,11 +66,6 @@ namespace pod
         EclipsedSatFilter eclipsedSV;
         ComputeWeightSimple computeWeightSimple(1);
 
-        const auto ref_base_pos = data_->getNominalPosition(projectConfig().siteBase);
-        // basic model object for ref. station
-        BasicModel modelRef(ref_base_pos, data_->navLibrary_, TypeID::C1);
-        modelRef.setMinElev(processingConfig().elevationMaskDeg);
-
         BasicModel modelRover(data_->navLibrary_);
         modelRover.setDefaultObservable(TypeID::C1);
         modelRover.setMinElev(processingConfig().elevationMaskDeg);
@@ -75,26 +73,17 @@ namespace pod
         RinexEpoch rin_epoch;
 
         // Object to decimate data
-        Decimate decimateData(processingConfig().decimationIntervalSeconds,
-                              processingConfig().decimationToleranceSeconds,
-                              data_->navLibrary_.getInitialTime());
-
-#pragma region troposhere modeling objects
-
-        // for base
-        NeillTropModel tropoBasePtr;
-        ComputeTropModel computeTropoBase(tropoBasePtr);
+        //Decimate decimateData(processingConfig().decimationIntervalSeconds,
+        //                      processingConfig().decimationToleranceSeconds,
+        //                      data_->navLibrary_.getInitialTime());
 
         // for rover
         NeillTropModel tropoRovPtr;
         ComputeTropModel computeTropoRover(tropoRovPtr);
 
-#pragma endregion
-
         IonexModel ionoModel(nominalPos_, data_->ionexStore_, TypeID::C1, false);
 
         // Object to compute gravitational delay effects
-        GravitationalDelay grDelayBase(ref_base_pos);
         GravitationalDelay grDelayRover;
 
         // Objects to mark cycle slips
@@ -130,15 +119,16 @@ namespace pod
         TidalDisplacement tides(data_->eopStore_);
         tides.setOceanLoadingFile(projectConfig().genericFiles.oceanLoadingFilePath());
 
-        ComputeWindUp windupRover(
-            data_->navLibrary_, ref_base_pos, projectConfig().genericFiles.satelliteDataFilePath());
+        ComputeWindUp windupRover(data_->navLibrary_, projectConfig().genericFiles.satelliteDataFilePath());
 
-        ComputeSatPCenter svPcenterRover(ref_base_pos, projectConfig().genericFiles.satelliteDataFilePath());
+        ComputeSatPCenter svPcenterRover(projectConfig().genericFiles.satelliteDataFilePath());
         svPcenterRover.setAntexReader(antexReader);
 
         ProcessLinear linear_comb;
         linear_comb.add(std::make_unique<PCCombination>());
         linear_comb.add(std::make_unique<LCCombimnation>());
+
+        BiasSinexCorrector biasSinexCorrector(data_->biasSinexStore_);
 
         UsedInPvtMarker useMarker;
 
@@ -195,7 +185,6 @@ namespace pod
                 grDelayRover.setNominalPosition(nominalPos_);
 
                 tropoRovPtr.setAllParameters(t, nominalPos_);
-                tropoBasePtr.setAllParameters(t, ref_base_pos);
                 ionoModel.setInitialRxPosition(nominalPos_);
 
                 modelRover.setRxPosition(nominalPos_);
@@ -212,6 +201,8 @@ namespace pod
                     printMsg(rin_epoch.getHeader().epoch, "Rover receiver: all SV has been rejected.");
                     continue;
                 }
+
+                rin_epoch >> biasSinexCorrector;
 
                 rin_epoch >> computeLinear_;
                 rin_epoch >> markCSLI2Rover;
@@ -311,11 +302,20 @@ namespace pod
     {
         equations_->clearEquations();
 
-        // tropo
-        if (processingConfig().computeTroposphere)
+        double qPrimeVert = processingConfig().troposphereQ1;
+        double qPrimeHor = processingConfig().troposphereQ2;
+
+        if (processingConfig().troposphereModelType == TropoModelType::Simple)
         {
-            double qPrimeVert = processingConfig().troposphereVerticalProcessNoise;
             equations_->addEquation(std::make_unique<TropoEquations>(qPrimeVert));
+        }
+        else if (processingConfig().troposphereModelType == TropoModelType::SimpleWithGradients)
+        {
+            equations_->addEquation(std::make_unique<TropoGradEquations>(qPrimeVert, qPrimeHor, qPrimeHor));
+        }
+        else if (processingConfig().troposphereModelType == TropoModelType::Advanced)
+        {
+            equations_->addEquation(std::make_unique<TropoEquationsAdv>(qPrimeVert, qPrimeHor));
         }
 
         //  Equations->addEquation(std::make_unique<IonoEquations>(processingConfig().ionoQ));
@@ -345,24 +345,22 @@ namespace pod
         if (processingConfig().satelliteSystems.size() > 1)
             equations_->addEquation(std::make_unique<InterSystemBias>());
 
-        if (processingConfig().carrierBands.size() > 1)
+        // with two frequencies receiver DCB is absorbed by the estimated slant ionosphere
+        if (processingConfig().carrierBands.size() > 2)
             equations_->addEquation(std::make_unique<InterFrequencyBiases>());
 
-        if (processingConfig().computeIonosphere)
-        {
-            auto ionoEq = std::make_unique<IonoEquations>();
+        auto ionoEq = std::make_unique<IonoEquations>();
 
-            int ionoModelType = processingConfig().ionosphereModelType;
+        int ionoModelType = processingConfig().ionosphereModelType;
 
-            if (ionoModelType == 0)
-                ionoEq->setStocModel<WhiteNoiseModel>();
-            else if (ionoModelType == 1)
-                ionoEq->setStocModel<IonoStochasticModel>();
+        if (ionoModelType == 0)
+            ionoEq->setStocModel<WhiteNoiseModel>();
+        else if (ionoModelType == 1)
+            ionoEq->setStocModel<IonoStochasticModel>();
 
-            double ionoSigma = processingConfig().ionosphereSigmaM;
-            ionoEq->setSigma(ionoSigma);
-            equations_->addEquation(std::move(ionoEq));
-        }
+        double ionoSigma = processingConfig().ionosphereSigmaM;
+        ionoEq->setSigma(ionoSigma);
+        equations_->addEquation(std::move(ionoEq));
 
         if (processingConfig().carrierBands.find(CarrierBand::L1) != processingConfig().carrierBands.end())
             equations_->addEquation(std::make_unique<AmbiguitiesEquations>(TypeID::BL1));
