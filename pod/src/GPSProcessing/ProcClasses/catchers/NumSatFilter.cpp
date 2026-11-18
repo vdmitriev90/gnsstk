@@ -5,14 +5,6 @@ using namespace gnsstk;
 namespace pod
 {
 
-    std::map<SlnType, int> NumSatFilter::minSatbySsForSt{
-        {SlnType::Standalone, 1},
-        {SlnType::CodeDiff, 1},
-        {SlnType::PdFloat, 1},
-        {SlnType::PdFixed, 2},
-        {SlnType::PppFloat, 1},
-    };
-
     IRinex& pod::NumSatFilter::Process(IRinex& gData)
     {
         auto svs = gData.getBody().getSatID();
@@ -22,7 +14,7 @@ namespace pod
         SatSystSet ssset;
         for (auto&& it : counter)
         {
-            if (it.second >= minSvNum)
+            if (it.second >= getMinSAtNum())
                 ssset.insert(it.first);
         }
 
@@ -37,5 +29,9 @@ namespace pod
     std::string pod::NumSatFilter::getClassName(void) const
     {
         return "pod::NumSatFilter";
+    }
+    int NumSatFilter::getMinSAtNum() const
+    {
+        return fixAmbig_ ? 2 : 1;
     }
 } // namespace pod

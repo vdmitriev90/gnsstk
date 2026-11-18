@@ -113,7 +113,7 @@ namespace pod
         SNRCatcher snrCatcherL1Base(TypeID::S1, TypeID::CSL1, 901.0, 5, 30);
         SNRCatcher snrCatcherL1Rover(TypeID::S1, TypeID::CSL1, 901.0, 5, 30);
         PrefitResCatcher resCatcher(config_.slots_);
-        NumSatFilter minSatFilter(desiredSlnType());
+        NumSatFilter minSatFilter(processingConfig().integerAmbiguityResolution);
 
         // Object to keep track of satellite arcs
         SatArcMarker markArcBase(TypeID::CSL1, true, 31.0);

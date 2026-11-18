@@ -107,7 +107,7 @@ namespace pod
         markCSMW2Rover.setMaxNumLambdas(processingConfig().MelbourneWubbenaThreshold);
 
         PrefitResCatcher resCatcher(config_.slots_);
-        NumSatFilter minSatFilter(desiredSlnType());
+        NumSatFilter minSatFilter(processingConfig().integerAmbiguityResolution);
 
         // Object to keep track of satellite arcs
         SatArcMarker markArcRover(TypeID::CSL1, true, 31.0);
