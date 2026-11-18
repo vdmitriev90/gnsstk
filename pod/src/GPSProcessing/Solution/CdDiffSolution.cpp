@@ -32,8 +32,9 @@ namespace pod
     void CdDiffSolution::process()
     {
         updateRequaredObs();
+        configureIonoCorrector();
         ObsRangeFilter CodeFilter(ObsRangeType::FirstCode);
-        if (data_->ionoCorrector_.getType() == ComputeIonoModel::DualFreq)
+        if (ionoCorrector_.getType() == ComputeIonoModel::DualFreq)
             CodeFilter.addFilteredType(ObsRangeType::SecondCode);
 
         ObsRangeFilter SNRFilter(ObsRangeType::Snr, processingConfig().snrMaskDbHz, DBL_MAX);
@@ -171,8 +172,8 @@ namespace pod
                     epoch_base >> modelRef;
                     epoch_base >> comp_tropo_base;
 
-                    data_->ionoCorrector_.setNominalPosition(refPos);
-                    epoch_base >> data_->ionoCorrector_;
+                    ionoCorrector_.setNominalPosition(refPos);
+                    epoch_base >> ionoCorrector_;
 
                     epoch_base >> oMinusC_;
 
@@ -186,8 +187,8 @@ namespace pod
                 epoch_rover >> modelRover;
                 epoch_rover >> compute_tropo_rover;
 
-                data_->ionoCorrector_.setNominalPosition(nominalPos_);
-                epoch_rover >> data_->ionoCorrector_;
+                ionoCorrector_.setNominalPosition(nominalPos_);
+                epoch_rover >> ionoCorrector_;
 
                 epoch_rover >> oMinusC_;
                 epoch_rover >> deltaOp_;

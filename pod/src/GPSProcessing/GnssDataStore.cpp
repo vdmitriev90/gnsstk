@@ -302,20 +302,15 @@ namespace pod
         switch (type)
         {
         case gnsstk::ComputeIonoModel::Zero:
-            ionoCorrector_.setZeroModel();
+        case gnsstk::ComputeIonoModel::DualFreq:
             break;
         case gnsstk::ComputeIonoModel::Klobuchar:
             if (!loadBceIonoModel())
                 GNSSTK_THROW(InvalidRequest("Can't load iono model from Rinex GPS Navigation files."));
             break;
         case gnsstk::ComputeIonoModel::Ionex:
-            if (isIonexLoaded)
-                ionoCorrector_.setIonosphereMap(ionexStore_);
-            else
+            if (!isIonexLoaded)
                 GNSSTK_THROW(InvalidRequest("Can't load Ionosphere map from Ionex files."));
-            break;
-        case gnsstk::ComputeIonoModel::DualFreq:
-            ionoCorrector_.setDualFreqModel();
             break;
         default:
             GNSSTK_THROW(InvalidRequest("Unknown Ionospheric model type."));
@@ -389,9 +384,6 @@ namespace pod
             std::cerr << "No valid ionospheric model found in Rinex GPS Navigation files." << std::endl;
             return false;
         }
-        //
-        ionoCorrector_.setKlobucharModel(bceIonoStore_);
-
         return true;
     }
 

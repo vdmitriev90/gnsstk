@@ -50,6 +50,7 @@ namespace pod
     void PdFloatSolution::process()
     {
         updateRequaredObs();
+        configureIonoCorrector();
 
         ObsRangeFilter CodePhaseFilterBase({ObsRangeType::FirstCode, ObsRangeType::SecondCode, ObsRangeType::FirstPhase, ObsRangeType::SecondPhase});
         ObsRangeFilter CodePhaseFilterRover(CodePhaseFilterBase);
@@ -294,7 +295,7 @@ namespace pod
 
                     gRef >> corrBase;
                     gRef >> windupBase;
-                    data_->ionoCorrector_.setNominalPosition(ref_base_pos);
+                    ionoCorrector_.setNominalPosition(ref_base_pos);
 
                     gRef >> computeTropoBase;
                     // gRef >> ionoFilterBase;

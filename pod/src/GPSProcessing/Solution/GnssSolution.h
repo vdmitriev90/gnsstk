@@ -90,6 +90,9 @@ namespace pod
 
         IApprPosProvider& apprPos();
 
+        // configures ionoCorrector_ according to the processing config and loaded ionosphere data
+        void configureIonoCorrector();
+
         // creates GnssEpoch for output: all data if fullOutput is set, only residuals otherwise
         GnssEpoch makeEpochToOutput(const gnsstk::SatTypePtrMap& body) const;
 
@@ -140,6 +143,9 @@ namespace pod
         double maxSigma_;
 
         ObservationSlots config_;
+
+        // compute the  values related to a given GNSS ionospheric model.
+        gnsstk::ComputeIonoModel ionoCorrector_;
     };
     typedef std::unique_ptr<GnssSolution> GnssSolutionUPtr;
 } // namespace pod

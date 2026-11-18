@@ -74,18 +74,12 @@ namespace pod
         // ionosphere map store
         gnsstk::IonexStore ionexStore_;
 
-        // compute the  values related to a given GNSS ionospheric model.
-        gnsstk::ComputeIonoModel ionoCorrector_;
-
         // path to approximate position and code clock bias file
         std::string apprPosFile_;
 
         // store of  approximate position and code clock bias
         // std::map<gnsstk::CommonTime, gnsstk::Xvt, std::less<gnsstk::CommonTime>> apprPos;
         PosProviderUPtr apprPosProvider_;
-
-        // class to corrects observables from differential code biases
-        gnsstk::CorrectCodeBiases dcbData_;
 
         // Bias-SINEX store for satellite/station bias records
         pod::BiasSinexStore biasSinexStore_;

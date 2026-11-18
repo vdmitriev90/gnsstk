@@ -99,6 +99,28 @@ namespace pod
         return *data_->apprPosProvider_;
     }
 
+    void GnssSolution::configureIonoCorrector()
+    {
+        const auto type = static_cast<ComputeIonoModel::IonoModelType>(processingConfig().codeIonosphereCorrectionType);
+        switch (type)
+        {
+        case ComputeIonoModel::Zero:
+            ionoCorrector_.setZeroModel();
+            break;
+        case ComputeIonoModel::Klobuchar:
+            ionoCorrector_.setKlobucharModel(data_->bceIonoStore_);
+            break;
+        case ComputeIonoModel::Ionex:
+            ionoCorrector_.setIonosphereMap(data_->ionexStore_);
+            break;
+        case ComputeIonoModel::DualFreq:
+            ionoCorrector_.setDualFreqModel();
+            break;
+        default:
+            GNSSTK_THROW(InvalidRequest("Unknown Ionospheric model type."));
+        }
+    }
+
     void GnssSolution::setupAntenna(CorrectObservables& corr,
                                     AntexReader& antex,
                                     const std::string& siteId,

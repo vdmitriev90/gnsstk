@@ -29,9 +29,10 @@ namespace pod
     void SingleSolution::process()
     {
         updateRequaredObs();
+        configureIonoCorrector();
 
         ObsRangeFilter PRFilter(ObsRangeType::FirstCode);
-        if (data_->ionoCorrector_.getType() == ComputeIonoModel::DualFreq)
+        if (ionoCorrector_.getType() == ComputeIonoModel::DualFreq)
             PRFilter.addFilteredType(ObsRangeType::SecondCode);
 
         ObsRangeFilter SNRFilter(ObsRangeType::Snr, 30, DBL_MAX);
@@ -120,7 +121,7 @@ namespace pod
                 }
 
                 // update approximate position
-                data_->ionoCorrector_.setNominalPosition(nominalPos_);
+                ionoCorrector_.setNominalPosition(nominalPos_);
                 tropo_model.setAllParameters(t, nominalPos_);
                 model.setRxPosition(nominalPos_);
 
@@ -143,7 +144,7 @@ namespace pod
 
                 rin_epoch >> model;
                 rin_epoch >> computeTropo;
-                rin_epoch >> data_->ionoCorrector_;
+                rin_epoch >> ionoCorrector_;
                 rin_epoch >> oMinusC_;
                 rin_epoch >> w;
                 rin_epoch >> useMarker;
