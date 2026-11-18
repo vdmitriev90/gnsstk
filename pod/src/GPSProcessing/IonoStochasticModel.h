@@ -2,6 +2,9 @@
 #include "StochasticModel.hpp"
 namespace pod
 {
+    // initial variance of the slant ionosphere (correction to a priori model), m^2
+    constexpr double kIonoInitVariance = 4.0;
+
     class IonoStochasticModel : public gnsstk::RandomWalkModel
     {
       public:

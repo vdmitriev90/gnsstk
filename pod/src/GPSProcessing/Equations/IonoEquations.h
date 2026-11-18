@@ -77,6 +77,12 @@ namespace pod
 
         std::map<gnsstk::SatID, gnsstk::StochasticModelUniquePtr> stochModels;
 
+        // satellites processed at previous epoch
+        gnsstk::SatIDSet prevSats_;
+
+        // satellites whose iono state must be re-initialized (absent at previous epoch)
+        gnsstk::SatIDSet resetSats_;
+
         double sigma;
 #pragma endregion
     };

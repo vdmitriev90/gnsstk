@@ -45,10 +45,14 @@ namespace pod
     void IonoEquations::prepare(gnsstk::IRinex& gData)
     {
         currParameters.clear();
+        resetSats_.clear();
         auto&& currentSatSet = gData.getBody().getSatID();
 
         for (auto&& it : currentSatSet)
         {
+            if (prevSats_.find(it) == prevSats_.end())
+                resetSats_.insert(it);
+
             auto it_model = stochModels.find(it);
             if (it_model == stochModels.end())
             {
@@ -88,7 +92,7 @@ namespace pod
         for (const auto& it : currParameters)
         {
             int col = layout.index(it);
-            Phi(col, col) = stochModels.at(it.sv)->getPhi();
+            Phi(col, col) = resetSats_.count(it.sv) ? 0.0 : stochModels.at(it.sv)->getPhi();
         }
     }
 
@@ -97,7 +101,7 @@ namespace pod
         for (const auto& it : currParameters)
         {
             int col = layout.index(it);
-            Q(col, col) = stochModels.at(it.sv)->getQ();
+            Q(col, col) = resetSats_.count(it.sv) ? kIonoInitVariance : stochModels.at(it.sv)->getQ();
         }
     }
 
@@ -109,7 +113,7 @@ namespace pod
         {
             int col = layout.index(it);
             x(col) = 0.0;
-            P(col, col) = 1000;
+            P(col, col) = kIonoInitVariance;
         }
     }
 
