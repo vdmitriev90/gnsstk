@@ -15,7 +15,6 @@
 #include "GravitationalDelay.hpp"
 #include "InterFrequencyBiases.h"
 #include "InterSystemBias.h"
-#include "IonexModel.hpp"
 #include "IonoEquations.h"
 #include "IonoStochasticModel.h"
 #include "KalmanSolver.h"
@@ -54,6 +53,7 @@ namespace pod
     void UncombinedPppSolution::process()
     {
         updateRequaredObs();
+        configureIonoCorrector();
 
         ObsRangeFilter CodePhaseFilterBase(
             {ObsRangeType::FirstCode, ObsRangeType::SecondCode, ObsRangeType::FirstPhase, ObsRangeType::SecondPhase});
@@ -80,8 +80,6 @@ namespace pod
         // for rover
         NeillTropModel tropoRovPtr;
         ComputeTropModel computeTropoRover(tropoRovPtr);
-
-        IonexModel ionoModel(nominalPos_, data_->ionexStore_, TypeID::C1, false);
 
         // Object to compute gravitational delay effects
         GravitationalDelay grDelayRover;
@@ -185,9 +183,9 @@ namespace pod
                 grDelayRover.setNominalPosition(nominalPos_);
 
                 tropoRovPtr.setAllParameters(t, nominalPos_);
-                ionoModel.setInitialRxPosition(nominalPos_);
 
                 modelRover.setRxPosition(nominalPos_);
+                ionoCorrector_.setNominalPosition(nominalPos_);
                 corrRover.setNominalPosition(nominalPos_);
                 windupRover.setNominalPosition(nominalPos_);
                 svPcenterRover.setNominalPosition(nominalPos_);
@@ -211,6 +209,7 @@ namespace pod
                 rin_epoch >> markArcRover;
 
                 rin_epoch >> modelRover;
+                rin_epoch >> ionoCorrector_;
                 // rin_epoch >> eclipsedSV;
                 rin_epoch >> grDelayRover;
                 rin_epoch >> svPcenterRover;
