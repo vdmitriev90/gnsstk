@@ -9,11 +9,6 @@ namespace pod
         UncombinedPppSolution(GnssDataStorePtr data_ptr, double max_sigma);
         virtual ~UncombinedPppSolution();
 
-        virtual SlnType desiredSlnType() const override
-        {
-            return SlnType::PppFixed;
-        }
-
         virtual void process() override;
 
       protected:

@@ -24,13 +24,17 @@ ocean_loading_file = "JUN2016.BLQ"
 
 [processing]
 
-# Solution types:
-# 1  = Standalone
-# 2  = DGNSS
-# 3  = Phase Differential Float
-# 4  = Phase Differential Fixed
-# 16 = PPP Float
-solution_type = 2
+# Solution modes:
+# 1 = CodeAbsolute
+# 2 = CodeDifferential
+# 3 = PhaseDiff
+# 4 = IonoFreePpp
+# 5 = UncombinedPpp
+solution_mode = 2
+
+# Integer ambiguity resolution flag.
+# Valid only for phase-based modes.
+integer_ambiguity_resolution = false
 
 apply_code_bias = false
 use_rinex_clock = false

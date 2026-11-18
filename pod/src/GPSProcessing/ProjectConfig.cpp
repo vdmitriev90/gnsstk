@@ -139,16 +139,18 @@ namespace pod::config
         {
             constexpr auto sec = "processing";
             ProcessingConfig p;
-            p.solutionType = requireEnum<SlnType>(
+
+            p.solutionMode = requireEnum<SolutionMode>(
                 t,
                 sec,
-                "solution_type",
-                {SlnType::Standalone,
-                 SlnType::CodeDiff,
-                 SlnType::PdFloat,
-                 SlnType::PdFixed,
-                 SlnType::PppFloat,
-                 SlnType::PppFixed});
+                "solution_mode",
+                {SolutionMode::CodeAbsolute,
+                 SolutionMode::CodeDifferential,
+                 SolutionMode::PhaseDiff,
+                 SolutionMode::IonoFreePpp,
+                 SolutionMode::UncombinedPpp});
+            p.integerAmbiguityResolution = optional<bool>(t, sec, "integer_ambiguity_resolution", false);
+
             p.applyCodeBias = require<bool>(t, sec, "apply_code_bias");
             p.useRinexClock = require<bool>(t, sec, "use_rinex_clock");
             p.fullOutput = require<bool>(t, sec, "full_output");
@@ -221,9 +223,45 @@ namespace pod::config
                 p.approximatePositionFile = require<std::string>(t, sec, "approximate_position_file");
             else
                 p.approximatePositionFile = optional<std::string>(t, sec, "approximate_position_file", "");
+
+            p.validate();
             return p;
         }
     } // namespace
+
+    void ProcessingConfig::validate() const
+    {
+        switch (solutionMode)
+        {
+        case SolutionMode::CodeAbsolute:
+            if (integerAmbiguityResolution)
+                throw ConfigError(
+                    "Config error in [processing]: integer_ambiguity_resolution is not allowed for CodeAbsolute mode");
+            return;
+
+        case SolutionMode::CodeDifferential:
+            if (integerAmbiguityResolution)
+                throw ConfigError(
+                    "Config error in [processing]: integer_ambiguity_resolution is not allowed for CodeDifferential mode");
+            return;
+
+        case SolutionMode::PhaseDiff:
+            return;
+
+        case SolutionMode::IonoFreePpp:
+            if (integerAmbiguityResolution)
+                throw ConfigError(
+                    "Config error in [processing]: integer_ambiguity_resolution is not allowed for IonoFreePpp mode");
+            return;
+
+        case SolutionMode::UncombinedPpp:
+            return;
+
+        case SolutionMode::Undefined:
+        default:
+            throw ConfigError("Config error in [processing]: solution_mode is undefined");
+        }
+    }
 
     const StationConfig* ProjectConfig::findStation(const std::string& siteId) const
     {

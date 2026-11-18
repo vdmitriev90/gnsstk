@@ -13,8 +13,7 @@ namespace pod
     {
 
       public:
-        KalmanSolverFB();
-        KalmanSolverFB(EquationComposerPtr eqs);
+        KalmanSolverFB(EquationComposerPtr eqs, const config::ProcessingConfig& processingConfig);
 
         virtual ~KalmanSolverFB();
 

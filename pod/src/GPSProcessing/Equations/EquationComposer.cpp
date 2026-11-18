@@ -7,6 +7,8 @@ using namespace gnsstk;
 
 namespace pod
 {
+    EquationComposer::EquationComposer(const ObservationSlots& config) : obsSlots_(config) {}
+
     void EquationComposer::prepare(IRinex& gData)
     {
         // clear ambiguities set
@@ -31,7 +33,7 @@ void EquationComposer::updateSystemMatrices(gnsstk::IRinex& gData,
                                                 gnsstk::Matrix<double>& Q)
     {
         // --- 1. Build measurement blocks (single source of truth for rows) ---
-        buildObservationBlocks(gData, config_, satBlocks_);
+        buildObservationBlocks(gData, obsSlots_, satBlocks_);
 
         const size_t num_meas = satBlocks_.totalMeasurements();
 
@@ -228,17 +230,6 @@ void EquationComposer::updateSystemMatrices(gnsstk::IRinex& gData,
         return currAmb_;
     }
 
-    SlnType EquationComposer::getSlnType() const
-    {
-        return slnType_;
-    }
-
-    EquationComposer& EquationComposer::setSlnType(SlnType sType)
-    {
-        slnType_ = sType;
-        return *this;
-    }
-
     /// add new equation to equation list
     EquationComposer& EquationComposer::addEquation(std::unique_ptr<EquationBase> eq)
     {
@@ -288,5 +279,14 @@ void EquationComposer::updateSystemMatrices(gnsstk::IRinex& gData,
             else
                 ++it;
         }
+    }
+    size_t EquationComposer::getNumSv() const
+    {
+        return satBlocks_.size();
+    }
+
+    const ObservationSlots& EquationComposer::getObsSlots() const
+    {
+        return obsSlots_;
     }
 } // namespace pod

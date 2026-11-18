@@ -19,7 +19,7 @@ namespace gnsstk
 
 namespace pod
 {
-    struct ProcessingConfig
+    struct ObservationSlots
     {
         std::vector<ObsSlot> slots_;
     };
@@ -156,7 +156,7 @@ namespace pod
     std::set<int> getSatRows(const SatObservationBlocks& blocks, const gnsstk::SatID& sat);
 
     void buildObservationBlocks(const gnsstk::IRinex& gData,
-                                const ProcessingConfig& config,
+                                const ObservationSlots& config,
                                 SatObservationBlocks& blocks);
 
 } // namespace pod

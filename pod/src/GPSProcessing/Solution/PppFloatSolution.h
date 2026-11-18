@@ -12,11 +12,6 @@ namespace pod
         PppFloatSolution(GnssDataStorePtr data_ptr, double max_sigma);
         virtual ~PppFloatSolution() {};
 
-        virtual SlnType desiredSlnType() const override
-        {
-            return SlnType::PppFloat;
-        }
-
         virtual void process() override;
 
       protected:

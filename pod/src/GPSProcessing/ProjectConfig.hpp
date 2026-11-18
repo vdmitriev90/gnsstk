@@ -47,7 +47,11 @@ namespace pod::config
 
 	struct ProcessingConfig
 	{
-		SlnType solutionType{SlnType::Standalone};
+		SolutionMode solutionMode{SolutionMode::Undefined};
+		bool integerAmbiguityResolution{false};
+
+		void validate() const;
+
 		bool applyCodeBias{false};
 		bool useRinexClock{false};
 		bool fullOutput{false};

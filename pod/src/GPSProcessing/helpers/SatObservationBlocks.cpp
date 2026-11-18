@@ -10,7 +10,7 @@
 namespace pod
 {
     void buildObservationBlocks(const gnsstk::IRinex& gData,
-                                const ProcessingConfig& config,
+                                const ObservationSlots& config,
                                 SatObservationBlocks& blocks)
     {
         using gnsstk::TypeID;

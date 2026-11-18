@@ -136,12 +136,12 @@ namespace pod
         postfit_stat.compute(gnss_data);
 
         ProcessingDataRecord data_rec;
-        data_rec.roverSite = data->config_.siteRover;
-        if (isDifferential(solver.desiredSlnType()) && !data->config_.siteBase.empty())
-            data_rec.baseSite = data->config_.siteBase;
+        data_rec.roverSite = data->config().siteRover;
+        if (isDifferential(solver.desiredSlnType()) && !data->config().siteBase.empty())
+            data_rec.baseSite = data->config().siteBase;
         data_rec.solutionType = static_cast<int>(solver.desiredSlnType());
         data_rec.satelliteSystemsMask = satelliteSystemsMask(gnss_data.svs);
-        data_rec.elevationCutoffDeg = data->config_.processing.elevationMaskDeg;
+        data_rec.elevationCutoffDeg = data->config().processing.elevationMaskDeg;
 
         const auto t0 = gnss_data.getInitialTime();
         const auto t1 = gnss_data.getFinalTime();

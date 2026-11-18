@@ -24,21 +24,13 @@ namespace pod
 
     bool isDifferential(SlnType slnType);
 
-    extern std::map<SlnType, std::string> slnType2Str;
-    extern std::map<CarrierBand, std::string> carrierBand2Str;
+    const char* slnTypeToStr(SlnType slnType);
+    const char* carrierBandToStr(CarrierBand band);
 
     // class to store processing configuration and input data
     struct GnssDataStore
     {
-        // GnssDataStore static data initializer
-        class Initializer
-        {
-          public:
-            Initializer();
-        };
-        static Initializer GnssDataInitializer;
-
-      public:
+        public:
         GnssDataStore();
 
       public:
@@ -46,6 +38,11 @@ namespace pod
         void LoadData(const char* path);
         std::list<std::string> getObsFiles(const std::string& siteID) const;
         gnsstk::Position getNominalPosition(std::string siteId);
+
+        const config::ProjectConfig& config() const
+        {
+            return config_;
+        }
 
       private:
         bool loadIono();
@@ -58,10 +55,11 @@ namespace pod
         bool loadBiasSinex();
         bool createPosProvider();
 
-      public:
+      private:
         // strongly typed project configuration loaded from the TOML file
         config::ProjectConfig config_;
 
+      public:
         gnsstk::NavDataFactoryPtr sp3NavFactory_;
 
         // object to handle precise ephemeris and clocks

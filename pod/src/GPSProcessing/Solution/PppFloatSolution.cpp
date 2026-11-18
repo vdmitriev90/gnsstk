@@ -102,7 +102,7 @@ namespace pod
 #pragma endregion
 
         AntexReader antexReader;
-        antexReader.open(data_->config_.genericFiles.antexFilePath());
+        antexReader.open(projectConfig().genericFiles.antexFilePath());
 
 #pragma region correct observable
 
@@ -115,11 +115,11 @@ namespace pod
         TidalDisplacement tides(data_->eopStore_);
         tides.setUseOcean(true);
         // Configure ocean loading model
-        tides.setOceanLoadingFile(data_->config_.genericFiles.oceanLoadingFilePath());
+        tides.setOceanLoadingFile(projectConfig().genericFiles.oceanLoadingFilePath());
 
-        ComputeWindUp windupRover(data_->navLibrary_, data_->config_.genericFiles.satelliteDataFilePath());
+        ComputeWindUp windupRover(data_->navLibrary_, projectConfig().genericFiles.satelliteDataFilePath());
 
-        ComputeSatPCenter svPcenterRover(data_->config_.genericFiles.satelliteDataFilePath());
+        ComputeSatPCenter svPcenterRover(projectConfig().genericFiles.satelliteDataFilePath());
         svPcenterRover.setAntexReader(antexReader);
 
         ProcessLinear linearIonoFree;
@@ -129,8 +129,8 @@ namespace pod
         BiasSinexCorrector biasSinexCorrector(data_->biasSinexStore_);
 
         UsedInPvtMarker useMarker;
-        KalmanSolver solver(equations_);
-        KalmanSolverFB solverFb(equations_);
+        KalmanSolver solver(equations_, processingConfig());
+        KalmanSolverFB solverFb(equations_, processingConfig());
 
         if (forwardBackwardCycles_ > 0)
         {
@@ -147,7 +147,7 @@ namespace pod
 
         bool firstTime = true;
         //
-        for (auto& obsFile : data_->getObsFiles(data_->config_.siteRover))
+        for (auto& obsFile : data_->getObsFiles(projectConfig().siteRover))
         {
             std::cout << obsFile << std::endl;
             // Input observation file stream
@@ -163,7 +163,7 @@ namespace pod
             rin >> roh;
             gMap_.header = roh;
 
-            setupAntenna(corrRover, antexReader, data_->config_.siteRover, roh.antType);
+            setupAntenna(corrRover, antexReader, projectConfig().siteRover, roh.antType);
 
             // read all epochs
             while (rin >> rin_epoch)
@@ -220,7 +220,7 @@ namespace pod
                 rin_epoch >> grDelayRover;
                 rin_epoch >> svPcenterRover;
 
-                corrRover.setExtraBiases(tides.getDisplacement(t, nominalPos_, data_->config_.siteRover));
+                corrRover.setExtraBiases(tides.getDisplacement(t, nominalPos_, projectConfig().siteRover));
                 rin_epoch >> corrRover;
 
                 rin_epoch >> windupRover;

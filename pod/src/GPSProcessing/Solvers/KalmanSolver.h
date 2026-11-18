@@ -24,9 +24,7 @@ namespace pod
         // maximum time interval without data
         static double maxGap;
 
-        KalmanSolver();
-
-        KalmanSolver(EquationComposerPtr eqs);
+        KalmanSolver(EquationComposerPtr eqs, const config::ProcessingConfig& processingConfig);
 
         virtual ~KalmanSolver() = default;
 
@@ -107,6 +105,9 @@ namespace pod
 
         // object to prepare h, phi, q  matrices for filter
         EquationComposerPtr equations_;
+
+        // processing configuration
+        const config::ProcessingConfig& processingConfig_;
 
         // Indicator of current filter state validity
         bool isValid_;

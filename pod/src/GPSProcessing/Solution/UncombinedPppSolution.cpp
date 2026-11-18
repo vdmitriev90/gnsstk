@@ -63,7 +63,7 @@ namespace pod
         EclipsedSatFilter eclipsedSV;
         ComputeWeightSimple computeWeightSimple(1);
 
-        const auto ref_base_pos = data_->getNominalPosition(data_->config_.siteBase);
+        const auto ref_base_pos = data_->getNominalPosition(projectConfig().siteBase);
         // basic model object for ref. station
         BasicModel modelRef(ref_base_pos, data_->navLibrary_, TypeID::C1);
         modelRef.setMinElev(processingConfig().elevationMaskDeg);
@@ -113,7 +113,7 @@ namespace pod
         SatArcMarker markArcRover(TypeID::CSL1, true, 31.0);
 
         AntexReader antexReader;
-        antexReader.open(data_->config_.genericFiles.antexFilePath());
+        antexReader.open(projectConfig().genericFiles.antexFilePath());
 
         CorrectObservables corrRover(data_->navLibrary_);
 
@@ -128,12 +128,12 @@ namespace pod
 
         // Objects to compute tidal effects
         TidalDisplacement tides(data_->eopStore_);
-        tides.setOceanLoadingFile(data_->config_.genericFiles.oceanLoadingFilePath());
+        tides.setOceanLoadingFile(projectConfig().genericFiles.oceanLoadingFilePath());
 
         ComputeWindUp windupRover(
-            data_->navLibrary_, ref_base_pos, data_->config_.genericFiles.satelliteDataFilePath());
+            data_->navLibrary_, ref_base_pos, projectConfig().genericFiles.satelliteDataFilePath());
 
-        ComputeSatPCenter svPcenterRover(ref_base_pos, data_->config_.genericFiles.satelliteDataFilePath());
+        ComputeSatPCenter svPcenterRover(ref_base_pos, projectConfig().genericFiles.satelliteDataFilePath());
         svPcenterRover.setAntexReader(antexReader);
 
         ProcessLinear linear_comb;
@@ -142,9 +142,9 @@ namespace pod
 
         UsedInPvtMarker useMarker;
 
-        KalmanSolver solver(equations_);
+        KalmanSolver solver(equations_, processingConfig());
         solver.setMinSatNumber(5);
-        KalmanSolverFB solverFb(equations_);
+        KalmanSolverFB solverFb(equations_, processingConfig());
         solverFb.setMinSatNumber(5);
         if (forwardBackwardCycles_ > 0)
         {
@@ -158,7 +158,7 @@ namespace pod
 
         bool firstTime = true;
         //
-        for (auto& obsFile : data_->getObsFiles(data_->config_.siteRover))
+        for (auto& obsFile : data_->getObsFiles(projectConfig().siteRover))
         {
             std::cout << obsFile << std::endl;
             // Input observation file stream
@@ -172,7 +172,7 @@ namespace pod
             rin >> roh;
             gMap_.header = roh;
 
-            setupAntenna(corrRover, antexReader, data_->config_.siteRover, roh.antType);
+            setupAntenna(corrRover, antexReader, projectConfig().siteRover, roh.antType);
 
             // read all epochs
             while (rin >> rin_epoch)
@@ -224,7 +224,7 @@ namespace pod
                 rin_epoch >> grDelayRover;
                 rin_epoch >> svPcenterRover;
 
-                corrRover.setExtraBiases(tides.getDisplacement(t, nominalPos_, data_->config_.siteRover));
+                corrRover.setExtraBiases(tides.getDisplacement(t, nominalPos_, projectConfig().siteRover));
                 rin_epoch >> corrRover;
 
                 rin_epoch >> windupRover;

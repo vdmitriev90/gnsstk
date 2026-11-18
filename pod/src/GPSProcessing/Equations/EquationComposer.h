@@ -9,8 +9,7 @@
 #include <memory>
 
 namespace pod
-{
-    
+{    
     typedef std::unique_ptr<EquationBase> eq_uptr;
     typedef std::vector<eq_uptr> EquationsList;
 
@@ -29,11 +28,7 @@ namespace pod
         };
         typedef std::map<FilterParameter, FilterData> FilterState;
 
-        EquationComposer(const ProcessingConfig& config) : config_(config) {};
-
-        EquationComposer(const ProcessingConfig& config, SlnType st) : config_(config), slnType_(st) {};
-
-        virtual ~EquationComposer() = default;
+        EquationComposer(const ObservationSlots& config);
 
         // prepare equations according current data set 'gData'
         void prepare(gnsstk::IRinex& gData);
@@ -85,10 +80,6 @@ namespace pod
 
         const ParametersSet& getCurrentAmb() const;
 
-        SlnType getSlnType() const;
-
-        EquationComposer& setSlnType(SlnType sType);
-
         /// add new equation to equation list
         EquationComposer& addEquation(std::unique_ptr<EquationBase> eq);
 
@@ -101,16 +92,10 @@ namespace pod
         void clearSvData(const gnsstk::SatIDSet& svs);
         void clearSvData();
 
-        size_t getNumSv() const
-        {
-            return satBlocks_.size();
-        }
+        size_t getNumSv() const;
       public:
 
-        const ProcessingConfig& getConfig() const
-        {
-            return config_;
-        }
+        const ObservationSlots& getObsSlots() const;
 
       private:
         /// Map holding the information regarding every variable
@@ -126,10 +111,7 @@ namespace pod
         /// current set of ambiguities
         ParametersSet currAmb_;
 
-        // desired solution type
-        SlnType slnType_;
-
-        const ProcessingConfig& config_;
+        const ObservationSlots& obsSlots_;
     };
 
     typedef std::shared_ptr<pod::EquationComposer> EquationComposerPtr;

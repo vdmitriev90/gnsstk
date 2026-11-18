@@ -2,7 +2,7 @@
 #define POD_SOLUTION_H
 
 #include "BasicFramework.hpp"
-#include "CustomSolution.h"
+#include "SolutionFacade.h"
 
 #include <cstdint>
 
@@ -25,7 +25,7 @@ namespace pod
             return solver.getData();
         };
 
-        CustomSolution& getSolver()
+        SolutionFacade& getSolver()
         {
             return solver;
         };
@@ -35,7 +35,7 @@ namespace pod
 
         gnsstk::CommandOptionWithArg confFile;
 
-        CustomSolution solver;
+        SolutionFacade solver;
 
         // set by process(): wall-clock start (Unix seconds) and steady-clock duration (milliseconds)
         std::int64_t processingStartedUnixSec_ = 0;

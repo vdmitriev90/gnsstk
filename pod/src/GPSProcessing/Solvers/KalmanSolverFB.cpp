@@ -11,25 +11,16 @@ using namespace gnsstk;
 namespace pod
 {
 
-    KalmanSolverFB::KalmanSolverFB()
-        : currCycle(0)
+    KalmanSolverFB::KalmanSolverFB(EquationComposerPtr eqs, const config::ProcessingConfig& processingConfig)
+        : KalmanSolver(eqs, processingConfig)
+        , currCycle(0)
         , cyclesNumber(0)
         , processedMeasurements(0)
         , rejectedMeasurements(0)
+        , solver(eqs, processingConfig)
         , LiCsDetector_(nullptr)
         , MwCsDetector_(nullptr)
     {
-    }
-
-    KalmanSolverFB::KalmanSolverFB(EquationComposerPtr eqs)
-        : currCycle(0)
-        , cyclesNumber(0)
-        , processedMeasurements(0)
-        , rejectedMeasurements(0)
-        , LiCsDetector_(nullptr)
-        , MwCsDetector_(nullptr)
-    {
-        solver = KalmanSolver(eqs);
     }
 
     KalmanSolverFB::~KalmanSolverFB() {}
@@ -213,7 +204,7 @@ namespace pod
 
         // Build per-satellite measurement blocks (slot-driven).
         SatObservationBlocks blocks;
-        buildObservationBlocks(gData, solver.eqComposer().getConfig(), blocks);
+        buildObservationBlocks(gData, solver.eqComposer().getObsSlots(), blocks);
 
         for (const auto& block : blocks)
         {

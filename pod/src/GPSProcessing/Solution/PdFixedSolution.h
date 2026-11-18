@@ -9,9 +9,5 @@ namespace pod
         PdFixedSolution(GnssDataStorePtr data_ptr);
         virtual ~PdFixedSolution();
 
-        virtual SlnType desiredSlnType() const override
-        {
-            return SlnType::PdFixed;
-        }
     };
 } // namespace pod

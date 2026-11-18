@@ -7,6 +7,7 @@
 #include "EquationComposer.h"
 #include "GnssDataStore.hpp"
 #include "GnssEpochMap.h"
+#include "IGnssSolution.h"
 #include "KalmanSolver.h"
 #include "ProcessLinear.h"
 #include "RequireObservables.hpp"
@@ -26,7 +27,7 @@ namespace pod
     class FileNameBuilder
     {
       public:
-        explicit FileNameBuilder(const GnssSolution& solution) : solution_(solution) {}
+        explicit FileNameBuilder(const GnssSolution& solution);
 
         std::string getFileName() const;
 
@@ -44,7 +45,7 @@ namespace pod
     };
 
     // base class for all GNSS post processing  classes
-    class GnssSolution
+    class GnssSolution : public IGnssSolution
     {
         friend class FileNameBuilder;
 
@@ -53,61 +54,32 @@ namespace pod
 
         GnssSolution(GnssDataStorePtr dataStore, double maxsigma = 50.0);
 
-        virtual ~GnssSolution() = default;
+        ~GnssSolution() override = default;
 
-#pragma region Methods
+        void process() override = 0;
 
-        virtual void process() = 0;
+        GnssEpochMap& getData() override;
 
-        virtual GnssEpochMap& getData()
-        {
-            return gMap_;
-        };
+        const GnssEpochMap& getData() const override;
 
-        virtual const GnssEpochMap& getData() const
-        {
-            return gMap_;
-        };
+        std::string getFileName() const override;
 
-        virtual std::string getFileName() const
-        {
-            return FileNameBuilder(*this).getFileName();
-        }
+        std::string getBaseFileName() const override;
 
-        virtual std::string getBaseFileName() const
-        {
-            return FileNameBuilder(*this).getBaseFileName();
-        }
+        SlnType desiredSlnType() const override;
 
-        virtual SlnType desiredSlnType() const = 0;
+        virtual double getMaxSigma() const;
 
-        virtual double getMaxSigma() const
-        {
-            return maxSigma_;
-        }
+        virtual GnssSolution& setMaxSigma(double sigma);
 
-        virtual GnssSolution& setMaxSigma(double sigma)
-        {
-            maxSigma_ = sigma;
-            return (*this);
-        }
-
-        virtual GnssSolution& setConfigData(GnssDataStorePtr dataStore)
-        {
-            data_ = dataStore;
-            return (*this);
-        };
+        GnssSolution& setConfigData(GnssDataStorePtr dataStore) override;
 
       protected:
-        virtual const config::ProcessingConfig& processingConfig() const
-        {
-            return data_->config_.processing;
-        }
+        const config::ProjectConfig& projectConfig() const;
 
-        virtual const config::StationConfig& stationConfig(const std::string& siteId) const
-        {
-            return data_->config_.station(siteId);
-        }
+        const config::ProcessingConfig& processingConfig() const;
+
+        const config::StationConfig& stationConfig(const std::string& siteId) const;
 
         // Sets antenna and PCV options of corr: from the station config if the station is listed there,
         // otherwise from the RINEX header antenna type (PCV used, azimuth not used)
@@ -116,10 +88,7 @@ namespace pod
                           const std::string& siteId,
                           const std::string& rinexAntType) const;
 
-        virtual IApprPosProvider& apprPos()
-        {
-            return *data_->apprPosProvider_;
-        }
+        IApprPosProvider& apprPos();
 
         // creates GnssEpoch for output: all data if fullOutput is set, only residuals otherwise
         GnssEpoch makeEpochToOutput(const gnsstk::SatTypePtrMap& body) const;
@@ -141,9 +110,6 @@ namespace pod
       private:
         void computeAndStoreSolution(const KalmanSolver& solver, GnssEpoch& gEpoch) const;
 
-#pragma endregion
-
-#pragma region Fields
       protected:
         // Input processing data and configuration
         GnssDataStorePtr data_;
@@ -173,9 +139,7 @@ namespace pod
         // max sigma
         double maxSigma_;
 
-        ProcessingConfig config_;
-
-#pragma endregion
+        ObservationSlots config_;
     };
     typedef std::unique_ptr<GnssSolution> GnssSolutionUPtr;
 } // namespace pod

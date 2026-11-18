@@ -13,6 +13,92 @@ namespace pod
         return (std::cout << "Epoch: " << CivilTime(time).asString() << " " << msg << std::endl);
     }
 
+    FileNameBuilder::FileNameBuilder(const GnssSolution& solution) : solution_(solution) {}
+
+    GnssEpochMap& GnssSolution::getData()
+    {
+        return gMap_;
+    }
+
+    const GnssEpochMap& GnssSolution::getData() const
+    {
+        return gMap_;
+    }
+
+    std::string GnssSolution::getFileName() const
+    {
+        return FileNameBuilder(*this).getFileName();
+    }
+
+    std::string GnssSolution::getBaseFileName() const
+    {
+        return FileNameBuilder(*this).getBaseFileName();
+    }
+
+    SlnType GnssSolution::desiredSlnType() const
+    {
+        const auto& processing = processingConfig();
+
+        switch (processing.solutionMode)
+        {
+        case SolutionMode::CodeAbsolute:
+            return SlnType::Standalone;
+
+        case SolutionMode::CodeDifferential:
+            return SlnType::CodeDiff;
+
+        case SolutionMode::PhaseDiff:
+            return processing.integerAmbiguityResolution ? SlnType::PdFixed : SlnType::PdFloat;
+
+        case SolutionMode::IonoFreePpp:
+            return SlnType::PppFloat;
+
+        case SolutionMode::UncombinedPpp:
+            return processing.integerAmbiguityResolution ? SlnType::PppFixed : SlnType::PppFloat;
+
+        case SolutionMode::Undefined:
+        default:
+            return SlnType::None;
+        }
+    }
+
+    double GnssSolution::getMaxSigma() const
+    {
+        return maxSigma_;
+    }
+
+    GnssSolution& GnssSolution::setMaxSigma(double sigma)
+    {
+        maxSigma_ = sigma;
+        return *this;
+    }
+
+    GnssSolution& GnssSolution::setConfigData(GnssDataStorePtr dataStore)
+    {
+        data_ = dataStore;
+        return *this;
+    }
+
+    const config::ProjectConfig& GnssSolution::projectConfig() const
+    {
+        return data_->config();
+    }
+
+    const config::ProcessingConfig& GnssSolution::processingConfig() const
+    {
+        return projectConfig().processing;
+    }
+
+    const config::StationConfig& GnssSolution::stationConfig(const std::string& siteId) const
+    {
+        return projectConfig().station(siteId);
+    }
+
+    IApprPosProvider& GnssSolution::apprPos()
+    {
+        return *data_->apprPosProvider_;
+    }
+
     void GnssSolution::setupAntenna(CorrectObservables& corr,
                                     AntexReader& antex,
                                     const std::string& siteId,
@@ -21,7 +107,7 @@ namespace pod
         std::string model;
         bool usePcv = true;
         bool useAzimuth = false;
-        if (const auto* st = data_->config_.findStation(siteId))
+        if (const auto* st = projectConfig().findStation(siteId))
         {
             model = st->antennaModel;
             usePcv = st->usePcPatterns;
@@ -161,19 +247,19 @@ namespace pod
     std::string FileNameBuilder::buildWithBaseAndRover() const
     {
         std::string ss_str;
-        for (auto&& system : solution_.data_->config_.processing.satelliteSystems)
+        for (auto&& system : solution_.projectConfig().processing.satelliteSystems)
             ss_str += '_' + convertSatelliteSystemToCode(system);
 
-        return solution_.data_->config_.siteBase + "-" + solution_.data_->config_.siteRover + "_"
-               + slnType2Str.at(solution_.desiredSlnType()) + ss_str;
+        return solution_.projectConfig().siteBase + "-" + solution_.projectConfig().siteRover + "_"
+               + slnTypeToStr(solution_.desiredSlnType()) + ss_str;
     }
 
     std::string FileNameBuilder::buildRoverOnly() const
     {
         std::string ss_str;
-        for (auto&& system : solution_.data_->config_.processing.satelliteSystems)
+        for (auto&& system : solution_.projectConfig().processing.satelliteSystems)
             ss_str += '_' + convertSatelliteSystemToCode(system);
 
-        return solution_.data_->config_.siteRover + "_" + slnType2Str.at(solution_.desiredSlnType()) + ss_str;
+        return solution_.projectConfig().siteRover + "_" + slnTypeToStr(solution_.desiredSlnType()) + ss_str;
     }
 } // namespace pod

@@ -38,7 +38,7 @@ namespace pod
 
         ObsRangeFilter SNRFilter(ObsRangeType::Snr, processingConfig().snrMaskDbHz, DBL_MAX);
 
-        Position refPos = data_->getNominalPosition(data_->config_.siteBase);
+        Position refPos = data_->getNominalPosition(projectConfig().siteBase);
 
         // basic model object for ref. station
         BasicModel modelRef(data_->navLibrary_);
@@ -51,7 +51,7 @@ namespace pod
         modelRef.setRxPosition(refPos);
 
         RinexEpoch epoch_rover, epoch_base;
-        SyncObs sync(data_->getObsFiles(data_->config_.siteBase), epoch_rover);
+        SyncObs sync(data_->getObsFiles(projectConfig().siteBase), epoch_rover);
 
         // Object to decimate data
         Decimate decimateData(processingConfig().decimationIntervalSeconds,
@@ -71,8 +71,8 @@ namespace pod
 
         ComputeWeightSimple w;
 
-        KalmanSolver solver(equations_);
-        KalmanSolverFB solverFb(equations_);
+        KalmanSolver solver(equations_, processingConfig());
+        KalmanSolverFB solverFb(equations_, processingConfig());
         if (forwardBackwardCycles_ > 0)
         {
             solverFb.setCyclesNumber(forwardBackwardCycles_);
@@ -82,7 +82,7 @@ namespace pod
 
         bool firstTime = true;
         //
-        for (auto& obsFile : data_->getObsFiles(data_->config_.siteRover))
+        for (auto& obsFile : data_->getObsFiles(projectConfig().siteRover))
         {
             std::cout << obsFile << std::endl;
             // Input observation file stream

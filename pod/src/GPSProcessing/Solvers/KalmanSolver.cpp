@@ -51,9 +51,12 @@ namespace pod
     // maximum time interval (in seconds) without data
     double KalmanSolver::maxGap = 61;
 
-    KalmanSolver::KalmanSolver() : isValid_(false) {}
-
-    KalmanSolver::KalmanSolver(EquationComposerPtr eqs) : equations_(eqs), isValid_(false) {}
+    KalmanSolver::KalmanSolver(EquationComposerPtr eqs, const config::ProcessingConfig& processingConfig)
+        : equations_(eqs)
+        , processingConfig_(processingConfig)
+        , isValid_(false)
+    {
+    }
 
     IRinex& KalmanSolver::Process(IRinex& gData)
     {
@@ -73,7 +76,7 @@ namespace pod
         lastTime_ = gData.getHeader().epoch;
         // workaround: reset PPP engine every day
         double sec = gData.getHeader().epoch.getSecondOfDay();
-        if (static_cast<int>(sec) == 0 && equations_->getSlnType() == SlnType::PppFloat)
+        if (static_cast<int>(sec) == 0 && (processingConfig_.solutionMode == SolutionMode::IonoFreePpp))
             equations_->clearSvData();
 
         equations_->prepare(gData);
@@ -304,7 +307,7 @@ namespace pod
 
     void KalmanSolver::fixAmbiguities(IRinex& gData)
     {
-        if (equations_->getSlnType() == SlnType::PdFixed && gData.getBody().size() > 5)
+        if (processingConfig_.integerAmbiguityResolution && gData.getBody().size() > 5)
         {
             int core_num = equations_->getLayout().size() - equations_->getCurrentAmb().size();
 

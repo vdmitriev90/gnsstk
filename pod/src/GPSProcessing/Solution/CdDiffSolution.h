@@ -13,11 +13,6 @@ namespace pod
       public:
         CdDiffSolution(GnssDataStorePtr prt);
 
-        SlnType desiredSlnType() const override
-        {
-            return SlnType::CodeDiff;
-        }
-
         virtual void process() override;
 
       protected:

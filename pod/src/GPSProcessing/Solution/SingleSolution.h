@@ -18,11 +18,6 @@ namespace pod
         SingleSolution(GnssDataStorePtr data_ptr);
         virtual ~SingleSolution() {};
 
-        virtual SlnType desiredSlnType() const override
-        {
-            return SlnType::Standalone;
-        }
-
         virtual void process() override;
 
       protected:

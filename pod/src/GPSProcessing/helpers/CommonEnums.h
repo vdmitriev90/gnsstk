@@ -18,7 +18,18 @@ namespace pod {
         Advanced
     };
 
-    // Desired type of GNSS solution
+    // Gnss solution mode
+    enum class SolutionMode
+    {
+        Undefined = 0,
+        CodeAbsolute ,
+        CodeDifferential,
+        PhaseDiff,
+        IonoFreePpp,
+        UncombinedPpp
+    };
+
+    // Type of GNSS solution
     enum class SlnType
     {
         None = 0,

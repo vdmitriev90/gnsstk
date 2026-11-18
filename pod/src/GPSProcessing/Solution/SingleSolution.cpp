@@ -54,9 +54,9 @@ namespace pod
 
         //
         ComputeWeightSimple w(2);
-        KalmanSolver solver(equations_);
+        KalmanSolver solver(equations_, processingConfig());
 
-        KalmanSolverFB solverFb(equations_);
+        KalmanSolverFB solverFb(equations_, processingConfig());
 
         if (forwardBackwardCycles_ > 0)
         {
@@ -69,7 +69,7 @@ namespace pod
 
         RinexEpoch rin_epoch;
 
-        for (auto& obsFile : data_->getObsFiles(data_->config_.siteRover))
+        for (auto& obsFile : data_->getObsFiles(projectConfig().siteRover))
         {
             std::cout << obsFile << std::endl;
 

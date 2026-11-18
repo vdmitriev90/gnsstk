@@ -84,11 +84,30 @@ namespace
 
         return std::nullopt;
     }
+
+    std::string solutionModeToStr(const pod::SolutionMode mode)
+    {
+        switch (mode)
+        {
+        case pod::SolutionMode::CodeAbsolute:
+            return "CodeAbsolute";
+        case pod::SolutionMode::CodeDifferential:
+            return "CodeDifferential";
+        case pod::SolutionMode::PhaseDiff:
+            return "PhaseDiff";
+        case pod::SolutionMode::IonoFreePpp:
+            return "IonoFreePpp";
+        case pod::SolutionMode::UncombinedPpp:
+            return "UncombinedPpp";
+        case pod::SolutionMode::Undefined:
+        default:
+            return "Undefined";
+        }
+    }
 } // namespace
 
 namespace pod
 {
-
     bool isDifferential(SlnType slnType)
     {
         if (slnType == SlnType::CodeDiff || slnType == SlnType::PdFloat || slnType == SlnType::PdFixed)
@@ -98,24 +117,43 @@ namespace pod
 
     namespace fs = std::filesystem;
 
-    std::map<SlnType, std::string> pod::slnType2Str;
-    std::map<CarrierBand, std::string> pod::carrierBand2Str;
-    GnssDataStore::Initializer::Initializer()
+    const char* slnTypeToStr(SlnType slnType)
     {
-        slnType2Str[SlnType::Standalone] = "Standalone";
-        slnType2Str[SlnType::CodeDiff] = "Code_Diff";
-        slnType2Str[SlnType::PdFloat] = "PD_Float";
-        slnType2Str[SlnType::PdFixed] = "PD_Fixed";
-        slnType2Str[SlnType::PppFloat] = "PPP_Float";
-        slnType2Str[SlnType::PppFixed] = "PPP_Fixed";
-        slnType2Str[SlnType::None] = "None";
-
-        carrierBand2Str[CarrierBand::L1] = "L1";
-        carrierBand2Str[CarrierBand::L2] = "L2";
-        carrierBand2Str[CarrierBand::L5] = "L5";
+        switch (slnType)
+        {
+        case SlnType::Standalone:
+            return "Standalone";
+        case SlnType::CodeDiff:
+            return "Code_Diff";
+        case SlnType::PdFloat:
+            return "PD_Float";
+        case SlnType::PdFixed:
+            return "PD_Fixed";
+        case SlnType::PppFloat:
+            return "PPP_Float";
+        case SlnType::PppFixed:
+            return "PPP_Fixed";
+        case SlnType::None:
+        default:
+            return "None";
+        }
     }
 
-    GnssDataStore::Initializer GnssDataStore::GnssDataInitializer;
+    const char* carrierBandToStr(CarrierBand band)
+    {
+        switch (band)
+        {
+        case CarrierBand::L1:
+            return "L1";
+        case CarrierBand::L2:
+            return "L2";
+        case CarrierBand::L5:
+            return "L5";
+        case CarrierBand::cbUndefined:
+        default:
+            return "Undefined";
+        }
+    }
 
     void GnssDataStore::LoadData(const char* path)
     {
@@ -128,11 +166,19 @@ namespace pod
 
             bceDir = "data/nav";
 
-            std::cout << "Solution Type: " << slnType2Str[proc.solutionType] << std::endl;
+            std::cout << "Solution Mode: " << solutionModeToStr(proc.solutionMode);
+            if (proc.solutionMode == SolutionMode::PhaseDiff || proc.solutionMode == SolutionMode::IonoFreePpp
+                || proc.solutionMode == SolutionMode::UncombinedPpp)
+            {
+                if (proc.integerAmbiguityResolution)
+                    std::cout << " with integer AR";
+            }
+
+            std::cout << std::endl;
 
             std::cout << "Used Carrier bands: ";
             for (auto band : proc.carrierBands)
-                std::cout << carrierBand2Str[band] << " ";
+                std::cout << carrierBandToStr(band) << " ";
             std::cout << std::endl;
 
             std::cout << "Used Sat. Systems: ";
