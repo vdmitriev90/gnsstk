@@ -74,11 +74,6 @@ namespace pod
             // resetEpoches.insert(gData.getHeader().epoch);
         }
         lastTime_ = gData.getHeader().epoch;
-        // workaround: reset PPP engine every day
-        double sec = gData.getHeader().epoch.getSecondOfDay();
-        if (static_cast<int>(sec) == 0 && (processingConfig_.solutionMode == SolutionMode::IonoFreePpp))
-            equations_->clearSvData();
-
         equations_->prepare(gData);
 
         // if number of satellies passed to processing is less than 'MIN_NUM_SV'
