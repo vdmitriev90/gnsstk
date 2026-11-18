@@ -187,15 +187,20 @@ namespace gnsstk
                satsys = SatelliteSystem::GPS;
                break;
 
+            case 'E':
+            case 'e':
+                satsys = SatelliteSystem::Galileo;
+                break;
+
             case 'R':
             case 'r':
                satsys = SatelliteSystem::Glonass;
                break;
 
             default:                   // non-IONEX system character
-               FFStreamError e(std::string("Invalid system character \"")
-                               + c + std::string("\""));
-               GNSSTK_THROW(e);
+               std::cerr<< std::string("Invalid system character \"")
+                               << c << std::string("\"")<< std::endl;
+               return;
          }  // End of 'switch(line[3])'
 
          SatID svid = SatID(prn,satsys);
