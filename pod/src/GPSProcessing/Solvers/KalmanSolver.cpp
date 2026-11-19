@@ -1,16 +1,15 @@
 ﻿#include "KalmanSolver.h"
 
 #include "AmbiguityHandler.h"
+#include "Diagnostics.h"
 #include "GnssSolution.h"
 #include "MatrixExtensions.h"
 #include "PowerSum.hpp"
 #include "StringUtils.h"
-#include "WinUtils.h"
 
 #include <algorithm>
 #include <cmath>
 
-using namespace std;
 using namespace gnsstk;
 
 namespace pod
@@ -65,21 +64,47 @@ namespace pod
         isReset_ = false;
         double dt = std::abs(lastTime_ - gData.getHeader().epoch);
 
-        if (dt > maxGap)
+        DIAG_LOG_BLOCK(
         {
+            std::ostringstream diag;
+            bool slipsDetected = false;
+            diag << "[DIAG] " << StringUtils::formatTime(gData.getHeader().epoch) << " EPOCH nSat="
+                 << gData.getBody().size() << " dt=" << dt << " slips:";
+            for (const auto& [sat, tv] : gData.getBody())
+                for (auto cs : {TypeID::CSL1, TypeID::CSL2, TypeID::CSL5})
+                {
+                    auto it = tv->find(cs);
+                    if (it != tv->end() && it->second > 0.0)
+                    {
+                        slipsDetected = true;
+                        diag << " " << sat << "(" << TypeID::tStrings[cs] << ")";
+                    }
+                }
+            if (slipsDetected)
+                ::pod::diagLog() << diag.str() << std::endl;
+        });
+
+        const bool tooFewSats = gData.getBody().size() < minSatNumber_;
+        if (dt > maxGap && !tooFewSats)
+        {
+            DIAG_LOG("[DIAG] " << StringUtils::formatTime(gData.getHeader().epoch) << " GAP RESET dt=" << dt
+                    << " state saved at " << StringUtils::formatTime(lastTime_));
             isReset_ = true;
             FilterData[lastTime_] = getState();
             reset();
             DBOUT_LINE("Too big gap: " << dt << " sec. Reset Filter")
             // resetEpoches.insert(gData.getHeader().epoch);
         }
-        lastTime_ = gData.getHeader().epoch;
+        if (!tooFewSats)
+            lastTime_ = gData.getHeader().epoch;
         equations_->prepare(gData);
 
         // if number of satellies passed to processing is less than 'MIN_NUM_SV'
         // clear all SV data except observable
         if (gData.getBody().size() < minSatNumber_)
         {
+            DIAG_LOG("[DIAG] " << StringUtils::formatTime(gData.getHeader().epoch)
+                    << " MIN SAT SKIP nSat=" << gData.getBody().size());
             equations_->keepOnlySv(gData.getBody().getSatID());
 
             return gData;
@@ -171,7 +196,7 @@ namespace pod
         }
         catch (const MatrixException& e)
         {
-            std::cerr << e << endl;
+            std::cerr << e << std::endl;
 
             const Matrix<double> invPminus = inverseSVD(Pminus);
 
@@ -278,9 +303,8 @@ namespace pod
             ++count;
         }
 
-        cout << StringUtils::formatTime(gData.getHeader().epoch) << " PHASE POSTFIT " << worstSat << " "
-             << TypeID::tStrings[worstType.type] << " normalized: " << worstNormalized << " abs: " << worstAbs << " m"
-             << endl;
+        DIAG_LOG("[DIAG] " << StringUtils::formatTime(gData.getHeader().epoch) << " PHASE POSTFIT " << worstSat << " "
+                << TypeID::tStrings[worstType.type] << " normalized: " << worstNormalized << " abs: " << worstAbs << " m");
 
         return count > 0 ? 1 : 0;
     }
@@ -337,9 +361,9 @@ namespace pod
             });
 
         // report detection
-        cout << "Removed SV: " << svWithMaxResidual->first;
-        cout << " with " << TypeID::tStrings[id->type] << " = ";
-        cout << (*svWithMaxResidual->second)[*id] << endl;
+        std::cout << "Removed SV: " << svWithMaxResidual->first;
+        std::cout << " with " << TypeID::tStrings[id->type] << " = ";
+        std::cout << (*svWithMaxResidual->second)[*id] << std::endl;
 
         // remove sv
         rejSat.insert(svWithMaxResidual->first);
@@ -415,6 +439,9 @@ namespace pod
         if (std::abs(dt) > maxGap)
         {
             auto it = data.find(t);
+            DIAG_LOG("[DIAG] " << StringUtils::formatTime(t) << " FB GAP dt=" << dt
+                    << (it != data.end() ? " saved state FOUND" : " saved state NOT FOUND")
+                    << " (stored states: " << data.size() << ")");
             if (it != data.end())
             {
                 setState(it->second);

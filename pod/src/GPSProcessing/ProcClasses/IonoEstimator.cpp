@@ -1,6 +1,6 @@
 #include "IonoEstimator.h"
 
-#include "WinUtils.h"
+#include "Diagnostics.h"
 
 using namespace gnsstk;
 namespace pod

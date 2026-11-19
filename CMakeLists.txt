@@ -54,6 +54,7 @@ option( PYTHON_USER_INSTALL "HELP: PYTHON_USER_INSTALL: SWITCH, Default= OFF, In
 option( VERSIONED_HEADER_INSTALL "HELP: VERSIONED_HEADER_INSTALL: SWITCH, Default= OFF, Install header files into maj/min versioned directory." OFF )
 option( BUILD_EXAMPLES "HELP: BUILD_EXAMPLES: SWITCH, Default = OFF, Build the examples project, in addition to the core library." OFF )
 option( BUILD_POD "HELP: BUILD_POD: SWITCH, Default = ON, Build the pod and app_runner project, in addition to the core library." ON )
+option( ENABLE_DBG_OUTPUT "Enable Kalman filter diagnostic output to KalmanDiag.log (default: OFF)." OFF )
 option( ASAN_SWITCH "HELP: ASAN_SWITCH: SWITCH, Default = OFF, Build with AddressSanitizer." OFF )
 
 if( ASAN_SWITCH )

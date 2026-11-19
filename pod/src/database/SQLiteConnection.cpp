@@ -1,6 +1,6 @@
 #include "SQLiteConnection.h"
 
-#include "WinUtils.h"
+#include "Diagnostics.h"
 
 #include <cmath>
 #include <sstream>

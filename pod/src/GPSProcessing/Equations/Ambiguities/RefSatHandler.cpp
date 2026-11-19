@@ -1,6 +1,6 @@
 #include "RefSatHandler.h"
 
-#include "WinUtils.h"
+#include "Diagnostics.h"
 
 using namespace gnsstk;
 

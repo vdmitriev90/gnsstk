@@ -1,6 +1,6 @@
 #include "AmbiguityHandler.h"
 
-#include "WinUtils.h"
+#include "Diagnostics.h"
 
 using namespace gnsstk;
 

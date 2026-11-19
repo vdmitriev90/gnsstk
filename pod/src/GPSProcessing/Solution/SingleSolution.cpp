@@ -14,7 +14,7 @@
 #include "PositionEquations.h"
 #include "PowerSum.hpp"
 #include "ObsRangeFilter.h"
-#include "WinUtils.h"
+#include "Diagnostics.h"
 
 #include <memory>
 

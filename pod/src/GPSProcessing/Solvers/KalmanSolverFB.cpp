@@ -2,12 +2,11 @@
 
 #include "GnssObsMapping.h"
 #include "GnssSolution.h"
+#include "Diagnostics.h"
 #include "PowerSum.hpp"
 #include "SatObservationBlocks.h"
 #include "StringUtils.h"
-#include "WinUtils.h"
 using namespace gnsstk;
-
 namespace pod
 {
 
@@ -96,6 +95,7 @@ namespace pod
         // In backward direction an ambiguity jump that happened between t(k-1) and t(k)
         // must be flagged at t(k-1). Detectors re-run on rover only, so slips coming
         // from the base station (merged in SD) must be shifted explicitly.
+        DIAG_LOG("[DIAG] ===== BACKWARD PASS cycle=" << currCycle << " =====");
         const gnsstk::SatIDSet* later = nullptr;
         for (auto rpos = ObsData.rbegin(); rpos != ObsData.rend(); ++rpos)
         {
@@ -111,6 +111,7 @@ namespace pod
 
         for (currCycle = 0; currCycle < cyclesNumber - 1; ++currCycle)
         {
+            DIAG_LOG("[DIAG] ===== FORWARD REPASS cycle=" << currCycle << " =====");
             for (auto& it : ObsData)
             {
                 ReProcessOneEpoch(*it);
@@ -234,10 +235,25 @@ namespace pod
                 // Check postfit residual against the per-cycle limit
                 if (std::abs(itRes->second) > getLimit(postfitType, cycleNumber))
                 {
+                    DIAG_LOG("[DIAG] " << StringUtils::formatTime(gData.getHeader().epoch) << " FB LIMIT "
+                             << block.sat << " " << TypeID::tStrings[postfitType.type] << " = " << itRes->second);
                     values.erase(postfitType);
                     satRejectedSet.insert(block.sat);
                 }
             }
+        }
+
+        if (!satRejectedSet.empty())
+        {
+            DIAG_LOG_BLOCK(
+            {
+                std::ostringstream oss;
+                oss << "[DIAG] " << StringUtils::formatTime(gData.getHeader().epoch) << " FB LIMIT REJECT cycle="
+                    << cycleNumber << " nSat=" << gData.getBody().size() << " rejected:";
+                for (const auto& sat : satRejectedSet)
+                    oss << " " << sat;
+                ::pod::diagLog() << oss.str() << std::endl;
+            });
         }
 
         // Update the number of rejected measurements

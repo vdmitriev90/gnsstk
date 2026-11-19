@@ -1,7 +1,7 @@
 #include "PrefitResCatcher.h"
 #include "ObservationResolver.h"
 
-#include "WinUtils.h"
+#include "Diagnostics.h"
 
 using namespace gnsstk;
 namespace pod

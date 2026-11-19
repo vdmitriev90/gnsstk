@@ -1,7 +1,6 @@
 #include "TropoEquationsAdv.hpp"
 
 #include "StateLayout.h"
-#include "WinUtils.h"
 
 using namespace gnsstk;
 

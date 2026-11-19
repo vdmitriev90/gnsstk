@@ -98,6 +98,8 @@ namespace pod
 
         // Object to keep track of satellite arcs
         SatArcMarker markArcRover(TypeID::CSL1, true, 31.0);
+        // Replay arc marker: satellites with slips are kept (ambiguity is reset by the filter)
+        SatArcMarker markArcReproc(TypeID::CSL1, false, 31.0);
 
         AntexReader antexReader;
         antexReader.open(projectConfig().genericFiles.antexFilePath());
@@ -138,10 +140,11 @@ namespace pod
         {
             solverFb.setCyclesNumber(forwardBackwardCycles_);
             solverFb.setLimits(processingConfig().codeLimits, processingConfig().phaseLimits);
+            solverFb.setCSDetRef(markCSLI2Rover, markCSMW2Rover);
 
             solverFb.ReProcList().push_back(markCSLI2Rover);
             solverFb.ReProcList().push_back(markCSMW2Rover);
-            solverFb.ReProcList().push_back(markArcRover);
+            solverFb.ReProcList().push_back(markArcReproc);
         }
 
         bool firstTime = true;

@@ -41,6 +41,10 @@ add_library(pod ${POD_SOURCE_FILES} ${POD_INC_FILES})
 
 target_include_directories(pod PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/generated)
 
+if(ENABLE_DBG_OUTPUT)
+    target_compile_definitions(pod PRIVATE ENABLE_DBG_OUTPUT)
+endif()
+
 # Mirror the source directory structure as filters in Visual Studio Solution Explorer
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${POD_SOURCE_FILES} ${POD_INC_FILES})
 

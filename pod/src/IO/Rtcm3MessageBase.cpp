@@ -1,7 +1,7 @@
 #include "Rtcm3MessageBase.hpp"
 
 #include "GNSSconstants.hpp"
-#include "WinUtils.h"
+#include "Diagnostics.h"
 
 using namespace gnsstk;
 namespace pod

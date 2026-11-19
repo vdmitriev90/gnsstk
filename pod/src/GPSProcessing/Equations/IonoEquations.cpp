@@ -2,6 +2,10 @@
 
 #include "GnssObsMapping.h"
 #include "StateLayout.h"
+#include "Diagnostics.h"
+#include "StringUtils.h"
+#include <iostream>
+#include <sstream>
 
 using namespace gnsstk;
 namespace pod
@@ -63,6 +67,22 @@ namespace pod
             it_model->second->Prepare(it, gData);
             currParameters.insert(FilterParameter(eqType, it));
         }
+        DIAG_LOG_BLOCK(
+        {
+            if (!resetSats_.empty())
+            {
+                std::ostringstream oss;
+                oss << "[DIAG] " << StringUtils::formatTime(gData.getHeader().epoch) << " IONO NEW/RETURNED:";
+                for (const auto& s : resetSats_)
+                    oss << " " << s;
+                ::pod::diagLog() << oss.str() << std::endl;
+            }
+            for (const auto& s : prevSats_)
+                if (currentSatSet.find(s) == currentSatSet.end())
+                    ::pod::diagLog() << "[DIAG] " << StringUtils::formatTime(gData.getHeader().epoch)
+                                     << " SAT LOST: " << s << std::endl;
+        });
+        prevSats_ = currentSatSet;
     }
 
     void IonoEquations::fillRow(const RowContext& ctx, const StateLayout& layout, gnsstk::Matrix<double>& H) const
